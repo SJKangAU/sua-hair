@@ -4,16 +4,18 @@
 // Populates Firestore with initial stylists and services data
 // Run once with: npx tsx src/scripts/seedFirestore.ts
 // DO NOT run again after initial setup — it will create duplicates
-// To reset: manually delete the stylists and services collections in Firebase
-// console first, then re-run
+// To reset: manually delete the relevant collections in Firebase console
+// then re-run
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 import * as dotenv from 'dotenv';
 
+// Load environment variables from .env file
 dotenv.config();
 
+// ── Firebase config ───────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
   authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -27,10 +29,13 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ── Stylists ──────────────────────────────────────────────────────────────────
+// level: used for tiered pricing resolution
+// isTrainer: only Steve can run training sessions
+// status: 'inactive' hides from booking form but preserves history
 const STYLISTS = [
   {
     name: 'Steve Hwang',
-    role: 'Director/Master Stylist',
+    role: 'Director',
     level: 'director',
     status: 'active',
     instagram: 'suahairstudio',
@@ -80,8 +85,14 @@ const STYLISTS = [
   },
 ];
 
-// ── Services (tiered pricing by stylist level) ────────────────────────────────
+// ── Services ──────────────────────────────────────────────────────────────────
+// price: tiered by stylist level (director/senior/junior)
+// activeTime: minutes stylist is hands-on with client
+// restTime: minutes client sits while product sets (stylist is free)
+// totalTime: activeTime + restTime
+// priceHistory: append-only log for accurate historical analytics
 const SERVICES = [
+  // ── No rest period ──────────────────────────────────────────────────────────
   {
     name: "Men's Cut",
     category: 'cut',
@@ -90,7 +101,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 75, senior: 65, junior: 65 },
     status: 'active',
-    priceHistory: [{ price: { director: 75, senior: 65, junior: 65 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 75, senior: 65, junior: 65 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -101,7 +118,13 @@ const SERVICES = [
     totalTime: 60,
     price: { director: 95, senior: 85, junior: 85 },
     status: 'active',
-    priceHistory: [{ price: { director: 95, senior: 85, junior: 85 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 95, senior: 85, junior: 85 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -112,7 +135,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
     status: 'active',
-    priceHistory: [{ price: { director: 80, senior: 70, junior: 70 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 80, senior: 70, junior: 70 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -123,7 +152,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
     status: 'active',
-    priceHistory: [{ price: { director: 80, senior: 70, junior: 70 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 80, senior: 70, junior: 70 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -134,7 +169,13 @@ const SERVICES = [
     totalTime: 20,
     price: { director: 30, senior: 30, junior: 30 },
     status: 'active',
-    priceHistory: [{ price: { director: 30, senior: 30, junior: 30 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 30, senior: 30, junior: 30 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -145,9 +186,17 @@ const SERVICES = [
     totalTime: 15,
     price: { director: 30, senior: 30, junior: 30 },
     status: 'active',
-    priceHistory: [{ price: { director: 30, senior: 30, junior: 30 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 30, senior: 30, junior: 30 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
+
+  // ── Has rest/setting period ─────────────────────────────────────────────────
   {
     name: 'Colour (Regrowth)',
     category: 'colour',
@@ -156,7 +205,13 @@ const SERVICES = [
     totalTime: 60,
     price: { director: 150, senior: 130, junior: 130 },
     status: 'active',
-    priceHistory: [{ price: { director: 150, senior: 130, junior: 130 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 150, senior: 130, junior: 130 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -167,7 +222,13 @@ const SERVICES = [
     totalTime: 105,
     price: { director: 450, senior: 400, junior: 400 },
     status: 'active',
-    priceHistory: [{ price: { director: 450, senior: 400, junior: 400 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 450, senior: 400, junior: 400 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -178,7 +239,13 @@ const SERVICES = [
     totalTime: 120,
     price: { director: 380, senior: 350, junior: 350 },
     status: 'active',
-    priceHistory: [{ price: { director: 380, senior: 350, junior: 350 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 380, senior: 350, junior: 350 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -189,7 +256,13 @@ const SERVICES = [
     totalTime: 40,
     price: { director: 50, senior: 50, junior: 50 },
     status: 'active',
-    priceHistory: [{ price: { director: 50, senior: 50, junior: 50 }, effectiveFrom: '2024-01-01', recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 50, senior: 50, junior: 50 },
+        effectiveFrom: '2024-01-01',
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
 ];
@@ -198,38 +271,35 @@ const SERVICES = [
 const seed = async () => {
   console.log('🌱 Starting Firestore seed...\n');
 
-  // const existingStylists = await getDocs(collection(db, 'stylists'));
-  // const existingServices = await getDocs(collection(db, 'services'));
+  // ── Guard — prevent duplicate seeding ───────────────────────────────────────
+  const existingStylists = await getDocs(collection(db, 'stylists'));
+  const existingServices = await getDocs(collection(db, 'services'));
 
-  // // Only block if services already exist (stylists may already be seeded)
-  // if (!existingServices.empty) {
-  //   console.error('⛔ Firestore already contains services data.');
-  //   console.error('   Delete the services collection in Firebase console first.');
-  //   process.exit(1);
-  // }
+  if (!existingStylists.empty || !existingServices.empty) {
+    console.error('⛔ Firestore already contains stylists or services data.');
+    console.error('   Delete the collections in Firebase console first.');
+    process.exit(1);
+  }
 
-  // // Only seed stylists if not already seeded
-  // if (existingStylists.empty) {
-  //   console.log('👤 Seeding stylists...');
-  //   for (const stylist of STYLISTS) {
-  //     const ref = await addDoc(collection(db, 'stylists'), stylist);
-  //     console.log(`   ✅ ${stylist.name} (${stylist.role}) — ${ref.id}`);
-  //   }
-  // } else {
-  //   console.log('👤 Stylists already seeded — skipping.');
-  // }
+  // ── Seed stylists ───────────────────────────────────────────────────────────
+  console.log('👤 Seeding stylists...');
+  for (const stylist of STYLISTS) {
+    const ref = await addDoc(collection(db, 'stylists'), stylist);
+    console.log(`   ✅ ${stylist.name} (${stylist.role}) — ${ref.id}`);
+  }
 
+  // ── Seed services ───────────────────────────────────────────────────────────
   console.log('\n✂️  Seeding services...');
   for (const service of SERVICES) {
     const ref = await addDoc(collection(db, 'services'), service);
-    const priceStr = `director $${service.price.director} / senior $${service.price.senior}`;
-    console.log(`   ✅ ${service.name} — ${priceStr} — ${service.totalTime}min — ${ref.id}`);
+    console.log(`   ✅ ${service.name} — Director $${service.price.director} / Senior $${service.price.senior} — ${service.totalTime}min — ${ref.id}`);
   }
 
   console.log('\n🎉 Seed complete!');
   process.exit(0);
 };
 
+// ── Run ───────────────────────────────────────────────────────────────────────
 seed().catch(err => {
   console.error('❌ Seed failed:', err);
   process.exit(1);
