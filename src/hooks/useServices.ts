@@ -7,6 +7,12 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
+export interface TieredPrice {
+  director: number;
+  senior: number;
+  junior: number;
+}
+
 export interface PriceHistoryEntry {
   price: number;
   effectiveFrom: string; // YYYY-MM-DD
@@ -20,12 +26,11 @@ export interface FirestoreService {
   activeTime: number;
   restTime: number;
   totalTime: number;
-  price: number;
+  price: TieredPrice;  // now an object, not a number
   status: 'active' | 'inactive';
   priceHistory: PriceHistoryEntry[];
   createdAt: string;
 }
-
 interface UseServices {
   services: FirestoreService[];
   loading: boolean;
