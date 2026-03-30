@@ -11,6 +11,7 @@ import { BookingProvider, useBookingContext } from '../context/BookingContext';
 import DashboardStats from '../components/admin/DashboardStats';
 import FilterBar from '../components/admin/FilterBar';
 import BookingTable from '../components/admin/BookingTable';
+import { SalonDataProvider } from '../context/SalonDataContext';
 import type { Filters } from '../components/admin/FilterBar';
 
 const DEFAULT_FILTERS: Filters = {
@@ -137,12 +138,16 @@ const DashboardInner = () => {
 };
 
 // Outer component — provides BookingContext to DashboardInner
+// Wrap with both providers
 const AdminDashboardPage = () => {
   return (
-    <BookingProvider>
-      <DashboardInner />
-    </BookingProvider>
+    <SalonDataProvider>
+      <BookingProvider>
+        <DashboardInner />
+      </BookingProvider>
+    </SalonDataProvider>
   );
 };
+
 
 export default AdminDashboardPage;

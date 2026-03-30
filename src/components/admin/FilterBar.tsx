@@ -1,9 +1,8 @@
 // FilterBar.tsx
 // Filter controls for the bookings table
-// Filters by stylist, date, and status
-// Fixed styling so controls are clearly visible against the background
+// Consumes stylists from SalonDataContext (Firestore) instead of hardcoded data.ts
 
-import { STYLISTS } from '../../lib/data';
+import { useSalonData } from '../../context/SalonDataContext';
 
 export interface Filters {
   stylistId: string;
@@ -29,6 +28,8 @@ const selectStyle = {
 };
 
 const FilterBar = ({ filters, onChange, onClear }: Props) => {
+  // Consume stylists from Firestore via context
+  const { stylists } = useSalonData();
   const hasActiveFilters = filters.stylistId || filters.date || filters.status;
 
   return (
@@ -42,20 +43,18 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
       borderRadius: '10px',
       boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
     }}>
-
-      {/* Filter label */}
       <span style={{ color: '#aaa', fontSize: '0.82rem', fontWeight: 500 }}>
         Filter by:
       </span>
 
-      {/* Stylist filter */}
+      {/* Stylist filter — driven by Firestore */}
       <select
         style={selectStyle}
         value={filters.stylistId}
         onChange={e => onChange({ ...filters, stylistId: e.target.value })}
       >
         <option value="">All stylists</option>
-        {STYLISTS.map(s => (
+        {stylists.map(s => (
           <option key={s.id} value={s.id}>{s.name}</option>
         ))}
       </select>
@@ -80,7 +79,6 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         <option value="cancelled">Cancelled</option>
       </select>
 
-      {/* Clear filters — only shown when filters are active */}
       {hasActiveFilters && (
         <button
           onClick={onClear}

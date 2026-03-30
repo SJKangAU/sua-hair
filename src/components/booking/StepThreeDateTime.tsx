@@ -94,25 +94,26 @@ const StepThreeDateTime = ({
   // Fetch stylist bookings and regenerate slots whenever key inputs change
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!stylistId || !serviceId || !date || date === 'CLOSED' || date === 'CUTOFF') return;
+  if (!stylistId || !serviceId || !date || date === 'CLOSED' || date === 'CUTOFF') return;
 
-      setLoadingSlots(true);
-      try {
-        const q = query(
-          collection(db, 'bookings'),
-          where('stylistId', '==', stylistId),
-          where('date', '==', date)
-        );
-        const snapshot = await getDocs(q);
-        const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+  setLoadingSlots(true);
+  try {
+    const q = query(
+      collection(db, 'bookings'),
+      where('stylistId', '==', stylistId),
+      where('date', '==', date)
+    );
+    const snapshot = await getDocs(q);
+    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
 
-        const generated = generateSlots(date, stylistId, totalTime, activeTime, bookings);
-        setSlots(generated);
-      } catch (err) {
-        console.error('Error fetching slots:', err);
-      }
-      setLoadingSlots(false);
-    };
+    const generated = generateSlots(date, stylistId, totalTime, activeTime, bookings);
+
+    setSlots(generated);
+  } catch (err) {
+    console.error('Error fetching slots:', err);
+  }
+  setLoadingSlots(false);
+};
 
     fetchSlots();
   }, [stylistId, serviceId, date, totalTime, activeTime]);

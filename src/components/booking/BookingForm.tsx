@@ -6,7 +6,8 @@
 import { useState } from "react";
 import {
   collection,
-  addDoc,
+  doc,
+  setDoc,
   query,
   where,
   getDocs,
@@ -14,7 +15,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
-import { getMinBookableDate } from "../../lib/scheduling";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import StepOneDetails from "./StepOneDetails";
@@ -43,22 +43,22 @@ const BookingForm = () => {
     date?: string;
   }>({});
 
-const [form, setForm] = useState({
-  customerName: '',
-  customerPhone: '',
-  stylistId: '',
-  stylistName: '',
-  stylistLevel: 'junior' as 'director' | 'senior' | 'junior',
-  serviceId: '',
-  serviceName: '',
-  servicePrice: 0,
-  activeTime: 0,
-  restTime: 0,
-  totalTime: 0,
-  date: '',
-  time: '',
-  notes: '',
-});
+  const [form, setForm] = useState({
+    customerName: "",
+    customerPhone: "",
+    stylistId: "",
+    stylistName: "",
+    stylistLevel: "junior" as "director" | "senior" | "junior",
+    serviceId: "",
+    serviceName: "",
+    servicePrice: 0,
+    activeTime: 0,
+    restTime: 0,
+    totalTime: 0,
+    date: "",
+    time: "",
+    notes: "",
+  });
 
   // ── Customer Lookup ───────────────────────────────────────────────────────
 
@@ -111,45 +111,45 @@ const [form, setForm] = useState({
   };
 
   // Use Firestore stylists from context instead of hardcoded data
-const handleStylistSelect = (stylistId: string) => {
-  const stylist = stylists.find(s => s.id === stylistId);
-  if (stylist) {
-    // Recalculate service price based on new stylist level
-    const service = services.find(s => s.id === form.serviceId);
-    const resolvedPrice = service ? service.price[stylist.level] : 0;
+  const handleStylistSelect = (stylistId: string) => {
+    const stylist = stylists.find((s) => s.id === stylistId);
+    if (stylist) {
+      // Recalculate service price based on new stylist level
+      const service = services.find((s) => s.id === form.serviceId);
+      const resolvedPrice = service ? service.price[stylist.level] : 0;
 
-    setForm(prev => ({
-      ...prev,
-      stylistId: stylist.id,
-      stylistName: stylist.name,
-      stylistLevel: stylist.level,
-      servicePrice: resolvedPrice,
-      time: '',
-    }));
-  }
-};
+      setForm((prev) => ({
+        ...prev,
+        stylistId: stylist.id,
+        stylistName: stylist.name,
+        stylistLevel: stylist.level,
+        servicePrice: resolvedPrice,
+        time: "",
+      }));
+    }
+  };
 
   // Use Firestore services from context instead of hardcoded data
-const handleServiceSelect = (serviceId: string) => {
-  const service = services.find(s => s.id === serviceId);
-  if (service) {
-    // Resolve price based on currently selected stylist's level
-    const stylist = stylists.find(s => s.id === form.stylistId);
-    const level = stylist?.level ?? 'junior';
-    const resolvedPrice = service.price[level];
+  const handleServiceSelect = (serviceId: string) => {
+    const service = services.find((s) => s.id === serviceId);
+    if (service) {
+      // Resolve price based on currently selected stylist's level
+      const stylist = stylists.find((s) => s.id === form.stylistId);
+      const level = stylist?.level ?? "junior";
+      const resolvedPrice = service.price[level];
 
-    setForm(prev => ({
-      ...prev,
-      serviceId: service.id,
-      serviceName: service.name,
-      servicePrice: resolvedPrice,
-      activeTime: service.activeTime,
-      restTime: service.restTime,
-      totalTime: service.totalTime,
-      time: '',
-    }));
-  }
-};
+      setForm((prev) => ({
+        ...prev,
+        serviceId: service.id,
+        serviceName: service.name,
+        servicePrice: resolvedPrice,
+        activeTime: service.activeTime,
+        restTime: service.restTime,
+        totalTime: service.totalTime,
+        time: "",
+      }));
+    }
+  };
 
   const handleDateChange = (date: string) => {
     setForm((prev) => ({ ...prev, date, time: "" }));
@@ -198,43 +198,60 @@ const handleServiceSelect = (serviceId: string) => {
 
   // ── Reset ─────────────────────────────────────────────────────────────────
 
-const resetForm = () => {
-  setConfirmed(false);
-  setConfirmedBooking(null);
-  setStep(1);
-  setCustomerProfile(null);
-  setPhoneConfirmed(false);
-  setErrors({});
-  setForm({
-    customerName: '', customerPhone: '',
-    stylistId: '', stylistName: '',
-    stylistLevel: 'junior',
-    serviceId: '', serviceName: '', servicePrice: 0,
-    activeTime: 0, restTime: 0, totalTime: 0,
-    date: '', time: '', notes: '',
-  });
-};
+  const resetForm = () => {
+    setConfirmed(false);
+    setConfirmedBooking(null);
+    setStep(1);
+    setCustomerProfile(null);
+    setPhoneConfirmed(false);
+    setErrors({});
+    setForm({
+      customerName: "",
+      customerPhone: "",
+      stylistId: "",
+      stylistName: "",
+      stylistLevel: "junior",
+      serviceId: "",
+      serviceName: "",
+      servicePrice: 0,
+      activeTime: 0,
+      restTime: 0,
+      totalTime: 0,
+      date: "",
+      time: "",
+      notes: "",
+    });
+  };
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
-const handleSubmit = async () => {
-  setSubmitting(true);
-  try {
-    const booking: Omit<Booking, 'id'> = {
-      ...form,
-      customerPhone: cleanPhone(form.customerPhone),
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
-    await addDoc(collection(db, 'bookings'), booking);
-    setConfirmedBooking(booking);
-    setConfirmed(true);
-  } catch (err) {
-    console.error('Booking submission error:', err);
-    alert('Something went wrong. Please try again.');
-  }
-  setSubmitting(false);
-};
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const booking: Omit<Booking, "id"> = {
+        ...form,
+        customerPhone: cleanPhone(form.customerPhone),
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+
+      // Generate a readable document ID: date_stylistName_timestamp
+      const timestamp = Date.now();
+      const safeStylistName = form.stylistName
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+      const docId = `${form.date}_${safeStylistName}_${timestamp}`;
+
+      // Use setDoc with custom ID instead of addDoc
+      await setDoc(doc(collection(db, "bookings"), docId), booking);
+      setConfirmedBooking(booking);
+      setConfirmed(true);
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      alert("Something went wrong. Please try again.");
+    }
+    setSubmitting(false);
+  };
 
   // ── Shared button styles ──────────────────────────────────────────────────
 

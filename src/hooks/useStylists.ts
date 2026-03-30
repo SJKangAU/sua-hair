@@ -15,6 +15,7 @@ export interface FirestoreStylist {
   level: 'director' | 'senior' | 'junior';
   status: 'active' | 'inactive';
   instagram?: string;
+  photoUrl?: string;
   startDate: string;
   isTrainer: boolean;
   createdAt: string;
