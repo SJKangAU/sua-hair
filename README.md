@@ -14,7 +14,7 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - Firebase Hosting (deployment)
 - React Router v6
 - Vite
-
+  
 ---
 
 ## Features
