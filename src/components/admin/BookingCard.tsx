@@ -5,13 +5,11 @@
 //   Confirmed → Cancel
 //   Cancelled → Restore (sets back to pending)
 
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import type { Booking } from '../../types';
 
 interface Props {
   booking: Booking;
-  onUpdate: () => void;
+  onUpdate: (id: string, status: 'pending' | 'confirmed' | 'cancelled') => void;
 }
 
 // Status badge colours
@@ -22,15 +20,10 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 const BookingCard = ({ booking, onUpdate }: Props) => {
-  // Update booking status in Firestore
-  const updateStatus = async (status: 'confirmed' | 'cancelled' | 'pending') => {
-    try {
-      await updateDoc(doc(db, 'bookings', booking.id), { status });
-      onUpdate();
-    } catch (err) {
-      console.error('Error updating booking status:', err);
-      alert('Failed to update booking. Please try again.');
-    }
+  // Delegates status update to parent via onUpdate
+  // Actual Firestore write handled by useBookings hook
+  const updateStatus = (status: 'confirmed' | 'cancelled' | 'pending') => {
+    onUpdate(booking.id, status);
   };
 
   const statusStyle = STATUS_COLORS[booking.status] || STATUS_COLORS.pending;

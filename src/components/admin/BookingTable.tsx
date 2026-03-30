@@ -10,7 +10,7 @@ import type { Filters } from './FilterBar';
 interface Props {
   bookings: Booking[];
   filters: Filters;
-  onUpdate: () => void;
+  onUpdate: (id: string, status: 'pending' | 'confirmed' | 'cancelled') => void;
 }
 
 const BookingTable = ({ bookings, filters, onUpdate }: Props) => {

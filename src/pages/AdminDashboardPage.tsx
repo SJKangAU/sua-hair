@@ -1,18 +1,16 @@
 // AdminDashboardPage.tsx
-// Main admin dashboard — protected route, requires authentication
-// Fetches all bookings from Firestore in real time using onSnapshot
-// Provides filtering, status updates, and a daily overview
+// Wrapped with BookingProvider so all admin tabs share
+// one Firestore subscription rather than fetching independently
 
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { db, auth } from '../lib/firebase';
+import { auth } from '../lib/firebase';
 import useAuth from '../hooks/useAuth';
+import { BookingProvider, useBookingContext } from '../context/BookingContext';
 import DashboardStats from '../components/admin/DashboardStats';
 import FilterBar from '../components/admin/FilterBar';
 import BookingTable from '../components/admin/BookingTable';
-import type { Booking } from '../types';
 import type { Filters } from '../components/admin/FilterBar';
 
 const DEFAULT_FILTERS: Filters = {
@@ -21,50 +19,35 @@ const DEFAULT_FILTERS: Filters = {
   status: '',
 };
 
-const AdminDashboardPage = () => {
+// Inner component — consumes BookingContext
+// Separated from the outer component so context is available
+const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  // All bookings from Firestore
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Active filter state
+  const { bookings, loading, error, updateStatus } = useBookingContext();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
-  // Subscribe to real-time booking updates via Firestore onSnapshot
-  useEffect(() => {
-    const q = query(collection(db, 'bookings'), orderBy('date', 'asc'));
-
-    const unsubscribe = onSnapshot(q, snapshot => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Booking[];
-
-      setBookings(data);
-      setLoading(false);
-    }, err => {
-      console.error('Error fetching bookings:', err);
-      setLoading(false);
-    });
-
-    // Cleanup Firestore listener on unmount
-    return () => unsubscribe();
-  }, []);
-
-  // Sign out and redirect to login
   const handleSignOut = async () => {
     await signOut(auth);
     navigate('/admin/login', { replace: true });
   };
 
+  // Wrap updateStatus to handle errors gracefully
+  // In Phase 1 this will show a toast — for now uses console.error
+  const handleUpdateStatus = async (
+    id: string,
+    status: 'pending' | 'confirmed' | 'cancelled'
+  ) => {
+    try {
+      await updateStatus(id, status);
+    } catch {
+      console.error('Failed to update booking status');
+      alert('Failed to update booking. Please try again.');
+    }
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f5f0e8',
-      fontFamily: 'Georgia, serif',
-    }}>
+    <div style={{ minHeight: '100vh', background: '#f5f0e8', fontFamily: 'Georgia, serif' }}>
 
       {/* Header */}
       <header style={{
@@ -94,8 +77,8 @@ const AdminDashboardPage = () => {
           >
             Sign out
           </button>
-          
-            <a href="/"
+          <a
+            href="/"
             style={{
               background: 'none',
               border: '1px solid #c9a96e',
@@ -113,18 +96,19 @@ const AdminDashboardPage = () => {
 
       {/* Main content */}
       <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-
         {loading ? (
           <p style={{ textAlign: 'center', color: '#6b6b6b', marginTop: '3rem' }}>
             Loading bookings...
           </p>
+        ) : error ? (
+          <p style={{ textAlign: 'center', color: '#e24b4a', marginTop: '3rem' }}>
+            {error}
+          </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-            {/* Today's stats */}
             <DashboardStats bookings={bookings} />
 
-            {/* Section heading */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 500, margin: 0 }}>
                 All Bookings
@@ -134,23 +118,30 @@ const AdminDashboardPage = () => {
               </h2>
             </div>
 
-            {/* Filter bar */}
             <FilterBar
               filters={filters}
               onChange={setFilters}
               onClear={() => setFilters(DEFAULT_FILTERS)}
             />
 
-            {/* Bookings list */}
             <BookingTable
               bookings={bookings}
               filters={filters}
-              onUpdate={() => {}}
+              onUpdate={handleUpdateStatus}
             />
           </div>
         )}
       </main>
     </div>
+  );
+};
+
+// Outer component — provides BookingContext to DashboardInner
+const AdminDashboardPage = () => {
+  return (
+    <BookingProvider>
+      <DashboardInner />
+    </BookingProvider>
   );
 };
 

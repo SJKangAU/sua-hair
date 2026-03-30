@@ -1,9 +1,9 @@
 // StepTwoService.tsx
 // Step 2 of the booking form
-// Handles stylist card selection and service dropdown
-// Shows rest time breakdown for services that require setting time
+// Consumes stylists and services from SalonDataContext (Firestore)
+// Shows loading and error states while data fetches
 
-import { STYLISTS, SERVICES } from '../../lib/data';
+import { useSalonData } from '../../context/SalonDataContext';
 
 interface Props {
   stylistId: string;
@@ -45,11 +45,32 @@ const StepTwoService = ({
   onServiceSelect,
   onNotesChange,
 }: Props) => {
+  // Consume from context — data fetched once at BookingPage level
+  const { stylists, stylistsLoading, stylistsError, services, servicesLoading, servicesError } = useSalonData();
+
+  // Loading state
+  if (stylistsLoading || servicesLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem', color: '#6b6b6b' }}>
+        Loading stylists and services...
+      </div>
+    );
+  }
+
+  // Error state
+  if (stylistsError || servicesError) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem', color: '#e24b4a' }}>
+        {stylistsError || servicesError}
+      </div>
+    );
+  }
+
   return (
     <div>
       <h3 style={{ marginBottom: '1.25rem', fontSize: '1.1rem' }}>Choose Your Stylist & Service</h3>
 
-      {/* Stylist selection cards */}
+      {/* Stylist selection cards — driven by Firestore */}
       <p style={{ fontWeight: 500, marginBottom: '0.5rem' }}>Stylist</p>
       <div style={{
         display: 'grid',
@@ -57,7 +78,7 @@ const StepTwoService = ({
         gap: '0.5rem',
         marginBottom: '1.25rem',
       }}>
-        {STYLISTS.map(stylist => {
+        {stylists.map(stylist => {
           const selected = stylistId === stylist.id;
           return (
             <div
@@ -79,7 +100,7 @@ const StepTwoService = ({
         })}
       </div>
 
-      {/* Service dropdown */}
+      {/* Service dropdown — driven by Firestore */}
       <label style={labelStyle}>
         Service
         <select
@@ -88,7 +109,7 @@ const StepTwoService = ({
           onChange={e => onServiceSelect(e.target.value)}
         >
           <option value="">Select a service...</option>
-          {SERVICES.map(service => (
+          {services.map(service => (
             <option key={service.id} value={service.id}>
               {service.name} — from ${service.price} ({service.totalTime} min total)
             </option>
@@ -96,7 +117,7 @@ const StepTwoService = ({
         </select>
       </label>
 
-      {/* Rest time info box — only shown for services with a setting period */}
+      {/* Rest time breakdown — shown for services with a setting period */}
       {serviceId && restTime > 0 && (
         <div style={{
           background: '#f0f7ff',
