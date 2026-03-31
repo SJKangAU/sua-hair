@@ -231,6 +231,7 @@ const BookingForm = () => {
       const booking: Omit<Booking, "id"> = {
         ...form,
         customerPhone: cleanPhone(form.customerPhone),
+        bookingType: "customer", // all customer portal bookings are type 'customer'
         status: "pending",
         createdAt: new Date().toISOString(),
       };

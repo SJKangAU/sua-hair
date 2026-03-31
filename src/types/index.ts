@@ -36,10 +36,10 @@ export interface Booking {
   customerPhone: string;
   stylistId: string;
   stylistName: string;
-  stylistLevel: 'director' | 'senior' | 'junior'; // stored for price history accuracy
+  stylistLevel: 'director' | 'senior' | 'junior';
   serviceId: string;
   serviceName: string;
-  servicePrice: number; // resolved price at time of booking
+  servicePrice: number;
   activeTime: number;
   restTime: number;
   totalTime: number;
@@ -47,6 +47,11 @@ export interface Booking {
   time: string;
   notes?: string;
   status: 'pending' | 'confirmed' | 'cancelled';
+  bookingType: 'customer' | 'walkin' | 'break' | 'training'; // add this field to differentiate between booking types
+  blockReason?: string;   // for breaks
+  traineeId?: string;     // for training
+  traineeName?: string;   // for training
+  trainingTopic?: string; // for training
   createdAt: string;
 }
 
