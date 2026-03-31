@@ -8,9 +8,9 @@
 // then re-run
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
-import * as dotenv from 'dotenv';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import * as dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -34,52 +34,52 @@ const db = getFirestore(app);
 // status: 'inactive' hides from booking form but preserves history
 const STYLISTS = [
   {
-    name: 'Steve Hwang',
-    role: 'Director',
-    level: 'director',
-    status: 'active',
-    instagram: 'suahairstudio',
-    startDate: '2013-01-01',
+    name: "Steve Hwang",
+    role: "Director",
+    level: "director",
+    status: "active",
+    instagram: "suahairstudio",
+    startDate: "2013-01-01",
     isTrainer: true,
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Yuto Hirakawa',
-    role: 'Senior Stylist',
-    level: 'senior',
-    status: 'active',
-    instagram: 'suahair_yuto',
-    startDate: '2025-01-01',
+    name: "Yuto Hirakawa",
+    role: "Senior Stylist",
+    level: "senior",
+    status: "active",
+    instagram: "suahair_yuto",
+    startDate: "2025-01-01",
     isTrainer: false,
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Elly Lee',
-    role: 'Senior Stylist',
-    level: 'senior',
-    status: 'active',
-    instagram: 'suahair_elly',
-    startDate: '2025-01-01',
+    name: "Elly Lee",
+    role: "Senior Stylist",
+    level: "senior",
+    status: "active",
+    instagram: "suahair_elly",
+    startDate: "2025-01-01",
     isTrainer: false,
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Ethan Le',
-    role: 'Junior Stylist',
-    level: 'junior',
-    status: 'active',
-    instagram: 'suahair_ethanl',
-    startDate: '2024-01-01',
+    name: "Ethan Le",
+    role: "Junior Stylist",
+    level: "junior",
+    status: "active",
+    instagram: "suahair_ethanl",
+    startDate: "2024-01-01",
     isTrainer: false,
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Harry Yang',
-    role: 'Junior Stylist',
-    level: 'junior',
-    status: 'active',
-    instagram: 'suahair_harry',
-    startDate: '2025-01-01',
+    name: "Harry Yang",
+    role: "Junior Stylist",
+    level: "junior",
+    status: "active",
+    instagram: "suahair_harry",
+    startDate: "2025-01-01",
     isTrainer: false,
     createdAt: new Date().toISOString(),
   },
@@ -95,16 +95,16 @@ const SERVICES = [
   // ── No rest period ──────────────────────────────────────────────────────────
   {
     name: "Men's Cut",
-    category: 'cut',
+    category: "cut",
     activeTime: 45,
     restTime: 0,
     totalTime: 45,
     price: { director: 75, senior: 65, junior: 65 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 75, senior: 65, junior: 65 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
@@ -112,84 +112,84 @@ const SERVICES = [
   },
   {
     name: "Ladies Cut",
-    category: 'cut',
+    category: "cut",
     activeTime: 60,
     restTime: 0,
     totalTime: 60,
     price: { director: 95, senior: 85, junior: 85 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 95, senior: 85, junior: 85 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Skin/Zero Fade',
-    category: 'cut',
+    name: "Skin/Zero Fade",
+    category: "cut",
     activeTime: 45,
     restTime: 0,
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 80, senior: 70, junior: 70 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Blow Wave',
-    category: 'styling',
+    name: "Blow Wave",
+    category: "styling",
     activeTime: 45,
     restTime: 0,
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 80, senior: 70, junior: 70 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Beard Trim',
-    category: 'grooming',
+    name: "Beard Trim",
+    category: "grooming",
     activeTime: 20,
     restTime: 0,
     totalTime: 20,
     price: { director: 30, senior: 30, junior: 30 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 30, senior: 30, junior: 30 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Fringe Trim',
-    category: 'grooming',
+    name: "Fringe Trim",
+    category: "grooming",
     activeTime: 15,
     restTime: 0,
     totalTime: 15,
     price: { director: 30, senior: 30, junior: 30 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 30, senior: 30, junior: 30 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
@@ -198,68 +198,68 @@ const SERVICES = [
 
   // ── Has rest/setting period ─────────────────────────────────────────────────
   {
-    name: 'Colour (Regrowth)',
-    category: 'colour',
+    name: "Colour (Regrowth)",
+    category: "colour",
     activeTime: 30,
     restTime: 30,
     totalTime: 60,
     price: { director: 150, senior: 130, junior: 130 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 150, senior: 130, junior: 130 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Balayage / Highlights',
-    category: 'colour',
+    name: "Balayage / Highlights",
+    category: "colour",
     activeTime: 60,
     restTime: 45,
     totalTime: 105,
     price: { director: 450, senior: 400, junior: 400 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 450, senior: 400, junior: 400 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Digital Perm',
-    category: 'perm',
+    name: "Digital Perm",
+    category: "perm",
     activeTime: 60,
     restTime: 60,
     totalTime: 120,
     price: { director: 380, senior: 350, junior: 350 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 380, senior: 350, junior: 350 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
     createdAt: new Date().toISOString(),
   },
   {
-    name: 'Olaplex Treatment',
-    category: 'treatment',
+    name: "Olaplex Treatment",
+    category: "treatment",
     activeTime: 20,
     restTime: 20,
     totalTime: 40,
     price: { director: 50, senior: 50, junior: 50 },
-    status: 'active',
+    status: "active",
     priceHistory: [
       {
         price: { director: 50, senior: 50, junior: 50 },
-        effectiveFrom: '2024-01-01',
+        effectiveFrom: "2024-01-01",
         recordedAt: new Date().toISOString(),
       },
     ],
@@ -269,38 +269,40 @@ const SERVICES = [
 
 // ── Seed function ─────────────────────────────────────────────────────────────
 const seed = async () => {
-  console.log('🌱 Starting Firestore seed...\n');
+  console.log("🌱 Starting Firestore seed...\n");
 
   // ── Guard — prevent duplicate seeding ───────────────────────────────────────
-  const existingStylists = await getDocs(collection(db, 'stylists'));
-  const existingServices = await getDocs(collection(db, 'services'));
+  const existingStylists = await getDocs(collection(db, "stylists"));
+  const existingServices = await getDocs(collection(db, "services"));
 
   if (!existingStylists.empty || !existingServices.empty) {
-    console.error('⛔ Firestore already contains stylists or services data.');
-    console.error('   Delete the collections in Firebase console first.');
+    console.error("⛔ Firestore already contains stylists or services data.");
+    console.error("   Delete the collections in Firebase console first.");
     process.exit(1);
   }
 
   // ── Seed stylists ───────────────────────────────────────────────────────────
-  console.log('👤 Seeding stylists...');
+  console.log("👤 Seeding stylists...");
   for (const stylist of STYLISTS) {
-    const ref = await addDoc(collection(db, 'stylists'), stylist);
+    const ref = await addDoc(collection(db, "stylists"), stylist);
     console.log(`   ✅ ${stylist.name} (${stylist.role}) — ${ref.id}`);
   }
 
   // ── Seed services ───────────────────────────────────────────────────────────
-  console.log('\n✂️  Seeding services...');
+  console.log("\n✂️  Seeding services...");
   for (const service of SERVICES) {
-    const ref = await addDoc(collection(db, 'services'), service);
-    console.log(`   ✅ ${service.name} — Director $${service.price.director} / Senior $${service.price.senior} — ${service.totalTime}min — ${ref.id}`);
+    const ref = await addDoc(collection(db, "services"), service);
+    console.log(
+      `   ✅ ${service.name} — Director $${service.price.director} / Senior $${service.price.senior} — ${service.totalTime}min — ${ref.id}`,
+    );
   }
 
-  console.log('\n🎉 Seed complete!');
+  console.log("\n🎉 Seed complete!");
   process.exit(0);
 };
 
 // ── Run ───────────────────────────────────────────────────────────────────────
-seed().catch(err => {
-  console.error('❌ Seed failed:', err);
+seed().catch((err) => {
+  console.error("❌ Seed failed:", err);
   process.exit(1);
 });

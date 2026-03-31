@@ -13,8 +13,8 @@ export interface Stylist {
   id: string;
   name: string;
   role: string;
-  level: 'director' | 'senior' | 'junior';
-  status: 'active' | 'inactive';
+  level: "director" | "senior" | "junior";
+  status: "active" | "inactive";
   instagram?: string;
   startDate: string;
   isTrainer: boolean;
@@ -36,7 +36,7 @@ export interface Booking {
   customerPhone: string;
   stylistId: string;
   stylistName: string;
-  stylistLevel: 'director' | 'senior' | 'junior';
+  stylistLevel: "director" | "senior" | "junior";
   serviceId: string;
   serviceName: string;
   servicePrice: number;
@@ -46,11 +46,11 @@ export interface Booking {
   date: string;
   time: string;
   notes?: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  bookingType: 'customer' | 'walkin' | 'break' | 'training'; // add this field to differentiate between booking types
-  blockReason?: string;   // for breaks
-  traineeId?: string;     // for training
-  traineeName?: string;   // for training
+  status: "pending" | "confirmed" | "cancelled";
+  bookingType: "customer" | "walkin" | "break" | "training"; // add this field to differentiate between booking types
+  blockReason?: string; // for breaks
+  traineeId?: string; // for training
+  traineeName?: string; // for training
   trainingTopic?: string; // for training
   createdAt: string;
 }

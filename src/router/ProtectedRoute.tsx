@@ -2,8 +2,8 @@
 // Wraps admin routes — redirects unauthenticated users to /admin/login
 // Shows nothing while auth state is loading to prevent flash of content
 
-import { Navigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import { Navigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 interface Props {
   children: React.ReactNode;
