@@ -4,6 +4,10 @@
 // Wrapped with BookingProvider and SalonDataProvider for shared state
 
 import { useState } from "react";
+import Timeline from "../components/admin/timeline/Timeline";
+import BookingDetailModal from "../components/admin/modals/BookingDetailModal";
+import CreateBookingModal from "../components/admin/modals/CreateBookingModal";
+import type { Booking } from "../types";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
@@ -36,6 +40,7 @@ const TABS = [
 ];
 
 // ── Inner component — consumes context ────────────────────────────────────────
+
 const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,12 +48,49 @@ const DashboardInner = () => {
   const { toasts, addToast, dismissToast } = useToast();
   const [activeTab, setActiveTab] = useState("bookings");
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [createModal, setCreateModal] = useState<{
+    stylistId: string;
+    time: string;
+  } | null>(null);
+  const handleBlockClick = (booking: Booking) => {
+    setSelectedBooking(booking);
+  };
+
+  const handleEmptySlotClick = (stylistId: string, time: string) => {
+    setCreateModal({ stylistId, time });
+  };
 
   const handleSignOut = async () => {
     await signOut(auth);
     navigate("/admin/login", { replace: true });
   };
+  // Helper to format date for display
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString("en-AU", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+  // Navigate to previous day
+  const prevDay = () => {
+    const date = new Date(selectedDate + "T00:00:00");
+    date.setDate(date.getDate() - 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
 
+  // Navigate to next day
+  const nextDay = () => {
+    const date = new Date(selectedDate + "T00:00:00");
+    date.setDate(date.getDate() + 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
   // Optimistic status update with toast feedback
   const handleUpdateStatus = async (
     id: string,
@@ -139,24 +181,115 @@ const DashboardInner = () => {
         style={{ maxWidth: "1100px", margin: "0 auto", padding: "2rem 1.5rem" }}
       >
         {/* ── Today Tab ── */}
+        {/* ── Today Tab ── */}
         {activeTab === "today" && (
           <div
-            style={{ textAlign: "center", padding: "3rem", color: "#6b6b6b" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
           >
-            <p style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📅</p>
-            <h2
+            {/* Day navigation */}
+            <div
               style={{
-                fontSize: "1.25rem",
-                color: "#1a1a1a",
-                marginBottom: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "0.75rem",
               }}
             >
-              Timeline coming in Phase 2
-            </h2>
-            <p style={{ fontSize: "0.9rem" }}>
-              Visual timeline grid showing all stylists and bookings across the
-              day.
-            </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <button
+                  onClick={prevDay}
+                  style={{
+                    padding: "0.4rem 0.75rem",
+                    background: "#1a1a1a",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  ← Prev
+                </button>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "1rem",
+                    fontWeight: 500,
+                    color: "#1a1a1a",
+                  }}
+                >
+                  {formatDate(selectedDate)}
+                </h2>
+                <button
+                  onClick={nextDay}
+                  style={{
+                    padding: "0.4rem 0.75rem",
+                    background: "#1a1a1a",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Next →
+                </button>
+                <button
+                  onClick={() =>
+                    setSelectedDate(new Date().toISOString().split("T")[0])
+                  }
+                  style={{
+                    padding: "0.4rem 0.75rem",
+                    background: "#c9a96e",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Today
+                </button>
+              </div>
+
+              {/* New booking button */}
+              <button
+                onClick={() => setCreateModal({ stylistId: "", time: "" })}
+                style={{
+                  padding: "0.5rem 1.25rem",
+                  background: "#c9a96e",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                }}
+              >
+                + New Booking
+              </button>
+            </div>
+
+            {/* Stats for selected day */}
+            {loading ? (
+              <StatsSkeleton />
+            ) : (
+              <DashboardStats bookings={bookings} selectedDate={selectedDate} />
+            )}
+
+            {/* Timeline grid */}
+            <Timeline
+              selectedDate={selectedDate}
+              onBlockClick={handleBlockClick}
+              onEmptySlotClick={handleEmptySlotClick}
+            />
           </div>
         )}
 
@@ -310,7 +443,29 @@ const DashboardInner = () => {
           </div>
         )}
       </main>
+      {/* Booking detail modal */}
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          onUpdateStatus={async (id, status) => {
+            await handleUpdateStatus(id, status);
+            setSelectedBooking(null);
+          }}
+        />
+      )}
 
+      {/* Create booking modal */}
+      {createModal !== null && (
+        <CreateBookingModal
+          prefillStylistId={createModal.stylistId}
+          prefillTime={createModal.time}
+          prefillDate={selectedDate}
+          onClose={() => setCreateModal(null)}
+          onSuccess={(msg) => addToast(msg, "success")}
+          onError={(msg) => addToast(msg, "error")}
+        />
+      )}
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
