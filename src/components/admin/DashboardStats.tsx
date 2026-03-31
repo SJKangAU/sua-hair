@@ -6,7 +6,9 @@ import type { Booking } from '../../types';
 
 interface Props {
   bookings: Booking[];
+    selectedDate?: string; // optional — defaults to today
 }
+
 
 interface StatCardProps {
   label: string;
