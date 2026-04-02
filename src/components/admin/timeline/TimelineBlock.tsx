@@ -51,7 +51,10 @@ const TimelineBlock = ({
   if (isBreak) {
     return (
       <div
-        onClick={() => onClick(booking)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick(booking);
+        }}
         style={{
           ...baseStyle,
           background: `repeating-linear-gradient(
@@ -80,7 +83,10 @@ const TimelineBlock = ({
 
   return (
     <div
-      onClick={() => onClick(booking)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(booking);
+      }}
       style={{
         ...baseStyle,
         border: isPending ? "2px solid #c9a96e" : "none",
