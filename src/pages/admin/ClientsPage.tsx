@@ -1,19 +1,128 @@
 // ClientsPage.tsx
-// Clients tab — placeholder until Phase 4
-// Will contain client search, profile cards, and visit history
+// Clients tab — search clients by name or phone
+// Displays ClientProfile cards with visit history and total spend
+// "Book again" button opens the CreateBookingModal pre-filled
 
-const ClientsPage = () => {
+import { useState, useCallback } from "react";
+import ClientSearch from "../../components/admin/clients/ClientSearch";
+import ClientCard from "../../components/admin/clients/ClientCard";
+import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
+import type { ClientProfile } from "../../components/admin/clients/ClientSearch";
+
+interface Props {
+  addToast: (message: string, type: "success" | "error" | "warning") => void;
+}
+
+const ClientsPage = ({ addToast }: Props) => {
+  const [clients, setClients] = useState<ClientProfile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [bookAgainClient, setBookAgainClient] = useState<{
+    phone: string;
+    name: string;
+  } | null>(null);
+
+  const handleResults = useCallback((results: ClientProfile[]) => {
+    setClients(results);
+    setHasSearched(true);
+  }, []);
+
+  const handleLoading = useCallback((isLoading: boolean) => {
+    setLoading(isLoading);
+  }, []);
+
   return (
-    <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#6b6b6b' }}>
-      <p style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👥</p>
-      <h2 style={{ fontSize: '1.25rem', color: '#1a1a1a', marginBottom: '0.5rem' }}>
-        Client History
-      </h2>
-      <p style={{ fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto' }}>
-        Search clients by name or mobile number, view full visit history,
-        total spend, favourite stylist, and loyalty metrics.
-        Coming in Phase 4.
-      </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
+      <div>
+        <h2
+          style={{ fontSize: "1.1rem", fontWeight: 500, margin: "0 0 0.25rem" }}
+        >
+          Client History
+        </h2>
+        <p style={{ fontSize: "0.85rem", color: "#6b6b6b", margin: 0 }}>
+          Search by name or mobile number to view visit history and spending.
+        </p>
+      </div>
+
+      {/* Search */}
+      <ClientSearch onResults={handleResults} onLoading={handleLoading} />
+
+      {/* Loading state */}
+      {loading && (
+        <p
+          style={{ textAlign: "center", color: "#6b6b6b", fontSize: "0.9rem" }}
+        >
+          Searching...
+        </p>
+      )}
+
+      {/* Empty state — before any search */}
+      {!loading && !hasSearched && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "3rem",
+            background: "white",
+            borderRadius: "12px",
+            color: "#6b6b6b",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          }}
+        >
+          <p style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>👥</p>
+          <p style={{ fontSize: "0.9rem" }}>
+            Type at least 2 characters to search clients
+          </p>
+        </div>
+      )}
+
+      {/* No results */}
+      {!loading && hasSearched && clients.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "3rem",
+            background: "white",
+            borderRadius: "12px",
+            color: "#6b6b6b",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          }}
+        >
+          <p style={{ fontSize: "1rem", fontWeight: 500 }}>No clients found</p>
+          <p style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
+            Try a different name or mobile number
+          </p>
+        </div>
+      )}
+
+      {/* Results count */}
+      {!loading && clients.length > 0 && (
+        <p style={{ fontSize: "0.82rem", color: "#6b6b6b", margin: 0 }}>
+          {clients.length} client{clients.length > 1 ? "s" : ""} found
+        </p>
+      )}
+
+      {/* Client cards */}
+      {!loading &&
+        clients.map((client) => (
+          <ClientCard
+            key={client.phone || client.name}
+            client={client}
+            onBookAgain={(phone, name) => setBookAgainClient({ phone, name })}
+          />
+        ))}
+
+      {/* Book again modal */}
+      {bookAgainClient && (
+        <CreateBookingModal
+          prefillStylistId=""
+          prefillTime=""
+          prefillDate={new Date().toISOString().split("T")[0]}
+          onClose={() => setBookAgainClient(null)}
+          onSuccess={(msg) => addToast(msg, "success")}
+          onError={(msg) => addToast(msg, "error")}
+        />
+      )}
     </div>
   );
 };
