@@ -74,6 +74,7 @@ const TimelineColumn = ({
       }}
     >
       {/* Booking blocks */}
+      // In TimelineColumn.tsx // Find this section in the return:
       {stylistBookings.map((booking) => {
         const startMinutes = timeStringToMinutes(booking.time);
         const topPercent = toPercent(startMinutes);
@@ -88,7 +89,6 @@ const TimelineColumn = ({
             heightPercent={heightPercent}
             restHeightPercent={restHeightPercent}
             onClick={(b) => {
-              // Prevent column click from firing
               onBlockClick(b);
             }}
           />
