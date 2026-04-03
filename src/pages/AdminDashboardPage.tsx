@@ -16,7 +16,7 @@ import Tabs from "../components/ui/Tabs";
 import TodayPage from "./admin/TodayPage";
 import BookingsPage from "./admin/BookingsPage";
 import ClientsPage from "./admin/ClientsPage";
-import TrainingPage from "./admin/TrainingPages";
+import TrainingPage from "./admin/TrainingPage";
 import AnalyticsPage from "./admin/AnalyticsPage";
 import ManagePage from "./admin/ManagePage";
 
@@ -136,8 +136,8 @@ const DashboardInner = () => {
         {activeTab === "bookings" && (
           <BookingsPage onUpdateStatus={handleUpdateStatus} />
         )}
-        {activeTab === "clients" && <ClientsPage addToast={addToast} />}{" "}
-        {activeTab === "training" && <TrainingPage />}
+        {activeTab === "clients" && <ClientsPage addToast={addToast} />}
+        {activeTab === "training" && <TrainingPage addToast={addToast} />}
         {activeTab === "analytics" && <AnalyticsPage />}
         {activeTab === "manage" && <ManagePage />}
       </main>
