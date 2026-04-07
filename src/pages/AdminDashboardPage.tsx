@@ -139,7 +139,7 @@ const DashboardInner = () => {
         {activeTab === "clients" && <ClientsPage addToast={addToast} />}
         {activeTab === "training" && <TrainingPage addToast={addToast} />}
         {activeTab === "analytics" && <AnalyticsPage />}
-        {activeTab === "manage" && <ManagePage />}
+        {activeTab === "manage" && <ManagePage addToast={addToast} />}
       </main>
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
