@@ -1,19 +1,31 @@
 // AnalyticsPage.tsx
-// Analytics tab — placeholder until Phase 6
-// Will contain revenue, occupancy, and retention charts
+// Analytics tab — revenue overview and stylist breakdown
+// All data derived from live Firestore bookings via BookingContext
+// No extra fetches needed — stats and charts compute from existing subscription
+
+import AnalyticsStats from "../../components/admin/analytics/AnalyticsStats";
+import RevenueChart from "../../components/admin/analytics/RevenueChart";
 
 const AnalyticsPage = () => {
   return (
-    <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#6b6b6b' }}>
-      <p style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📊</p>
-      <h2 style={{ fontSize: '1.25rem', color: '#1a1a1a', marginBottom: '0.5rem' }}>
-        Analytics
-      </h2>
-      <p style={{ fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto' }}>
-        Revenue over time, per-stylist occupancy rates, most popular services,
-        busiest times of day, and client retention metrics.
-        Coming in Phase 6.
-      </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
+      <div>
+        <h2
+          style={{ fontSize: "1.1rem", fontWeight: 500, margin: "0 0 0.25rem" }}
+        >
+          Analytics
+        </h2>
+        <p style={{ fontSize: "0.85rem", color: "#6b6b6b", margin: 0 }}>
+          Revenue and performance metrics across all confirmed bookings.
+        </p>
+      </div>
+
+      {/* Summary stat cards */}
+      <AnalyticsStats />
+
+      {/* Revenue chart and stylist breakdown */}
+      <RevenueChart />
     </div>
   );
 };
