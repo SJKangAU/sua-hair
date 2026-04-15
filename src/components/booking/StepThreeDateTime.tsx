@@ -4,12 +4,17 @@
 // Fetches real-time stylist availability and renders time slot grid
 // Greyed-out slots are shown as unavailable rather than hidden
 
-import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
-import { generateSlots, isSalonClosed, isPastSameDayCutoff, getMinBookableDate } from '../../lib/scheduling';
-import BookingSummary from './BookingSummary';
-import type { Booking } from '../../types';
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import {
+  generateSlots,
+  isSalonClosed,
+  isPastSameDayCutoff,
+  getMinBookableDate,
+} from "../../lib/scheduling";
+import BookingSummary from "./BookingSummary";
+import type { Booking } from "../../types";
 
 interface Props {
   stylistId: string;
@@ -30,32 +35,32 @@ interface Props {
 }
 
 const inputStyle = {
-  width: '100%',
-  padding: '0.65rem',
-  border: '1px solid #ddd',
-  borderRadius: '6px',
-  fontSize: '1rem',
-  marginTop: '0.25rem',
-  boxSizing: 'border-box' as const,
+  width: "100%",
+  padding: "0.65rem",
+  border: "1px solid #ddd",
+  borderRadius: "6px",
+  fontSize: "1rem",
+  marginTop: "0.25rem",
+  boxSizing: "border-box" as const,
 };
 
 const inputErrorStyle = {
   ...inputStyle,
-  border: '1px solid #e24b4a',
+  border: "1px solid #e24b4a",
 };
 
 const errorTextStyle = {
-  color: '#e24b4a',
-  fontSize: '0.8rem',
-  marginTop: '0.25rem',
-  display: 'block' as const,
+  color: "#e24b4a",
+  fontSize: "0.8rem",
+  marginTop: "0.25rem",
+  display: "block" as const,
 };
 
 const labelStyle = {
-  display: 'block' as const,
-  marginBottom: '1rem',
+  display: "block" as const,
+  marginBottom: "1rem",
   fontWeight: 500,
-  fontSize: '0.95rem',
+  fontSize: "0.95rem",
 };
 
 const StepThreeDateTime = ({
@@ -75,17 +80,19 @@ const StepThreeDateTime = ({
   onTimeSelect,
   errors,
 }: Props) => {
-  const [slots, setSlots] = useState<{ time: string; available: boolean; reason?: string }[]>([]);
+  const [slots, setSlots] = useState<
+    { time: string; available: boolean; reason?: string }[]
+  >([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Validate date selection — check for closed days and same-day cutoff
   const handleDateChange = (selected: string) => {
     if (isSalonClosed(selected)) {
-      onDateChange('CLOSED');
+      onDateChange("CLOSED");
       return;
     }
     if (isPastSameDayCutoff(selected)) {
-      onDateChange('CUTOFF');
+      onDateChange("CUTOFF");
       return;
     }
     onDateChange(selected);
@@ -93,36 +100,63 @@ const StepThreeDateTime = ({
 
   // Fetch stylist bookings and regenerate slots whenever key inputs change
   useEffect(() => {
+    // Cleanup flag — prevents stale responses from updating state
+    let cancelled = false;
+
     const fetchSlots = async () => {
-  if (!stylistId || !serviceId || !date || date === 'CLOSED' || date === 'CUTOFF') return;
+      if (
+        !stylistId ||
+        !serviceId ||
+        !date ||
+        date === "CLOSED" ||
+        date === "CUTOFF"
+      )
+        return;
 
-  setLoadingSlots(true);
-  try {
-    const q = query(
-      collection(db, 'bookings'),
-      where('stylistId', '==', stylistId),
-      where('date', '==', date)
-    );
-    const snapshot = await getDocs(q);
-    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+      setLoadingSlots(true);
+      try {
+        const q = query(
+          collection(db, "bookings"),
+          where("stylistId", "==", stylistId),
+          where("date", "==", date),
+        );
+        const snapshot = await getDocs(q);
 
-    const generated = generateSlots(date, stylistId, totalTime, activeTime, bookings);
+        // Bail out if a newer fetch has started
+        if (cancelled) return;
 
-    setSlots(generated);
-  } catch (err) {
-    console.error('Error fetching slots:', err);
-  }
-  setLoadingSlots(false);
-};
+        const bookings = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as Booking),
+        );
+        const generated = generateSlots(
+          date,
+          stylistId,
+          totalTime,
+          activeTime,
+          bookings,
+        );
+        setSlots(generated);
+      } catch (err) {
+        if (!cancelled) console.error("Error fetching slots:", err);
+      }
+      if (!cancelled) setLoadingSlots(false);
+    };
 
     fetchSlots();
+
+    // Cleanup — mark previous fetch as stale
+    return () => {
+      cancelled = true;
+    };
   }, [stylistId, serviceId, date, totalTime, activeTime]);
 
-  const validDate = date && date !== 'CLOSED' && date !== 'CUTOFF';
+  const validDate = date && date !== "CLOSED" && date !== "CUTOFF";
 
   return (
     <div>
-      <h3 style={{ marginBottom: '1.25rem', fontSize: '1.1rem' }}>Pick a Date & Time</h3>
+      <h3 style={{ marginBottom: "1.25rem", fontSize: "1.1rem" }}>
+        Pick a Date & Time
+      </h3>
 
       {/* Date picker */}
       <label style={labelStyle}>
@@ -131,19 +165,20 @@ const StepThreeDateTime = ({
           style={errors.date ? inputErrorStyle : inputStyle}
           type="date"
           min={getMinBookableDate()}
-          value={validDate ? date : ''}
-          onChange={e => handleDateChange(e.target.value)}
+          value={validDate ? date : ""}
+          onChange={(e) => handleDateChange(e.target.value)}
         />
         {/* Closed day error */}
-        {date === 'CLOSED' && (
+        {date === "CLOSED" && (
           <span style={errorTextStyle}>
             Sua Hair is closed on Mondays. Please select another day.
           </span>
         )}
         {/* Same-day cutoff error */}
-        {date === 'CUTOFF' && (
+        {date === "CUTOFF" && (
           <span style={errorTextStyle}>
-            Same-day bookings are no longer available. Please select a future date.
+            Same-day bookings are no longer available. Please select a future
+            date.
           </span>
         )}
         {errors.date && <span style={errorTextStyle}>{errors.date}</span>}
@@ -152,10 +187,17 @@ const StepThreeDateTime = ({
       {/* Time slot grid */}
       {validDate && (
         <div>
-          <p style={{ fontWeight: 500, marginBottom: '0.5rem' }}>
+          <p style={{ fontWeight: 500, marginBottom: "0.5rem" }}>
             Available Times
             {loadingSlots && (
-              <span style={{ color: '#6b6b6b', fontWeight: 400, fontSize: '0.8rem', marginLeft: '0.5rem' }}>
+              <span
+                style={{
+                  color: "#6b6b6b",
+                  fontWeight: 400,
+                  fontSize: "0.8rem",
+                  marginLeft: "0.5rem",
+                }}
+              >
                 Checking availability...
               </span>
             )}
@@ -163,14 +205,20 @@ const StepThreeDateTime = ({
 
           {/* No slots available message */}
           {!loadingSlots && slots.length === 0 && (
-            <p style={{ color: '#6b6b6b', fontSize: '0.9rem' }}>
+            <p style={{ color: "#6b6b6b", fontSize: "0.9rem" }}>
               No available slots for this date. Please try another day.
             </p>
           )}
 
           {/* Slot grid — greyed out slots are shown but not clickable */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
-            {slots.map(slot => {
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "0.4rem",
+            }}
+          >
+            {slots.map((slot) => {
               const selected = time === slot.time;
               const unavailable = !slot.available;
               return (
@@ -179,16 +227,26 @@ const StepThreeDateTime = ({
                   onClick={() => slot.available && onTimeSelect(slot.time)}
                   title={unavailable ? slot.reason : undefined}
                   style={{
-                    padding: '0.5rem',
-                    textAlign: 'center',
-                    border: `2px solid ${selected ? '#c9a96e' : unavailable ? '#f0f0f0' : '#ddd'}`,
-                    borderRadius: '6px',
-                    cursor: unavailable ? 'not-allowed' : 'pointer',
-                    background: selected ? '#fdf6ec' : unavailable ? '#f9f9f9' : 'white',
-                    fontSize: '0.85rem',
+                    padding: "0.5rem",
+                    textAlign: "center",
+                    border: `2px solid ${
+                      selected ? "#c9a96e" : unavailable ? "#f0f0f0" : "#ddd"
+                    }`,
+                    borderRadius: "6px",
+                    cursor: unavailable ? "not-allowed" : "pointer",
+                    background: selected
+                      ? "#fdf6ec"
+                      : unavailable
+                      ? "#f9f9f9"
+                      : "white",
+                    fontSize: "0.85rem",
                     fontWeight: selected ? 600 : 400,
-                    color: selected ? '#c9a96e' : unavailable ? '#ccc' : '#1a1a1a',
-                    transition: 'all 0.1s',
+                    color: selected
+                      ? "#c9a96e"
+                      : unavailable
+                      ? "#ccc"
+                      : "#1a1a1a",
+                    transition: "all 0.1s",
                   }}
                 >
                   {slot.time}
@@ -198,10 +256,18 @@ const StepThreeDateTime = ({
           </div>
 
           {/* Legend */}
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', fontSize: '0.75rem', color: '#6b6b6b' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              marginTop: "0.75rem",
+              fontSize: "0.75rem",
+              color: "#6b6b6b",
+            }}
+          >
             <span>🟡 Selected</span>
             <span>⬜ Available</span>
-            <span style={{ color: '#ccc' }}>⬜ Unavailable</span>
+            <span style={{ color: "#ccc" }}>⬜ Unavailable</span>
           </div>
         </div>
       )}
