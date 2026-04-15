@@ -8,14 +8,13 @@ import ClientSearch from "../../components/admin/clients/ClientSearch";
 import ClientCard from "../../components/admin/clients/ClientCard";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
 import type { ClientProfile } from "../../components/admin/clients/ClientSearch";
+import { useToastContext } from "../../context/ToastContext";
+import { useBookingContext } from "../../context/BookingContext";
 
-interface Props {
-  addToast: (message: string, type: "success" | "error" | "warning") => void;
-}
-
-const ClientsPage = ({ addToast }: Props) => {
+const ClientsPage = () => {
+  const { addToast } = useToastContext();
+  const { loading: bookingsLoading } = useBookingContext();
   const [clients, setClients] = useState<ClientProfile[]>([]);
-  const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [bookAgainClient, setBookAgainClient] = useState<{
     phone: string;
@@ -25,10 +24,6 @@ const ClientsPage = ({ addToast }: Props) => {
   const handleResults = useCallback((results: ClientProfile[]) => {
     setClients(results);
     setHasSearched(true);
-  }, []);
-
-  const handleLoading = useCallback((isLoading: boolean) => {
-    setLoading(isLoading);
   }, []);
 
   return (
@@ -46,19 +41,19 @@ const ClientsPage = ({ addToast }: Props) => {
       </div>
 
       {/* Search */}
-      <ClientSearch onResults={handleResults} onLoading={handleLoading} />
+      <ClientSearch onResults={handleResults} />
 
-      {/* Loading state */}
-      {loading && (
+      {/* Loading state — while bookings subscription is initialising */}
+      {bookingsLoading && (
         <p
           style={{ textAlign: "center", color: "#6b6b6b", fontSize: "0.9rem" }}
         >
-          Searching...
+          Loading...
         </p>
       )}
 
       {/* Empty state — before any search */}
-      {!loading && !hasSearched && (
+      {!bookingsLoading && !hasSearched && (
         <div
           style={{
             textAlign: "center",
@@ -77,7 +72,7 @@ const ClientsPage = ({ addToast }: Props) => {
       )}
 
       {/* No results */}
-      {!loading && hasSearched && clients.length === 0 && (
+      {!bookingsLoading && hasSearched && clients.length === 0 && (
         <div
           style={{
             textAlign: "center",
@@ -96,14 +91,14 @@ const ClientsPage = ({ addToast }: Props) => {
       )}
 
       {/* Results count */}
-      {!loading && clients.length > 0 && (
+      {!bookingsLoading && clients.length > 0 && (
         <p style={{ fontSize: "0.82rem", color: "#6b6b6b", margin: 0 }}>
           {clients.length} client{clients.length > 1 ? "s" : ""} found
         </p>
       )}
 
       {/* Client cards */}
-      {!loading &&
+      {!bookingsLoading &&
         clients.map((client) => (
           <ClientCard
             key={client.phone || client.name}
@@ -115,6 +110,8 @@ const ClientsPage = ({ addToast }: Props) => {
       {/* Book again modal */}
       {bookAgainClient && (
         <CreateBookingModal
+          prefillCustomerName={bookAgainClient.name}
+          prefillCustomerPhone={bookAgainClient.phone}
           prefillStylistId=""
           prefillTime=""
           prefillDate={new Date().toISOString().split("T")[0]}

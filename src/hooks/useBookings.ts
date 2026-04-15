@@ -4,7 +4,7 @@
 // Optimistic updates — UI updates immediately, Firestore write in background
 // On failure, rolls back to previous state
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   collection, onSnapshot, orderBy, query,
   doc, updateDoc
@@ -26,6 +26,10 @@ const useBookings = (): UseBookings => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Ref keeps the latest bookings accessible in updateStatus without
+  // adding bookings to its dependency array (which would recreate the
+  // callback on every Firestore snapshot and cascade re-renders)
+  const bookingsRef = useRef<Booking[]>([]);
 
   // Subscribe to real-time booking updates via onSnapshot
   // Unsubscribes automatically on component unmount
@@ -43,6 +47,7 @@ const useBookings = (): UseBookings => {
           ...doc.data(),
         })) as Booking[];
 
+        bookingsRef.current = data;
         setBookings(data);
         setLoading(false);
       },
@@ -63,8 +68,8 @@ const useBookings = (): UseBookings => {
     id: string,
     status: 'pending' | 'confirmed' | 'cancelled'
   ) => {
-    // Save previous state for rollback
-    const previous = bookings.find(b => b.id === id);
+    // Save previous state for rollback (read from ref — always current)
+    const previous = bookingsRef.current.find(b => b.id === id);
     if (!previous) return;
 
     // Optimistic update — update UI immediately
@@ -85,7 +90,7 @@ const useBookings = (): UseBookings => {
 
       throw err; // Re-throw so caller can show error toast
     }
-  }, [bookings]);
+  }, []);
 
   return { bookings, loading, error, updateStatus };
 };
