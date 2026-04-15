@@ -13,7 +13,7 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
-import { useSalonData } from "../../../context/SalonDataContext";
+import useServices from "../../../hooks/useServices";
 import type { FirestoreService } from "../../../hooks/useServices";
 
 interface Props {
@@ -59,7 +59,11 @@ const SERVICE_CATEGORIES = [
 ];
 
 const ServiceRoster = ({ onSuccess, onError }: Props) => {
-  const { services, servicesLoading, refetchServices } = useSalonData();
+  const {
+    services,
+    loading: servicesLoading,
+    refetch: refetchServices,
+  } = useServices(false); // false = include inactive
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
