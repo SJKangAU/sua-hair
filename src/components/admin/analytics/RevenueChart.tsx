@@ -1,114 +1,203 @@
-// AnalyticsStats.tsx
-// Summary stat cards for the analytics tab
-// Computes revenue, busiest day, top service, and top stylist
-// All derived from the live bookings array — no extra Firestore calls needed
+// RevenueChart.tsx
+// Monthly revenue bar chart and per-stylist revenue breakdown
+// All computation delegated to useAnalytics hook
 
-import { useMemo } from 'react';
-import { useBookingContext } from '../../../context/BookingContext';
+import useAnalytics from "../../../hooks/useAnalytics";
 
-const AnalyticsStats = () => {
-  const { bookings } = useBookingContext();
+const BAR_COLOR = "#c9a96e";
+const STYLIST_COLORS = ["#c9a96e", "#1d9e75", "#3b82f6", "#8b5cf6", "#ef9f27"];
 
-  const stats = useMemo(() => {
-    // Only count confirmed bookings for revenue
-    const confirmed = bookings.filter(b =>
-      b.status === 'confirmed' && b.bookingType !== 'break' && b.bookingType !== 'training'
-    );
+const EMPTY_MSG = (
+  <p
+    style={{
+      color: "#6b6b6b",
+      fontSize: "0.875rem",
+      textAlign: "center",
+      padding: "2rem 0",
+    }}
+  >
+    No confirmed revenue data yet.
+  </p>
+);
 
-    // Total revenue
-    const totalRevenue = confirmed.reduce((sum, b) => sum + (b.servicePrice ?? 0), 0);
+const RevenueChart = () => {
+  const { monthlyRevenue, stylistRevenue } = useAnalytics();
 
-    // Revenue this month
-    const thisMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-    const monthRevenue = confirmed
-      .filter(b => b.date.startsWith(thisMonth))
-      .reduce((sum, b) => sum + (b.servicePrice ?? 0), 0);
-
-    // Busiest day of week
-    const dayCounts: Record<string, number> = {};
-    confirmed.forEach(b => {
-      const day = new Date(b.date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long' });
-      dayCounts[day] = (dayCounts[day] || 0) + 1;
-    });
-    const busiestDay = Object.entries(dayCounts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'N/A';
-
-    // Top service by booking count
-    const serviceCounts: Record<string, number> = {};
-    confirmed.forEach(b => {
-      serviceCounts[b.serviceName] = (serviceCounts[b.serviceName] || 0) + 1;
-    });
-    const topService = Object.entries(serviceCounts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'N/A';
-
-    // Top stylist by revenue
-    const stylistRevenue: Record<string, number> = {};
-    confirmed.forEach(b => {
-      stylistRevenue[b.stylistName] = (stylistRevenue[b.stylistName] || 0) + (b.servicePrice ?? 0);
-    });
-    const topStylist = Object.entries(stylistRevenue)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'N/A';
-
-    // Average spend per visit
-    const avgSpend = confirmed.length > 0
-      ? Math.round(totalRevenue / confirmed.length)
-      : 0;
-
-    return {
-      totalRevenue,
-      monthRevenue,
-      busiestDay,
-      topService,
-      topStylist: topStylist.split(' ')[0],
-      avgSpend,
-      totalBookings: confirmed.length,
-    };
-  }, [bookings]);
-
-  const cards = [
-    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, color: '#c9a96e', icon: '💰' },
-    { label: 'This Month', value: `$${stats.monthRevenue.toLocaleString()}`, color: '#1d9e75', icon: '📅' },
-    { label: 'Avg Spend', value: `$${stats.avgSpend}`, color: '#3b82f6', icon: '🎯' },
-    { label: 'Total Bookings', value: stats.totalBookings.toString(), color: '#8b5cf6', icon: '📋' },
-    { label: 'Top Service', value: stats.topService, color: '#ef9f27', icon: '✂️', small: true },
-    { label: 'Top Stylist', value: stats.topStylist, color: '#e24b4a', icon: '⭐', small: true },
-    { label: 'Busiest Day', value: stats.busiestDay, color: '#6b7280', icon: '📆', small: true },
-  ];
+  const maxMonthly = Math.max(...monthlyRevenue.map((m) => m.revenue), 1);
+  const maxStylist = Math.max(...stylistRevenue.map((s) => s.revenue), 1);
+  const hasMonthlyData = monthlyRevenue.some((m) => m.revenue > 0);
+  const hasStylistData = stylistRevenue.length > 0;
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-      gap: '1rem',
-    }}>
-      {cards.map(card => (
-        <div
-          key={card.label}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Monthly revenue bar chart */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "1.5rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h3
           style={{
-            background: 'white',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            borderTop: `4px solid ${card.color}`,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            margin: "0 0 1.25rem",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            color: "#1a1a1a",
           }}
         >
-          <p style={{ fontSize: '1.25rem', margin: '0 0 0.25rem' }}>{card.icon}</p>
-          <p style={{
-            fontSize: card.small ? '0.95rem' : '1.6rem',
-            fontWeight: 700,
-            color: card.color,
-            margin: 0,
-            lineHeight: 1.2,
-          }}>
-            {card.value}
-          </p>
-          <p style={{ fontSize: '0.75rem', color: '#6b6b6b', margin: '0.25rem 0 0' }}>
-            {card.label}
-          </p>
-        </div>
-      ))}
+          Monthly Revenue (Last 6 Months)
+        </h3>
+
+        {!hasMonthlyData ? (
+          EMPTY_MSG
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              gap: "0.75rem",
+              height: "180px",
+            }}
+          >
+            {monthlyRevenue.map(({ key, month, revenue }) => {
+              const heightPct = (revenue / maxMonthly) * 100;
+              return (
+                <div
+                  key={key}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    height: "100%",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.68rem",
+                      color: "#6b6b6b",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {revenue > 0
+                      ? `$${
+                          revenue >= 1000
+                            ? `${(revenue / 1000).toFixed(1)}k`
+                            : revenue
+                        }`
+                      : ""}
+                  </span>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: `${Math.max(heightPct, revenue > 0 ? 4 : 0)}%`,
+                      background: BAR_COLOR,
+                      borderRadius: "4px 4px 0 0",
+                      minHeight: revenue > 0 ? "4px" : "0",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "#6b6b6b",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {month}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Stylist revenue breakdown */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "1.5rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h3
+          style={{
+            margin: "0 0 1.25rem",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            color: "#1a1a1a",
+          }}
+        >
+          Revenue by Stylist
+        </h3>
+
+        {!hasStylistData ? (
+          EMPTY_MSG
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+          >
+            {stylistRevenue.map(({ name, fullName, revenue }, i) => (
+              <div
+                key={fullName}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <span
+                  style={{
+                    width: "60px",
+                    fontSize: "0.82rem",
+                    fontWeight: 500,
+                    color: "#1a1a1a",
+                    flexShrink: 0,
+                  }}
+                >
+                  {name}
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#f5f5f5",
+                    borderRadius: "4px",
+                    height: "20px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${(revenue / maxStylist) * 100}%`,
+                      height: "100%",
+                      background: STYLIST_COLORS[i % STYLIST_COLORS.length],
+                      borderRadius: "4px",
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    width: "60px",
+                    fontSize: "0.82rem",
+                    color: "#6b6b6b",
+                    textAlign: "right",
+                    flexShrink: 0,
+                  }}
+                >
+                  ${revenue.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default AnalyticsStats;
+export default RevenueChart;

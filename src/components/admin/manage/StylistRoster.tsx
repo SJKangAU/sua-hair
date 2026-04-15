@@ -48,7 +48,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
     loading: stylistsLoading,
     refetch: refetchStylists,
   } = useStylists(false); // false = include inactive
-  const [showForm, setShowForm] = useState(false);s
+  const [showForm, setShowForm] = useState(false); // fixed: removed stray 's'
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -235,7 +235,10 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                 style={inputStyle}
                 value={form.level}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, level: e.target.value as any }))
+                  setForm((prev) => ({
+                    ...prev,
+                    level: e.target.value as "director" | "senior" | "junior",
+                  }))
                 }
               >
                 <option value="director">Director</option>

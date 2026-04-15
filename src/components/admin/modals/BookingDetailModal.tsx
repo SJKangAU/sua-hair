@@ -6,7 +6,6 @@
 import Modal from "../../ui/Modal";
 import Badge from "../../ui/Badge";
 import type { Booking } from "../../../types";
-import type { BadgeVariant } from "../../ui/Badge";
 
 interface Props {
   booking: Booking;
@@ -55,8 +54,9 @@ const BookingDetailModal = ({ booking, onClose, onUpdateStatus }: Props) => {
         }}
       >
         <Badge variant={booking.status} />
-        {booking.bookingType !== "customer" && (
-          <Badge variant={booking.bookingType as BadgeVariant} />
+        {/* Only show bookingType badge if it's not the default 'customer' type */}
+        {booking.bookingType && booking.bookingType !== "customer" && (
+          <Badge variant={booking.bookingType} />
         )}
       </div>
 

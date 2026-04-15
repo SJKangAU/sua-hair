@@ -2,11 +2,17 @@
 // Displays today's and this week's booking metrics at the top of the admin dashboard
 // Stats: total, confirmed, pending, cancelled — for both today and the current week
 
+import {
+  todayString,
+  formatDisplayDate,
+  getWeekRange,
+  parseLocalDate,
+} from "../../lib/dates";
 import type { Booking } from "../../types";
 
 interface Props {
   bookings: Booking[];
-  selectedDate?: string; // optional — defaults to today
+  selectedDate?: string;
 }
 
 interface StatCardProps {
@@ -36,48 +42,43 @@ const StatCard = ({ label, value, color }: StatCardProps) => (
   </div>
 );
 
-// Get start and end of current week (Monday to Sunday)
-const getWeekRange = (): { start: string; end: string } => {
-  const now = new Date();
-  const day = now.getDay();
-
-  // Adjust so week starts on Monday (0 = Sunday in JS)
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-
-  return {
-    start: monday.toISOString().split("T")[0],
-    end: sunday.toISOString().split("T")[0],
-  };
-};
-
 const DashboardStats = ({ bookings, selectedDate }: Props) => {
-  const today = selectedDate ?? new Date().toISOString().split("T")[0];
+  const today = selectedDate ?? todayString();
   const { start, end } = getWeekRange();
 
-  // Filter to today's bookings
   const todayBookings = bookings.filter((b) => b.date === today);
-
-  // Filter to this week's bookings
   const weekBookings = bookings.filter((b) => b.date >= start && b.date <= end);
 
-  const todayStats = {
-    total: todayBookings.length,
-    confirmed: todayBookings.filter((b) => b.status === "confirmed").length,
-    pending: todayBookings.filter((b) => b.status === "pending").length,
-    cancelled: todayBookings.filter((b) => b.status === "cancelled").length,
-  };
+  const countByStatus = (list: Booking[]) => ({
+    total: list.length,
+    confirmed: list.filter((b) => b.status === "confirmed").length,
+    pending: list.filter((b) => b.status === "pending").length,
+    cancelled: list.filter((b) => b.status === "cancelled").length,
+  });
 
-  const weekStats = {
-    total: weekBookings.length,
-    confirmed: weekBookings.filter((b) => b.status === "confirmed").length,
-    pending: weekBookings.filter((b) => b.status === "pending").length,
-    cancelled: weekBookings.filter((b) => b.status === "cancelled").length,
-  };
+  const todayStats = countByStatus(todayBookings);
+  const weekStats = countByStatus(weekBookings);
+
+  const isToday = today === todayString();
+  const todayLabel = isToday
+    ? `Today — ${formatDisplayDate(today, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      })}`
+    : formatDisplayDate(today, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+
+  const weekLabel = `This week — ${parseLocalDate(start).toLocaleDateString(
+    "en-AU",
+    { day: "numeric", month: "short" },
+  )} to ${parseLocalDate(end).toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+  })}`;
 
   const sectionLabel = (text: string) => (
     <h2
@@ -94,68 +95,24 @@ const DashboardStats = ({ bookings, selectedDate }: Props) => {
     </h2>
   );
 
+  const statRow = (stats: ReturnType<typeof countByStatus>) => (
+    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+      <StatCard label="Total" value={stats.total} color="#c9a96e" />
+      <StatCard label="Confirmed" value={stats.confirmed} color="#1d9e75" />
+      <StatCard label="Pending" value={stats.pending} color="#ef9f27" />
+      <StatCard label="Cancelled" value={stats.cancelled} color="#e24b4a" />
+    </div>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Today */}
       <div>
-        {sectionLabel(
-          selectedDate && selectedDate !== new Date().toISOString().split('T')[0]
-            ? `${new Date(selectedDate + "T00:00:00").toLocaleDateString("en-AU", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}`
-            : `Today — ${new Date().toLocaleDateString("en-AU", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}`
-        )}
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <StatCard label="Total" value={todayStats.total} color="#c9a96e" />
-          <StatCard
-            label="Confirmed"
-            value={todayStats.confirmed}
-            color="#1d9e75"
-          />
-          <StatCard
-            label="Pending"
-            value={todayStats.pending}
-            color="#ef9f27"
-          />
-          <StatCard
-            label="Cancelled"
-            value={todayStats.cancelled}
-            color="#e24b4a"
-          />
-        </div>
+        {sectionLabel(todayLabel)}
+        {statRow(todayStats)}
       </div>
-
-      {/* This week */}
       <div>
-        {sectionLabel(
-          `This week — ${new Date(start).toLocaleDateString("en-AU", {
-            day: "numeric",
-            month: "short",
-          })} to ${new Date(end).toLocaleDateString("en-AU", {
-            day: "numeric",
-            month: "short",
-          })}`,
-        )}
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <StatCard label="Total" value={weekStats.total} color="#c9a96e" />
-          <StatCard
-            label="Confirmed"
-            value={weekStats.confirmed}
-            color="#1d9e75"
-          />
-          <StatCard label="Pending" value={weekStats.pending} color="#ef9f27" />
-          <StatCard
-            label="Cancelled"
-            value={weekStats.cancelled}
-            color="#e24b4a"
-          />
-        </div>
+        {sectionLabel(weekLabel)}
+        {statRow(weekStats)}
       </div>
     </div>
   );

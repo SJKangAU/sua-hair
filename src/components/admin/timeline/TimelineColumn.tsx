@@ -73,8 +73,6 @@ const TimelineColumn = ({
         minWidth: 0,
       }}
     >
-      {/* Booking blocks */}
-      // In TimelineColumn.tsx // Find this section in the return:
       {stylistBookings.map((booking) => {
         const startMinutes = timeStringToMinutes(booking.time);
         const topPercent = toPercent(startMinutes);

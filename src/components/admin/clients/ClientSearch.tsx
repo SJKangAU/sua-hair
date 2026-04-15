@@ -1,12 +1,11 @@
 // ClientSearch.tsx
 // Debounced search input for the clients tab
-// Queries Firestore bookings by customerName or customerPhone
-// Returns a deduplicated list of CustomerProfile objects
-// 400ms debounce to avoid hammering Firestore on every keystroke
+// Filters from BookingContext (already in memory) instead of making a
+// fresh Firestore query on every keystroke — avoids fetching the entire
+// bookings collection each time the admin searches for a client.
 
 import { useState, useEffect, useCallback } from "react";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { useBookingContext } from "../../../context/BookingContext";
 import type { Booking } from "../../../types";
 
 export interface ClientProfile {
@@ -25,94 +24,76 @@ interface Props {
   onLoading: (loading: boolean) => void;
 }
 
-const ClientSearch = ({ onResults, onLoading }: Props) => {
-  const [query_str, setQueryStr] = useState("");
+// Build a ClientProfile from a group of bookings for the same phone number
+const buildProfile = (bookings: Booking[]): ClientProfile => {
+  const sorted = [...bookings].sort((a, b) => a.date.localeCompare(b.date));
+  const confirmed = bookings.filter((b) => b.status !== "cancelled");
 
-  // Build a ClientProfile from a group of bookings for the same phone number
-  const buildProfile = (bookings: Booking[]): ClientProfile => {
-    const sorted = [...bookings].sort((a, b) => a.date.localeCompare(b.date));
-    const confirmed = bookings.filter((b) => b.status !== "cancelled");
+  // Count visits per stylist to find the favourite
+  const stylistCounts: Record<string, number> = {};
+  confirmed.forEach((b) => {
+    stylistCounts[b.stylistName] = (stylistCounts[b.stylistName] || 0) + 1;
+  });
+  const favouriteStylist =
+    Object.entries(stylistCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "N/A";
 
-    // Count visits per stylist to find the favourite
-    const stylistCounts: Record<string, number> = {};
-    confirmed.forEach((b) => {
-      stylistCounts[b.stylistName] = (stylistCounts[b.stylistName] || 0) + 1;
-    });
-    const favouriteStylist =
-      Object.entries(stylistCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ??
-      "N/A";
-
-    return {
-      name: sorted[sorted.length - 1].customerName, // most recent name
-      phone: sorted[0].customerPhone,
-      visitCount: confirmed.length,
-      totalSpend: confirmed.reduce((sum, b) => sum + (b.servicePrice ?? 0), 0),
-      lastVisit: sorted[sorted.length - 1].date,
-      firstVisit: sorted[0].date,
-      favouriteStylist,
-      bookings: [...bookings].sort((a, b) => b.date.localeCompare(a.date)),
-    };
+  return {
+    name: sorted[sorted.length - 1].customerName,
+    phone: sorted[0].customerPhone,
+    visitCount: confirmed.length,
+    totalSpend: confirmed.reduce((sum, b) => sum + (b.servicePrice ?? 0), 0),
+    lastVisit: sorted[sorted.length - 1].date,
+    firstVisit: sorted[0].date,
+    favouriteStylist,
+    bookings: [...bookings].sort((a, b) => b.date.localeCompare(a.date)),
   };
+};
 
-  // Search Firestore for bookings matching the query
+const ClientSearch = ({ onResults, onLoading }: Props) => {
+  const { bookings } = useBookingContext();
+  const [queryStr, setQueryStr] = useState("");
+
+  // Filter in-memory bookings — no Firestore call needed
   const search = useCallback(
-    async (q: string) => {
+    (q: string) => {
       if (q.length < 2) {
         onResults([]);
         return;
       }
 
       onLoading(true);
-      try {
-        // Search by name (case-sensitive — Firestore limitation)
-        // We fetch a broad set and filter client-side for better UX
-        const nameQuery = query(
-          collection(db, "bookings"),
-          orderBy("customerName"),
-        );
-        const snapshot = await getDocs(nameQuery);
-        const allBookings = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Booking[];
 
-        // Filter by name or phone client-side (case-insensitive)
-        const lower = q.toLowerCase();
-        const matched = allBookings.filter(
-          (b) =>
-            b.customerName.toLowerCase().includes(lower) ||
-            b.customerPhone.includes(q),
-        );
+      const lower = q.toLowerCase();
+      const matched = bookings.filter(
+        (b) =>
+          b.customerName.toLowerCase().includes(lower) ||
+          b.customerPhone.includes(q),
+      );
 
-        // Group by phone number
-        const grouped: Record<string, Booking[]> = {};
-        matched.forEach((b) => {
-          const key = b.customerPhone || b.customerName;
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(b);
-        });
+      // Group by phone number (fall back to name if no phone)
+      const grouped: Record<string, Booking[]> = {};
+      matched.forEach((b) => {
+        const key = b.customerPhone || b.customerName;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(b);
+      });
 
-        // Build profiles
-        const profiles = Object.values(grouped).map(buildProfile);
+      // Build profiles and sort by most recent visit
+      const profiles = Object.values(grouped)
+        .map(buildProfile)
+        .sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
 
-        // Sort by most recent visit
-        profiles.sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
-
-        onResults(profiles);
-      } catch (err) {
-        console.error("Client search error:", err);
-        onResults([]);
-      }
+      onResults(profiles);
       onLoading(false);
     },
-    [onResults, onLoading],
+    [bookings, onResults, onLoading],
   );
 
-  // 400ms debounce
+  // 300ms debounce
   useEffect(() => {
-    const timer = setTimeout(() => search(query_str.trim()), 400);
+    const timer = setTimeout(() => search(queryStr.trim()), 300);
     return () => clearTimeout(timer);
-  }, [query_str, search]);
+  }, [queryStr, search]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -130,7 +111,7 @@ const ClientSearch = ({ onResults, onLoading }: Props) => {
       </span>
       <input
         type="text"
-        value={query_str}
+        value={queryStr}
         onChange={(e) => setQueryStr(e.target.value)}
         placeholder="Search by name or mobile number..."
         style={{
@@ -143,7 +124,7 @@ const ClientSearch = ({ onResults, onLoading }: Props) => {
           outline: "none",
         }}
       />
-      {query_str && (
+      {queryStr && (
         <button
           onClick={() => {
             setQueryStr("");

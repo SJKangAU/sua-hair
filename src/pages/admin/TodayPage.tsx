@@ -10,6 +10,7 @@ import BookingDetailModal from "../../components/admin/modals/BookingDetailModal
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
 import DashboardStats from "../../components/admin/DashboardStats";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
+import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -23,41 +24,15 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
   const { bookings, loading } = useBookingContext();
   const { addToast } = useToastContext();
 
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [selectedDate, setSelectedDate] = useState(todayString);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [createModal, setCreateModal] = useState<{
     stylistId: string;
     time: string;
   } | null>(null);
 
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr + "T00:00:00");
-    return date.toLocaleDateString("en-AU", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const prevDay = () => {
-    const date = new Date(selectedDate + "T00:00:00");
-    date.setDate(date.getDate() - 1);
-    setSelectedDate(date.toISOString().split("T")[0]);
-  };
-
-  const nextDay = () => {
-    const date = new Date(selectedDate + "T00:00:00");
-    date.setDate(date.getDate() + 1);
-    setSelectedDate(date.toISOString().split("T")[0]);
-  };
-
-  const isToday = selectedDate === new Date().toISOString().split("T")[0];
-
-  // Filter stats to selected date
-  const dayBookings = bookings.filter((b) => b.date === selectedDate);
+  const isToday = selectedDate === todayString();
+  const dayBookings = bookings.filter(b => b.date === selectedDate);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -73,7 +48,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <button
-            onClick={prevDay}
+            onClick={() => setSelectedDate(d => addDays(d, -1))}
             style={{
               padding: "0.4rem 0.75rem",
               background: "#1a1a1a",
@@ -95,10 +70,10 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
               whiteSpace: "nowrap",
             }}
           >
-            {formatDate(selectedDate)}
+            {formatDisplayDate(selectedDate)}
           </h2>
           <button
-            onClick={nextDay}
+            onClick={() => setSelectedDate(d => addDays(d, 1))}
             style={{
               padding: "0.4rem 0.75rem",
               background: "#1a1a1a",
@@ -113,9 +88,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           </button>
           {!isToday && (
             <button
-              onClick={() =>
-                setSelectedDate(new Date().toISOString().split("T")[0])
-              }
+              onClick={() => setSelectedDate(todayString())}
               style={{
                 padding: "0.4rem 0.75rem",
                 background: "#c9a96e",
@@ -148,7 +121,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
         </button>
       </div>
 
-      {/* Stats for selected date — uses filtered dayBookings not all bookings */}
+      {/* Stats for selected date */}
       {loading ? (
         <StatsSkeleton />
       ) : (
@@ -183,8 +156,8 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           prefillTime={createModal.time}
           prefillDate={selectedDate}
           onClose={() => setCreateModal(null)}
-          onSuccess={(msg) => addToast(msg, "success")}
-          onError={(msg) => addToast(msg, "error")}
+          onSuccess={msg => addToast(msg, "success")}
+          onError={msg => addToast(msg, "error")}
         />
       )}
     </div>

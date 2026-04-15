@@ -3,7 +3,7 @@
 // Used across booking cards and the timeline
 // Supports booking status and booking type variants
 
-type BadgeVariant =
+export type BadgeVariant =
   | "pending"
   | "confirmed"
   | "cancelled"
@@ -61,6 +61,5 @@ const Badge = ({ variant, label }: Props) => {
     </span>
   );
 };
-
 
 export default Badge;
