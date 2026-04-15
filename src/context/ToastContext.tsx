@@ -3,11 +3,11 @@
 // without threading addToast through every page component as a prop
 // Wrap AdminDashboardPage's DashboardInner with this provider
 
-import { createContext, useContext } from 'react';
-import type { ReactNode } from 'react';
-import useToast from '../hooks/useToast';
-import { ToastContainer } from '../components/ui/Toast';
-import type { ToastType } from '../components/ui/Toast';
+import { createContext, useContext } from "react";
+import type { ReactNode } from "react";
+import useToast from "../hooks/useToast";
+import { ToastContainer } from "../components/ui/Toast";
+import type { ToastType } from "../components/ui/Toast";
 
 interface ToastContextValue {
   addToast: (message: string, type?: ToastType) => void;
@@ -28,6 +28,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
 export const useToastContext = (): ToastContextValue => {
   const context = useContext(ToastContext);
-  if (!context) throw new Error('useToastContext must be used within ToastProvider');
+  if (!context)
+    throw new Error("useToastContext must be used within ToastProvider");
   return context;
 };
