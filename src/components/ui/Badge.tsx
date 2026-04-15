@@ -62,4 +62,5 @@ const Badge = ({ variant, label }: Props) => {
   );
 };
 
+
 export default Badge;
