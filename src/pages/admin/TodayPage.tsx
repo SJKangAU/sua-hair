@@ -1,10 +1,10 @@
 // TodayPage.tsx
-// Today tab content for the admin dashboard
-// Contains day navigation, stats, timeline grid, and booking modals
-// Consumes bookings from BookingContext and stylists from SalonDataContext
+// Today tab — day navigation, stats, timeline, and booking modals
+// Uses ToastContext directly — no addToast prop needed
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useBookingContext } from "../../context/BookingContext";
+import { useToastContext } from "../../context/ToastContext";
 import Timeline from "../../components/admin/timeline/Timeline";
 import BookingDetailModal from "../../components/admin/modals/BookingDetailModal";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
@@ -17,25 +17,21 @@ interface Props {
     id: string,
     status: "pending" | "confirmed" | "cancelled",
   ) => void;
-  addToast: (message: string, type: "success" | "error" | "warning") => void;
 }
 
-const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
+const TodayPage = ({ onUpdateStatus }: Props) => {
   const { bookings, loading } = useBookingContext();
+  const { addToast } = useToastContext();
 
-  // Selected date — defaults to today
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
-
-  // Modal state
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [createModal, setCreateModal] = useState<{
     stylistId: string;
     time: string;
   } | null>(null);
 
-  // Format date for display
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr + "T00:00:00");
     return date.toLocaleDateString("en-AU", {
@@ -58,11 +54,10 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
     setSelectedDate(date.toISOString().split("T")[0]);
   };
 
-  const goToToday = () => {
-    setSelectedDate(new Date().toISOString().split("T")[0]);
-  };
-
   const isToday = selectedDate === new Date().toISOString().split("T")[0];
+
+  // Filter stats to selected date
+  const dayBookings = bookings.filter((b) => b.date === selectedDate);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -91,7 +86,6 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
           >
             ← Prev
           </button>
-
           <h2
             style={{
               margin: 0,
@@ -103,7 +97,6 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
           >
             {formatDate(selectedDate)}
           </h2>
-
           <button
             onClick={nextDay}
             style={{
@@ -118,10 +111,11 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
           >
             Next →
           </button>
-
           {!isToday && (
             <button
-              onClick={goToToday}
+              onClick={() =>
+                setSelectedDate(new Date().toISOString().split("T")[0])
+              }
               style={{
                 padding: "0.4rem 0.75rem",
                 background: "#c9a96e",
@@ -137,7 +131,6 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
           )}
         </div>
 
-        {/* New booking button */}
         <button
           onClick={() => setCreateModal({ stylistId: "", time: "" })}
           style={{
@@ -155,14 +148,14 @@ const TodayPage = ({ onUpdateStatus, addToast }: Props) => {
         </button>
       </div>
 
-      {/* Stats for selected day */}
+      {/* Stats for selected date — uses filtered dayBookings not all bookings */}
       {loading ? (
         <StatsSkeleton />
       ) : (
-        <DashboardStats bookings={bookings} selectedDate={selectedDate} />
+        <DashboardStats bookings={dayBookings} selectedDate={selectedDate} />
       )}
 
-      {/* Timeline grid */}
+      {/* Timeline */}
       <Timeline
         selectedDate={selectedDate}
         onBlockClick={setSelectedBooking}
