@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
-import { useSalonData } from "../../../context/SalonDataContext";
+import useStylists from "../../../hooks/useStylists";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
 
 interface Props {
@@ -43,8 +43,12 @@ const EMPTY_FORM = {
 };
 
 const StylistRoster = ({ onSuccess, onError }: Props) => {
-  const { stylists, stylistsLoading, refetchStylists } = useSalonData();
-  const [showForm, setShowForm] = useState(false);
+  const {
+    stylists,
+    loading: stylistsLoading,
+    refetch: refetchStylists,
+  } = useStylists(false); // false = include inactive
+  const [showForm, setShowForm] = useState(false);s
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
