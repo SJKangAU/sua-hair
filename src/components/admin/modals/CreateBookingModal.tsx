@@ -21,6 +21,8 @@ interface Props {
   prefillStylistId?: string;
   prefillTime?: string;
   prefillDate?: string;
+  prefillCustomerName?: string; // add this
+  prefillCustomerPhone?: string; // add this
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
@@ -70,6 +72,8 @@ const CreateBookingModal = ({
   prefillStylistId = "",
   prefillTime = "",
   prefillDate = "",
+  prefillCustomerName = "", // add this
+  prefillCustomerPhone = "", // add this
   onClose,
   onSuccess,
   onError,
@@ -80,15 +84,14 @@ const CreateBookingModal = ({
 
   // ── Walk-in form state ────────────────────────────────────────────────────
   const [walkin, setWalkin] = useState({
-    customerName: "",
-    customerPhone: "",
+    customerName: prefillCustomerName, // was ''
+    customerPhone: prefillCustomerPhone, // was ''
     stylistId: prefillStylistId,
     serviceId: "",
     date: prefillDate || new Date().toISOString().split("T")[0],
     time: prefillTime,
     notes: "",
   });
-
   // ── Break form state ──────────────────────────────────────────────────────
   const [breakForm, setBreakForm] = useState({
     stylistId: prefillStylistId,
