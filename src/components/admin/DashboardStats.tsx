@@ -55,8 +55,8 @@ const getWeekRange = (): { start: string; end: string } => {
   };
 };
 
-const DashboardStats = ({ bookings }: Props) => {
-  const today = new Date().toISOString().split("T")[0];
+const DashboardStats = ({ bookings, selectedDate }: Props) => {
+  const today = selectedDate ?? new Date().toISOString().split("T")[0];
   const { start, end } = getWeekRange();
 
   // Filter to today's bookings
@@ -99,11 +99,17 @@ const DashboardStats = ({ bookings }: Props) => {
       {/* Today */}
       <div>
         {sectionLabel(
-          `Today — ${new Date().toLocaleDateString("en-AU", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          })}`,
+          selectedDate && selectedDate !== new Date().toISOString().split('T')[0]
+            ? `${new Date(selectedDate + "T00:00:00").toLocaleDateString("en-AU", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}`
+            : `Today — ${new Date().toLocaleDateString("en-AU", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}`
         )}
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <StatCard label="Total" value={todayStats.total} color="#c9a96e" />
