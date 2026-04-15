@@ -1,17 +1,16 @@
 // AdminDashboardPage.tsx
 // Admin dashboard shell — header, tab navigation, and active tab rendering
 // All tab content lives in src/pages/admin/* for separation of concerns
-// Wrapped with BookingProvider and SalonDataProvider for shared state
+// Wrapped with BookingProvider, SalonDataProvider, and ToastProvider
 
 import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import useAuth from "../hooks/useAuth";
-import useToast from "../hooks/useToast";
 import { BookingProvider, useBookingContext } from "../context/BookingContext";
 import { SalonDataProvider } from "../context/SalonDataContext";
-import { ToastContainer } from "../components/ui/Toast";
+import { ToastProvider, useToastContext } from "../context/ToastContext";
 import Tabs from "../components/ui/Tabs";
 import TodayPage from "./admin/TodayPage";
 import BookingsPage from "./admin/BookingsPage";
@@ -34,7 +33,7 @@ const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateStatus } = useBookingContext();
-  const { toasts, addToast, dismissToast } = useToast();
+  const { addToast } = useToastContext();
   const [activeTab, setActiveTab] = useState("today");
 
   const handleSignOut = async () => {
@@ -131,18 +130,16 @@ const DashboardInner = () => {
         style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}
       >
         {activeTab === "today" && (
-          <TodayPage onUpdateStatus={handleUpdateStatus} addToast={addToast} />
+          <TodayPage onUpdateStatus={handleUpdateStatus} />
         )}
         {activeTab === "bookings" && (
           <BookingsPage onUpdateStatus={handleUpdateStatus} />
         )}
-        {activeTab === "clients" && <ClientsPage addToast={addToast} />}
-        {activeTab === "training" && <TrainingPage addToast={addToast} />}
+        {activeTab === "clients" && <ClientsPage />}
+        {activeTab === "training" && <TrainingPage />}
         {activeTab === "analytics" && <AnalyticsPage />}
-        {activeTab === "manage" && <ManagePage addToast={addToast} />}
+        {activeTab === "manage" && <ManagePage />}
       </main>
-
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 };
@@ -151,7 +148,9 @@ const DashboardInner = () => {
 const AdminDashboardPage = () => (
   <SalonDataProvider>
     <BookingProvider>
-      <DashboardInner />
+      <ToastProvider>
+        <DashboardInner />
+      </ToastProvider>
     </BookingProvider>
   </SalonDataProvider>
 );
