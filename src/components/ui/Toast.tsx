@@ -4,7 +4,7 @@
 // Supports success, error, and warning variants
 // Toasts auto-dismiss after 3 seconds
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 
 export type ToastType = "success" | "error" | "warning";
 

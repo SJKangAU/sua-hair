@@ -178,7 +178,7 @@ const CreateBookingModal = ({
 
     // Calculate end time from start + duration
     const startMinutes = timeStringToMinutes(breakForm.time);
-    const endTime = minutesToTimeString(startMinutes + breakForm.duration);
+    const _endTime = minutesToTimeString(startMinutes + breakForm.duration);
 
     setSubmitting(true);
     try {

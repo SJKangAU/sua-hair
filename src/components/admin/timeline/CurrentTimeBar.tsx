@@ -13,7 +13,7 @@ interface Props {
   gridHeight: number;
 }
 
-const CurrentTimeBar = ({ gridHeight }: Props) => {
+const CurrentTimeBar = ({ gridHeight: _gridHeight }: Props) => {
   const [now, setNow] = useState(new Date());
 
   // Update every minute

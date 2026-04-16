@@ -5,7 +5,7 @@
 // Clicking a block opens BookingDetailModal
 // Clicking an empty slot opens CreateBookingModal pre-filled with stylist and time
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { SALON_CONFIG } from "../../../lib/config";
