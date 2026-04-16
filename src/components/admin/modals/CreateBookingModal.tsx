@@ -10,10 +10,7 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { SALON_CONFIG } from "../../../lib/config";
-import {
-  minutesToTimeString,
-  timeStringToMinutes,
-} from "../../../lib/scheduling";
+import { minutesToTimeString } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
 
@@ -175,10 +172,6 @@ const CreateBookingModal = ({
 
     const stylist = getSelectedStylist(breakForm.stylistId);
     if (!stylist) return;
-
-    // Calculate end time from start + duration
-    const startMinutes = timeStringToMinutes(breakForm.time);
-    const _endTime = minutesToTimeString(startMinutes + breakForm.duration);
 
     setSubmitting(true);
     try {
