@@ -122,7 +122,25 @@ const BookingPage = () => {
               overflow: "hidden",
             }}
           >
-            <BookingForm />
+            {/* Booking form card */}
+            <main
+              style={{
+                maxWidth: "560px",
+                margin: "-2rem auto 4rem",
+                padding: "0 1.25rem",
+              }}
+            >
+              <div
+                style={{
+                  background: "var(--white)",
+                  borderRadius: "var(--radius-lg)",
+                  boxShadow: "var(--shadow-lg)",
+                  overflow: "hidden",
+                }}
+              >
+                <BookingForm />
+              </div>
+            </main>
           </div>
         </main>
 
