@@ -18,23 +18,6 @@ interface Props {
   onNotesChange: (value: string) => void;
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "0.65rem",
-  border: "1px solid #ddd",
-  borderRadius: "6px",
-  fontSize: "1rem",
-  marginTop: "0.25rem",
-  boxSizing: "border-box" as const,
-};
-
-const labelStyle = {
-  display: "block" as const,
-  marginBottom: "1rem",
-  fontWeight: 500,
-  fontSize: "0.95rem",
-};
-
 const StepOneService = ({
   stylistId,
   serviceId,
@@ -77,18 +60,35 @@ const StepOneService = ({
 
   return (
     <div>
-      <h3 style={{ marginBottom: "1.25rem", fontSize: "1.1rem" }}>
-        Choose Your Stylist & Service
+      <h3
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "1.6rem",
+          fontWeight: 400,
+          color: "var(--text-primary)",
+          marginBottom: "0.35rem",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        Choose your stylist
       </h3>
+      <p
+        style={{
+          fontSize: "0.85rem",
+          color: "var(--text-muted)",
+          marginBottom: "1.75rem",
+        }}
+      >
+        Select a stylist to see availability and pricing.
+      </p>
 
-      {/* Stylist selection cards with headshots */}
-      <p style={{ fontWeight: 500, marginBottom: "0.75rem" }}>Stylist</p>
+      {/* Stylist cards */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: "0.75rem",
-          marginBottom: "1.5rem",
+          marginBottom: "2rem",
         }}
       >
         {stylists.map((stylist) => {
@@ -98,15 +98,29 @@ const StepOneService = ({
               key={stylist.id}
               onClick={() => onStylistSelect(stylist.id)}
               style={{
-                padding: "0.75rem",
-                border: `2px solid ${selected ? "#c9a96e" : "#ddd"}`,
-                borderRadius: "10px",
+                padding: "1rem",
+                border: `1.5px solid ${
+                  selected ? "var(--text-primary)" : "var(--border)"
+                }`,
+                borderRadius: "var(--radius-md)",
                 cursor: "pointer",
-                background: selected ? "#fdf6ec" : "white",
+                background: selected ? "var(--text-primary)" : "var(--white)",
                 transition: "all 0.15s",
                 display: "flex",
                 alignItems: "center",
                 gap: "0.75rem",
+              }}
+              onMouseEnter={(e) => {
+                if (!selected) {
+                  e.currentTarget.style.borderColor = "var(--text-primary)";
+                  e.currentTarget.style.background = "var(--surface)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!selected) {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.background = "var(--white)";
+                }
               }}
             >
               {/* Headshot */}
@@ -115,26 +129,29 @@ const StepOneService = ({
                   src={stylist.photoUrl}
                   alt={stylist.name}
                   style={{
-                    width: "48px",
-                    height: "48px",
+                    width: "44px",
+                    height: "44px",
                     borderRadius: "50%",
                     objectFit: "cover",
                     flexShrink: 0,
-                    border: selected ? "2px solid #c9a96e" : "2px solid #eee",
+                    border: selected
+                      ? "2px solid var(--gold)"
+                      : "2px solid var(--border)",
                   }}
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
                   }}
                 />
               ) : (
-                // Initials fallback
                 <div
                   style={{
-                    width: "48px",
-                    height: "48px",
+                    width: "44px",
+                    height: "44px",
                     borderRadius: "50%",
-                    background: "#c9a96e",
-                    color: "white",
+                    background: selected
+                      ? "var(--gold-dark)"
+                      : "var(--surface-raised)",
+                    color: selected ? "var(--white)" : "var(--text-secondary)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -147,21 +164,28 @@ const StepOneService = ({
                 </div>
               )}
 
-              {/* Name and role */}
               <div style={{ minWidth: 0 }}>
                 <p
                   style={{
-                    fontWeight: 600,
+                    fontWeight: 500,
                     fontSize: "0.85rem",
+                    color: selected ? "var(--white)" : "var(--text-primary)",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     margin: 0,
                   }}
                 >
-                  {stylist.name}
+                  {stylist.name.split(" ")[0]}
                 </p>
-                <p style={{ fontSize: "0.72rem", color: "#6b6b6b", margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: selected ? "var(--gold-light)" : "var(--text-muted)",
+                    margin: 0,
+                    marginTop: "1px",
+                  }}
+                >
                   {stylist.role}
                 </p>
               </div>
@@ -170,23 +194,53 @@ const StepOneService = ({
         })}
       </div>
 
-      {/* Service dropdown — tiered pricing based on selected stylist */}
-      <label style={labelStyle}>
-        Service
-        {!stylistId && (
-          <span
-            style={{
-              fontSize: "0.78rem",
-              color: "#c9a96e",
-              marginLeft: "0.5rem",
-              fontWeight: 400,
-            }}
-          >
-            — select a stylist first to see pricing
-          </span>
-        )}
+      {/* Service dropdown */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Service
+          {!stylistId && (
+            <span
+              style={{
+                fontSize: "0.72rem",
+                color: "var(--gold)",
+                marginLeft: "0.5rem",
+                textTransform: "none",
+                letterSpacing: 0,
+              }}
+            >
+              — select a stylist first
+            </span>
+          )}
+        </label>
         <select
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "0.75rem 1rem",
+            border: "1.5px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            background: "var(--white)",
+            fontFamily: "var(--font-body)",
+            appearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239c9994' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 0.75rem center",
+            paddingRight: "2.5rem",
+            cursor: !stylistId ? "not-allowed" : "pointer",
+            opacity: !stylistId ? 0.6 : 1,
+            outline: "none",
+          }}
           value={serviceId}
           onChange={(e) => onServiceSelect(e.target.value)}
           disabled={!stylistId}
@@ -196,42 +250,72 @@ const StepOneService = ({
             const price = service.price[priceLevel];
             return (
               <option key={service.id} value={service.id}>
-                {service.name} — from ${price} ({service.totalTime} min total)
+                {service.name} — from ${price} ({service.totalTime} min)
               </option>
             );
           })}
         </select>
-      </label>
+      </div>
 
-      {/* Rest time breakdown */}
+      {/* Rest time info */}
       {serviceId && restTime > 0 && (
         <div
           style={{
-            background: "#f0f7ff",
-            border: "1px solid #b5d4f4",
-            borderRadius: "8px",
-            padding: "0.75rem 1rem",
-            fontSize: "0.85rem",
-            color: "#6b6b6b",
-            marginBottom: "1rem",
+            background: "var(--surface)",
+            borderRadius: "var(--radius-md)",
+            padding: "0.875rem 1rem",
+            fontSize: "0.82rem",
+            color: "var(--text-secondary)",
+            marginBottom: "1.25rem",
+            borderLeft: "3px solid var(--gold)",
           }}
         >
-          This service includes <strong>{activeTime} min</strong> of active
-          styling and <strong>{restTime} min</strong> of setting time. Your
-          total appointment is <strong>{totalTime} min</strong>.
+          <strong>{activeTime} min</strong> active styling +{" "}
+          <strong>{restTime} min</strong> setting time ={" "}
+          <strong>{totalTime} min</strong> total appointment
         </div>
       )}
 
-      {/* Optional notes */}
-      <label style={labelStyle}>
-        Notes (optional)
+      {/* Notes */}
+      <div>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Notes{" "}
+          <span
+            style={{ textTransform: "none", fontWeight: 400, letterSpacing: 0 }}
+          >
+            (optional)
+          </span>
+        </label>
         <textarea
-          style={{ ...inputStyle, height: "80px", resize: "vertical" }}
+          style={{
+            width: "100%",
+            padding: "0.75rem 1rem",
+            border: "1.5px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            background: "var(--white)",
+            fontFamily: "var(--font-body)",
+            height: "80px",
+            resize: "vertical",
+            outline: "none",
+            lineHeight: 1.6,
+          }}
           placeholder="Any special requests or hair concerns..."
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
         />
-      </label>
+      </div>
     </div>
   );
 };
