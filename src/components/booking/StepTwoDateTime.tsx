@@ -27,35 +27,6 @@ interface Props {
   errors: { date?: string };
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "0.65rem",
-  border: "1px solid #ddd",
-  borderRadius: "6px",
-  fontSize: "1rem",
-  marginTop: "0.25rem",
-  boxSizing: "border-box" as const,
-};
-
-const inputErrorStyle = {
-  ...inputStyle,
-  border: "1px solid #e24b4a",
-};
-
-const errorTextStyle = {
-  color: "#e24b4a",
-  fontSize: "0.8rem",
-  marginTop: "0.25rem",
-  display: "block" as const,
-};
-
-const labelStyle = {
-  display: "block" as const,
-  marginBottom: "1rem",
-  fontWeight: 500,
-  fontSize: "0.95rem",
-};
-
 const StepTwoDateTime = ({
   stylistId,
   serviceId,
@@ -139,55 +110,129 @@ const StepTwoDateTime = ({
 
   return (
     <div>
-      <h3 style={{ marginBottom: "1.25rem", fontSize: "1.1rem" }}>
-        Pick a Date & Time
+      <h3
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "1.6rem",
+          fontWeight: 400,
+          color: "var(--text-primary)",
+          marginBottom: "0.35rem",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        Pick a date & time
       </h3>
+      <p
+        style={{
+          fontSize: "0.85rem",
+          color: "var(--text-muted)",
+          marginBottom: "1.75rem",
+        }}
+      >
+        Available slots update in real time.
+      </p>
 
       {/* Date picker */}
-      <label style={labelStyle}>
-        Date
+      <div style={{ marginBottom: "1.5rem" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Date
+        </label>
         <input
-          style={errors.date ? inputErrorStyle : inputStyle}
+          style={{
+            width: "100%",
+            padding: "0.75rem 1rem",
+            border: `1.5px solid ${
+              errors.date ? "var(--error)" : "var(--border)"
+            }`,
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            background: "var(--white)",
+            fontFamily: "var(--font-body)",
+            outline: "none",
+            boxSizing: "border-box" as const,
+            colorScheme: "light",
+          }}
           type="date"
           min={getMinBookableDate()}
           value={validDate ? date : ""}
           onChange={(e) => handleDateChange(e.target.value)}
         />
         {date === "CLOSED" && (
-          <span style={errorTextStyle}>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--error)",
+              marginTop: "0.4rem",
+            }}
+          >
             Sua Hair is closed on Mondays. Please select another day.
-          </span>
+          </p>
         )}
         {date === "CUTOFF" && (
-          <span style={errorTextStyle}>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--error)",
+              marginTop: "0.4rem",
+            }}
+          >
             Same-day bookings are no longer available. Please select a future
             date.
-          </span>
+          </p>
         )}
-        {errors.date && <span style={errorTextStyle}>{errors.date}</span>}
-      </label>
+      </div>
 
-      {/* Time slot grid */}
+      {/* Time slots */}
       {validDate && (
         <div>
-          <p style={{ fontWeight: 500, marginBottom: "0.5rem" }}>
+          <label
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: "0.78rem",
+              fontWeight: 500,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: "0.75rem",
+            }}
+          >
             Available Times
             {loadingSlots && (
               <span
                 style={{
-                  color: "#6b6b6b",
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "none",
+                  letterSpacing: 0,
                   fontWeight: 400,
-                  fontSize: "0.8rem",
-                  marginLeft: "0.5rem",
                 }}
               >
-                Checking availability...
+                Checking...
               </span>
             )}
-          </p>
+          </label>
 
           {!loadingSlots && slots.length === 0 && (
-            <p style={{ color: "#6b6b6b", fontSize: "0.9rem" }}>
+            <p
+              style={{
+                color: "var(--text-muted)",
+                fontSize: "0.875rem",
+                padding: "1rem 0",
+              }}
+            >
               No available slots for this date. Please try another day.
             </p>
           )}
@@ -195,43 +240,48 @@ const StepTwoDateTime = ({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "0.4rem",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "0.5rem",
             }}
           >
             {slots.map((slot) => {
               const selected = time === slot.time;
               const unavailable = !slot.available;
               return (
-                <div
+                <button
                   key={slot.time}
                   onClick={() => slot.available && onTimeSelect(slot.time)}
+                  disabled={unavailable}
                   title={unavailable ? slot.reason : undefined}
                   style={{
-                    padding: "0.5rem",
+                    padding: "0.6rem 0.25rem",
                     textAlign: "center",
-                    border: `2px solid ${
-                      selected ? "#c9a96e" : unavailable ? "#f0f0f0" : "#ddd"
+                    border: `1.5px solid ${
+                      selected
+                        ? "var(--text-primary)"
+                        : unavailable
+                        ? "var(--border)"
+                        : "var(--border)"
                     }`,
-                    borderRadius: "6px",
+                    borderRadius: "var(--radius-md)",
                     cursor: unavailable ? "not-allowed" : "pointer",
                     background: selected
-                      ? "#fdf6ec"
-                      : unavailable
-                      ? "#f9f9f9"
-                      : "white",
-                    fontSize: "0.85rem",
-                    fontWeight: selected ? 600 : 400,
+                      ? "var(--text-primary)"
+                      : "var(--white)",
+                    fontSize: "0.8rem",
+                    fontWeight: selected ? 500 : 400,
                     color: selected
-                      ? "#c9a96e"
+                      ? "var(--white)"
                       : unavailable
-                      ? "#ccc"
-                      : "#1a1a1a",
+                      ? "var(--border-strong)"
+                      : "var(--text-primary)",
+                    fontFamily: "var(--font-body)",
                     transition: "all 0.1s",
+                    textDecoration: unavailable ? "line-through" : "none",
                   }}
                 >
                   {slot.time}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -241,15 +291,67 @@ const StepTwoDateTime = ({
             <div
               style={{
                 display: "flex",
-                gap: "1rem",
-                marginTop: "0.75rem",
-                fontSize: "0.75rem",
-                color: "#6b6b6b",
+                gap: "1.25rem",
+                marginTop: "0.875rem",
+                fontSize: "0.72rem",
+                color: "var(--text-muted)",
               }}
             >
-              <span>🟡 Selected</span>
-              <span>⬜ Available</span>
-              <span style={{ color: "#ccc" }}>⬜ Unavailable</span>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "2px",
+                    background: "var(--text-primary)",
+                    display: "inline-block",
+                  }}
+                />
+                Selected
+              </span>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "2px",
+                    border: "1.5px solid var(--border)",
+                    display: "inline-block",
+                  }}
+                />
+                Available
+              </span>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "2px",
+                    border: "1.5px solid var(--border)",
+                    background: "var(--surface)",
+                    display: "inline-block",
+                  }}
+                />
+                Unavailable
+              </span>
             </div>
           )}
         </div>
