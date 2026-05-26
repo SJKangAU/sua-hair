@@ -248,28 +248,6 @@ const BookingForm = () => {
     setSubmitting(false);
   };
 
-  // ── Button styles ─────────────────────────────────────────────────────────
-
-  const primaryBtn = (enabled: boolean) => ({
-    padding: "0.75rem 1.5rem",
-    background: enabled ? "#c9a96e" : "#ddd",
-    color: enabled ? "white" : "#999",
-    border: "none",
-    borderRadius: "6px",
-    cursor: enabled ? "pointer" : "not-allowed",
-    fontSize: "1rem",
-    marginLeft: "auto" as const,
-  });
-
-  const secondaryBtn = {
-    padding: "0.75rem 1.5rem",
-    background: "white",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "1rem",
-  };
-
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (confirmed && confirmedBooking) {
@@ -278,96 +256,160 @@ const BookingForm = () => {
     );
   }
 
+  // In BookingForm.tsx update the return block:
+
   return (
-    <div style={{ maxWidth: "480px", margin: "0 auto", padding: "1.5rem" }}>
+    <div style={{ fontFamily: "var(--font-body)" }}>
       <StepIndicator currentStep={step} />
 
-      {/* Step 1 — Stylist & Service */}
-      {step === 1 && (
-        <StepOneService
-          stylistId={form.stylistId}
-          serviceId={form.serviceId}
-          activeTime={form.activeTime}
-          restTime={form.restTime}
-          totalTime={form.totalTime}
-          notes={form.notes}
-          onStylistSelect={handleStylistSelect}
-          onServiceSelect={handleServiceSelect}
-          onNotesChange={(val) => setForm((prev) => ({ ...prev, notes: val }))}
-        />
-      )}
-
-      {/* Step 2 — Date & Time */}
-      {step === 2 && (
-        <StepTwoDateTime
-          stylistId={form.stylistId}
-          serviceId={form.serviceId}
-          activeTime={form.activeTime}
-          totalTime={form.totalTime}
-          date={form.date}
-          time={form.time}
-          onDateChange={handleDateChange}
-          onTimeSelect={(val) => setForm((prev) => ({ ...prev, time: val }))}
-          errors={errors}
-        />
-      )}
-
-      {/* Step 3 — Your Details */}
-      {step === 3 && (
-        <StepThreeDetails
-          customerName={form.customerName}
-          customerPhone={form.customerPhone}
-          phoneConfirmed={phoneConfirmed}
-          lookingUp={lookingUp}
-          customerProfile={customerProfile}
-          errors={errors}
-          onPhoneChange={handlePhoneChange}
-          onNameChange={handleNameChange}
-          onPhoneConfirm={setPhoneConfirmed}
-          // Booking summary props for final review
-          stylistName={form.stylistName}
-          serviceName={form.serviceName}
-          servicePrice={form.servicePrice}
-          activeTime={form.activeTime}
-          restTime={form.restTime}
-          date={form.date}
-          time={form.time}
-        />
-      )}
-
-      {/* Navigation */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "2rem",
-        }}
-      >
-        {step > 1 && (
-          <button
-            onClick={() => setStep((prev) => prev - 1)}
-            style={secondaryBtn}
-          >
-            Back
-          </button>
+      <div style={{ padding: "2rem" }}>
+        {/* Step 1 — Stylist & Service */}
+        {step === 1 && (
+          <StepOneService
+            stylistId={form.stylistId}
+            serviceId={form.serviceId}
+            activeTime={form.activeTime}
+            restTime={form.restTime}
+            totalTime={form.totalTime}
+            notes={form.notes}
+            onStylistSelect={handleStylistSelect}
+            onServiceSelect={handleServiceSelect}
+            onNotesChange={(val) =>
+              setForm((prev) => ({ ...prev, notes: val }))
+            }
+          />
         )}
-        {step < 3 ? (
-          <button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            style={primaryBtn(canProceed())}
-          >
-            Next
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={!canProceed() || submitting}
-            style={primaryBtn(canProceed() && !submitting)}
-          >
-            {submitting ? "Booking..." : "Confirm Booking"}
-          </button>
+
+        {/* Step 2 — Date & Time */}
+        {step === 2 && (
+          <StepTwoDateTime
+            stylistId={form.stylistId}
+            serviceId={form.serviceId}
+            activeTime={form.activeTime}
+            totalTime={form.totalTime}
+            date={form.date}
+            time={form.time}
+            onDateChange={handleDateChange}
+            onTimeSelect={(val: string) =>
+              setForm((prev) => ({ ...prev, time: val }))
+            }
+            errors={errors}
+          />
         )}
+
+        {/* Step 3 — Your Details */}
+        {step === 3 && (
+          <StepThreeDetails
+            customerName={form.customerName}
+            customerPhone={form.customerPhone}
+            phoneConfirmed={phoneConfirmed}
+            lookingUp={lookingUp}
+            customerProfile={customerProfile}
+            errors={errors}
+            onPhoneChange={handlePhoneChange}
+            onNameChange={handleNameChange}
+            onPhoneConfirm={setPhoneConfirmed}
+            stylistName={form.stylistName}
+            serviceName={form.serviceName}
+            servicePrice={form.servicePrice}
+            activeTime={form.activeTime}
+            restTime={form.restTime}
+            date={form.date}
+            time={form.time}
+          />
+        )}
+
+        {/* Navigation */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "2rem",
+            paddingTop: "1.5rem",
+            borderTop: "1px solid var(--border)",
+          }}
+        >
+          {step > 1 ? (
+            <button
+              onClick={() => setStep((prev) => prev - 1)}
+              style={{
+                padding: "0.65rem 1.5rem",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-body)",
+                letterSpacing: "0.02em",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--text-primary)";
+                e.currentTarget.style.color = "var(--text-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
+            >
+              ← Back
+            </button>
+          ) : (
+            <span />
+          )}
+
+          {step < 3 ? (
+            <button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              style={{
+                padding: "0.65rem 2rem",
+                background: canProceed()
+                  ? "var(--text-primary)"
+                  : "var(--surface-raised)",
+                color: canProceed() ? "var(--white)" : "var(--text-muted)",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: canProceed() ? "pointer" : "not-allowed",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                fontFamily: "var(--font-body)",
+                letterSpacing: "0.04em",
+                transition: "all 0.15s",
+              }}
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!canProceed() || submitting}
+              style={{
+                padding: "0.65rem 2rem",
+                background:
+                  canProceed() && !submitting
+                    ? "var(--text-primary)"
+                    : "var(--surface-raised)",
+                color:
+                  canProceed() && !submitting
+                    ? "var(--white)"
+                    : "var(--text-muted)",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: canProceed() && !submitting ? "pointer" : "not-allowed",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                fontFamily: "var(--font-body)",
+                letterSpacing: "0.04em",
+                transition: "all 0.15s",
+              }}
+            >
+              {submitting ? "Confirming..." : "Confirm Booking"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
