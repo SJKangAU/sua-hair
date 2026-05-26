@@ -1,19 +1,19 @@
 // useStylists.ts
-// Fetches all active stylists from Firestore
-// Returns loading and error states alongside the data
+// Fetches stylists from Firestore
+// Caches results in sessionStorage for instant repeat loads within the same session
 // Uses getDocs (not onSnapshot) — stylist changes are infrequent
-// and don't need real-time updates
+// refetch() clears cache and re-fetches from Firestore
 
-import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useState, useEffect } from "react";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export interface FirestoreStylist {
   id: string;
   name: string;
   role: string;
-  level: 'director' | 'senior' | 'junior';
-  status: 'active' | 'inactive';
+  level: "director" | "senior" | "junior";
+  status: "active" | "inactive";
   instagram?: string;
   photoUrl?: string;
   startDate: string;
@@ -28,43 +28,69 @@ interface UseStylists {
   refetch: () => void;
 }
 
+const CACHE_KEY = "sua_hair_stylists";
+
 const useStylists = (activeOnly = true): UseStylists => {
-  const [stylists, setStylists] = useState<FirestoreStylist[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
+  const getCached = (): FirestoreStylist[] => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const initialData = getCached();
+
+  const [stylists, setStylists] = useState<FirestoreStylist[]>(initialData);
+  const [loading, setLoading] = useState(initialData.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
 
-  // refetch allows manual refresh after adding/deactivating a stylist
-  const refetch = () => setTrigger(t => t + 1);
+  // refetch clears cache and forces a fresh Firestore fetch
+  const refetch = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch {}
+    setTrigger((t) => t + 1);
+  };
 
   useEffect(() => {
+    // Skip fetch if we have cached data and haven't been asked to refetch
+    if (initialData.length > 0 && trigger === 0) {
+      setLoading(false);
+      return;
+    }
+
     const fetch = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Build query — optionally filter to active only
         const q = activeOnly
           ? query(
-              collection(db, 'stylists'),
-              where('status', '==', 'active'),
-              orderBy('startDate', 'asc')
+              collection(db, "stylists"),
+              where("status", "==", "active"),
+              orderBy("startDate", "asc"),
             )
-          : query(
-              collection(db, 'stylists'),
-              orderBy('startDate', 'asc')
-            );
+          : query(collection(db, "stylists"), orderBy("startDate", "asc"));
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({
+        const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as FirestoreStylist[];
 
         setStylists(data);
+
+        // Cache for this browser session
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        } catch {}
       } catch (err) {
-        console.error('Error fetching stylists:', err);
-        setError('Failed to load stylists. Please refresh and try again.');
+        console.error("Error fetching stylists:", err);
+        setError("Failed to load stylists. Please refresh and try again.");
       }
 
       setLoading(false);

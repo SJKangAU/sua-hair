@@ -1,11 +1,12 @@
 // useServices.ts
-// Fetches all active services from Firestore
-// Returns loading and error states alongside the data
+// Fetches services from Firestore
+// Caches results in sessionStorage for instant repeat loads within the same session
 // Uses getDocs (not onSnapshot) — service changes are infrequent
+// refetch() clears cache and re-fetches from Firestore
 
-import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useState, useEffect } from "react";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export interface TieredPrice {
   director: number;
@@ -14,9 +15,9 @@ export interface TieredPrice {
 }
 
 export interface PriceHistoryEntry {
-  price: number;
-  effectiveFrom: string; // YYYY-MM-DD
-  recordedAt: string;    // ISO timestamp
+  price: TieredPrice;
+  effectiveFrom: string;
+  recordedAt: string;
 }
 
 export interface FirestoreService {
@@ -26,11 +27,12 @@ export interface FirestoreService {
   activeTime: number;
   restTime: number;
   totalTime: number;
-  price: TieredPrice;  // now an object, not a number
-  status: 'active' | 'inactive';
+  price: TieredPrice;
+  status: "active" | "inactive";
   priceHistory: PriceHistoryEntry[];
   createdAt: string;
 }
+
 interface UseServices {
   services: FirestoreService[];
   loading: boolean;
@@ -38,43 +40,69 @@ interface UseServices {
   refetch: () => void;
 }
 
+const CACHE_KEY = "sua_hair_services";
+
 const useServices = (activeOnly = true): UseServices => {
-  const [services, setServices] = useState<FirestoreService[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
+  const getCached = (): FirestoreService[] => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const initialData = getCached();
+
+  const [services, setServices] = useState<FirestoreService[]>(initialData);
+  const [loading, setLoading] = useState(initialData.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
 
-  // refetch allows manual refresh after adding/deactivating a service
-  const refetch = () => setTrigger(t => t + 1);
+  // refetch clears cache and forces a fresh Firestore fetch
+  const refetch = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch {}
+    setTrigger((t) => t + 1);
+  };
 
   useEffect(() => {
+    // Skip fetch if we have cached data and haven't been asked to refetch
+    if (initialData.length > 0 && trigger === 0) {
+      setLoading(false);
+      return;
+    }
+
     const fetch = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Build query — optionally filter to active only
         const q = activeOnly
           ? query(
-              collection(db, 'services'),
-              where('status', '==', 'active'),
-              orderBy('category', 'asc')
+              collection(db, "services"),
+              where("status", "==", "active"),
+              orderBy("category", "asc"),
             )
-          : query(
-              collection(db, 'services'),
-              orderBy('category', 'asc')
-            );
+          : query(collection(db, "services"), orderBy("category", "asc"));
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({
+        const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as FirestoreService[];
 
         setServices(data);
+
+        // Cache for this browser session
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        } catch {}
       } catch (err) {
-        console.error('Error fetching services:', err);
-        setError('Failed to load services. Please refresh and try again.');
+        console.error("Error fetching services:", err);
+        setError("Failed to load services. Please refresh and try again.");
       }
 
       setLoading(false);
