@@ -1,78 +1,154 @@
 // BookingPage.tsx
-// Customer facing booking page
-// Wrapped with SalonDataProvider so BookingForm can access
-// stylists and services from Firestore via context
+// Customer-facing booking page
+// Redesigned with warm neutral palette and editorial typography
 
-import BookingForm from '../components/booking/BookingForm';
-import { SalonDataProvider } from '../context/SalonDataContext';
+import BookingForm from "../components/booking/BookingForm";
+import { SalonDataProvider } from "../context/SalonDataContext";
 
 const BookingPage = () => {
   return (
     <SalonDataProvider>
-      <div style={{ minHeight: '100vh', background: '#f5f0e8', fontFamily: 'Georgia, serif' }}>
-
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "var(--off-white)",
+          fontFamily: "var(--font-body)",
+        }}
+      >
         {/* Header */}
-        <header style={{
-          background: '#1a1a1a',
-          color: 'white',
-          padding: '1rem 2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
+        <header
+          style={{
+            background: "var(--text-primary)",
+            padding: "0 2rem",
+            height: "64px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
+        >
           <div>
-            <h1 style={{ fontSize: '1.5rem', color: '#c9a96e', margin: 0 }}>Sua Hair</h1>
-            <p style={{ fontSize: '0.75rem', color: '#aaa', margin: 0 }}>
-              Melbourne's best experienced hairdressers
-            </p>
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "1.5rem",
+                fontWeight: 400,
+                color: "var(--gold)",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Sua Hair
+            </span>
           </div>
           <a
             href="/admin/login"
             style={{
-              background: 'none',
-              border: '1px solid #c9a96e',
-              color: '#c9a96e',
-              padding: '0.4rem 0.9rem',
-              borderRadius: '4px',
-              fontSize: '0.8rem',
-              textDecoration: 'none',
+              color: "var(--text-muted)",
+              fontSize: "0.78rem",
+              textDecoration: "none",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              transition: "color 0.15s",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "var(--text-muted)")
+            }
           >
-            Admin
+            Staff login
           </a>
         </header>
 
-        {/* Main content */}
-        <main style={{ padding: '2rem 1rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.75rem', color: '#1a1a1a' }}>Book an Appointment</h2>
-            <p style={{ color: '#6b6b6b' }}>Fill in your details below and we'll see you soon</p>
-          </div>
+        {/* Hero section */}
+        <div
+          style={{
+            background: "var(--text-primary)",
+            padding: "3rem 2rem 4rem",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "0.72rem",
+              fontWeight: 500,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--gold)",
+              marginBottom: "0.75rem",
+            }}
+          >
+            Melbourne's Korean Hair Studio
+          </p>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
+              fontWeight: 300,
+              color: "var(--white)",
+              lineHeight: 1.15,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Book an Appointment
+          </h1>
+          <p
+            style={{
+              marginTop: "0.75rem",
+              color: "var(--text-muted)",
+              fontSize: "0.9rem",
+              letterSpacing: "0.02em",
+            }}
+          >
+            Tuesday – Sunday · 10am – 6pm · Glen Waverley
+          </p>
+        </div>
 
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '2rem',
-            maxWidth: '520px',
-            margin: '0 auto',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          }}>
+        {/* Booking form card */}
+        <main
+          style={{
+            maxWidth: "560px",
+            margin: "-2rem auto 4rem",
+            padding: "0 1.25rem",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--white)",
+              borderRadius: "var(--radius-lg)",
+              boxShadow: "var(--shadow-lg)",
+              overflow: "hidden",
+            }}
+          >
             <BookingForm />
           </div>
         </main>
 
         {/* Footer */}
-        <footer style={{
-          textAlign: 'center',
-          padding: '1.5rem',
-          color: '#6b6b6b',
-          fontSize: '0.8rem',
-          borderTop: '1px solid #ddd',
-          marginTop: '3rem',
-        }}>
-          <p>Sua Hair Studio © 2024 · (03) 9569 0840 · Melbourne, VIC</p>
+        <footer
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "2rem",
+            textAlign: "center",
+            color: "var(--text-muted)",
+            fontSize: "0.8rem",
+            letterSpacing: "0.02em",
+          }}
+        >
+          <p>Sua Hair Studio © 2024 · (03) 9569 0840 · Glen Waverley, VIC</p>
+          <p style={{ marginTop: "0.25rem" }}>
+            <a
+              href="https://suahair.com.au"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--gold)", textDecoration: "none" }}
+            >
+              suahair.com.au
+            </a>
+          </p>
         </footer>
-
       </div>
     </SalonDataProvider>
   );
