@@ -27,35 +27,6 @@ interface Props {
   time: string;
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "0.65rem",
-  border: "1px solid #ddd",
-  borderRadius: "6px",
-  fontSize: "1rem",
-  marginTop: "0.25rem",
-  boxSizing: "border-box" as const,
-};
-
-const inputErrorStyle = {
-  ...inputStyle,
-  border: "1px solid #e24b4a",
-};
-
-const errorTextStyle = {
-  color: "#e24b4a",
-  fontSize: "0.8rem",
-  marginTop: "0.25rem",
-  display: "block" as const,
-};
-
-const labelStyle = {
-  display: "block" as const,
-  marginBottom: "1rem",
-  fontWeight: 500,
-  fontSize: "0.95rem",
-};
-
 const StepThreeDetails = ({
   customerName,
   customerPhone,
@@ -69,8 +40,6 @@ const StepThreeDetails = ({
   stylistName,
   serviceName,
   servicePrice,
-  activeTime,
-  restTime,
   date,
   time,
 }: Props) => {
@@ -81,106 +50,197 @@ const StepThreeDetails = ({
 
   return (
     <div>
-      <h3 style={{ marginBottom: "0.5rem", fontSize: "1.1rem" }}>
-        Almost done!
+      <h3
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "1.6rem",
+          fontWeight: 400,
+          color: "var(--text-primary)",
+          marginBottom: "0.35rem",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        Almost done
       </h3>
       <p
         style={{
-          color: "#6b6b6b",
-          fontSize: "0.875rem",
-          marginBottom: "1.5rem",
+          fontSize: "0.85rem",
+          color: "var(--text-muted)",
+          marginBottom: "1.75rem",
         }}
       >
         Enter your details to confirm the booking below.
       </p>
 
-      {/* Booking summary — shown at top so they see what they're confirming */}
+      {/* Booking summary */}
       <div
         style={{
-          background: "#f5f0e8",
-          borderRadius: "8px",
-          padding: "1rem 1.25rem",
-          marginBottom: "1.5rem",
-          fontSize: "0.875rem",
-          lineHeight: 1.8,
-          border: "1px solid #e8ddd0",
+          background: "var(--surface)",
+          borderRadius: "var(--radius-md)",
+          padding: "1.25rem",
+          marginBottom: "1.75rem",
+          border: "1px solid var(--border)",
         }}
       >
         <p
-          style={{ fontWeight: 600, marginBottom: "0.25rem", color: "#1a1a1a" }}
+          style={{
+            fontSize: "0.68rem",
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            marginBottom: "0.875rem",
+          }}
         >
-          Your Booking
+          Booking Summary
         </p>
-        <p>
-          <strong>Stylist:</strong> {stylistName}
-        </p>
-        <p>
-          <strong>Service:</strong> {serviceName} — from ${servicePrice}
-        </p>
-        {restTime > 0 && (
-          <p style={{ color: "#6b6b6b", fontSize: "0.8rem" }}>
-            {activeTime} min active + {restTime} min setting time
-          </p>
-        )}
-        <p>
-          <strong>Date:</strong> {date}
-        </p>
-        <p>
-          <strong>Time:</strong> {time}
-        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            fontSize: "0.875rem",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "var(--text-secondary)" }}>Stylist</span>
+            <span style={{ fontWeight: 500 }}>{stylistName}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "var(--text-secondary)" }}>Service</span>
+            <span style={{ fontWeight: 500 }}>{serviceName}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "var(--text-secondary)" }}>Date</span>
+            <span style={{ fontWeight: 500 }}>{date}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "var(--text-secondary)" }}>Time</span>
+            <span style={{ fontWeight: 500 }}>{time}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              paddingTop: "0.5rem",
+              borderTop: "1px solid var(--border)",
+              marginTop: "0.25rem",
+            }}
+          >
+            <span style={{ color: "var(--text-secondary)" }}>From</span>
+            <span
+              style={{
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                fontSize: "1rem",
+              }}
+            >
+              ${servicePrice}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Mobile number */}
-      <label style={labelStyle}>
-        Mobile Number
+      <div style={{ marginBottom: "1.25rem" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Mobile Number
+        </label>
         <input
-          style={errors.phone ? inputErrorStyle : inputStyle}
+          style={{
+            width: "100%",
+            padding: "0.75rem 1rem",
+            border: `1.5px solid ${
+              errors.phone ? "var(--error)" : "var(--border)"
+            }`,
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            background: "var(--white)",
+            fontFamily: "var(--font-body)",
+            outline: "none",
+            boxSizing: "border-box" as const,
+          }}
           type="tel"
-          placeholder="e.g. 0412 345 678"
+          placeholder="0412 345 678"
           value={customerPhone}
           onChange={(e) => onPhoneChange(e.target.value)}
         />
         {phoneHasInput && !phoneValid && (
-          <span style={errorTextStyle}>
-            Please enter a valid Australian mobile number (e.g. 0412 345 678)
-          </span>
-        )}
-        {errors.phone && <span style={errorTextStyle}>{errors.phone}</span>}
-        {lookingUp && (
-          <span
+          <p
             style={{
-              fontSize: "0.8rem",
-              color: "#6b6b6b",
-              display: "block",
-              marginTop: "0.25rem",
+              fontSize: "0.78rem",
+              color: "var(--error)",
+              marginTop: "0.35rem",
+            }}
+          >
+            Please enter a valid Australian mobile (e.g. 0412 345 678)
+          </p>
+        )}
+        {errors.phone && (
+          <p
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--error)",
+              marginTop: "0.35rem",
+            }}
+          >
+            {errors.phone}
+          </p>
+        )}
+        {lookingUp && (
+          <p
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--text-muted)",
+              marginTop: "0.35rem",
             }}
           >
             Looking up your details...
-          </span>
+          </p>
         )}
-      </label>
+      </div>
 
-      {/* Phone confirmation checkbox */}
+      {/* Phone confirmation */}
       {phoneValid && (
         <label
           style={{
             display: "flex",
             alignItems: "flex-start",
-            gap: "0.5rem",
-            marginBottom: "1rem",
-            fontSize: "0.875rem",
+            gap: "0.6rem",
+            marginBottom: "1.25rem",
+            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
             cursor: "pointer",
+            lineHeight: 1.5,
           }}
         >
           <input
             type="checkbox"
             checked={phoneConfirmed}
             onChange={(e) => onPhoneConfirm(e.target.checked)}
-            style={{ marginTop: "2px", cursor: "pointer" }}
+            style={{
+              marginTop: "2px",
+              cursor: "pointer",
+              accentColor: "var(--text-primary)",
+            }}
           />
           <span>
-            I confirm <strong>{customerPhone}</strong> is my correct mobile
-            number
+            I confirm{" "}
+            <strong style={{ color: "var(--text-primary)" }}>
+              {customerPhone}
+            </strong>{" "}
+            is my correct mobile number
           </span>
         </label>
       )}
@@ -189,18 +249,24 @@ const StepThreeDetails = ({
       {customerProfile && !lookingUp && (
         <div
           style={{
-            background: "#fdf6ec",
-            border: "1px solid #c9a96e",
-            borderRadius: "8px",
-            padding: "0.75rem 1rem",
-            marginBottom: "1rem",
-            fontSize: "0.9rem",
+            background: "var(--gold-subtle)",
+            border: "1px solid var(--gold-light)",
+            borderRadius: "var(--radius-md)",
+            padding: "1rem",
+            marginBottom: "1.25rem",
+            fontSize: "0.875rem",
           }}
         >
-          <p style={{ fontWeight: 600, color: "#c9a96e" }}>
+          <p
+            style={{
+              fontWeight: 600,
+              color: "var(--gold-dark)",
+              marginBottom: "0.25rem",
+            }}
+          >
             Welcome back, {customerProfile.name}! 👋
           </p>
-          <p style={{ color: "#6b6b6b", marginTop: "0.25rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
             {customerProfile.visitCount === 1
               ? "This will be your 2nd visit — we appreciate you coming back!"
               : `You've visited us ${customerProfile.visitCount} times — thank you for your loyalty!`}
@@ -212,13 +278,13 @@ const StepThreeDetails = ({
       {phoneValid && !customerProfile && !lookingUp && (
         <div
           style={{
-            background: "#f0f7ff",
-            border: "1px solid #b5d4f4",
-            borderRadius: "8px",
-            padding: "0.75rem 1rem",
-            marginBottom: "1rem",
-            fontSize: "0.9rem",
-            color: "#6b6b6b",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            padding: "1rem",
+            marginBottom: "1.25rem",
+            fontSize: "0.875rem",
+            color: "var(--text-secondary)",
           }}
         >
           Welcome! Looks like it's your first time with us 🎉
@@ -226,22 +292,63 @@ const StepThreeDetails = ({
       )}
 
       {/* Full name */}
-      <label style={labelStyle}>
-        Full Name
+      <div>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Full Name
+        </label>
         <input
-          style={errors.name ? inputErrorStyle : inputStyle}
+          style={{
+            width: "100%",
+            padding: "0.75rem 1rem",
+            border: `1.5px solid ${
+              errors.name ? "var(--error)" : "var(--border)"
+            }`,
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            background: "var(--white)",
+            fontFamily: "var(--font-body)",
+            outline: "none",
+            boxSizing: "border-box" as const,
+          }}
           type="text"
-          placeholder="e.g. Jane Smith"
+          placeholder="Jane Smith"
           value={customerName}
           onChange={(e) => onNameChange(e.target.value)}
         />
         {nameHasInput && !nameValid && (
-          <span style={errorTextStyle}>
+          <p
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--error)",
+              marginTop: "0.35rem",
+            }}
+          >
             Name must be at least 2 characters and contain letters only
-          </span>
+          </p>
         )}
-        {errors.name && <span style={errorTextStyle}>{errors.name}</span>}
-      </label>
+        {errors.name && (
+          <p
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--error)",
+              marginTop: "0.35rem",
+            }}
+          >
+            {errors.name}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
