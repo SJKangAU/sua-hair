@@ -1,7 +1,6 @@
 // BookingConfirmation.tsx
-// Shown after a successful booking submission
-// Displays booking details and provides Add to Calendar options
-// Supports Google Calendar (link) and Apple/Outlook (ICS download)
+// Confirmation screen after successful booking submission
+// Neutral design with warm gold accent
 
 import { getGoogleCalendarLink, downloadICSFile } from '../../lib/calendar';
 import type { Booking } from '../../types';
@@ -13,97 +12,184 @@ interface Props {
 
 const BookingConfirmation = ({ booking, onReset }: Props) => {
   return (
-    <div style={{ textAlign: 'center', padding: '2rem' }}>
-      <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>✅</div>
+    <div style={{
+      padding: '2.5rem 2rem',
+      fontFamily: 'var(--font-body)',
+      textAlign: 'center',
+    }}>
+      {/* Check circle */}
+      <div style={{
+        width: '56px',
+        height: '56px',
+        borderRadius: '50%',
+        background: 'var(--surface)',
+        border: '2px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto 1.25rem',
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M4 12l5 5 11-11"
+            stroke="var(--gold)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
 
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#c9a96e' }}>
-        Booking Confirmed!
+      <h2 style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: '2rem',
+        fontWeight: 400,
+        color: 'var(--text-primary)',
+        letterSpacing: '-0.01em',
+        marginBottom: '0.4rem',
+      }}>
+        Booking Confirmed
       </h2>
-
-      <p>Thank you, <strong>{booking.customerName}</strong>!</p>
+      <p style={{
+        fontSize: '0.875rem',
+        color: 'var(--text-muted)',
+        marginBottom: '2rem',
+      }}>
+        We look forward to seeing you, <strong style={{ color: 'var(--text-primary)' }}>{booking.customerName}</strong>.
+      </p>
 
       {/* Booking details */}
       <div style={{
-        background: '#f5f0e8',
-        borderRadius: '8px',
-        padding: '1rem',
-        margin: '1.5rem 0',
+        background: 'var(--surface)',
+        borderRadius: 'var(--radius-md)',
+        padding: '1.25rem',
+        marginBottom: '1.75rem',
+        border: '1px solid var(--border)',
         textAlign: 'left',
-        fontSize: '0.9rem',
-        lineHeight: '1.8',
       }}>
-        <p><strong>Stylist:</strong> {booking.stylistName}</p>
-        <p><strong>Service:</strong> {booking.serviceName}</p>
-        <p>
-          <strong>Duration:</strong> {booking.totalTime} min
-          {booking.restTime > 0 && (
-            <span style={{ color: '#6b6b6b' }}>
-              {' '}({booking.activeTime} min active + {booking.restTime} min setting time)
-            </span>
-          )}
-        </p>
-        <p><strong>Date:</strong> {booking.date}</p>
-        <p><strong>Time:</strong> {booking.time}</p>
-        <p><strong>Price:</strong> from ${booking.servicePrice}</p>
+        {[
+          { label: 'Stylist', value: booking.stylistName },
+          { label: 'Service', value: booking.serviceName },
+          { label: 'Date', value: booking.date },
+          { label: 'Time', value: booking.time },
+          { label: 'From', value: `$${booking.servicePrice}` },
+        ].map(row => (
+          <div
+            key={row.label}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '0.875rem',
+              padding: '0.4rem 0',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <span style={{ color: 'var(--text-secondary)' }}>{row.label}</span>
+            <span style={{ fontWeight: 500 }}>{row.value}</span>
+          </div>
+        ))}
+        {booking.restTime > 0 && (
+          <p style={{
+            fontSize: '0.78rem',
+            color: 'var(--text-muted)',
+            marginTop: '0.75rem',
+          }}>
+            {booking.activeTime} min active + {booking.restTime} min setting time
+          </p>
+        )}
       </div>
 
-      <p style={{ color: '#6b6b6b', fontSize: '0.85rem' }}>
-        Call us on (03) 9569 0840 if you need to make changes.
+      {/* Calendar buttons */}
+      <p style={{
+        fontSize: '0.78rem',
+        fontWeight: 500,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: 'var(--text-muted)',
+        marginBottom: '0.75rem',
+      }}>
+        Add to calendar
+      </p>
+      <div style={{
+        display: 'flex',
+        gap: '0.75rem',
+        justifyContent: 'center',
+        marginBottom: '1.75rem',
+      }}>
+        <a
+          href={getGoogleCalendarLink(booking)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            padding: '0.65rem 1.25rem',
+            background: 'var(--white)',
+            border: '1.5px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            textDecoration: 'none',
+            fontSize: '0.82rem',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            transition: 'border-color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-primary)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+        >
+          Google Calendar
+        </a>
+        <button
+          onClick={() => downloadICSFile(booking)}
+          style={{
+            padding: '0.65rem 1.25rem',
+            background: 'var(--white)',
+            border: '1.5px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            cursor: 'pointer',
+            fontSize: '0.82rem',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            transition: 'border-color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-primary)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+        >
+          Apple / Outlook
+        </button>
+      </div>
+
+      {/* Contact note */}
+      <p style={{
+        fontSize: '0.82rem',
+        color: 'var(--text-muted)',
+        marginBottom: '1.75rem',
+      }}>
+        Need to make changes? Call us on{' '}
+        <a
+          href="tel:0395690840"
+          style={{ color: 'var(--text-primary)', fontWeight: 500, textDecoration: 'none' }}
+        >
+          (03) 9569 0840
+        </a>
       </p>
 
-      {/* Add to Calendar */}
-      <div style={{ marginTop: '1.5rem' }}>
-        <p style={{ fontWeight: 500, marginBottom: '0.75rem', fontSize: '0.9rem' }}>
-          Add to your calendar:
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href={getGoogleCalendarLink(booking)}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              padding: '0.6rem 1.2rem',
-              background: '#4285F4',
-              color: 'white',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontSize: '0.9rem',
-              fontWeight: 500,
-            }}
-          >
-            📅 Google Calendar
-          </a>
-          <button
-            onClick={() => downloadICSFile(booking)}
-            style={{
-              padding: '0.6rem 1.2rem',
-              background: '#1a1a1a',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: 500,
-            }}
-          >
-            🗓 Apple / Outlook
-          </button>
-        </div>
-      </div>
-
+      {/* Book again */}
       <button
         onClick={onReset}
         style={{
-          marginTop: '1.5rem',
-          padding: '0.75rem 1.5rem',
-          background: '#c9a96e',
-          color: 'white',
+          padding: '0.65rem 2rem',
+          background: 'var(--text-primary)',
+          color: 'var(--white)',
           border: 'none',
-          borderRadius: '6px',
+          borderRadius: 'var(--radius-md)',
           cursor: 'pointer',
-          fontSize: '1rem',
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          fontFamily: 'var(--font-body)',
+          letterSpacing: '0.04em',
         }}
       >
-        Make Another Booking
+        Make another booking
       </button>
     </div>
   );
