@@ -44,8 +44,52 @@ const StepOneService = ({
 
   if (stylistsLoading || servicesLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "2rem", color: "#6b6b6b" }}>
-        Loading stylists and services...
+      <div style={{ padding: "2rem" }}>
+        <div
+          style={{
+            height: "1.5rem",
+            background: "var(--surface)",
+            borderRadius: "var(--radius-sm)",
+            marginBottom: "1.5rem",
+            width: "60%",
+            animation: "pulse 1.5s ease-in-out infinite",
+          }}
+        />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                height: "72px",
+                background: "var(--surface)",
+                borderRadius: "var(--radius-md)",
+                animation: "pulse 1.5s ease-in-out infinite",
+                animationDelay: `${i * 0.1}s`,
+              }}
+            />
+          ))}
+        </div>
+        <div
+          style={{
+            height: "48px",
+            background: "var(--surface)",
+            borderRadius: "var(--radius-md)",
+            animation: "pulse 1.5s ease-in-out infinite",
+          }}
+        />
+        <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
       </div>
     );
   }
