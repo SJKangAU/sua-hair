@@ -1,6 +1,6 @@
 // StepIndicator.tsx
-// Displays the 3-step progress bar at the top of the booking form
-// Step order: Stylist & Service → Date & Time → Your Details
+// Progress indicator for the 3-step booking flow
+// Neutral design with gold active state
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -13,39 +13,112 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
     <div
       style={{
         display: "flex",
-        justifyContent: "space-between",
-        marginBottom: "2rem",
+        alignItems: "center",
+        padding: "1.75rem 2rem 0",
+        gap: 0,
       }}
     >
       {STEPS.map((label, i) => {
-        const active = currentStep >= i + 1;
+        const stepNum = i + 1;
+        const active = currentStep >= stepNum;
+        const current = currentStep === stepNum;
+        const isLast = i === STEPS.length - 1;
+
         return (
-          <div key={i} style={{ textAlign: "center", flex: 1 }}>
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flex: isLast ? "none" : 1,
+              minWidth: 0,
+            }}
+          >
+            {/* Step circle + label */}
             <div
               style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: active ? "#c9a96e" : "#ddd",
-                color: active ? "white" : "#999",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 0.25rem",
-                fontWeight: 600,
-                fontSize: "0.9rem",
+                gap: "0.4rem",
+                flexShrink: 0,
               }}
             >
-              {i + 1}
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: active ? "var(--text-primary)" : "transparent",
+                  border: active
+                    ? "2px solid var(--text-primary)"
+                    : "2px solid var(--border)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s",
+                  position: "relative",
+                }}
+              >
+                {active && currentStep > stepNum ? (
+                  // Completed — show checkmark
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2 6l3 3 5-5"
+                      stroke="var(--gold)"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 600,
+                      color: active ? "var(--gold)" : "var(--text-muted)",
+                      fontFamily: "var(--font-body)",
+                      letterSpacing: 0,
+                    }}
+                  >
+                    {stepNum}
+                  </span>
+                )}
+              </div>
+              <span
+                style={{
+                  fontSize: "0.68rem",
+                  fontWeight: current ? 500 : 400,
+                  color: current
+                    ? "var(--text-primary)"
+                    : active
+                    ? "var(--text-secondary)"
+                    : "var(--text-muted)",
+                  letterSpacing: "0.02em",
+                  whiteSpace: "nowrap",
+                  transition: "color 0.2s",
+                }}
+              >
+                {label}
+              </span>
             </div>
-            <span
-              style={{
-                fontSize: "0.75rem",
-                color: active ? "#c9a96e" : "#999",
-              }}
-            >
-              {label}
-            </span>
+
+            {/* Connector line */}
+            {!isLast && (
+              <div
+                style={{
+                  flex: 1,
+                  height: "1px",
+                  background:
+                    currentStep > stepNum
+                      ? "var(--text-primary)"
+                      : "var(--border)",
+                  margin: "0 0.5rem",
+                  marginBottom: "1.35rem",
+                  transition: "background 0.2s",
+                }}
+              />
+            )}
           </div>
         );
       })}
