@@ -1,10 +1,11 @@
 // StepOneService.tsx
-// Step 1 of the booking flow (was StepTwoService)
-// Stylist selection cards with headshots and tiered pricing
-// Service dropdown resolves price based on selected stylist level
-// Consumes stylists and services from SalonDataContext (Firestore)
+// Step 1 of the booking flow
+// Stylist selection with "Any stylist" option
+// Service available immediately — no need to select stylist first
+// Price shows based on selected stylist tier, or lowest price if "Any" selected
 
 import { useSalonData } from "../../context/SalonDataContext";
+import type { FirestoreStylist } from "../../hooks/useStylists";
 
 interface Props {
   stylistId: string;
@@ -38,9 +39,24 @@ const StepOneService = ({
     servicesError,
   } = useSalonData();
 
-  // Resolve tiered price based on selected stylist level
+  // Resolve price level — use junior (lowest) if no stylist or "any" selected
   const selectedStylist = stylists.find((s) => s.id === stylistId);
   const priceLevel = selectedStylist?.level ?? "junior";
+  const isAny = stylistId === "any";
+
+  // Get the display price — lowest tier if "any", otherwise resolved tier
+  const getDisplayPrice = (service: {
+    price: { director: number; senior: number; junior: number };
+  }) => {
+    if (isAny || !stylistId) {
+      return Math.min(
+        service.price.director,
+        service.price.senior,
+        service.price.junior,
+      );
+    }
+    return service.price[priceLevel];
+  };
 
   if (stylistsLoading || servicesLoading) {
     return (
@@ -85,18 +101,20 @@ const StepOneService = ({
           }}
         />
         <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+          }
+        `}</style>
       </div>
     );
   }
 
   if (stylistsError || servicesError) {
     return (
-      <div style={{ textAlign: "center", padding: "2rem", color: "#e24b4a" }}>
+      <div
+        style={{ textAlign: "center", padding: "2rem", color: "var(--error)" }}
+      >
         {stylistsError || servicesError}
       </div>
     );
@@ -114,7 +132,7 @@ const StepOneService = ({
           letterSpacing: "-0.01em",
         }}
       >
-        Choose your stylist
+        Book an appointment
       </h3>
       <p
         style={{
@@ -123,123 +141,11 @@ const StepOneService = ({
           marginBottom: "1.75rem",
         }}
       >
-        Select a stylist to see availability and pricing.
+        Choose a stylist and service to get started.
       </p>
 
-      {/* Stylist cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "0.75rem",
-          marginBottom: "2rem",
-        }}
-      >
-        {stylists.map((stylist) => {
-          const selected = stylistId === stylist.id;
-          return (
-            <div
-              key={stylist.id}
-              onClick={() => onStylistSelect(stylist.id)}
-              style={{
-                padding: "1rem",
-                border: `1.5px solid ${
-                  selected ? "var(--text-primary)" : "var(--border)"
-                }`,
-                borderRadius: "var(--radius-md)",
-                cursor: "pointer",
-                background: selected ? "var(--text-primary)" : "var(--white)",
-                transition: "all 0.15s",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-              }}
-              onMouseEnter={(e) => {
-                if (!selected) {
-                  e.currentTarget.style.borderColor = "var(--text-primary)";
-                  e.currentTarget.style.background = "var(--surface)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!selected) {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.background = "var(--white)";
-                }
-              }}
-            >
-              {/* Headshot */}
-              {stylist.photoUrl ? (
-                <img
-                  src={stylist.photoUrl}
-                  alt={stylist.name}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    flexShrink: 0,
-                    border: selected
-                      ? "2px solid var(--gold)"
-                      : "2px solid var(--border)",
-                  }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "50%",
-                    background: selected
-                      ? "var(--gold-dark)"
-                      : "var(--surface-raised)",
-                    color: selected ? "var(--white)" : "var(--text-secondary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    flexShrink: 0,
-                  }}
-                >
-                  {stylist.name.charAt(0)}
-                </div>
-              )}
-
-              <div style={{ minWidth: 0 }}>
-                <p
-                  style={{
-                    fontWeight: 500,
-                    fontSize: "0.85rem",
-                    color: selected ? "var(--white)" : "var(--text-primary)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    margin: 0,
-                  }}
-                >
-                  {stylist.name.split(" ")[0]}
-                </p>
-                <p
-                  style={{
-                    fontSize: "0.72rem",
-                    color: selected ? "var(--gold-light)" : "var(--text-muted)",
-                    margin: 0,
-                    marginTop: "1px",
-                  }}
-                >
-                  {stylist.role}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Service dropdown */}
-      <div style={{ marginBottom: "1.25rem" }}>
+      {/* Service first */}
+      <div style={{ marginBottom: "1.75rem" }}>
         <label
           style={{
             display: "block",
@@ -252,19 +158,6 @@ const StepOneService = ({
           }}
         >
           Service
-          {!stylistId && (
-            <span
-              style={{
-                fontSize: "0.72rem",
-                color: "var(--gold)",
-                marginLeft: "0.5rem",
-                textTransform: "none",
-                letterSpacing: 0,
-              }}
-            >
-              — select a stylist first
-            </span>
-          )}
         </label>
         <select
           style={{
@@ -273,7 +166,7 @@ const StepOneService = ({
             border: "1.5px solid var(--border)",
             borderRadius: "var(--radius-md)",
             fontSize: "0.9rem",
-            color: "var(--text-primary)",
+            color: serviceId ? "var(--text-primary)" : "var(--text-muted)",
             background: "var(--white)",
             fontFamily: "var(--font-body)",
             appearance: "none",
@@ -281,44 +174,255 @@ const StepOneService = ({
             backgroundRepeat: "no-repeat",
             backgroundPosition: "right 0.75rem center",
             paddingRight: "2.5rem",
-            cursor: !stylistId ? "not-allowed" : "pointer",
-            opacity: !stylistId ? 0.6 : 1,
+            cursor: "pointer",
             outline: "none",
           }}
           value={serviceId}
           onChange={(e) => onServiceSelect(e.target.value)}
-          disabled={!stylistId}
         >
           <option value="">Select a service...</option>
-          {services.map((service) => {
-            const price = service.price[priceLevel];
-            return (
-              <option key={service.id} value={service.id}>
-                {service.name} — from ${price} ({service.totalTime} min)
-              </option>
-            );
-          })}
+          {services.map((service) => (
+            <option key={service.id} value={service.id}>
+              {service.name} — from ${getDisplayPrice(service)} (
+              {service.totalTime} min)
+            </option>
+          ))}
         </select>
+
+        {/* Rest time info */}
+        {serviceId && restTime > 0 && (
+          <div
+            style={{
+              background: "var(--surface)",
+              borderRadius: "var(--radius-md)",
+              padding: "0.75rem 1rem",
+              marginTop: "0.5rem",
+              fontSize: "0.82rem",
+              color: "var(--text-secondary)",
+              borderLeft: "3px solid var(--gold)",
+            }}
+          >
+            <strong>{activeTime} min</strong> active styling +{" "}
+            <strong>{restTime} min</strong> setting time ={" "}
+            <strong>{totalTime} min</strong> total
+          </div>
+        )}
       </div>
 
-      {/* Rest time info */}
-      {serviceId && restTime > 0 && (
-        <div
+      {/* Stylist selection */}
+      <div style={{ marginBottom: "1.75rem" }}>
+        <label
           style={{
-            background: "var(--surface)",
-            borderRadius: "var(--radius-md)",
-            padding: "0.875rem 1rem",
-            fontSize: "0.82rem",
+            display: "block",
+            fontSize: "0.78rem",
+            fontWeight: 500,
             color: "var(--text-secondary)",
-            marginBottom: "1.25rem",
-            borderLeft: "3px solid var(--gold)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.5rem",
           }}
         >
-          <strong>{activeTime} min</strong> active styling +{" "}
-          <strong>{restTime} min</strong> setting time ={" "}
-          <strong>{totalTime} min</strong> total appointment
+          Stylist
+        </label>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0.625rem",
+          }}
+        >
+          {/* Any stylist option */}
+          <div
+            onClick={() => onStylistSelect("any")}
+            style={{
+              gridColumn: "1 / -1",
+              padding: "0.875rem 1rem",
+              border: `1.5px solid ${
+                isAny || !stylistId ? "var(--text-primary)" : "var(--border)"
+              }`,
+              borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+              background:
+                isAny || !stylistId ? "var(--text-primary)" : "var(--white)",
+              transition: "all 0.15s",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+            }}
+            onMouseEnter={(e) => {
+              if (!isAny && stylistId) {
+                e.currentTarget.style.borderColor = "var(--text-primary)";
+                e.currentTarget.style.background = "var(--surface)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isAny && stylistId) {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--white)";
+              }
+            }}
+          >
+            {/* Any icon */}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background:
+                  isAny || !stylistId
+                    ? "rgba(255,255,255,0.15)"
+                    : "var(--surface-raised)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                fontSize: "1.1rem",
+              }}
+            >
+              ✦
+            </div>
+            <div>
+              <p
+                style={{
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                  color:
+                    isAny || !stylistId
+                      ? "var(--white)"
+                      : "var(--text-primary)",
+                  margin: 0,
+                }}
+              >
+                Any available stylist
+              </p>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color:
+                    isAny || !stylistId
+                      ? "rgba(255,255,255,0.6)"
+                      : "var(--text-muted)",
+                  margin: 0,
+                  marginTop: "1px",
+                }}
+              >
+                Show all available times
+              </p>
+            </div>
+          </div>
+
+          {/* Individual stylist cards */}
+          {stylists.map((stylist) => {
+            const selected = stylistId === stylist.id;
+            return (
+              <div
+                key={stylist.id}
+                onClick={() => onStylistSelect(stylist.id)}
+                style={{
+                  padding: "0.875rem",
+                  border: `1.5px solid ${
+                    selected ? "var(--text-primary)" : "var(--border)"
+                  }`,
+                  borderRadius: "var(--radius-md)",
+                  cursor: "pointer",
+                  background: selected ? "var(--text-primary)" : "var(--white)",
+                  transition: "all 0.15s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.625rem",
+                }}
+                onMouseEnter={(e) => {
+                  if (!selected) {
+                    e.currentTarget.style.borderColor = "var(--text-primary)";
+                    e.currentTarget.style.background = "var(--surface)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!selected) {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.background = "var(--white)";
+                  }
+                }}
+              >
+                {/* Headshot */}
+                {stylist.photoUrl ? (
+                  <img
+                    src={stylist.photoUrl}
+                    alt={stylist.name}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                      border: selected
+                        ? "2px solid rgba(255,255,255,0.3)"
+                        : "2px solid var(--border)",
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      background: selected
+                        ? "rgba(255,255,255,0.15)"
+                        : "var(--surface-raised)",
+                      color: selected
+                        ? "var(--white)"
+                        : "var(--text-secondary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 600,
+                      fontSize: "0.9rem",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {stylist.name.charAt(0)}
+                  </div>
+                )}
+
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontWeight: 500,
+                      fontSize: "0.825rem",
+                      color: selected ? "var(--white)" : "var(--text-primary)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      margin: 0,
+                    }}
+                  >
+                    {stylist.name.split(" ")[0]}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "0.7rem",
+                      color: selected
+                        ? "rgba(255,255,255,0.6)"
+                        : "var(--text-muted)",
+                      margin: 0,
+                      marginTop: "1px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {stylist.role}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* Notes */}
       <div>
@@ -335,7 +439,12 @@ const StepOneService = ({
         >
           Notes{" "}
           <span
-            style={{ textTransform: "none", fontWeight: 400, letterSpacing: 0 }}
+            style={{
+              textTransform: "none",
+              fontWeight: 400,
+              letterSpacing: 0,
+              color: "var(--text-muted)",
+            }}
           >
             (optional)
           </span>
@@ -346,7 +455,7 @@ const StepOneService = ({
             padding: "0.75rem 1rem",
             border: "1.5px solid var(--border)",
             borderRadius: "var(--radius-md)",
-            fontSize: "0.9rem",
+            fontSize: "0.875rem",
             color: "var(--text-primary)",
             background: "var(--white)",
             fontFamily: "var(--font-body)",

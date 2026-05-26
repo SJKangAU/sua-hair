@@ -85,6 +85,43 @@ const StepTwoDateTime = ({
         const bookings = snapshot.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as Booking),
         );
+
+    if (stylistId === 'any' && stylistIds && stylistIds.length > 0) {
+      // Generate slots for each stylist and merge — slot available if ANY stylist is free
+      const allSlotMaps: Record<string, boolean> = {};
+
+      stylistIds.forEach(id => {
+        const stylistSlots = generateSlots(date, id, totalTime, activeTime, bookings);
+        stylistSlots.forEach(slot => {
+          // If any stylist is available at this time, mark it available
+          if (slot.available) {
+            allSlotMaps[slot.time] = true;
+          } else if (!(slot.time in allSlotMaps)) {
+            allSlotMaps[slot.time] = false;
+          }
+        });
+      });
+
+// Get all slot times from the first stylist (same time grid for all stylists) and determine avzailability based on merged map
+      const baseSlots = generateSlots(date, stylistIds[0], totalTime, activeTime, bookings);
+      const merged = baseSlots.map(slot => ({
+        time: slot.time,
+        available: allSlotMaps[slot.time] ?? false,
+        reason: allSlotMaps[slot.time] ? undefined : 'No stylists available',
+      }));
+            setSlots(merged);
+    } else {
+      const generated = generateSlots(date, stylistId, totalTime, activeTime, bookings);
+      setSlots(generated);
+    }
+  } catch (err) {
+    if (!cancelled) console.error('Error fetching slots:', err);
+  }
+  if (!cancelled) setLoadingSlots(false);
+};
+
+        }
+        )
         const generated = generateSlots(
           date,
           stylistId,

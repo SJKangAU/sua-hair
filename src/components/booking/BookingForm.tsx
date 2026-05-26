@@ -46,8 +46,8 @@ const BookingForm = () => {
   const [form, setForm] = useState({
     customerName: "",
     customerPhone: "",
-    stylistId: "",
-    stylistName: "",
+    stylistId: 'any', // Default to "any" stylist for maximum availability
+    stylistName: "Any Available stlyist",
     stylistLevel: "junior" as "director" | "senior" | "junior",
     serviceId: "",
     serviceName: "",
@@ -99,6 +99,27 @@ const BookingForm = () => {
   // ── Field Handlers ────────────────────────────────────────────────────────
 
   const handleStylistSelect = (stylistId: string) => {
+    if (stylistId === "any") {
+      // Any stylist — clear specific stylist selection
+      setForm((prev) => ({
+        ...prev,
+        stylistId: "any",
+        stylistName: "Any available stylist",
+        stylistLevel: "junior",
+        servicePrice: prev.serviceId
+          ? Math.min(
+              ...services
+                .filter((s) => s.id === prev.serviceId)
+                .map((s) =>
+                  Math.min(s.price.director, s.price.senior, s.price.junior),
+                ),
+            )
+          : 0,
+        time: "",
+      }));
+      return;
+    }
+
     const stylist = stylists.find((s) => s.id === stylistId);
     if (stylist) {
       const service = services.find((s) => s.id === form.serviceId);
@@ -157,7 +178,7 @@ const BookingForm = () => {
   // ── Step Validation ───────────────────────────────────────────────────────
 
   const canProceed = (): boolean => {
-    // Step 1 — Stylist & Service
+    // Step 1 — Stylist & Service (stylistId can be 'any' or a real ID)
     if (step === 1) return form.stylistId !== "" && form.serviceId !== "";
     // Step 2 — Date & Time
     if (step === 2)
@@ -284,6 +305,7 @@ const BookingForm = () => {
         {step === 2 && (
           <StepTwoDateTime
             stylistId={form.stylistId}
+            stylistIds={stylists.map((s) => s.id)}
             serviceId={form.serviceId}
             activeTime={form.activeTime}
             totalTime={form.totalTime}
