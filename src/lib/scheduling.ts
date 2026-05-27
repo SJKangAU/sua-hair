@@ -13,6 +13,12 @@ import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
 import type { Booking, TimeBlock } from "../types";
 
+// Get current time in minutes from midnight (consistent across all functions)
+export const getCurrentMinutes = (): number => {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 // Convert a time string like "10:30 AM" to minutes from midnight (e.g. 630)
@@ -40,9 +46,12 @@ export const isSalonClosed = (dateString: string): boolean => {
 };
 
 // Check if same-day booking cutoff has passed
+// Uses minutes-based comparison for precision and consistency
 export const isPastSameDayCutoff = (dateString: string): boolean => {
   if (dateString !== todayString()) return false;
-  return new Date().getHours() >= SALON_CONFIG.sameDayCutoffHour;
+  const currentMinutes = getCurrentMinutes();
+  const cutoffMinutes = SALON_CONFIG.sameDayCutoffHour * 60;
+  return currentMinutes >= cutoffMinutes;
 };
 
 // Get the minimum bookable date (today, or tomorrow if past cutoff)
@@ -144,8 +153,7 @@ export const generateSlots = (
 
   const timeBlocks = buildTimeBlocks(existingBookings, stylistId, date);
 
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = getCurrentMinutes();
   const isToday = date === todayString();
   const minimumNoticeMin = SALON_CONFIG.minimumNoticeHours * 60;
 
