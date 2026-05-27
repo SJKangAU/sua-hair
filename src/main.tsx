@@ -1,4 +1,8 @@
 // main.tsx
+// App entry point
+// Preloads Firestore stylists and services into sessionStorage
+// before React renders so SalonDataContext reads instantly
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -6,48 +10,51 @@ import App from "./App.tsx";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "./lib/firebase";
 
-// ── Preload Firestore data ──────────────────────────────────────────────────
-// Kick off fetches immediately on app load before React renders
-// Results are cached in sessionStorage so SalonDataContext reads them instantly
-// This eliminates the loading skeleton on first visit
-
+// Preload salon data into sessionStorage before React renders
+// This eliminates the loading skeleton on the first visit
+// Silent fail — hooks will fetch normally if preload fails
 const preloadSalonData = async () => {
   try {
-    // Only preload if not already cached
+    const promises: Promise<void>[] = [];
+
     if (!sessionStorage.getItem("sua_hair_stylists")) {
-      const stylistsQuery = query(
-        collection(db, "stylists"),
-        where("status", "==", "active"),
-        orderBy("startDate", "asc"),
+      promises.push(
+        getDocs(
+          query(
+            collection(db, "stylists"),
+            where("status", "==", "active"),
+            orderBy("startDate", "asc"),
+          ),
+        ).then((snap) => {
+          const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          sessionStorage.setItem("sua_hair_stylists", JSON.stringify(data));
+        }),
       );
-      const stylistsSnap = await getDocs(stylistsQuery);
-      const stylists = stylistsSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      sessionStorage.setItem("sua_hair_stylists", JSON.stringify(stylists));
     }
 
     if (!sessionStorage.getItem("sua_hair_services")) {
-      const servicesQuery = query(
-        collection(db, "services"),
-        where("status", "==", "active"),
-        orderBy("category", "asc"),
+      promises.push(
+        getDocs(
+          query(
+            collection(db, "services"),
+            where("status", "==", "active"),
+            orderBy("category", "asc"),
+          ),
+        ).then((snap) => {
+          const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          sessionStorage.setItem("sua_hair_services", JSON.stringify(data));
+        }),
       );
-      const servicesSnap = await getDocs(servicesQuery);
-      const services = servicesSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      sessionStorage.setItem("sua_hair_services", JSON.stringify(services));
     }
+
+    // Run both fetches in parallel
+    await Promise.all(promises);
   } catch (err) {
-    // Silent fail — hooks will fetch normally if preload fails
     console.warn("Preload failed, hooks will fetch on demand:", err);
   }
 };
 
-// Fire and forget — don't await, let React render in parallel
+// Fire preload without awaiting — React renders in parallel
 preloadSalonData();
 
 createRoot(document.getElementById("root")!).render(

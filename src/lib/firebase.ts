@@ -1,7 +1,5 @@
 // firebase.ts
-// Firebase initialisation
-// Uses initializeFirestore with localCache for offline persistence
-// (replaces deprecated enableIndexedDbPersistence)
+// Firebase initialisation with IndexedDB persistence for faster repeat loads
 
 import { initializeApp } from "firebase/app";
 import {
@@ -22,8 +20,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Use persistentLocalCache instead of deprecated enableIndexedDbPersistence
-// persistentMultipleTabManager allows persistence across multiple browser tabs
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
