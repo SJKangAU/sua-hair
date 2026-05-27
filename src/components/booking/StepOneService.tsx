@@ -5,7 +5,6 @@
 // Price shows based on selected stylist tier, or lowest price if "Any" selected
 
 import { useSalonData } from "../../context/SalonDataContext";
-import type { FirestoreStylist } from "../../hooks/useStylists";
 
 interface Props {
   stylistId: string;
