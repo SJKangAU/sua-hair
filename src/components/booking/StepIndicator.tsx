@@ -1,14 +1,15 @@
 // StepIndicator.tsx
-// Progress indicator for the 3-step booking flow
-// Neutral design with gold active state
+// 2-step progress indicator for the booking flow
+// Step 1: When & Who (calendar, stylist, service)
+// Step 2: Your Details (name, phone, confirmation)
 
-interface StepIndicatorProps {
+interface Props {
   currentStep: number;
 }
 
-const STEPS = ["Stylist & Service", "Date & Time", "Your Details"];
+const STEPS = ["When & Who", "Your Details"];
 
-const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
+const StepIndicator = ({ currentStep }: Props) => {
   return (
     <div
       style={{
@@ -22,6 +23,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
         const stepNum = i + 1;
         const active = currentStep >= stepNum;
         const current = currentStep === stepNum;
+        const completed = currentStep > stepNum;
         const isLast = i === STEPS.length - 1;
 
         return (
@@ -34,7 +36,6 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               minWidth: 0,
             }}
           >
-            {/* Step circle + label */}
             <div
               style={{
                 display: "flex",
@@ -44,6 +45,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                 flexShrink: 0,
               }}
             >
+              {/* Circle */}
               <div
                 style={{
                   width: "28px",
@@ -57,11 +59,9 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                   alignItems: "center",
                   justifyContent: "center",
                   transition: "all 0.2s",
-                  position: "relative",
                 }}
               >
-                {active && currentStep > stepNum ? (
-                  // Completed — show checkmark
+                {completed ? (
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path
                       d="M2 6l3 3 5-5"
@@ -78,13 +78,14 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                       fontWeight: 600,
                       color: active ? "var(--gold)" : "var(--text-muted)",
                       fontFamily: "var(--font-body)",
-                      letterSpacing: 0,
                     }}
                   >
                     {stepNum}
                   </span>
                 )}
               </div>
+
+              {/* Label */}
               <span
                 style={{
                   fontSize: "0.68rem",
@@ -103,16 +104,15 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               </span>
             </div>
 
-            {/* Connector line */}
+            {/* Connector */}
             {!isLast && (
               <div
                 style={{
                   flex: 1,
                   height: "1px",
-                  background:
-                    currentStep > stepNum
-                      ? "var(--text-primary)"
-                      : "var(--border)",
+                  background: completed
+                    ? "var(--text-primary)"
+                    : "var(--border)",
                   margin: "0 0.5rem",
                   marginBottom: "1.35rem",
                   transition: "background 0.2s",
