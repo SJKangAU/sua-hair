@@ -417,8 +417,6 @@ const BookingCalendar = ({
     } else setViewMonth((m) => m + 1);
   };
 
-  const selectedService = services.find((s) => s.id === serviceId);
-
   return (
     <div>
       {/* ── Hero: Next available banner ──────────────────────────────────── */}
