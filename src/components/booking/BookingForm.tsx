@@ -1,7 +1,10 @@
 // BookingForm.tsx
-// Orchestrator component for the multi-step booking flow
-// Step order: Stylist & Service → Date & Time → Your Details
-// Consumes stylists and services from SalonDataContext (Firestore)
+// ─────────────────────────────────────────────────────────────────────────────
+// 2-step booking flow orchestrator
+// ─────────────────────────────────────────────────────────────────────────────
+// Step 1 — BookingCalendar: service, stylist filter, calendar, time slots
+// Step 2 — StepTwoDetails: customer phone, name, booking summary, confirmation
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react";
 import {
@@ -17,9 +20,8 @@ import { db } from "../../lib/firebase";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
-import StepOneService from "./StepOneService";
-import StepTwoDateTime from "./StepTwoDateTime";
-import StepThreeDetails from "./StepThreeDetails";
+import BookingCalendar from "./BookingCalendar";
+import StepTwoDetails from "./StepTwoDetails";
 import BookingConfirmation from "./BookingConfirmation";
 import type { Booking, CustomerProfile } from "../../types";
 
@@ -37,17 +39,13 @@ const BookingForm = () => {
   const [customerProfile, setCustomerProfile] =
     useState<CustomerProfile | null>(null);
   const [phoneConfirmed, setPhoneConfirmed] = useState(false);
-  const [errors, setErrors] = useState<{
-    name?: string;
-    phone?: string;
-    date?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
 
   const [form, setForm] = useState({
     customerName: "",
     customerPhone: "",
-    stylistId: 'any', // Default to "any" stylist for maximum availability
-    stylistName: "Any Available stlyist",
+    stylistId: "any",
+    stylistName: "",
     stylistLevel: "junior" as "director" | "senior" | "junior",
     serviceId: "",
     serviceName: "",
@@ -60,7 +58,7 @@ const BookingForm = () => {
     notes: "",
   });
 
-  // ── Customer Lookup ───────────────────────────────────────────────────────
+  // ── Customer lookup ───────────────────────────────────────────────────────
 
   const lookupCustomer = async (phone: string) => {
     const cleaned = cleanPhone(phone);
@@ -96,71 +94,70 @@ const BookingForm = () => {
     setLookingUp(false);
   };
 
-  // ── Field Handlers ────────────────────────────────────────────────────────
+  // ── Field handlers ────────────────────────────────────────────────────────
 
-  const handleStylistSelect = (stylistId: string) => {
-    if (stylistId === "any") {
-      // Any stylist — clear specific stylist selection
+  const handleStylistSelect = (id: string) => {
+    if (id === "any" || id === "") {
       setForm((prev) => ({
         ...prev,
         stylistId: "any",
-        stylistName: "Any available stylist",
+        stylistName: "",
         stylistLevel: "junior",
-        servicePrice: prev.serviceId
-          ? Math.min(
-              ...services
-                .filter((s) => s.id === prev.serviceId)
-                .map((s) =>
-                  Math.min(s.price.director, s.price.senior, s.price.junior),
-                ),
-            )
-          : 0,
         time: "",
       }));
       return;
     }
-
-    const stylist = stylists.find((s) => s.id === stylistId);
-    if (stylist) {
-      const service = services.find((s) => s.id === form.serviceId);
-      const resolvedPrice = service ? service.price[stylist.level] : 0;
-      setForm((prev) => ({
-        ...prev,
-        stylistId: stylist.id,
-        stylistName: stylist.name,
-        stylistLevel: stylist.level,
-        servicePrice: resolvedPrice,
-        time: "",
-      }));
-    }
+    const stylist = stylists.find((s) => s.id === id);
+    if (!stylist) return;
+    const service = services.find((s) => s.id === form.serviceId);
+    setForm((prev) => ({
+      ...prev,
+      stylistId: stylist.id,
+      stylistName: stylist.name,
+      stylistLevel: stylist.level,
+      servicePrice: service ? service.price[stylist.level] : prev.servicePrice,
+      time: "",
+    }));
   };
 
   const handleServiceSelect = (serviceId: string) => {
-    const service = services.find((s) => s.id === serviceId);
-    if (service) {
-      const stylist = stylists.find((s) => s.id === form.stylistId);
-      const level = stylist?.level ?? "junior";
-      const resolvedPrice = service.price[level];
+    if (!serviceId) {
       setForm((prev) => ({
         ...prev,
-        serviceId: service.id,
-        serviceName: service.name,
-        servicePrice: resolvedPrice,
-        activeTime: service.activeTime,
-        restTime: service.restTime,
-        totalTime: service.totalTime,
+        serviceId: "",
+        serviceName: "",
+        servicePrice: 0,
+        activeTime: 0,
+        restTime: 0,
+        totalTime: 0,
         time: "",
       }));
+      return;
     }
-  };
+    const service = services.find((s) => s.id === serviceId);
+    if (!service) return;
+    const isAny = form.stylistId === "any" || form.stylistId === "";
+    const stylist = stylists.find((s) => s.id === form.stylistId);
+    const resolvedPrice = isAny
+      ? Math.min(
+          service.price.director,
+          service.price.senior,
+          service.price.junior,
+        )
+      : stylist
+      ? service.price[stylist.level]
+      : service.price.junior;
 
-  const handleDateChange = (date: string) => {
-    setForm((prev) => ({ ...prev, date, time: "" }));
-    if (date === "CLOSED" || date === "CUTOFF") {
-      setErrors((prev) => ({ ...prev, date }));
-    } else {
-      setErrors((prev) => ({ ...prev, date: undefined }));
-    }
+    setForm((prev) => ({
+      ...prev,
+      serviceId: service.id,
+      serviceName: service.name,
+      servicePrice: resolvedPrice,
+      activeTime: service.activeTime,
+      restTime: service.restTime,
+      totalTime: service.totalTime,
+      time: "",
+    }));
   };
 
   const handlePhoneChange = (value: string) => {
@@ -175,21 +172,13 @@ const BookingForm = () => {
     setErrors((prev) => ({ ...prev, name: undefined }));
   };
 
-  // ── Step Validation ───────────────────────────────────────────────────────
+  // ── Step validation ───────────────────────────────────────────────────────
 
   const canProceed = (): boolean => {
-    // Step 1 — Stylist & Service (stylistId can be 'any' or a real ID)
-    if (step === 1) return form.stylistId !== "" && form.serviceId !== "";
-    // Step 2 — Date & Time
+    // Step 1 — must have a date and time selected
+    if (step === 1) return form.date !== "" && form.time !== "";
+    // Step 2 — must have valid phone, confirmed, and valid name
     if (step === 2)
-      return (
-        form.date !== "" &&
-        form.date !== "CLOSED" &&
-        form.date !== "CUTOFF" &&
-        form.time !== ""
-      );
-    // Step 3 — Your Details
-    if (step === 3)
       return (
         validatePhone(form.customerPhone) &&
         validateName(form.customerName) &&
@@ -199,19 +188,9 @@ const BookingForm = () => {
   };
 
   const handleNext = () => {
-    if (step === 3) {
-      const newErrors: { name?: string; phone?: string } = {};
-      if (!validatePhone(form.customerPhone))
-        newErrors.phone = "Invalid phone number";
-      if (!validateName(form.customerName)) newErrors.name = "Invalid name";
-      if (!phoneConfirmed)
-        newErrors.phone = "Please confirm your mobile number";
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        return;
-      }
+    if (step === 1 && canProceed()) {
+      setStep(2);
     }
-    setStep((prev) => prev + 1);
   };
 
   // ── Reset ─────────────────────────────────────────────────────────────────
@@ -226,7 +205,7 @@ const BookingForm = () => {
     setForm({
       customerName: "",
       customerPhone: "",
-      stylistId: "",
+      stylistId: "any",
       stylistName: "",
       stylistLevel: "junior",
       serviceId: "",
@@ -244,21 +223,50 @@ const BookingForm = () => {
   // ── Submit ────────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
+    // Validate step 2 before submitting
+    const newErrors: { name?: string; phone?: string } = {};
+    if (!validatePhone(form.customerPhone))
+      newErrors.phone = "Invalid phone number";
+    if (!validateName(form.customerName)) newErrors.name = "Invalid name";
+    if (!phoneConfirmed) newErrors.phone = "Please confirm your mobile number";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Resolve final stylist if "any" was selected
+    // For now we leave stylistId as 'any' — in a real implementation
+    // you'd assign the first available stylist at submission time
+    const finalStylistName =
+      form.stylistId === "any" ? "Any available stylist" : form.stylistName;
+
     setSubmitting(true);
     try {
       const booking: Omit<Booking, "id"> = {
-        ...form,
-        customerPhone: cleanPhone(form.customerPhone),
         bookingType: "customer",
         status: "pending",
+        customerName: form.customerName,
+        customerPhone: cleanPhone(form.customerPhone),
+        stylistId: form.stylistId,
+        stylistName: finalStylistName,
+        stylistLevel: form.stylistLevel,
+        serviceId: form.serviceId,
+        serviceName: form.serviceName,
+        servicePrice: form.servicePrice,
+        activeTime: form.activeTime,
+        restTime: form.restTime,
+        totalTime: form.totalTime,
+        date: form.date,
+        time: form.time,
+        notes: form.notes,
         createdAt: new Date().toISOString(),
       };
 
       const timestamp = Date.now();
-      const safeStylistName = form.stylistName
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-      const docId = `${form.date}_${safeStylistName}_${timestamp}`;
+      const safeDate = form.date;
+      const safeStylist = finalStylistName.replace(/\s+/g, "-").toLowerCase();
+      const docId = `${safeDate}_${safeStylist}_${timestamp}`;
+
       await setDoc(doc(collection(db, "bookings"), docId), booking);
       setConfirmedBooking(booking);
       setConfirmed(true);
@@ -277,51 +285,39 @@ const BookingForm = () => {
     );
   }
 
-  // In BookingForm.tsx update the return block:
-
   return (
     <div style={{ fontFamily: "var(--font-body)" }}>
       <StepIndicator currentStep={step} />
 
-      <div style={{ padding: "2rem" }}>
-        {/* Step 1 — Stylist & Service */}
+      <div style={{ padding: "1.75rem 2rem" }}>
+        {/* Step 1 — Calendar, stylist, service */}
         {step === 1 && (
-          <StepOneService
+          <BookingCalendar
             stylistId={form.stylistId}
             serviceId={form.serviceId}
+            date={form.date}
+            time={form.time}
             activeTime={form.activeTime}
             restTime={form.restTime}
             totalTime={form.totalTime}
             notes={form.notes}
             onStylistSelect={handleStylistSelect}
             onServiceSelect={handleServiceSelect}
-            onNotesChange={(val) =>
+            onDateSelect={(date) =>
+              setForm((prev) => ({ ...prev, date, time: "" }))
+            }
+            onTimeSelect={(time: string) =>
+              setForm((prev) => ({ ...prev, time }))
+            }
+            onNotesChange={(val: string) =>
               setForm((prev) => ({ ...prev, notes: val }))
             }
           />
         )}
 
-        {/* Step 2 — Date & Time */}
+        {/* Step 2 — Customer details */}
         {step === 2 && (
-          <StepTwoDateTime
-            stylistId={form.stylistId}
-            stylistIds={stylists.map((s) => s.id)}
-            serviceId={form.serviceId}
-            activeTime={form.activeTime}
-            totalTime={form.totalTime}
-            date={form.date}
-            time={form.time}
-            onDateChange={handleDateChange}
-            onTimeSelect={(val: string) =>
-              setForm((prev) => ({ ...prev, time: val }))
-            }
-            errors={errors}
-          />
-        )}
-
-        {/* Step 3 — Your Details */}
-        {step === 3 && (
-          <StepThreeDetails
+          <StepTwoDetails
             customerName={form.customerName}
             customerPhone={form.customerPhone}
             phoneConfirmed={phoneConfirmed}
@@ -331,6 +327,7 @@ const BookingForm = () => {
             onPhoneChange={handlePhoneChange}
             onNameChange={handleNameChange}
             onPhoneConfirm={setPhoneConfirmed}
+            stylistId={form.stylistId}
             stylistName={form.stylistName}
             serviceName={form.serviceName}
             servicePrice={form.servicePrice}
@@ -347,8 +344,8 @@ const BookingForm = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginTop: "2rem",
-            paddingTop: "1.5rem",
+            marginTop: "1.75rem",
+            paddingTop: "1.25rem",
             borderTop: "1px solid var(--border)",
           }}
         >
@@ -358,13 +355,12 @@ const BookingForm = () => {
               style={{
                 padding: "0.65rem 1.5rem",
                 background: "transparent",
-                border: "1px solid var(--border)",
+                border: "1.5px solid var(--border)",
                 borderRadius: "var(--radius-md)",
                 cursor: "pointer",
                 fontSize: "0.875rem",
                 color: "var(--text-secondary)",
                 fontFamily: "var(--font-body)",
-                letterSpacing: "0.02em",
                 transition: "all 0.15s",
               }}
               onMouseEnter={(e) => {
@@ -382,7 +378,7 @@ const BookingForm = () => {
             <span />
           )}
 
-          {step < 3 ? (
+          {step === 1 ? (
             <button
               onClick={handleNext}
               disabled={!canProceed()}
@@ -402,7 +398,7 @@ const BookingForm = () => {
                 transition: "all 0.15s",
               }}
             >
-              Continue
+              Continue →
             </button>
           ) : (
             <button
