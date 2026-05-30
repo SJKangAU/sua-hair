@@ -1,14 +1,13 @@
 // BookingCalendar.tsx
 // ─────────────────────────────────────────────────────────────────────────────
-// Step 1 of the booking flow — merged calendar, stylist, and service selection
+// Step 1 of the booking flow — calendar-first booking experience
 // ─────────────────────────────────────────────────────────────────────────────
-// Responsibilities:
-//   - On mount: finds the next available slot across all stylists and pre-selects it
-//   - Month calendar with dots showing days that have availability
-//   - Stylist filter chips: All / individual stylists
-//   - Service selector: updates slot duration which affects availability
-//   - Time slot grid: shown below selected date
-//   - Selected slot highlighted in charcoal
+// Layout (top to bottom):
+//   1. Stylist filter chips — Any / First available / individual stylists
+//   2. Month calendar — dots show days with availability
+//   3. Time slot grid — shown once a date is selected
+//   4. Service list — shown once a time is selected, prices inline
+//   5. Notes — optional
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback } from "react";
@@ -27,7 +26,6 @@ import type { Booking } from "../../types";
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  // Currently selected values
   stylistId: string;
   serviceId: string;
   date: string;
@@ -36,7 +34,6 @@ interface Props {
   restTime: number;
   totalTime: number;
   notes: string;
-  // Callbacks
   onStylistSelect: (id: string) => void;
   onServiceSelect: (id: string) => void;
   onDateSelect: (date: string) => void;
@@ -46,7 +43,6 @@ interface Props {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// Format YYYY-MM-DD to display string like "Tuesday 27 May"
 const formatDateDisplay = (dateStr: string): string => {
   const date = parseLocalDate(dateStr);
   return date.toLocaleDateString("en-AU", {
@@ -56,7 +52,6 @@ const formatDateDisplay = (dateStr: string): string => {
   });
 };
 
-// Get all days in a given month as YYYY-MM-DD strings
 const getDaysInMonth = (year: number, month: number): string[] => {
   const days: string[] = [];
   const date = new Date(year, month, 1);
@@ -70,13 +65,11 @@ const getDaysInMonth = (year: number, month: number): string[] => {
   return days;
 };
 
-// Get day of week for the first day of the month (0 = Sun, adjusted so Mon = 0)
 const getMonthStartOffset = (year: number, month: number): number => {
   const day = new Date(year, month, 1).getDay();
   return day === 0 ? 6 : day - 1;
 };
 
-// Add N days to a YYYY-MM-DD string
 const addDays = (dateStr: string, n: number): string => {
   const date = parseLocalDate(dateStr);
   date.setDate(date.getDate() + n);
@@ -108,44 +101,34 @@ const BookingCalendar = ({
   const { stylists, services, stylistsLoading, servicesLoading } =
     useSalonData();
 
-  // Calendar navigation state
   const today = todayString();
   const todayDate = parseLocalDate(today);
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth());
   const [viewYear, setViewYear] = useState(todayDate.getFullYear());
 
-  // Slots for selected date
   const [slots, setSlots] = useState<
     { time: string; available: boolean; reason?: string }[]
   >([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-
-  // Days that have at least one available slot — for calendar dots
   const [availableDays, setAvailableDays] = useState<Set<string>>(new Set());
-  const [loadingMonth, setLoadingMonth] = useState(false);
-
-  // Next available info for the hero banner
-  const [nextAvailable, setNextAvailable] = useState<{
-    date: string;
-    time: string;
-    stylistName: string;
-  } | null>(null);
 
   const allStylistIds = stylists.map((s) => s.id);
   const isAny = stylistId === "any" || stylistId === "";
 
-  // ── Resolve display price ─────────────────────────────────────────────────
+  // ── Price resolution ──────────────────────────────────────────────────────
 
-  const getDisplayPrice = (service: {
-    price: { director: number; senior: number; junior: number };
-  }) => {
-    if (isAny)
+  const getPriceForStylist = (
+    service: { price: { director: number; senior: number; junior: number } },
+    sid: string,
+  ) => {
+    if (sid === "any" || sid === "") {
       return Math.min(
         service.price.director,
         service.price.senior,
         service.price.junior,
       );
-    const stylist = stylists.find((s) => s.id === stylistId);
+    }
+    const stylist = stylists.find((s) => s.id === sid);
     return stylist ? service.price[stylist.level] : service.price.junior;
   };
 
@@ -173,6 +156,8 @@ const BookingCalendar = ({
         const bookings = snap.docs.map(
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
+        const effTotal = targetTotalTime > 0 ? targetTotalTime : 30;
+        const effActive = targetActiveTime > 0 ? targetActiveTime : 30;
         const ids =
           targetStylistId === "any" || targetStylistId === ""
             ? allStylistIds
@@ -183,26 +168,21 @@ const BookingCalendar = ({
           return;
         }
 
-        // Merge availability across all relevant stylists
         const availMap: Record<string, boolean> = {};
         ids.forEach((id) => {
-          generateSlots(
-            targetDate,
-            id,
-            targetTotalTime,
-            targetActiveTime,
-            bookings,
-          ).forEach((slot) => {
-            if (slot.available) availMap[slot.time] = true;
-            else if (!(slot.time in availMap)) availMap[slot.time] = false;
-          });
+          generateSlots(targetDate, id, effTotal, effActive, bookings).forEach(
+            (slot) => {
+              if (slot.available) availMap[slot.time] = true;
+              else if (!(slot.time in availMap)) availMap[slot.time] = false;
+            },
+          );
         });
 
         const base = generateSlots(
           targetDate,
           ids[0],
-          targetTotalTime,
-          targetActiveTime,
+          effTotal,
+          effActive,
           bookings,
         );
         setSlots(
@@ -215,8 +195,8 @@ const BookingCalendar = ({
       } catch (err) {
         if (!cancelled) console.error("Error fetching slots:", err);
       }
-      if (!cancelled) setLoadingSlots(false);
 
+      if (!cancelled) setLoadingSlots(false);
       return () => {
         cancelled = true;
       };
@@ -224,17 +204,15 @@ const BookingCalendar = ({
     [allStylistIds, today],
   );
 
-  // ── Fetch available days for current month view ───────────────────────────
+  // ── Fetch available days for month ────────────────────────────────────────
 
   const fetchAvailableDays = useCallback(async () => {
     if (allStylistIds.length === 0) return;
 
-    setLoadingMonth(true);
     const days = getDaysInMonth(viewYear, viewMonth);
     const minDate = getMinBookableDate();
     const futureDays = days.filter((d) => d >= minDate && !isSalonClosed(d));
 
-    // Check a sample of days — fetch bookings for the whole month at once
     const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(
       2,
       "0",
@@ -252,14 +230,12 @@ const BookingCalendar = ({
       const bookings = snap.docs.map(
         (d) => ({ id: d.id, ...d.data() } as Booking),
       );
-
-      const available = new Set<string>();
+      const effTotal = totalTime > 0 ? totalTime : 30;
+      const effActive = activeTime > 0 ? activeTime : 30;
       const ids = isAny ? allStylistIds : [stylistId];
+      const available = new Set<string>();
 
       futureDays.forEach((day) => {
-        const effTotal = totalTime > 0 ? totalTime : 30;
-        const effActive = activeTime > 0 ? activeTime : 30;
-
         for (const id of ids) {
           const daySlots = generateSlots(
             day,
@@ -279,7 +255,6 @@ const BookingCalendar = ({
     } catch (err) {
       console.error("Error fetching month availability:", err);
     }
-    setLoadingMonth(false);
   }, [
     viewYear,
     viewMonth,
@@ -290,15 +265,13 @@ const BookingCalendar = ({
     activeTime,
   ]);
 
-  // ── Find next available slot on mount ────────────────────────────────────
+  // ── Find and pre-select next available slot ───────────────────────────────
 
   const findNextAvailable = useCallback(async () => {
     if (allStylistIds.length === 0) return;
-
     const effTotal = totalTime > 0 ? totalTime : 30;
     const effActive = activeTime > 0 ? activeTime : 30;
 
-    // Check next 14 days
     for (let i = 0; i < 14; i++) {
       const checkDate = addDays(getMinBookableDate(), i);
       if (isSalonClosed(checkDate)) continue;
@@ -310,35 +283,35 @@ const BookingCalendar = ({
         const bookings = snap.docs.map(
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
+        const ids = isAny ? allStylistIds : [stylistId];
 
-        for (const stylist of stylists) {
+        for (const id of ids) {
           const daySlots = generateSlots(
             checkDate,
-            stylist.id,
+            id,
             effTotal,
             effActive,
             bookings,
           );
           const firstAvail = daySlots.find((s) => s.available);
           if (firstAvail) {
-            setNextAvailable({
-              date: checkDate,
-              time: firstAvail.time,
-              stylistName: stylist.name.split(" ")[0],
-            });
-            // Pre-select this date and time
             onDateSelect(checkDate);
             onTimeSelect(firstAvail.time);
+            // Navigate calendar to that month
+            const d = parseLocalDate(checkDate);
+            setViewMonth(d.getMonth());
+            setViewYear(d.getFullYear());
             return;
           }
         }
       } catch {
-        // Silent fail
+        /* silent fail */
       }
     }
   }, [
     allStylistIds,
-    stylists,
+    stylistId,
+    isAny,
     totalTime,
     activeTime,
     onDateSelect,
@@ -347,37 +320,46 @@ const BookingCalendar = ({
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
-  // Find next available on mount and when service changes
+  // Pre-select next available on mount
   useEffect(() => {
     if (stylists.length > 0 && !date) {
       findNextAvailable();
     }
-  }, [stylists.length, serviceId]);
+  }, [stylists.length]);
 
-  // Fetch slots when date or stylist changes
+  // Re-find when stylist or service changes
+  useEffect(() => {
+    if (stylists.length > 0) {
+      onDateSelect("");
+      onTimeSelect("");
+      findNextAvailable();
+    }
+  }, [stylistId, serviceId]);
+
+  // Fetch slots when date changes
   useEffect(() => {
     if (date && !isSalonClosed(date)) {
       fetchSlotsForDate(date, stylistId, totalTime || 30, activeTime || 30);
+    } else {
+      setSlots([]);
     }
   }, [date, stylistId, totalTime, activeTime]);
 
-  // Fetch month availability when month view changes
+  // Fetch month availability dots
   useEffect(() => {
-    if (stylists.length > 0) {
-      fetchAvailableDays();
-    }
-  }, [viewMonth, viewYear, stylists.length, serviceId, stylistId]);
+    if (stylists.length > 0) fetchAvailableDays();
+  }, [viewMonth, viewYear, stylists.length, stylistId, serviceId]);
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading skeleton ──────────────────────────────────────────────────────
 
   if (stylistsLoading || servicesLoading) {
     return (
       <div style={{ padding: "2rem" }}>
-        {[1, 2, 3].map((i) => (
+        {[80, 200, 120].map((h, i) => (
           <div
             key={i}
             style={{
-              height: i === 1 ? "2rem" : "6rem",
+              height: `${h}px`,
               background: "var(--surface)",
               borderRadius: "var(--radius-md)",
               marginBottom: "1rem",
@@ -386,14 +368,12 @@ const BookingCalendar = ({
             }}
           />
         ))}
-        <style>{`
-          @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        `}</style>
+        <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
       </div>
     );
   }
 
-  // ── Calendar rendering ────────────────────────────────────────────────────
+  // ── Calendar helpers ──────────────────────────────────────────────────────
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const startOffset = getMonthStartOffset(viewYear, viewMonth);
@@ -417,74 +397,11 @@ const BookingCalendar = ({
     } else setViewMonth((m) => m + 1);
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div>
-      {/* ── Hero: Next available banner ──────────────────────────────────── */}
-      {nextAvailable && !date && (
-        <div
-          style={{
-            background: "var(--text-primary)",
-            borderRadius: "var(--radius-md)",
-            padding: "1rem 1.25rem",
-            marginBottom: "1.5rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            onDateSelect(nextAvailable.date);
-            onTimeSelect(nextAvailable.time);
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontSize: "0.72rem",
-                color: "rgba(255,255,255,0.5)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "0.2rem",
-              }}
-            >
-              Next available
-            </p>
-            <p
-              style={{
-                color: "var(--white)",
-                fontWeight: 500,
-                fontSize: "0.95rem",
-              }}
-            >
-              {formatDateDisplay(nextAvailable.date)} at {nextAvailable.time}
-            </p>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.5)",
-                fontSize: "0.78rem",
-                marginTop: "0.1rem",
-              }}
-            >
-              with {nextAvailable.stylistName}
-            </p>
-          </div>
-          <div
-            style={{
-              background: "var(--gold)",
-              color: "var(--white)",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              padding: "0.5rem 1rem",
-              borderRadius: "var(--radius-md)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Book this
-          </div>
-        </div>
-      )}
-
-      {/* ── Service selector ─────────────────────────────────────────────── */}
+      {/* ── 1. Stylist filter chips ───────────────────────────────────────── */}
       <div style={{ marginBottom: "1.25rem" }}>
         <label
           style={{
@@ -494,81 +411,17 @@ const BookingCalendar = ({
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             color: "var(--text-muted)",
-            marginBottom: "0.5rem",
-          }}
-        >
-          Service
-        </label>
-        <select
-          style={{
-            width: "100%",
-            padding: "0.75rem 1rem",
-            border: "1.5px solid var(--border)",
-            borderRadius: "var(--radius-md)",
-            fontSize: "0.9rem",
-            color: serviceId ? "var(--text-primary)" : "var(--text-muted)",
-            background: "var(--white)",
-            fontFamily: "var(--font-body)",
-            appearance: "none",
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239c9994' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 0.75rem center",
-            paddingRight: "2.5rem",
-            cursor: "pointer",
-            outline: "none",
-          }}
-          value={serviceId}
-          onChange={(e) => onServiceSelect(e.target.value)}
-        >
-          <option value="">Any service</option>
-          {services.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name} — from ${getDisplayPrice(service)} (
-              {service.totalTime} min)
-            </option>
-          ))}
-        </select>
-
-        {/* Rest time info */}
-        {serviceId && restTime > 0 && (
-          <div
-            style={{
-              background: "var(--surface)",
-              borderRadius: "var(--radius-md)",
-              padding: "0.625rem 0.875rem",
-              marginTop: "0.5rem",
-              fontSize: "0.8rem",
-              color: "var(--text-secondary)",
-              borderLeft: "3px solid var(--gold)",
-            }}
-          >
-            {activeTime} min active + {restTime} min setting = {totalTime} min
-            total
-          </div>
-        )}
-      </div>
-
-      {/* ── Stylist filter chips ──────────────────────────────────────────── */}
-      <div style={{ marginBottom: "1.25rem" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.72rem",
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-            marginBottom: "0.5rem",
+            marginBottom: "0.625rem",
           }}
         >
           Stylist
         </label>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          {/* Any chip */}
+          {/* Any / First available chip */}
           <button
             onClick={() => onStylistSelect("any")}
             style={{
-              padding: "0.4rem 0.875rem",
+              padding: "0.45rem 1rem",
               borderRadius: "20px",
               border: `1.5px solid ${
                 isAny ? "var(--text-primary)" : "var(--border)"
@@ -580,9 +433,10 @@ const BookingCalendar = ({
               cursor: "pointer",
               fontFamily: "var(--font-body)",
               transition: "all 0.1s",
+              whiteSpace: "nowrap",
             }}
           >
-            Any
+            First available
           </button>
 
           {/* Individual stylist chips */}
@@ -593,7 +447,7 @@ const BookingCalendar = ({
                 key={stylist.id}
                 onClick={() => onStylistSelect(stylist.id)}
                 style={{
-                  padding: "0.4rem 0.875rem",
+                  padding: "0.45rem 1rem",
                   borderRadius: "20px",
                   border: `1.5px solid ${
                     selected ? "var(--text-primary)" : "var(--border)"
@@ -608,6 +462,7 @@ const BookingCalendar = ({
                   display: "flex",
                   alignItems: "center",
                   gap: "0.375rem",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {stylist.photoUrl && (
@@ -615,8 +470,8 @@ const BookingCalendar = ({
                     src={stylist.photoUrl}
                     alt={stylist.name}
                     style={{
-                      width: "20px",
-                      height: "20px",
+                      width: "18px",
+                      height: "18px",
                       borderRadius: "50%",
                       objectFit: "cover",
                     }}
@@ -632,7 +487,7 @@ const BookingCalendar = ({
         </div>
       </div>
 
-      {/* ── Month calendar ────────────────────────────────────────────────── */}
+      {/* ── 2. Month calendar ─────────────────────────────────────────────── */}
       <div
         style={{
           border: "1.5px solid var(--border)",
@@ -641,7 +496,7 @@ const BookingCalendar = ({
           marginBottom: "1.25rem",
         }}
       >
-        {/* Month navigation header */}
+        {/* Month nav */}
         <div
           style={{
             display: "flex",
@@ -725,20 +580,15 @@ const BookingCalendar = ({
             gap: "2px",
           }}
         >
-          {/* Empty cells for month start offset */}
           {Array.from({ length: startOffset }).map((_, i) => (
             <div key={`empty-${i}`} />
           ))}
 
-          {/* Day cells */}
           {daysInMonth.map((day) => {
-            const dayDate = parseLocalDate(day);
-            const dayNum = dayDate.getDate();
+            const dayNum = parseLocalDate(day).getDate();
             const isSelected = day === date;
             const isToday = day === today;
-            const isPast = day < minDate;
-            const isClosed = isSalonClosed(day);
-            const isDisabled = isPast || isClosed;
+            const isDisabled = day < minDate || isSalonClosed(day);
             const hasAvailability = availableDays.has(day);
 
             return (
@@ -776,14 +626,15 @@ const BookingCalendar = ({
                 }}
               >
                 {dayNum}
-                {/* Availability dot */}
                 {!isDisabled && hasAvailability && (
                   <div
                     style={{
                       width: "4px",
                       height: "4px",
                       borderRadius: "50%",
-                      background: isSelected ? "var(--gold)" : "var(--gold)",
+                      background: isSelected
+                        ? "rgba(255,255,255,0.6)"
+                        : "var(--gold)",
                       position: "absolute",
                       bottom: "3px",
                     }}
@@ -795,7 +646,7 @@ const BookingCalendar = ({
         </div>
       </div>
 
-      {/* ── Time slots ────────────────────────────────────────────────────── */}
+      {/* ── 3. Time slots — shown once date selected ──────────────────────── */}
       {date && (
         <div style={{ marginBottom: "1.25rem" }}>
           <div
@@ -832,7 +683,7 @@ const BookingCalendar = ({
                 padding: "0.5rem 0",
               }}
             >
-              No available slots for this date. Please try another day.
+              No available slots. Please try another day.
             </p>
           )}
 
@@ -883,47 +734,177 @@ const BookingCalendar = ({
         </div>
       )}
 
-      {/* ── Notes ─────────────────────────────────────────────────────────── */}
-      <div>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.72rem",
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-            marginBottom: "0.5rem",
-          }}
-        >
-          Notes{" "}
-          <span
-            style={{ textTransform: "none", fontWeight: 400, letterSpacing: 0 }}
+      {/* ── 4. Service list — shown once time selected ────────────────────── */}
+      {/* Price shown inline on the right side of each service row */}
+      {time && (
+        <div style={{ marginBottom: "1.25rem" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.72rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              marginBottom: "0.625rem",
+            }}
           >
-            (optional)
-          </span>
-        </label>
-        <textarea
-          style={{
-            width: "100%",
-            padding: "0.75rem 1rem",
-            border: "1.5px solid var(--border)",
-            borderRadius: "var(--radius-md)",
-            fontSize: "0.875rem",
-            color: "var(--text-primary)",
-            background: "var(--white)",
-            fontFamily: "var(--font-body)",
-            height: "72px",
-            resize: "vertical",
-            outline: "none",
-            lineHeight: 1.6,
-            boxSizing: "border-box" as const,
-          }}
-          placeholder="Any special requests or hair concerns..."
-          value={notes}
-          onChange={(e) => onNotesChange(e.target.value)}
-        />
-      </div>
+            Service
+          </label>
+
+          <div
+            style={{
+              border: "1.5px solid var(--border)",
+              borderRadius: "var(--radius-md)",
+              overflow: "hidden",
+            }}
+          >
+            {services.map((service, i) => {
+              const isSelected = serviceId === service.id;
+              const price = getPriceForStylist(service, stylistId);
+              const isLast = i === services.length - 1;
+
+              return (
+                <div
+                  key={service.id}
+                  onClick={() => onServiceSelect(service.id)}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "0.875rem 1rem",
+                    cursor: "pointer",
+                    background: isSelected
+                      ? "var(--text-primary)"
+                      : "var(--white)",
+                    borderBottom: isLast ? "none" : "1px solid var(--border)",
+                    transition: "all 0.1s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected)
+                      e.currentTarget.style.background = "var(--surface)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected)
+                      e.currentTarget.style.background = "var(--white)";
+                  }}
+                >
+                  {/* Service name and duration */}
+                  <div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.875rem",
+                        fontWeight: isSelected ? 600 : 400,
+                        color: isSelected
+                          ? "var(--white)"
+                          : "var(--text-primary)",
+                      }}
+                    >
+                      {service.name}
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.75rem",
+                        color: isSelected
+                          ? "rgba(255,255,255,0.6)"
+                          : "var(--text-muted)",
+                        marginTop: "1px",
+                      }}
+                    >
+                      {service.totalTime} min
+                      {service.restTime > 0 &&
+                        ` · ${service.activeTime} active + ${service.restTime} setting`}
+                    </p>
+                  </div>
+
+                  {/* Price on the right */}
+                  <span
+                    style={{
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      color: isSelected
+                        ? "var(--gold-light)"
+                        : "var(--text-primary)",
+                      flexShrink: 0,
+                      marginLeft: "1rem",
+                    }}
+                  >
+                    from ${price}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Rest time breakdown if service with setting time is selected */}
+          {serviceId && restTime > 0 && (
+            <div
+              style={{
+                background: "var(--surface)",
+                borderRadius: "var(--radius-md)",
+                padding: "0.625rem 0.875rem",
+                marginTop: "0.5rem",
+                fontSize: "0.8rem",
+                color: "var(--text-secondary)",
+                borderLeft: "3px solid var(--gold)",
+              }}
+            >
+              {activeTime} min active styling + {restTime} min setting time ={" "}
+              {totalTime} min total
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── 5. Notes ──────────────────────────────────────────────────────── */}
+      {time && (
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.72rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              marginBottom: "0.5rem",
+            }}
+          >
+            Notes{" "}
+            <span
+              style={{
+                textTransform: "none",
+                fontWeight: 400,
+                letterSpacing: 0,
+              }}
+            >
+              (optional)
+            </span>
+          </label>
+          <textarea
+            style={{
+              width: "100%",
+              padding: "0.75rem 1rem",
+              border: "1.5px solid var(--border)",
+              borderRadius: "var(--radius-md)",
+              fontSize: "0.875rem",
+              color: "var(--text-primary)",
+              background: "var(--white)",
+              fontFamily: "var(--font-body)",
+              height: "72px",
+              resize: "vertical",
+              outline: "none",
+              lineHeight: 1.6,
+              boxSizing: "border-box" as const,
+            }}
+            placeholder="Any special requests or hair concerns..."
+            value={notes}
+            onChange={(e) => onNotesChange(e.target.value)}
+          />
+        </div>
+      )}
     </div>
   );
 };
