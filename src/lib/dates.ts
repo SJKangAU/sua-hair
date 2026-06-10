@@ -95,6 +95,21 @@ export const addDays = (dateStr: string, days: number): string => {
   return toDateString(date);
 };
 
+// ── Calendar helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Return all YYYY-MM-DD strings in a given year/month (0-indexed month).
+ */
+export const getDaysInMonth = (year: number, month: number): string[] => {
+  const days: string[] = [];
+  const d = new Date(year, month, 1);
+  while (d.getMonth() === month) {
+    days.push(toDateString(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+};
+
 // ── Week range ────────────────────────────────────────────────────────────────
 
 /**

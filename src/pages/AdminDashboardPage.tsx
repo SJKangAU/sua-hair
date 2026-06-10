@@ -66,14 +66,14 @@ const DashboardInner = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "#f5f0e8",
+        background: "var(--admin-page-bg)",
         fontFamily: "Georgia, serif",
       }}
     >
       {/* Header */}
       <header
         style={{
-          background: "#1a1a1a",
+          background: "var(--admin-bg)",
           padding: "1rem 2rem",
           display: "flex",
           justifyContent: "space-between",
@@ -81,23 +81,23 @@ const DashboardInner = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "1.5rem", color: "#c9a96e", margin: 0 }}>
+          <h1 style={{ fontSize: "1.5rem", color: "var(--gold)", margin: 0 }}>
             Sua Hair
           </h1>
-          <p style={{ fontSize: "0.75rem", color: "#aaa", margin: 0 }}>
+          <p style={{ fontSize: "0.75rem", color: "var(--admin-faint)", margin: 0 }}>
             Admin Dashboard
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span style={{ color: "#aaa", fontSize: "0.82rem" }}>
+          <span style={{ color: "var(--admin-faint)", fontSize: "0.82rem" }}>
             {user?.email}
           </span>
           <button
             onClick={handleSignOut}
             style={{
               background: "none",
-              border: "1px solid #555",
-              color: "#aaa",
+              border: "1px solid #555555",
+              color: "var(--admin-faint)",
               padding: "0.4rem 0.9rem",
               borderRadius: "4px",
               cursor: "pointer",
@@ -109,8 +109,8 @@ const DashboardInner = () => {
           <a
             href="/"
             style={{
-              border: "1px solid #c9a96e",
-              color: "#c9a96e",
+              border: "1px solid var(--gold)",
+              color: "var(--gold)",
               padding: "0.4rem 0.9rem",
               borderRadius: "4px",
               fontSize: "0.8rem",

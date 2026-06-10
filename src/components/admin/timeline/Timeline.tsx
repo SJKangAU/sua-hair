@@ -9,7 +9,7 @@ import { useRef, useEffect } from "react";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { SALON_CONFIG } from "../../../lib/config";
-import { minutesToTimeString } from "../../../lib/scheduling";
+import { minutesToTimeString, getCurrentMinutes } from "../../../lib/scheduling";
 import TimelineColumn from "./TimelineColumn";
 import CurrentTimeBar from "./CurrentTimeBar";
 import type { Booking } from "../../../types";
@@ -47,8 +47,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
   // Scroll to current time on mount
   useEffect(() => {
     const { open, close } = SALON_CONFIG.tradingHours;
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = getCurrentMinutes();
     const openMinutes = open * 60;
     const closeMinutes = close * 60;
 
@@ -70,7 +69,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
   return (
     <div
       style={{
-        background: "#1a1a1a",
+        background: "var(--admin-bg)",
         borderRadius: "10px",
         overflow: "hidden",
         boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
@@ -80,8 +79,8 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
       <div
         style={{
           display: "flex",
-          borderBottom: "1px solid #2a2a2a",
-          background: "#111",
+          borderBottom: `1px solid var(--admin-border)`,
+          background: "var(--admin-bg-darker)",
         }}
       >
         {/* Time label column header */}
@@ -95,7 +94,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
               flex: 1,
               padding: "0.75rem 0.5rem",
               textAlign: "center",
-              borderLeft: "1px solid #2a2a2a",
+              borderLeft: "1px solid var(--admin-border)",
               minWidth: 0,
             }}
           >
@@ -111,7 +110,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                   objectFit: "cover",
                   margin: "0 auto 0.35rem",
                   display: "block",
-                  border: "2px solid #c9a96e",
+                  border: "2px solid var(--gold)",
                 }}
               />
             ) : (
@@ -120,7 +119,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  background: "#c9a96e",
+                  background: "var(--gold)",
                   color: "white",
                   display: "flex",
                   alignItems: "center",
@@ -146,7 +145,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
             >
               {stylist.name.split(" ")[0]}
             </p>
-            <p style={{ margin: 0, fontSize: "0.65rem", color: "#888" }}>
+            <p style={{ margin: 0, fontSize: "0.65rem", color: "var(--admin-dimmer)" }}>
               {stylist.role.split(" ")[0]}
             </p>
           </div>
@@ -185,7 +184,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                   top: `${i * ROW_HEIGHT}px`,
                   right: "8px",
                   fontSize: "0.65rem",
-                  color: "#666",
+                  color: "var(--admin-dim)",
                   whiteSpace: "nowrap",
                   transform: "translateY(-50%)",
                 }}
@@ -221,7 +220,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                     left: 0,
                     right: 0,
                     height: "1px",
-                    background: i % 2 === 0 ? "#2a2a2a" : "#222",
+                    background: i % 2 === 0 ? "var(--admin-border)" : "#222222",
                   }}
                 />
               ))}

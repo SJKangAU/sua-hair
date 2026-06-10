@@ -31,6 +31,22 @@
   --success-bg: #f0f8f4;
   --warning-bg: #fdf6e8;
 
+  /* Admin dark theme (timeline, header) */
+  --admin-bg: #1a1a1a;
+  --admin-bg-darker: #111111;
+  --admin-border: #2a2a2a;
+  --admin-dim: #666666;
+  --admin-dimmer: #888888;
+  --admin-faint: #aaaaaa;
+
+  /* Admin light surfaces (cards, forms) */
+  --admin-card-border: #f0f0f0;
+  --admin-row-border: #f5f5f5;
+  --admin-surface: #fafafa;
+  --admin-input-border: #dddddd;
+  --admin-muted: #6b6b6b;
+  --admin-page-bg: #f5f0e8;
+
   /* Typography */
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;

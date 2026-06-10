@@ -16,7 +16,7 @@ const AnalyticsPage = () => {
         >
           Analytics
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#6b6b6b", margin: 0 }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--admin-muted)", margin: 0 }}>
           Revenue and performance metrics across all confirmed bookings.
         </p>
       </div>

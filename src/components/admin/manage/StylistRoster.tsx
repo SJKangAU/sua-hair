@@ -18,7 +18,7 @@ interface Props {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.6rem",
-  border: "1px solid #ddd",
+  border: "1px solid var(--admin-input-border)",
   borderRadius: "6px",
   fontSize: "0.875rem",
   boxSizing: "border-box",
@@ -29,7 +29,7 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "0.82rem",
   fontWeight: 500,
-  color: "#1a1a1a",
+  color: "var(--admin-bg)",
   marginBottom: "0.75rem",
 };
 
@@ -142,7 +142,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
         borderRadius: "12px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
         overflow: "hidden",
-        border: "1px solid #f0f0f0",
+        border: "1px solid var(--admin-card-border)",
       }}
     >
       {/* Header */}
@@ -152,7 +152,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "1.25rem 1.5rem",
-          borderBottom: "1px solid #f0f0f0",
+          borderBottom: "1px solid var(--admin-card-border)",
         }}
       >
         <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
@@ -163,7 +163,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
             onClick={() => setShowForm(true)}
             style={{
               padding: "0.4rem 0.875rem",
-              background: "#1a1a1a",
+              background: "var(--admin-bg)",
               color: "white",
               border: "none",
               borderRadius: "6px",
@@ -182,8 +182,8 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
         <div
           style={{
             padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid #f0f0f0",
-            background: "#fafafa",
+            borderBottom: "1px solid var(--admin-card-border)",
+            background: "var(--admin-surface)",
           }}
         >
           <p
@@ -288,7 +288,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
               disabled={submitting}
               style={{
                 padding: "0.5rem 1.25rem",
-                background: submitting ? "#ddd" : "#1a1a1a",
+                background: submitting ? "var(--admin-input-border)" : "var(--admin-bg)",
                 color: submitting ? "#999" : "white",
                 border: "none",
                 borderRadius: "6px",
@@ -308,11 +308,11 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
               style={{
                 padding: "0.5rem 1.25rem",
                 background: "none",
-                border: "1px solid #ddd",
+                border: "1px solid var(--admin-input-border)",
                 borderRadius: "6px",
                 fontSize: "0.875rem",
                 cursor: "pointer",
-                color: "#6b6b6b",
+                color: "var(--admin-muted)",
               }}
             >
               Cancel
@@ -326,7 +326,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
         <p
           style={{
             padding: "1.5rem",
-            color: "#6b6b6b",
+            color: "var(--admin-muted)",
             textAlign: "center",
             fontSize: "0.875rem",
           }}
@@ -343,7 +343,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "0.875rem 1.5rem",
-                borderBottom: "1px solid #f5f5f5",
+                borderBottom: "1px solid var(--admin-row-border)",
                 opacity: stylist.status === "inactive" ? 0.5 : 1,
               }}
             >
@@ -366,7 +366,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                     </span>
                   )}
                 </p>
-                <p style={{ margin: 0, fontSize: "0.78rem", color: "#6b6b6b" }}>
+                <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--admin-muted)" }}>
                   {stylist.role} · {LEVEL_LABELS[stylist.level]}
                   {stylist.status === "inactive" && " · Inactive"}
                 </p>
@@ -378,11 +378,11 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                   style={{
                     padding: "0.3rem 0.7rem",
                     background: "none",
-                    border: "1px solid #ddd",
+                    border: "1px solid var(--admin-input-border)",
                     borderRadius: "5px",
                     fontSize: "0.75rem",
                     cursor: "pointer",
-                    color: "#6b6b6b",
+                    color: "var(--admin-muted)",
                   }}
                 >
                   Edit

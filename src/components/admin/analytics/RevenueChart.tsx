@@ -10,7 +10,7 @@ const STYLIST_COLORS = ["#c9a96e", "#1d9e75", "#3b82f6", "#8b5cf6", "#ef9f27"];
 const EMPTY_MSG = (
   <p
     style={{
-      color: "#6b6b6b",
+      color: "var(--admin-muted)",
       fontSize: "0.875rem",
       textAlign: "center",
       padding: "2rem 0",
@@ -44,7 +44,7 @@ const RevenueChart = () => {
             margin: "0 0 1.25rem",
             fontSize: "0.95rem",
             fontWeight: 600,
-            color: "#1a1a1a",
+            color: "var(--admin-bg)",
           }}
         >
           Monthly Revenue (Last 6 Months)
@@ -79,7 +79,7 @@ const RevenueChart = () => {
                   <span
                     style={{
                       fontSize: "0.68rem",
-                      color: "#6b6b6b",
+                      color: "var(--admin-muted)",
                       fontWeight: 500,
                     }}
                   >
@@ -103,7 +103,7 @@ const RevenueChart = () => {
                   <span
                     style={{
                       fontSize: "0.7rem",
-                      color: "#6b6b6b",
+                      color: "var(--admin-muted)",
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -130,7 +130,7 @@ const RevenueChart = () => {
             margin: "0 0 1.25rem",
             fontSize: "0.95rem",
             fontWeight: 600,
-            color: "#1a1a1a",
+            color: "var(--admin-bg)",
           }}
         >
           Revenue by Stylist
@@ -156,7 +156,7 @@ const RevenueChart = () => {
                     width: "60px",
                     fontSize: "0.82rem",
                     fontWeight: 500,
-                    color: "#1a1a1a",
+                    color: "var(--admin-bg)",
                     flexShrink: 0,
                   }}
                 >
@@ -165,7 +165,7 @@ const RevenueChart = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "#f5f5f5",
+                    background: "var(--admin-row-border)",
                     borderRadius: "4px",
                     height: "20px",
                     overflow: "hidden",
@@ -184,7 +184,7 @@ const RevenueChart = () => {
                   style={{
                     width: "60px",
                     fontSize: "0.82rem",
-                    color: "#6b6b6b",
+                    color: "var(--admin-muted)",
                     textAlign: "right",
                     flexShrink: 0,
                   }}

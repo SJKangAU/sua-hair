@@ -36,7 +36,7 @@ const BookingsPage = ({ onUpdateStatus }: Props) => {
         <h2 style={{ fontSize: '1.1rem', fontWeight: 500, margin: 0 }}>
           All Bookings
           <span style={{
-            color: '#6b6b6b',
+            color: 'var(--admin-muted)',
             fontWeight: 400,
             fontSize: '0.85rem',
             marginLeft: '0.5rem',
