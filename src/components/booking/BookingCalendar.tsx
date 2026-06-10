@@ -1,16 +1,16 @@
 // BookingCalendar.tsx
 // ─────────────────────────────────────────────────────────────────────────────
-// Step 1 of the booking flow — calendar-first booking experience
+// Step 1 of the booking flow — service-first booking experience
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout (top to bottom):
-//   1. Stylist filter chips — Any / First available / individual stylists
-//   2. Month calendar — dots show days with availability
-//   3. Time slot grid — shown once a date is selected
-//   4. Service list — shown once a time is selected, prices inline
-//   5. Notes — optional
+//   1. Service list — always shown first (required before calendar unlocks)
+//   2. Stylist filter chips — shown after service selected
+//   3. Month calendar — shown after service selected
+//   4. Time slot grid — shown once a date is selected
+//   5. Notes — optional, shown once a time is selected
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSalonData } from "../../context/SalonDataContext";
 import { todayString } from "../../lib/dates";
 import useBookingAvailability from "../../hooks/useBookingAvailability";
@@ -83,6 +83,30 @@ const BookingCalendar = ({
     },
   });
 
+  // ── Scroll-to refs — smooth-scroll to each newly revealed section ─────────
+
+  const afterServiceRef = useRef<HTMLDivElement>(null);
+  const timeSlotsRef = useRef<HTMLDivElement>(null);
+  const notesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (serviceId && afterServiceRef.current) {
+      afterServiceRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [serviceId]);
+
+  useEffect(() => {
+    if (date && timeSlotsRef.current) {
+      timeSlotsRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [date]);
+
+  useEffect(() => {
+    if (time && notesRef.current) {
+      notesRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [time]);
+
   // ── Price resolution ──────────────────────────────────────────────────────
 
   const getPriceForStylist = (
@@ -143,151 +167,154 @@ const BookingCalendar = ({
 
   return (
     <div>
-      {/* ── 1. Stylist filter chips ───────────────────────────────────────── */}
-      <StylistFilterChips
-        stylists={stylists}
-        stylistId={stylistId}
-        onSelect={onStylistSelect}
-      />
+      {/* ── 1. Service list — always shown first ─────────────────────────── */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            marginBottom: "0.625rem",
+          }}
+        >
+          Service
+        </label>
 
-      {/* ── 2. Month calendar ─────────────────────────────────────────────── */}
-      <MonthCalendar
-        viewYear={viewYear}
-        viewMonth={viewMonth}
-        selectedDate={date}
-        today={today}
-        availableDays={availableDays}
-        onDateSelect={onDateSelect}
-        onPrevMonth={prevMonth}
-        onNextMonth={nextMonth}
-      />
+        <div
+          style={{
+            border: "1.5px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+            overflow: "hidden",
+          }}
+        >
+          {services.map((service, i) => {
+            const isSelected = serviceId === service.id;
+            const price = getPriceForStylist(service, stylistId);
+            const isLast = i === services.length - 1;
 
-      {/* ── 3. Time slots — shown once date selected ──────────────────────── */}
-      {date && (
-        <TimeSlotGrid
-          date={date}
-          time={time}
-          slots={slots}
-          loading={loadingSlots}
-          onTimeSelect={onTimeSelect}
-        />
-      )}
-
-      {/* ── 4. Service list — shown once time selected ────────────────────── */}
-      {time && (
-        <div style={{ marginBottom: "1.25rem" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "0.72rem",
-              fontWeight: 600,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-              marginBottom: "0.625rem",
-            }}
-          >
-            Service
-          </label>
-
-          <div
-            style={{
-              border: "1.5px solid var(--border)",
-              borderRadius: "var(--radius-md)",
-              overflow: "hidden",
-            }}
-          >
-            {services.map((service, i) => {
-              const isSelected = serviceId === service.id;
-              const price = getPriceForStylist(service, stylistId);
-              const isLast = i === services.length - 1;
-
-              return (
-                <div
-                  key={service.id}
-                  onClick={() => onServiceSelect(service.id)}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "0.875rem 1rem",
-                    cursor: "pointer",
-                    background: isSelected ? "var(--text-primary)" : "var(--white)",
-                    borderBottom: isLast ? "none" : "1px solid var(--border)",
-                    transition: "all 0.1s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected)
-                      e.currentTarget.style.background = "var(--surface)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected)
-                      e.currentTarget.style.background = "var(--white)";
-                  }}
-                >
-                  <div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.875rem",
-                        fontWeight: isSelected ? 600 : 400,
-                        color: isSelected ? "var(--white)" : "var(--text-primary)",
-                      }}
-                    >
-                      {service.name}
-                    </p>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.75rem",
-                        color: isSelected ? "rgba(255,255,255,0.6)" : "var(--text-muted)",
-                        marginTop: "1px",
-                      }}
-                    >
-                      {service.totalTime} min
-                      {service.restTime > 0 &&
-                        ` · ${service.activeTime} active + ${service.restTime} setting`}
-                    </p>
-                  </div>
-
-                  <span
+            return (
+              <div
+                key={service.id}
+                onClick={() => onServiceSelect(service.id)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "0.875rem 1rem",
+                  cursor: "pointer",
+                  background: isSelected ? "var(--text-primary)" : "var(--white)",
+                  borderBottom: isLast ? "none" : "1px solid var(--border)",
+                  transition: "all 0.1s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected)
+                    e.currentTarget.style.background = "var(--surface)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected)
+                    e.currentTarget.style.background = "var(--white)";
+                }}
+              >
+                <div>
+                  <p
                     style={{
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                      color: isSelected ? "var(--gold-light)" : "var(--text-primary)",
-                      flexShrink: 0,
-                      marginLeft: "1rem",
+                      margin: 0,
+                      fontSize: "0.875rem",
+                      fontWeight: isSelected ? 600 : 400,
+                      color: isSelected ? "var(--white)" : "var(--text-primary)",
                     }}
                   >
-                    from ${price}
-                  </span>
+                    {service.name}
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      color: isSelected ? "rgba(255,255,255,0.6)" : "var(--text-muted)",
+                      marginTop: "1px",
+                    }}
+                  >
+                    {service.totalTime} min
+                    {service.restTime > 0 &&
+                      ` · ${service.activeTime} active + ${service.restTime} setting`}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
 
-          {serviceId && restTime > 0 && (
-            <div
-              style={{
-                background: "var(--surface)",
-                borderRadius: "var(--radius-md)",
-                padding: "0.625rem 0.875rem",
-                marginTop: "0.5rem",
-                fontSize: "0.8rem",
-                color: "var(--text-secondary)",
-                borderLeft: "3px solid var(--gold)",
-              }}
-            >
-              {activeTime} min active styling + {restTime} min setting time ={" "}
-              {totalTime} min total
-            </div>
-          )}
+                <span
+                  style={{
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    color: isSelected ? "var(--gold-light)" : "var(--text-primary)",
+                    flexShrink: 0,
+                    marginLeft: "1rem",
+                  }}
+                >
+                  {isAny ? `from $${price}` : `$${price}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {serviceId && restTime > 0 && (
+          <div
+            style={{
+              background: "var(--surface)",
+              borderRadius: "var(--radius-md)",
+              padding: "0.625rem 0.875rem",
+              marginTop: "0.5rem",
+              fontSize: "0.8rem",
+              color: "var(--text-secondary)",
+              borderLeft: "3px solid var(--gold)",
+            }}
+          >
+            {activeTime} min active styling + {restTime} min setting time ={" "}
+            {totalTime} min total
+          </div>
+        )}
+      </div>
+
+      {/* ── 2 & 3. Stylist chips + calendar — unlocked after service chosen ── */}
+      {serviceId && (
+        <div ref={afterServiceRef}>
+          <StylistFilterChips
+            stylists={stylists}
+            stylistId={stylistId}
+            onSelect={onStylistSelect}
+          />
+
+          <MonthCalendar
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            selectedDate={date}
+            today={today}
+            availableDays={availableDays}
+            onDateSelect={onDateSelect}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
+        </div>
+      )}
+
+      {/* ── 4. Time slots — shown once date selected ──────────────────────── */}
+      {date && (
+        <div ref={timeSlotsRef}>
+          <TimeSlotGrid
+            date={date}
+            time={time}
+            slots={slots}
+            loading={loadingSlots}
+            onTimeSelect={onTimeSelect}
+          />
         </div>
       )}
 
       {/* ── 5. Notes ──────────────────────────────────────────────────────── */}
       {time && (
-        <div>
+        <div ref={notesRef}>
           <label
             style={{
               display: "block",

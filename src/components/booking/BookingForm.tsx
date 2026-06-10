@@ -38,7 +38,6 @@ const BookingForm = () => {
   > | null>(null);
   const [customerProfile, setCustomerProfile] =
     useState<CustomerProfile | null>(null);
-  const [phoneConfirmed, setPhoneConfirmed] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
 
   const [form, setForm] = useState({
@@ -130,6 +129,7 @@ const BookingForm = () => {
         activeTime: 0,
         restTime: 0,
         totalTime: 0,
+        date: "",
         time: "",
       }));
       return;
@@ -156,13 +156,13 @@ const BookingForm = () => {
       activeTime: service.activeTime,
       restTime: service.restTime,
       totalTime: service.totalTime,
+      date: "",
       time: "",
     }));
   };
 
   const handlePhoneChange = (value: string) => {
     setForm((prev) => ({ ...prev, customerPhone: value }));
-    setPhoneConfirmed(false);
     setErrors((prev) => ({ ...prev, phone: undefined }));
     lookupCustomer(value);
   };
@@ -176,13 +176,12 @@ const BookingForm = () => {
 
   const canProceed = (): boolean => {
     // Step 1 — must have a date and time selected
-    if (step === 1) return form.date !== "" && form.time !== "";
+    if (step === 1) return form.serviceId !== "" && form.date !== "" && form.time !== "";
     // Step 2 — must have valid phone, confirmed, and valid name
     if (step === 2)
       return (
         validatePhone(form.customerPhone) &&
-        validateName(form.customerName) &&
-        phoneConfirmed
+        validateName(form.customerName)
       );
     return false;
   };
@@ -200,7 +199,6 @@ const BookingForm = () => {
     setConfirmedBooking(null);
     setStep(1);
     setCustomerProfile(null);
-    setPhoneConfirmed(false);
     setErrors({});
     setForm({
       customerName: "",
@@ -228,7 +226,6 @@ const BookingForm = () => {
     if (!validatePhone(form.customerPhone))
       newErrors.phone = "Invalid phone number";
     if (!validateName(form.customerName)) newErrors.name = "Invalid name";
-    if (!phoneConfirmed) newErrors.phone = "Please confirm your mobile number";
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -320,13 +317,11 @@ const BookingForm = () => {
           <StepTwoDetails
             customerName={form.customerName}
             customerPhone={form.customerPhone}
-            phoneConfirmed={phoneConfirmed}
             lookingUp={lookingUp}
             customerProfile={customerProfile}
             errors={errors}
             onPhoneChange={handlePhoneChange}
             onNameChange={handleNameChange}
-            onPhoneConfirm={setPhoneConfirmed}
             stylistId={form.stylistId}
             stylistName={form.stylistName}
             serviceName={form.serviceName}

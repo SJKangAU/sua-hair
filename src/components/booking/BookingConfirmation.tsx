@@ -3,6 +3,7 @@
 // Neutral design with warm gold accent
 
 import { getGoogleCalendarLink, downloadICSFile } from '../../lib/calendar';
+import { parseLocalDate } from '../../lib/dates';
 import type { Booking } from '../../types';
 
 interface Props {
@@ -11,6 +12,12 @@ interface Props {
 }
 
 const BookingConfirmation = ({ booking, onReset }: Props) => {
+  const formattedDate = parseLocalDate(booking.date).toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   return (
     <div style={{
       padding: '2.5rem 2rem',
@@ -70,7 +77,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         {[
           { label: 'Stylist', value: booking.stylistName },
           { label: 'Service', value: booking.serviceName },
-          { label: 'Date', value: booking.date },
+          { label: 'Date', value: formattedDate },
           { label: 'Time', value: booking.time },
           { label: 'From', value: `$${booking.servicePrice}` },
         ].map(row => (

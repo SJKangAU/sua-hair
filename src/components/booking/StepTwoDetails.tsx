@@ -14,13 +14,11 @@ import type { CustomerProfile } from "../../types";
 interface Props {
   customerName: string;
   customerPhone: string;
-  phoneConfirmed: boolean;
   lookingUp: boolean;
   customerProfile: CustomerProfile | null;
   errors: { name?: string; phone?: string };
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
-  onPhoneConfirm: (confirmed: boolean) => void;
   // Booking summary
   stylistId: string;
   stylistName: string;
@@ -67,13 +65,11 @@ const labelStyle: React.CSSProperties = {
 const StepTwoDetails = ({
   customerName,
   customerPhone,
-  phoneConfirmed,
   lookingUp,
   customerProfile,
   errors,
   onPhoneChange,
   onNameChange,
-  onPhoneConfirm,
   stylistId,
   stylistName,
   serviceName,
@@ -249,40 +245,6 @@ const StepTwoDetails = ({
           </p>
         )}
       </div>
-
-      {/* ── Phone confirmation checkbox ───────────────────────────────────── */}
-      {phoneValid && (
-        <label
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "0.6rem",
-            marginBottom: "1.25rem",
-            fontSize: "0.85rem",
-            color: "var(--text-secondary)",
-            cursor: "pointer",
-            lineHeight: 1.5,
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={phoneConfirmed}
-            onChange={(e) => onPhoneConfirm(e.target.checked)}
-            style={{
-              marginTop: "2px",
-              cursor: "pointer",
-              accentColor: "var(--text-primary)",
-            }}
-          />
-          <span>
-            I confirm{" "}
-            <strong style={{ color: "var(--text-primary)" }}>
-              {customerPhone}
-            </strong>{" "}
-            is my correct mobile number
-          </span>
-        </label>
-      )}
 
       {/* ── Returning customer banner ─────────────────────────────────────── */}
       {customerProfile && !lookingUp && (
