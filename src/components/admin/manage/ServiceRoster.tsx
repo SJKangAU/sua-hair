@@ -1,8 +1,9 @@
 // ServiceRoster.tsx
-// Manage services — add new, edit existing, deactivate services
+// Manage services — add new, edit existing, deactivate services, reorder
 // Price changes are logged to priceHistory for accurate analytics
 // Uses useSalonData context — refetchServices() after mutations
 // All three price tiers (director/senior/junior) are editable
+// ↑↓ controls set the order clients see services in the booking flow
 
 import { useState } from "react";
 import {
@@ -106,7 +107,6 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
     setSubmitting(true);
     try {
       if (editingId) {
-        // Check if price changed — if so, log to priceHistory
         const existing = services.find((s) => s.id === editingId);
         const priceChanged =
           existing &&
@@ -114,7 +114,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             existing.price.senior !== newPrice.senior ||
             existing.price.junior !== newPrice.junior);
 
-        const updates: Record<string, any> = {
+        const updates: Record<string, unknown> = {
           name: form.name.trim(),
           category: form.category,
           activeTime: Number(form.activeTime),
@@ -123,7 +123,6 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           price: newPrice,
         };
 
-        // Append to priceHistory if price changed
         if (priceChanged) {
           updates.priceHistory = arrayUnion({
             price: newPrice,
@@ -139,7 +138,12 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           }`,
         );
       } else {
-        // Add new service
+        // Append after the last existing service
+        const nextSortOrder =
+          services.length > 0
+            ? Math.max(...services.map((s) => s.sortOrder)) + 10
+            : 0;
+
         await addDoc(collection(db, "services"), {
           name: form.name.trim(),
           category: form.category,
@@ -148,6 +152,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           totalTime,
           price: newPrice,
           status: "active",
+          sortOrder: nextSortOrder,
           priceHistory: [
             {
               price: newPrice,
@@ -171,6 +176,14 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
 
   const handleToggleStatus = async (service: FirestoreService) => {
     const newStatus = service.status === "active" ? "inactive" : "active";
+
+    if (newStatus === "inactive") {
+      const ok = window.confirm(
+        `Deactivate "${service.name}"? Clients will no longer be able to book this service.`,
+      );
+      if (!ok) return;
+    }
+
     try {
       await updateDoc(doc(db, "services", service.id), { status: newStatus });
       onSuccess(
@@ -179,12 +192,44 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
         }`,
       );
       refetchServices();
-    } catch (err) {
+    } catch {
       onError("Failed to update status.");
     }
   };
 
-  // Group services by category
+  // ── Reorder helpers — swap sortOrder between adjacent services ────────────
+
+  const handleMoveUp = async (service: FirestoreService) => {
+    const idx = services.findIndex((s) => s.id === service.id);
+    if (idx <= 0) return;
+    const neighbor = services[idx - 1];
+    try {
+      await Promise.all([
+        updateDoc(doc(db, "services", service.id), { sortOrder: neighbor.sortOrder }),
+        updateDoc(doc(db, "services", neighbor.id), { sortOrder: service.sortOrder }),
+      ]);
+      refetchServices();
+    } catch {
+      onError("Failed to reorder. Please try again.");
+    }
+  };
+
+  const handleMoveDown = async (service: FirestoreService) => {
+    const idx = services.findIndex((s) => s.id === service.id);
+    if (idx >= services.length - 1) return;
+    const neighbor = services[idx + 1];
+    try {
+      await Promise.all([
+        updateDoc(doc(db, "services", service.id), { sortOrder: neighbor.sortOrder }),
+        updateDoc(doc(db, "services", neighbor.id), { sortOrder: service.sortOrder }),
+      ]);
+      refetchServices();
+    } catch {
+      onError("Failed to reorder. Please try again.");
+    }
+  };
+
+  // Group by category for display — insertion order preserved from sorted services array
   const grouped = services.reduce(
     (acc, s) => {
       if (!acc[s.category]) acc[s.category] = [];
@@ -214,9 +259,14 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           borderBottom: "1px solid var(--admin-card-border)",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
-          ✂️ Services
-        </h3>
+        <div>
+          <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
+            ✂️ Services
+          </h3>
+          <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem", color: "var(--admin-muted)" }}>
+            Use ↑ ↓ to set the order clients see services in the booking flow.
+          </p>
+        </div>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
@@ -245,22 +295,12 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             background: "var(--admin-surface)",
           }}
         >
-          <p
-            style={{
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              margin: "0 0 1rem",
-            }}
-          >
+          <p style={{ fontSize: "0.875rem", fontWeight: 600, margin: "0 0 1rem" }}>
             {editingId ? "Edit Service" : "Add New Service"}
           </p>
 
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "0 1rem",
-            }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}
           >
             <label style={labelStyle}>
               Service Name *
@@ -269,9 +309,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 type="text"
                 placeholder="e.g. Men's Cut"
                 value={form.name}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, name: e.target.value }))
-                }
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               />
             </label>
 
@@ -280,9 +318,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               <select
                 style={inputStyle}
                 value={form.category}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, category: e.target.value }))
-                }
+                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
               >
                 <option value="">Select category...</option>
                 {SERVICE_CATEGORIES.map((c) => (
@@ -302,10 +338,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 step={5}
                 value={form.activeTime}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    activeTime: Number(e.target.value),
-                  }))
+                  setForm((prev) => ({ ...prev, activeTime: Number(e.target.value) }))
                 }
               />
             </label>
@@ -319,42 +352,21 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 step={5}
                 value={form.restTime}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    restTime: Number(e.target.value),
-                  }))
+                  setForm((prev) => ({ ...prev, restTime: Number(e.target.value) }))
                 }
               />
             </label>
           </div>
 
-          {/* Total time display */}
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "var(--admin-muted)",
-              margin: "-0.25rem 0 1rem",
-            }}
-          >
+          <p style={{ fontSize: "0.8rem", color: "var(--admin-muted)", margin: "-0.25rem 0 1rem" }}>
             Total appointment time: <strong>{totalTime} min</strong>
           </p>
 
-          {/* Tiered pricing */}
-          <p
-            style={{
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              margin: "0 0 0.75rem",
-            }}
-          >
+          <p style={{ fontSize: "0.82rem", fontWeight: 600, margin: "0 0 0.75rem" }}>
             Pricing by Stylist Level
           </p>
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "0 1rem",
-            }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 1rem" }}
           >
             <label style={labelStyle}>
               Director ($)
@@ -364,10 +376,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceDirector}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    priceDirector: Number(e.target.value),
-                  }))
+                  setForm((prev) => ({ ...prev, priceDirector: Number(e.target.value) }))
                 }
               />
             </label>
@@ -379,10 +388,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceSenior}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    priceSenior: Number(e.target.value),
-                  }))
+                  setForm((prev) => ({ ...prev, priceSenior: Number(e.target.value) }))
                 }
               />
             </label>
@@ -394,10 +400,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceJunior}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    priceJunior: Number(e.target.value),
-                  }))
+                  setForm((prev) => ({ ...prev, priceJunior: Number(e.target.value) }))
                 }
               />
             </label>
@@ -435,11 +438,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 fontWeight: 500,
               }}
             >
-              {submitting
-                ? "Saving..."
-                : editingId
-                ? "Save Changes"
-                : "Add Service"}
+              {submitting ? "Saving..." : editingId ? "Save Changes" : "Add Service"}
             </button>
             <button
               onClick={handleCancel}
@@ -490,102 +489,124 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 {category}
               </div>
 
-              {/* Services in category */}
-              {categoryServices.map((service) => (
-                <div
-                  key={service.id}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr auto auto auto",
-                    alignItems: "center",
-                    gap: "1rem",
-                    padding: "0.75rem 1.5rem",
-                    borderBottom: "1px solid var(--admin-row-border)",
-                    opacity: service.status === "inactive" ? 0.5 : 1,
-                  }}
-                >
-                  {/* Service info */}
-                  <div>
-                    <p
+              {categoryServices.map((service) => {
+                const flatIdx = services.findIndex((s) => s.id === service.id);
+                const isFirst = flatIdx === 0;
+                const isLast = flatIdx === services.length - 1;
+
+                return (
+                  <div
+                    key={service.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto auto auto auto",
+                      alignItems: "center",
+                      gap: "1rem",
+                      padding: "0.75rem 1.5rem",
+                      borderBottom: "1px solid var(--admin-row-border)",
+                      opacity: service.status === "inactive" ? 0.5 : 1,
+                    }}
+                  >
+                    {/* Service info */}
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: "0.875rem" }}>
+                        {service.name}
+                        {service.status === "inactive" && (
+                          <span style={{ marginLeft: "0.4rem", fontSize: "0.68rem", color: "#aaa" }}>
+                            Inactive
+                          </span>
+                        )}
+                      </p>
+                      <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--admin-muted)" }}>
+                        {service.totalTime} min
+                        {service.restTime > 0 &&
+                          ` (${service.activeTime} active + ${service.restTime} setting)`}
+                      </p>
+                    </div>
+
+                    {/* Tiered prices */}
+                    <div style={{ textAlign: "right", fontSize: "0.78rem" }}>
+                      <p style={{ margin: 0, color: "var(--admin-muted)" }}>
+                        ${service.price.director} / ${service.price.senior} / ${service.price.junior}
+                      </p>
+                      <p style={{ margin: 0, color: "#aaa", fontSize: "0.68rem" }}>
+                        Dir / Sen / Jun
+                      </p>
+                    </div>
+
+                    {/* Reorder controls */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <button
+                        onClick={() => handleMoveUp(service)}
+                        disabled={isFirst}
+                        title="Move up in booking flow"
+                        style={{
+                          padding: "0.15rem 0.4rem",
+                          background: "none",
+                          border: "1px solid var(--admin-input-border)",
+                          borderRadius: "4px",
+                          fontSize: "0.7rem",
+                          cursor: isFirst ? "default" : "pointer",
+                          color: isFirst ? "#ccc" : "var(--admin-muted)",
+                          lineHeight: 1,
+                        }}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => handleMoveDown(service)}
+                        disabled={isLast}
+                        title="Move down in booking flow"
+                        style={{
+                          padding: "0.15rem 0.4rem",
+                          background: "none",
+                          border: "1px solid var(--admin-input-border)",
+                          borderRadius: "4px",
+                          fontSize: "0.7rem",
+                          cursor: isLast ? "default" : "pointer",
+                          color: isLast ? "#ccc" : "var(--admin-muted)",
+                          lineHeight: 1,
+                        }}
+                      >
+                        ↓
+                      </button>
+                    </div>
+
+                    {/* Edit */}
+                    <button
+                      onClick={() => handleEdit(service)}
                       style={{
-                        margin: 0,
-                        fontWeight: 600,
-                        fontSize: "0.875rem",
-                      }}
-                    >
-                      {service.name}
-                      {service.status === "inactive" && (
-                        <span
-                          style={{
-                            marginLeft: "0.4rem",
-                            fontSize: "0.68rem",
-                            color: "#aaa",
-                          }}
-                        >
-                          Inactive
-                        </span>
-                      )}
-                    </p>
-                    <p
-                      style={{
-                        margin: 0,
+                        padding: "0.3rem 0.7rem",
+                        background: "none",
+                        border: "1px solid var(--admin-input-border)",
+                        borderRadius: "5px",
                         fontSize: "0.75rem",
+                        cursor: "pointer",
                         color: "var(--admin-muted)",
                       }}
                     >
-                      {service.totalTime} min
-                      {service.restTime > 0 &&
-                        ` (${service.activeTime} active + ${service.restTime} setting)`}
-                    </p>
-                  </div>
+                      Edit
+                    </button>
 
-                  {/* Tiered prices */}
-                  <div style={{ textAlign: "right", fontSize: "0.78rem" }}>
-                    <p style={{ margin: 0, color: "var(--admin-muted)" }}>
-                      ${service.price.director} / ${service.price.senior} / $
-                      {service.price.junior}
-                    </p>
-                    <p
-                      style={{ margin: 0, color: "#aaa", fontSize: "0.68rem" }}
+                    {/* Activate / Deactivate */}
+                    <button
+                      onClick={() => handleToggleStatus(service)}
+                      style={{
+                        padding: "0.3rem 0.7rem",
+                        background: service.status === "active" ? "#fcebeb" : "#e1f5ee",
+                        border: "none",
+                        borderRadius: "5px",
+                        fontSize: "0.75rem",
+                        cursor: "pointer",
+                        color: service.status === "active" ? "#a32d2d" : "#085041",
+                        fontWeight: 500,
+                      }}
                     >
-                      Dir / Sen / Jun
-                    </p>
+                      {service.status === "active" ? "Deactivate" : "Reactivate"}
+                    </button>
                   </div>
-
-                  {/* Actions */}
-                  <button
-                    onClick={() => handleEdit(service)}
-                    style={{
-                      padding: "0.3rem 0.7rem",
-                      background: "none",
-                      border: "1px solid var(--admin-input-border)",
-                      borderRadius: "5px",
-                      fontSize: "0.75rem",
-                      cursor: "pointer",
-                      color: "var(--admin-muted)",
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleToggleStatus(service)}
-                    style={{
-                      padding: "0.3rem 0.7rem",
-                      background:
-                        service.status === "active" ? "#fcebeb" : "#e1f5ee",
-                      border: "none",
-                      borderRadius: "5px",
-                      fontSize: "0.75rem",
-                      cursor: "pointer",
-                      color:
-                        service.status === "active" ? "#a32d2d" : "#085041",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {service.status === "active" ? "Deactivate" : "Reactivate"}
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))}
         </div>

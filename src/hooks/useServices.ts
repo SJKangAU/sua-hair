@@ -29,6 +29,7 @@ export interface FirestoreService {
   totalTime: number;
   price: TieredPrice;
   status: "active" | "inactive";
+  sortOrder: number;
   priceHistory: PriceHistoryEntry[];
   createdAt: string;
 }
@@ -89,10 +90,15 @@ const useServices = (activeOnly = true): UseServices => {
           : query(collection(db, "services"), orderBy("category", "asc"));
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as FirestoreService[];
+        const data = snapshot.docs.map((docSnap, i) => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...d,
+            sortOrder: d.sortOrder ?? i * 10,
+          };
+        }) as FirestoreService[];
+        data.sort((a, b) => a.sortOrder - b.sortOrder);
 
         setServices(data);
 

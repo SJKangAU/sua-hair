@@ -116,6 +116,14 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
 
   const handleToggleStatus = async (stylist: FirestoreStylist) => {
     const newStatus = stylist.status === "active" ? "inactive" : "active";
+
+    if (newStatus === "inactive") {
+      const ok = window.confirm(
+        `Deactivate ${stylist.name}? They will be hidden from the booking flow.`,
+      );
+      if (!ok) return;
+    }
+
     try {
       await updateDoc(doc(db, "stylists", stylist.id), { status: newStatus });
       onSuccess(

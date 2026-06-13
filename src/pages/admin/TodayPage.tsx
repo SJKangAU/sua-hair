@@ -102,6 +102,21 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
               Today
             </button>
           )}
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+            style={{
+              padding: "0.4rem 0.75rem",
+              background: "#1a1a1a",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              colorScheme: "dark",
+            }}
+          />
         </div>
 
         <button

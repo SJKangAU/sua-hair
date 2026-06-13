@@ -25,6 +25,16 @@ const BookingsPage = ({ onUpdateStatus }: Props) => {
   const { bookings, loading, error } = useBookingContext();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
+  const hasActiveFilters = !!(filters.stylistId || filters.date || filters.status);
+  const filteredCount = hasActiveFilters
+    ? bookings.filter((b) => {
+        if (filters.stylistId && b.stylistId !== filters.stylistId) return false;
+        if (filters.date && b.date !== filters.date) return false;
+        if (filters.status && b.status !== filters.status) return false;
+        return true;
+      }).length
+    : bookings.length;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -41,7 +51,9 @@ const BookingsPage = ({ onUpdateStatus }: Props) => {
             fontSize: '0.85rem',
             marginLeft: '0.5rem',
           }}>
-            ({bookings.length} total)
+            {hasActiveFilters
+              ? `(${filteredCount} shown of ${bookings.length})`
+              : `(${bookings.length} total)`}
           </span>
         </h2>
       </div>
