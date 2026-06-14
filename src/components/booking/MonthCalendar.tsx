@@ -1,5 +1,5 @@
 // MonthCalendar.tsx
-// Month grid calendar with availability dots and date selection
+// Month grid calendar with availability dots and date selection — B&W theme
 
 import { getDaysInMonth, parseLocalDate } from "../../lib/dates";
 import { getMinBookableDate, isSalonClosed } from "../../lib/scheduling";
@@ -43,8 +43,8 @@ const MonthCalendar = ({
   return (
     <div
       style={{
-        border: "1.5px solid var(--border)",
-        borderRadius: "var(--radius-md)",
+        border: "1.5px solid #e8e8e8",
+        borderRadius: "10px",
         overflow: "hidden",
         marginBottom: "1.25rem",
       }}
@@ -56,8 +56,8 @@ const MonthCalendar = ({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0.75rem 1rem",
-          borderBottom: "1px solid var(--border)",
-          background: "var(--surface)",
+          borderBottom: "1px solid #e8e8e8",
+          background: "#f8f8f8",
         }}
       >
         <button
@@ -66,19 +66,21 @@ const MonthCalendar = ({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "var(--text-secondary)",
+            color: "#555555",
             fontSize: "1rem",
             padding: "0.25rem 0.5rem",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "6px",
+            lineHeight: 1,
           }}
         >
           ←
         </button>
         <span
           style={{
-            fontWeight: 500,
-            fontSize: "0.875rem",
-            color: "var(--text-primary)",
+            fontWeight: 600,
+            fontSize: "0.82rem",
+            color: "#0a0a0a",
+            letterSpacing: "0.02em",
           }}
         >
           {monthName}
@@ -89,10 +91,11 @@ const MonthCalendar = ({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "var(--text-secondary)",
+            color: "#555555",
             fontSize: "1rem",
             padding: "0.25rem 0.5rem",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "6px",
+            lineHeight: 1,
           }}
         >
           →
@@ -112,11 +115,12 @@ const MonthCalendar = ({
             key={label}
             style={{
               textAlign: "center",
-              fontSize: "0.68rem",
+              fontSize: "0.65rem",
               fontWeight: 600,
-              color: "var(--text-muted)",
-              letterSpacing: "0.05em",
+              color: "#aaaaaa",
+              letterSpacing: "0.06em",
               padding: "0.25rem",
+              textTransform: "uppercase",
             }}
           >
             {label}
@@ -129,7 +133,7 @@ const MonthCalendar = ({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
-          padding: "0.25rem 0.5rem 0.5rem",
+          padding: "0.25rem 0.5rem 0.625rem",
           gap: "2px",
         }}
       >
@@ -153,21 +157,17 @@ const MonthCalendar = ({
                 position: "relative",
                 width: "100%",
                 aspectRatio: "1",
-                border: "none",
-                borderRadius: "var(--radius-sm)",
-                background: isSelected
-                  ? "var(--text-primary)"
-                  : isToday
-                  ? "var(--surface-raised)"
-                  : "transparent",
+                border: isToday && !isSelected ? "1.5px solid #0a0a0a" : "none",
+                borderRadius: "50%",
+                background: isSelected ? "#0a0a0a" : "transparent",
                 color: isSelected
-                  ? "var(--white)"
+                  ? "#ffffff"
                   : isDisabled
-                  ? "var(--border)"
-                  : "var(--text-primary)",
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                fontSize: "0.82rem",
-                fontWeight: isSelected || isToday ? 600 : 400,
+                  ? "#cccccc"
+                  : "#0a0a0a",
+                cursor: isDisabled ? "default" : "pointer",
+                fontSize: "0.8rem",
+                fontWeight: isSelected ? 600 : isToday ? 700 : 400,
                 fontFamily: "var(--font-body)",
                 display: "flex",
                 flexDirection: "column",
@@ -175,19 +175,22 @@ const MonthCalendar = ({
                 justifyContent: "center",
                 gap: "2px",
                 padding: "2px",
-                transition: "all 0.1s",
+                transition: "background 0.1s ease, color 0.1s ease",
               }}
             >
               {dayNum}
               {!isDisabled && hasAvailability && (
                 <div
                   style={{
-                    width: "4px",
-                    height: "4px",
+                    width: 4,
+                    height: 4,
                     borderRadius: "50%",
-                    background: isSelected ? "rgba(255,255,255,0.6)" : "var(--gold)",
+                    background: isSelected
+                      ? "rgba(255,255,255,0.55)"
+                      : "#0a0a0a",
                     position: "absolute",
-                    bottom: "3px",
+                    bottom: 3,
+                    flexShrink: 0,
                   }}
                 />
               )}

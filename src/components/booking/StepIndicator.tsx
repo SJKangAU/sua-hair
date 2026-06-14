@@ -1,29 +1,26 @@
 // StepIndicator.tsx
-// 2-step progress indicator for the booking flow
-// Step 1: When & Who (calendar, stylist, service)
-// Step 2: Your Details (name, phone, confirmation)
+// 3-step B&W progress indicator for the booking flow
 
 interface Props {
   currentStep: number;
 }
 
-const STEPS = ["When & Who", "Your Details"];
+const STEPS = ["Services", "Date & Stylist", "Your Details"];
 
 const StepIndicator = ({ currentStep }: Props) => {
   return (
     <div
       style={{
         display: "flex",
-        alignItems: "center",
-        padding: "1.75rem 2rem 0",
+        alignItems: "flex-start",
+        padding: "1.5rem 1.5rem 0",
         gap: 0,
       }}
     >
       {STEPS.map((label, i) => {
         const stepNum = i + 1;
-        const active = currentStep >= stepNum;
-        const current = currentStep === stepNum;
         const completed = currentStep > stepNum;
+        const active = currentStep === stepNum;
         const isLast = i === STEPS.length - 1;
 
         return (
@@ -31,7 +28,7 @@ const StepIndicator = ({ currentStep }: Props) => {
             key={i}
             style={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-start",
               flex: isLast ? "none" : 1,
               minWidth: 0,
             }}
@@ -41,31 +38,32 @@ const StepIndicator = ({ currentStep }: Props) => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "0.4rem",
+                gap: "0.375rem",
                 flexShrink: 0,
               }}
             >
               {/* Circle */}
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
+                  width: 26,
+                  height: 26,
                   borderRadius: "50%",
-                  background: active ? "var(--text-primary)" : "transparent",
-                  border: active
-                    ? "2px solid var(--text-primary)"
-                    : "2px solid var(--border)",
+                  background: completed || active ? "#0a0a0a" : "transparent",
+                  border: `2px solid ${
+                    completed || active ? "#0a0a0a" : "#d0d0d0"
+                  }`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transition: "all 0.2s",
+                  flexShrink: 0,
+                  transition: "all 0.2s ease",
                 }}
               >
                 {completed ? (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                     <path
-                      d="M2 6l3 3 5-5"
-                      stroke="var(--gold)"
+                      d="M1.5 5.5l2.75 2.75 4.75-4.75"
+                      stroke="#ffffff"
                       strokeWidth="1.75"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -74,10 +72,11 @@ const StepIndicator = ({ currentStep }: Props) => {
                 ) : (
                   <span
                     style={{
-                      fontSize: "0.72rem",
+                      fontSize: "0.68rem",
                       fontWeight: 600,
-                      color: active ? "var(--gold)" : "var(--text-muted)",
+                      color: active ? "#ffffff" : "#999999",
                       fontFamily: "var(--font-body)",
+                      lineHeight: 1,
                     }}
                   >
                     {stepNum}
@@ -88,16 +87,13 @@ const StepIndicator = ({ currentStep }: Props) => {
               {/* Label */}
               <span
                 style={{
-                  fontSize: "0.68rem",
-                  fontWeight: current ? 500 : 400,
-                  color: current
-                    ? "var(--text-primary)"
-                    : active
-                    ? "var(--text-secondary)"
-                    : "var(--text-muted)",
+                  fontSize: "0.65rem",
+                  fontWeight: active ? 600 : 400,
+                  color: active ? "#0a0a0a" : completed ? "#555555" : "#aaaaaa",
                   letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
-                  transition: "color 0.2s",
+                  transition: "color 0.2s ease",
+                  textAlign: "center",
                 }}
               >
                 {label}
@@ -109,13 +105,11 @@ const StepIndicator = ({ currentStep }: Props) => {
               <div
                 style={{
                   flex: 1,
-                  height: "1px",
-                  background: completed
-                    ? "var(--text-primary)"
-                    : "var(--border)",
-                  margin: "0 0.5rem",
-                  marginBottom: "1.35rem",
-                  transition: "background 0.2s",
+                  height: "1.5px",
+                  background: completed ? "#0a0a0a" : "#e0e0e0",
+                  margin: "0 0.375rem",
+                  marginTop: "11px",
+                  transition: "background 0.2s ease",
                 }}
               />
             )}

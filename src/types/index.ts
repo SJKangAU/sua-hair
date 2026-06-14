@@ -1,8 +1,6 @@
 // types/index.ts
 // Shared TypeScript interfaces used across the entire app
 
-// Tiered pricing by stylist level
-// Prices differ between Director, Senior, and Junior stylists
 export interface TieredPrice {
   director: number;
   senior: number;
@@ -27,7 +25,17 @@ export interface Service {
   activeTime: number;
   restTime: number;
   totalTime: number;
-  price: TieredPrice; // tiered by stylist level
+  price: TieredPrice;
+}
+
+// A single service as stored within a multi-service booking record
+export interface BookedService {
+  id: string;
+  name: string;
+  price: number;
+  activeTime: number;
+  restTime: number;
+  totalTime: number;
 }
 
 export interface Booking {
@@ -37,6 +45,9 @@ export interface Booking {
   stylistId: string;
   stylistName: string;
   stylistLevel: "director" | "senior" | "junior";
+  // Multi-service array — undefined for admin-created breaks/training/walkin
+  services?: BookedService[];
+  // Legacy single-service fields kept for backward compat with admin views
   serviceId: string;
   serviceName: string;
   servicePrice: number;
@@ -47,11 +58,11 @@ export interface Booking {
   time: string;
   notes?: string;
   status: "pending" | "confirmed" | "cancelled";
-  bookingType: "customer" | "walkin" | "break" | "training"; // add this field to differentiate between booking types
-  blockReason?: string; // for breaks
-  traineeId?: string; // for training
-  traineeName?: string; // for training
-  trainingTopic?: string; // for training
+  bookingType: "customer" | "walkin" | "break" | "training";
+  blockReason?: string;
+  traineeId?: string;
+  traineeName?: string;
+  trainingTopic?: string;
   createdAt: string;
 }
 

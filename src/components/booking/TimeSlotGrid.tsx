@@ -1,5 +1,5 @@
 // TimeSlotGrid.tsx
-// Grid of time slot buttons for a selected date
+// Time slot picker grouped into Morning / Afternoon sections — B&W theme
 
 import { parseLocalDate } from "../../lib/dates";
 import type { Slot } from "../../hooks/useBookingAvailability";
@@ -19,31 +19,80 @@ const formatDateDisplay = (dateStr: string): string =>
     month: "long",
   });
 
+const SectionLabel = ({ label }: { label: string }) => (
+  <p
+    style={{
+      fontSize: "0.65rem",
+      fontWeight: 700,
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: "#aaaaaa",
+      margin: "0 0 0.5rem",
+    }}
+  >
+    {label}
+  </p>
+);
+
 const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
+  const morningSlots = slots.filter((s) => s.time.endsWith("AM"));
+  const afternoonSlots = slots.filter((s) => s.time.endsWith("PM"));
+
+  const renderSlot = (slot: Slot) => {
+    const isSelected = time === slot.time;
+    const unavailable = !slot.available;
+    return (
+      <button
+        key={slot.time}
+        onClick={() => slot.available && onTimeSelect(slot.time)}
+        disabled={unavailable}
+        title={unavailable ? slot.reason : undefined}
+        style={{
+          padding: "0.6rem 0.25rem",
+          textAlign: "center",
+          border: `1.5px solid ${isSelected ? "#0a0a0a" : "#e0e0e0"}`,
+          borderRadius: "8px",
+          cursor: unavailable ? "default" : "pointer",
+          background: isSelected ? "#0a0a0a" : "#ffffff",
+          fontSize: "0.78rem",
+          fontWeight: isSelected ? 600 : 400,
+          color: isSelected ? "#ffffff" : unavailable ? "#cccccc" : "#0a0a0a",
+          fontFamily: "var(--font-body)",
+          transition: "all 0.1s ease",
+          textDecoration: unavailable ? "line-through" : "none",
+        }}
+      >
+        {slot.time}
+      </button>
+    );
+  };
+
   return (
     <div style={{ marginBottom: "1.25rem" }}>
+      {/* Date heading */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "0.625rem",
+          marginBottom: "1rem",
         }}
       >
-        <label
+        <p
           style={{
             fontSize: "0.72rem",
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
+            color: "#0a0a0a",
+            margin: 0,
           }}
         >
           {formatDateDisplay(date)}
-        </label>
+        </p>
         {loading && (
-          <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
-            Checking...
+          <span style={{ fontSize: "0.72rem", color: "#aaaaaa" }}>
+            Checking availability...
           </span>
         )}
       </div>
@@ -52,7 +101,7 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
         <p
           style={{
             fontSize: "0.875rem",
-            color: "var(--text-muted)",
+            color: "#aaaaaa",
             padding: "0.5rem 0",
           }}
         >
@@ -60,46 +109,37 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
         </p>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "0.5rem",
-        }}
-      >
-        {slots.map((slot) => {
-          const isSelected = time === slot.time;
-          const unavailable = !slot.available;
-          return (
-            <button
-              key={slot.time}
-              onClick={() => slot.available && onTimeSelect(slot.time)}
-              disabled={unavailable}
-              title={unavailable ? slot.reason : undefined}
-              style={{
-                padding: "0.6rem 0.25rem",
-                textAlign: "center",
-                border: `1.5px solid ${isSelected ? "var(--text-primary)" : "var(--border)"}`,
-                borderRadius: "var(--radius-md)",
-                cursor: unavailable ? "not-allowed" : "pointer",
-                background: isSelected ? "var(--text-primary)" : "var(--white)",
-                fontSize: "0.8rem",
-                fontWeight: isSelected ? 500 : 400,
-                color: isSelected
-                  ? "var(--white)"
-                  : unavailable
-                  ? "var(--border-strong)"
-                  : "var(--text-primary)",
-                fontFamily: "var(--font-body)",
-                transition: "all 0.1s",
-                textDecoration: unavailable ? "line-through" : "none",
-              }}
-            >
-              {slot.time}
-            </button>
-          );
-        })}
-      </div>
+      {/* Morning */}
+      {morningSlots.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <SectionLabel label="Morning" />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "0.5rem",
+            }}
+          >
+            {morningSlots.map(renderSlot)}
+          </div>
+        </div>
+      )}
+
+      {/* Afternoon */}
+      {afternoonSlots.length > 0 && (
+        <div>
+          <SectionLabel label="Afternoon" />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "0.5rem",
+            }}
+          >
+            {afternoonSlots.map(renderSlot)}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

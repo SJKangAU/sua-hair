@@ -1,6 +1,5 @@
 // BookingPage.tsx
-// Customer-facing booking page
-// Redesigned with warm neutral palette and editorial typography
+// Customer-facing booking page — pure black & white luxury aesthetic
 
 import BookingForm from "../components/booking/BookingForm";
 import { SalonDataProvider } from "../context/SalonDataContext";
@@ -11,16 +10,16 @@ const BookingPage = () => {
       <div
         style={{
           minHeight: "100vh",
-          background: "var(--off-white)",
+          background: "#f5f5f5",
           fontFamily: "var(--font-body)",
         }}
       >
         {/* Header */}
         <header
           style={{
-            background: "var(--text-primary)",
-            padding: "0 2rem",
-            height: "64px",
+            background: "#0a0a0a",
+            padding: "0 1.75rem",
+            height: "60px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -29,55 +28,51 @@ const BookingPage = () => {
             zIndex: 100,
           }}
         >
-          <div>
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "1.5rem",
-                fontWeight: 400,
-                color: "var(--gold)",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Sua Hair
-            </span>
-          </div>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.5rem",
+              fontWeight: 400,
+              color: "#ffffff",
+              letterSpacing: "0.06em",
+            }}
+          >
+            Sua Hair
+          </span>
           <a
             href="/admin/login"
             style={{
-              color: "var(--text-muted)",
-              fontSize: "0.78rem",
+              color: "#888888",
+              fontSize: "0.72rem",
               textDecoration: "none",
-              letterSpacing: "0.08em",
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
-              transition: "color 0.15s",
+              transition: "color 0.15s ease",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "var(--text-muted)")
-            }
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#888888")}
           >
             Staff login
           </a>
         </header>
 
-        {/* Hero section */}
+        {/* Hero */}
         <div
           style={{
-            background: "var(--text-primary)",
-            padding: "3rem 2rem 4rem",
+            background: "#0a0a0a",
+            padding: "3rem 2rem 4.5rem",
             textAlign: "center",
           }}
         >
           <p
             style={{
               fontFamily: "var(--font-body)",
-              fontSize: "0.72rem",
-              fontWeight: 500,
-              letterSpacing: "0.2em",
+              fontSize: "0.68rem",
+              fontWeight: 600,
+              letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "var(--gold)",
-              marginBottom: "0.75rem",
+              color: "#888888",
+              marginBottom: "0.875rem",
             }}
           >
             Melbourne's Korean Hair Studio
@@ -87,19 +82,19 @@ const BookingPage = () => {
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
               fontWeight: 300,
-              color: "var(--white)",
-              lineHeight: 1.15,
+              color: "#ffffff",
+              lineHeight: 1.1,
               letterSpacing: "-0.01em",
+              margin: "0 0 0.75rem",
             }}
           >
             Book an Appointment
           </h1>
           <p
             style={{
-              marginTop: "0.75rem",
-              color: "var(--text-muted)",
-              fontSize: "0.9rem",
-              letterSpacing: "0.02em",
+              color: "#666666",
+              fontSize: "0.875rem",
+              letterSpacing: "0.04em",
             }}
           >
             Tuesday – Sunday · 10am – 6pm · Glen Waverley
@@ -110,58 +105,41 @@ const BookingPage = () => {
         <main
           style={{
             maxWidth: "560px",
-            margin: "-2rem auto 4rem",
+            margin: "-2.5rem auto 5rem",
             padding: "0 1.25rem",
           }}
         >
           <div
             style={{
-              background: "var(--white)",
-              borderRadius: "var(--radius-lg)",
-              boxShadow: "var(--shadow-lg)",
+              background: "#ffffff",
+              borderRadius: "16px",
+              boxShadow:
+                "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
               overflow: "hidden",
             }}
           >
-            {/* Booking form card */}
-            <main
-              style={{
-                maxWidth: "560px",
-                margin: "-2rem auto 4rem",
-                padding: "0 1.25rem",
-              }}
-            >
-              <div
-                style={{
-                  background: "var(--white)",
-                  borderRadius: "var(--radius-lg)",
-                  boxShadow: "var(--shadow-lg)",
-                  overflow: "hidden",
-                }}
-              >
-                <BookingForm />
-              </div>
-            </main>
+            <BookingForm />
           </div>
         </main>
 
         {/* Footer */}
         <footer
           style={{
-            borderTop: "1px solid var(--border)",
+            borderTop: "1px solid #e8e8e8",
             padding: "2rem",
             textAlign: "center",
-            color: "var(--text-muted)",
-            fontSize: "0.8rem",
+            color: "#aaaaaa",
+            fontSize: "0.78rem",
             letterSpacing: "0.02em",
           }}
         >
-          <p>Sua Hair Studio © 2024 · (03) 9569 0840 · Glen Waverley, VIC</p>
+          <p>Sua Hair Studio © 2025 · (03) 9569 0840 · Glen Waverley, VIC</p>
           <p style={{ marginTop: "0.25rem" }}>
             <a
               href="https://suahair.com.au"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "var(--gold)", textDecoration: "none" }}
+              style={{ color: "#555555", textDecoration: "none" }}
             >
               suahair.com.au
             </a>

@@ -76,14 +76,30 @@ const useBookingAvailability = ({
   const onTimeSelectRef = useRef(onTimeSelect);
   const onViewChangeRef = useRef(onViewChange);
 
-  useEffect(() => { allStylistIdsRef.current = allStylistIds; });
-  useEffect(() => { isAnyRef.current = isAny; });
-  useEffect(() => { stylistIdRef.current = stylistId; });
-  useEffect(() => { effTotalRef.current = effTotal; });
-  useEffect(() => { effActiveRef.current = effActive; });
-  useEffect(() => { onDateSelectRef.current = onDateSelect; });
-  useEffect(() => { onTimeSelectRef.current = onTimeSelect; });
-  useEffect(() => { onViewChangeRef.current = onViewChange; });
+  useEffect(() => {
+    allStylistIdsRef.current = allStylistIds;
+  });
+  useEffect(() => {
+    isAnyRef.current = isAny;
+  });
+  useEffect(() => {
+    stylistIdRef.current = stylistId;
+  });
+  useEffect(() => {
+    effTotalRef.current = effTotal;
+  });
+  useEffect(() => {
+    effActiveRef.current = effActive;
+  });
+  useEffect(() => {
+    onDateSelectRef.current = onDateSelect;
+  });
+  useEffect(() => {
+    onTimeSelectRef.current = onTimeSelect;
+  });
+  useEffect(() => {
+    onViewChangeRef.current = onViewChange;
+  });
 
   // ── Fetch slots for selected date ─────────────────────────────────────────
   // Cancellation is handled at the effect level — if the user picks a new date
@@ -166,7 +182,10 @@ const useBookingAvailability = ({
     const minDate = getMinBookableDate();
     const futureDays = days.filter((d) => d >= minDate && !isSalonClosed(d));
 
-    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-01`;
+    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(
+      2,
+      "0",
+    )}-01`;
     const monthEnd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-31`;
 
     (async () => {
@@ -202,7 +221,15 @@ const useBookingAvailability = ({
         console.error("Error fetching month availability:", err);
       }
     })();
-  }, [viewYear, viewMonth, stylistsLoaded, stylistId, serviceId, effTotal, effActive]);
+  }, [
+    viewYear,
+    viewMonth,
+    stylistsLoaded,
+    stylistId,
+    serviceId,
+    effTotal,
+    effActive,
+  ]);
 
   // ── Find and pre-select next available slot ───────────────────────────────
   // Stable callback — reads all dynamic values from refs
@@ -249,13 +276,19 @@ const useBookingAvailability = ({
     if (stylistsLoaded && !date) findNextAvailable();
   }, [stylistsLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Re-find when stylist or service changes
+  // Re-find when stylist or service changes.
+  // On first mount, skip clearing to preserve selection when navigating back to this step.
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (stylistsLoaded) {
-      onDateSelectRef.current("");
-      onTimeSelectRef.current("");
-      findNextAvailable();
+    if (!stylistsLoaded) return;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      if (!date) findNextAvailable();
+      return;
     }
+    onDateSelectRef.current("");
+    onTimeSelectRef.current("");
+    findNextAvailable();
   }, [stylistId, serviceId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { slots, loadingSlots, availableDays };
