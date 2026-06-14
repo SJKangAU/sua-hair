@@ -1,8 +1,14 @@
 // useBookingAvailability.ts
-// Encapsulates all async availability fetching for the booking calendar:
+// Encapsulates all async availability fetching for the booking flow:
 //   - Time slots for a selected date (with proper cancellation on rapid date changes)
 //   - Available-day dots for the month view
-//   - Next-available date/time pre-selection
+//   - Next-available date/time pre-selection on mount
+//
+// Back-navigation guard: the [stylistId, serviceId] effect uses isFirstRender
+// to skip clearing the selection on the initial mount.  Without this, navigating
+// back to Step 2 would wipe the already-chosen date/time even though nothing
+// actually changed.  The clear + re-find still fires on any subsequent change to
+// stylistId or serviceId (i.e. when the user actively picks a different stylist).
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";

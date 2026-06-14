@@ -1,6 +1,17 @@
 // ServiceStep.tsx
 // Step 1 of the booking flow — multi-select service picker
-// Services grouped by category in an accordion layout
+//
+// Services arrive pre-sorted by sortOrder (from useServices) and are
+// grouped by category while preserving that order.  The first category
+// starts expanded; all others are collapsed.
+//
+// Prices are shown as "from $X" (minimum tier) because the stylist is not
+// chosen until Step 2.  Exact prices appear in BookingSummarySheet and
+// DetailsStep once a stylist is known.
+//
+// Toggling a service also clears date/time in the parent (BookingForm) because
+// the totalTime passed to useBookingAvailability changes, making previously
+// computed slots potentially invalid.
 
 import { useState } from "react";
 import type { FirestoreService } from "../../hooks/useServices";

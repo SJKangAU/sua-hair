@@ -1,5 +1,17 @@
 // DetailsStep.tsx
-// Step 3 — customer details with a compact booking summary at the top
+// Step 3 — customer details form with a compact booking summary at the top
+//
+// Receives selectedServices with resolvedPrice already computed (accounting
+// for the chosen stylist level), so this component does no price maths.
+//
+// Phone lookup: fires against the bookings collection on each valid phone
+// entry.  On a match it pre-fills customerName and surfaces a returning-
+// customer banner.  The lookup is triggered by the parent (BookingForm) via
+// the onPhoneChange prop, keeping async Firebase logic out of this component.
+//
+// Validation errors (phone / name) are set by BookingForm on submit and
+// cleared here on each keystroke so feedback disappears as soon as the user
+// starts correcting.
 
 import { parseLocalDate } from "../../lib/dates";
 import type { CustomerProfile } from "../../types";

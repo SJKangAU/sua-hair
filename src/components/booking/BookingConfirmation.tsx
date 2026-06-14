@@ -1,6 +1,14 @@
 // BookingConfirmation.tsx
 // Confirmation screen shown after a successful booking — B&W luxury theme
-// Shows all booked services and provides calendar export buttons
+//
+// Renders booking.services[] when present (new multi-service bookings) and
+// falls back to the legacy booking.serviceName field for older single-service
+// records and admin-created entries.
+//
+// Calendar export buttons:
+//   Google Calendar — opens a pre-filled URL in a new tab (getGoogleCalendarLink)
+//   Apple / Outlook — downloads an .ics file (downloadICSFile)
+// Both helpers live in lib/calendar.ts and accept the full Booking object.
 
 import { getGoogleCalendarLink, downloadICSFile } from "../../lib/calendar";
 import { parseLocalDate } from "../../lib/dates";

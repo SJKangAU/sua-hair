@@ -1,5 +1,15 @@
 // BookingSummarySheet.tsx
-// Slide-up bottom sheet — review all booking details before confirming
+// Slide-up bottom sheet shown between Step 2 and Step 3
+//
+// Appears after the user selects a time on Step 2 and taps "Review Booking".
+// Shows all selected services with individual prices, stylist, date, time,
+// duration, and the estimated total before the customer commits.
+//
+// The backdrop click dismisses the sheet (returns to Step 2).
+// "Confirm & Continue" advances to Step 3 (DetailsStep).
+//
+// CSS keyframes are injected locally via a <style> tag so this component is
+// self-contained and does not depend on BookingForm's ANIM_CSS block.
 
 import { parseLocalDate } from "../../lib/dates";
 

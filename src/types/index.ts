@@ -1,5 +1,12 @@
 // types/index.ts
 // Shared TypeScript interfaces used across the entire app
+//
+// Multi-service bookings: the customer-facing flow stores an array of
+// BookedService objects alongside the legacy flat fields (serviceId,
+// serviceName, servicePrice) so that existing admin views continue to work
+// without modification.  When reading a booking, prefer booking.services
+// when present; fall back to the flat fields for admin-created entries
+// (breaks, training, walkin) that don't go through the booking flow.
 
 export interface TieredPrice {
   director: number;

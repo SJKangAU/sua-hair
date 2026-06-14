@@ -1,5 +1,12 @@
 // StepIndicator.tsx
 // 3-step B&W progress indicator for the booking flow
+//
+// Steps: 1 Services  →  2 Date & Stylist  →  3 Your Details
+// Circle states:
+//   future    — white fill, grey border, grey number
+//   active    — black fill, white number
+//   completed — black fill, white checkmark SVG
+// Connecting lines turn black as steps are completed.
 
 interface Props {
   currentStep: number;

@@ -1,5 +1,12 @@
 // BookingPage.tsx
 // Customer-facing booking page — pure black & white luxury aesthetic
+//
+// Wraps BookingForm in a SalonDataProvider so stylists and services are
+// available to all child components via context (useSalonData).
+//
+// Layout: sticky black header → black hero → floating white card (BookingForm)
+// → footer.  The card uses a negative top margin to overlap the hero, giving
+// the illusion that the form "floats" out of the dark section.
 
 import BookingForm from "../components/booking/BookingForm";
 import { SalonDataProvider } from "../context/SalonDataContext";

@@ -1,5 +1,14 @@
 // MonthCalendar.tsx
 // Month grid calendar with availability dots and date selection — B&W theme
+//
+// Receives pre-computed availableDays from useBookingAvailability (the parent
+// hook owns all Firestore reads).  This component is purely presentational.
+//
+// Visual states per day:
+//   selected  — filled black circle, white text
+//   today     — outlined black circle (no fill), bold text
+//   disabled  — grey text, no interaction (past dates or salon-closed days)
+//   available — small black dot below the day number (was gold in the old theme)
 
 import { getDaysInMonth, parseLocalDate } from "../../lib/dates";
 import { getMinBookableDate, isSalonClosed } from "../../lib/scheduling";

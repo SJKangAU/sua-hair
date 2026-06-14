@@ -1,5 +1,11 @@
 // TimeSlotGrid.tsx
 // Time slot picker grouped into Morning / Afternoon sections — B&W theme
+//
+// Slots are split by AM/PM suffix on the time string (e.g. "10:00 AM" →
+// Morning, "1:30 PM" → Afternoon).  Unavailable slots are rendered with
+// strikethrough text and a line-through decoration so the time grid shape
+// stays consistent — the user can see what times exist but can't click them.
+// Receives pre-fetched slots from the parent (useBookingAvailability).
 
 import { parseLocalDate } from "../../lib/dates";
 import type { Slot } from "../../hooks/useBookingAvailability";

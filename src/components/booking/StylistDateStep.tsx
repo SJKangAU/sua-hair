@@ -1,11 +1,25 @@
 // StylistDateStep.tsx
-// Step 2 — choose a stylist, then pick a date and time
-// Manages calendar view state internally; date/time bubble up to parent
+// Step 2 — choose a stylist, then pick a date and time (merged step)
+//
+// Reads stylists from SalonDataContext and passes them to the radio list.
+// Calendar view state (viewYear / viewMonth) is owned internally — it resets
+// on remount, which is acceptable because the displayed month is cosmetic.
+//
+// serviceHash (joined sorted service IDs) is passed to useBookingAvailability
+// as the serviceId dependency so that changing the selected services on Step 1
+// triggers a fresh availability search even though the hook only uses totalTime
+// and activeTime for the actual slot computation.
+//
+// Navigation guard: useBookingAvailability was updated with an isFirstRender
+// ref so that mounting this step during back-navigation does NOT clear the
+// already-selected date/time.  Clearing still happens when the user actively
+// changes stylistId or serviceHash while on this step.
 
 import { useState } from "react";
 import { useSalonData } from "../../context/SalonDataContext";
 import useBookingAvailability from "../../hooks/useBookingAvailability";
-import { todayString, parseLocalDate, addDays } from "../../lib/dates";
+import { todayString, parseLocalDate } from "../../lib/dates";
+
 import MonthCalendar from "./MonthCalendar";
 import TimeSlotGrid from "./TimeSlotGrid";
 
