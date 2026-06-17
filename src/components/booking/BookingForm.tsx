@@ -247,7 +247,7 @@ const BookingForm = () => {
         totalTime,
         date,
         time,
-        notes: notes.trim() || undefined,
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
         createdAt: new Date().toISOString(),
       };
 
