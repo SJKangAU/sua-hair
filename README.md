@@ -4,7 +4,7 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 
 ## Live Demo
 
-[Link to deployed app] — coming soon
+[View live app](https://sua-hair.vercel.app)
 
 ## Built With
 
