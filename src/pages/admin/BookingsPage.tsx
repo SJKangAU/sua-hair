@@ -1,13 +1,14 @@
 // BookingsPage.tsx
 // Bookings tab content for the admin dashboard
-// Contains stats, filter bar, search, and booking list
-// Consumes bookings from BookingContext
+// Contains stats, filter bar, search, booking list, and waitlist panel
 
 import { useState } from 'react';
 import { useBookingContext } from '../../context/BookingContext';
+import { useToastContext } from '../../context/ToastContext';
 import DashboardStats from '../../components/admin/DashboardStats';
 import FilterBar from '../../components/admin/FilterBar';
 import BookingTable from '../../components/admin/bookings/BookingTable';
+import WaitlistPanel from '../../components/admin/waitlist/WaitlistPanel';
 import { StatsSkeleton, BookingCardSkeleton } from '../../components/ui/Skeleton';
 import type { Filters } from '../../components/admin/FilterBar';
 
@@ -23,6 +24,7 @@ interface Props {
 
 const BookingsPage = ({ onUpdateStatus }: Props) => {
   const { bookings, loading, error } = useBookingContext();
+  const { addToast } = useToastContext();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
   const hasActiveFilters = !!(filters.stylistId || filters.date || filters.status);
@@ -79,6 +81,14 @@ const BookingsPage = ({ onUpdateStatus }: Props) => {
           onUpdate={onUpdateStatus}
         />
       )}
+
+      <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '0.5rem 0' }} />
+
+      {/* Waitlist */}
+      <WaitlistPanel
+        onSuccess={(msg) => addToast(msg, 'success')}
+        onError={(msg) => addToast(msg, 'error')}
+      />
     </div>
   );
 };

@@ -6,8 +6,11 @@
 // strikethrough text and a line-through decoration so the time grid shape
 // stays consistent — the user can see what times exist but can't click them.
 // Receives pre-fetched slots from the parent (useBookingAvailability).
+// When no slots are available for a date, offers a waitlist opt-in.
 
+import { useState } from "react";
 import { parseLocalDate } from "../../lib/dates";
+import WaitlistForm from "./WaitlistForm";
 import type { Slot } from "../../hooks/useBookingAvailability";
 
 interface Props {
@@ -16,6 +19,7 @@ interface Props {
   slots: Slot[];
   loading: boolean;
   onTimeSelect: (time: string) => void;
+  stylistId?: string; // passed to waitlist entry if a specific stylist was chosen
 }
 
 const formatDateDisplay = (dateStr: string): string =>
@@ -40,9 +44,17 @@ const SectionLabel = ({ label }: { label: string }) => (
   </p>
 );
 
-const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
+const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect, stylistId }: Props) => {
   const morningSlots = slots.filter((s) => s.time.endsWith("AM"));
   const afternoonSlots = slots.filter((s) => s.time.endsWith("PM"));
+
+  const noSlotsAtAll = !loading && slots.length === 0 && date;
+  const allUnavailable =
+    !loading &&
+    slots.length > 0 &&
+    slots.every((s) => !s.available);
+
+  const [showWaitlist, setShowWaitlist] = useState(false);
 
   const renderSlot = (slot: Slot) => {
     const isSelected = time === slot.time;
@@ -73,6 +85,52 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
     );
   };
 
+  // Waitlist prompt — shown when date is chosen but no available slots
+  const WaitlistPrompt = () => (
+    <div style={{ marginTop: "0.75rem" }}>
+      {showWaitlist ? (
+        <WaitlistForm
+          requestedDate={date}
+          requestedStylistId={stylistId}
+          onDone={() => setShowWaitlist(false)}
+        />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "0.5rem",
+            padding: "0.85rem 1rem",
+            background: "#f8f8f8",
+            borderRadius: "10px",
+            border: "1px solid #e8e8e8",
+          }}
+        >
+          <p style={{ margin: 0, fontSize: "0.875rem", color: "#555", lineHeight: 1.5 }}>
+            No appointments available for this day. Would you like to be
+            notified when a spot opens?
+          </p>
+          <button
+            onClick={() => setShowWaitlist(true)}
+            style={{
+              padding: "0.6rem 1.25rem",
+              background: "#0a0a0a",
+              color: "#fff",
+              border: "none",
+              borderRadius: "7px",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+            }}
+          >
+            Join Waitlist
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       {/* Date heading */}
@@ -94,7 +152,7 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
             margin: 0,
           }}
         >
-          {formatDateDisplay(date)}
+          {date ? formatDateDisplay(date) : "Select a date"}
         </p>
         {loading && (
           <span style={{ fontSize: "0.72rem", color: "#aaaaaa" }}>
@@ -103,17 +161,7 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect }: Props) => {
         )}
       </div>
 
-      {!loading && slots.length === 0 && (
-        <p
-          style={{
-            fontSize: "0.875rem",
-            color: "#aaaaaa",
-            padding: "0.5rem 0",
-          }}
-        >
-          No available slots. Please try another day.
-        </p>
-      )}
+      {(noSlotsAtAll || allUnavailable) && <WaitlistPrompt />}
 
       {/* Morning */}
       {morningSlots.length > 0 && (
