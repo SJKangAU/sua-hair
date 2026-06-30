@@ -1,14 +1,12 @@
 // MonthCalendar.tsx
-// Month grid calendar with availability dots and date selection — B&W theme
-//
-// Receives pre-computed availableDays from useBookingAvailability (the parent
-// hook owns all Firestore reads).  This component is purely presentational.
+// Month grid calendar with availability dots and date selection.
+// Purely presentational — availability is computed by the parent hook.
 //
 // Visual states per day:
-//   selected  — filled black circle, white text
-//   today     — outlined black circle (no fill), bold text
-//   disabled  — grey text, no interaction (past dates or salon-closed days)
-//   available — small black dot below the day number (was gold in the old theme)
+//   selected  — filled --ink circle, white text
+//   today     — outlined --ink circle (no fill), bold text
+//   disabled  — --grey-muted text, no interaction (past or salon-closed)
+//   available — small --ink dot below the day number
 
 import { getDaysInMonth, parseLocalDate } from "../../lib/dates";
 import { getMinBookableDate, isSalonClosed } from "../../lib/scheduling";
@@ -52,7 +50,7 @@ const MonthCalendar = ({
   return (
     <div
       style={{
-        border: "1.5px solid #e8e8e8",
+        border: `1.5px solid var(--border)`,
         borderRadius: "10px",
         overflow: "hidden",
         marginBottom: "1.25rem",
@@ -65,8 +63,8 @@ const MonthCalendar = ({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0.75rem 1rem",
-          borderBottom: "1px solid #e8e8e8",
-          background: "#f8f8f8",
+          borderBottom: `1px solid var(--border)`,
+          background: "var(--paper)",
         }}
       >
         <button
@@ -75,7 +73,7 @@ const MonthCalendar = ({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#555555",
+            color: "var(--ink-soft)",
             fontSize: "1rem",
             padding: "0.25rem 0.5rem",
             borderRadius: "6px",
@@ -88,7 +86,7 @@ const MonthCalendar = ({
           style={{
             fontWeight: 600,
             fontSize: "0.82rem",
-            color: "#0a0a0a",
+            color: "var(--ink)",
             letterSpacing: "0.02em",
           }}
         >
@@ -100,7 +98,7 @@ const MonthCalendar = ({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#555555",
+            color: "var(--ink-soft)",
             fontSize: "1rem",
             padding: "0.25rem 0.5rem",
             borderRadius: "6px",
@@ -126,7 +124,7 @@ const MonthCalendar = ({
               textAlign: "center",
               fontSize: "0.65rem",
               fontWeight: 600,
-              color: "#aaaaaa",
+              color: "var(--grey-muted)",
               letterSpacing: "0.06em",
               padding: "0.25rem",
               textTransform: "uppercase",
@@ -166,14 +164,17 @@ const MonthCalendar = ({
                 position: "relative",
                 width: "100%",
                 aspectRatio: "1",
-                border: isToday && !isSelected ? "1.5px solid #0a0a0a" : "none",
+                border:
+                  isToday && !isSelected
+                    ? `1.5px solid var(--ink)`
+                    : "none",
                 borderRadius: "50%",
-                background: isSelected ? "#0a0a0a" : "transparent",
+                background: isSelected ? "var(--ink)" : "transparent",
                 color: isSelected
                   ? "#ffffff"
                   : isDisabled
-                  ? "#cccccc"
-                  : "#0a0a0a",
+                  ? "var(--border-strong)"
+                  : "var(--ink)",
                 cursor: isDisabled ? "default" : "pointer",
                 fontSize: "0.8rem",
                 fontWeight: isSelected ? 600 : isToday ? 700 : 400,
@@ -196,7 +197,7 @@ const MonthCalendar = ({
                     borderRadius: "50%",
                     background: isSelected
                       ? "rgba(255,255,255,0.55)"
-                      : "#0a0a0a",
+                      : "var(--ink-soft)",
                     position: "absolute",
                     bottom: 3,
                     flexShrink: 0,
