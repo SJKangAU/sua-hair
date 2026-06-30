@@ -10,6 +10,7 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { minutesToTimeString, getSalonHoursForDate } from "../../../lib/scheduling";
+import { writeBookingNotifications } from "../../../lib/notifications";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
 
@@ -157,6 +158,16 @@ const CreateBookingModal = ({
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
       const docId = `WI-${safeDate}-${stylist.id}-${hhmm}`;
       await setDoc(doc(collection(db, "bookings"), docId), booking);
+
+      writeBookingNotifications({
+        bookingId: docId,
+        customerName: walkin.customerName.trim(),
+        stylistId: stylist.id,
+        stylistName: stylist.name,
+        date: walkin.date,
+        time: walkin.time,
+        serviceName: service.name,
+      }).catch(console.error);
 
       onSuccess(`Walk-in booking created for ${walkin.customerName}`);
       onClose();

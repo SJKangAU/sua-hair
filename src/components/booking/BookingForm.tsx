@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
+import { writeBookingNotifications } from "../../lib/notifications";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
@@ -251,11 +252,27 @@ const BookingForm = () => {
         createdAt: new Date().toISOString(),
       };
 
-      const timestamp = Date.now();
-      const safeStylist = finalStylistName.replace(/\s+/g, "-").toLowerCase();
-      const docId = `${date}_${safeStylist}_${timestamp}`;
+      const safeDate = date.replace(/-/g, "");
+      const [tp, period] = time.split(" ");
+      const [h, m] = tp.split(":").map(Number);
+      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const stylistSlug = stylistId === "any" ? "any" : stylistId;
+      const docId = `BK-${safeDate}-${stylistSlug}-${hhmm}`;
 
       await setDoc(doc(collection(db, "bookings"), docId), booking);
+
+      // Fire-and-forget — don't block confirmation on notification write
+      writeBookingNotifications({
+        bookingId: docId,
+        customerName: customerName.trim(),
+        stylistId,
+        stylistName: finalStylistName,
+        date,
+        time,
+        serviceName: booking.serviceName,
+      }).catch(console.error);
+
       setConfirmedBooking(booking);
       setConfirmed(true);
     } catch (err) {

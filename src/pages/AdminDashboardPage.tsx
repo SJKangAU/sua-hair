@@ -11,6 +11,8 @@ import useAuth from "../hooks/useAuth";
 import { BookingProvider, useBookingContext } from "../context/BookingContext";
 import { SalonDataProvider } from "../context/SalonDataContext";
 import { ToastProvider, useToastContext } from "../context/ToastContext";
+import { NotificationProvider } from "../context/NotificationContext";
+import NotificationBell from "../components/ui/NotificationBell";
 import Tabs from "../components/ui/Tabs";
 import TodayPage from "./admin/TodayPage";
 import BookingsPage from "./admin/BookingsPage";
@@ -89,6 +91,7 @@ const DashboardInner = () => {
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <NotificationBell />
           <span style={{ color: "var(--admin-faint)", fontSize: "0.82rem" }}>
             {user?.email}
           </span>
@@ -149,7 +152,9 @@ const AdminDashboardPage = () => (
   <SalonDataProvider>
     <BookingProvider>
       <ToastProvider>
-        <DashboardInner />
+        <NotificationProvider recipientId="owner">
+          <DashboardInner />
+        </NotificationProvider>
       </ToastProvider>
     </BookingProvider>
   </SalonDataProvider>
