@@ -1,15 +1,15 @@
 // SalonDataContext.tsx
-// Provides stylists and services data to the entire app
-// Wraps useStylists and useServices hooks so components don't
-// need to fetch independently — one fetch, shared everywhere
-// Wrap the app root with this provider
+// Provides stylists, services, and salonSettings to the entire app.
+// One fetch per data source, shared everywhere via context.
 
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import useStylists from '../hooks/useStylists';
 import useServices from '../hooks/useServices';
+import useSalonSettings from '../hooks/useSalonSettings';
 import type { FirestoreStylist } from '../hooks/useStylists';
 import type { FirestoreService } from '../hooks/useServices';
+import type { SalonSettings } from '../types';
 
 interface SalonDataContextValue {
   stylists: FirestoreStylist[];
@@ -20,6 +20,8 @@ interface SalonDataContextValue {
   servicesLoading: boolean;
   servicesError: string | null;
   refetchServices: () => void;
+  salonSettings: SalonSettings;
+  settingsLoading: boolean;
 }
 
 const SalonDataContext = createContext<SalonDataContextValue | null>(null);
@@ -40,6 +42,8 @@ export const SalonDataProvider = ({ children }: { children: ReactNode }) => {
     refetch: refetchServices,
   } = useServices(true); // active only
 
+  const { settings: salonSettings, loading: settingsLoading } = useSalonSettings();
+
   return (
     <SalonDataContext.Provider value={{
       stylists,
@@ -50,6 +54,8 @@ export const SalonDataProvider = ({ children }: { children: ReactNode }) => {
       servicesLoading,
       servicesError,
       refetchServices,
+      salonSettings,
+      settingsLoading,
     }}>
       {children}
     </SalonDataContext.Provider>

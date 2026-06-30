@@ -11,7 +11,9 @@
 
 import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
-import type { Booking, TimeBlock } from "../types";
+import type { Booking, TimeBlock, SalonSettings, StylistWeeklyHours } from "../types";
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 // Get current time in minutes from midnight (consistent across all functions)
 export const getCurrentMinutes = (): number => {
@@ -39,10 +41,51 @@ export const minutesToTimeString = (minutes: number): string => {
   return `${displayHours}:${mins.toString().padStart(2, "0")} ${period}`;
 };
 
-// Check if a given date string (YYYY-MM-DD) falls on a closed day
-export const isSalonClosed = (dateString: string): boolean => {
+// Check if a given date string (YYYY-MM-DD) falls on a closed day.
+// When salonSettings are provided, checks dateOverrides then weeklySchedule.
+// Falls back to SALON_CONFIG when settings are absent (initial load, seed data).
+export const isSalonClosed = (
+  dateString: string,
+  settings?: SalonSettings,
+): boolean => {
   const date = parseLocalDate(dateString);
+
+  if (settings) {
+    // Date override takes priority
+    const override = settings.dateOverrides[dateString];
+    if (override?.closed) return true;
+    if (override && (override.open !== undefined || override.close !== undefined)) {
+      return false; // explicit open override
+    }
+    // Fall through to weekly schedule
+    const dayKey = DAY_KEYS[date.getDay()];
+    return !settings.weeklySchedule[dayKey].isOpen;
+  }
+
   return SALON_CONFIG.closedDays.includes(date.getDay());
+};
+
+// Return the open/close hours for a date, respecting overrides.
+// Returns null if the salon is closed that day.
+export const getSalonHoursForDate = (
+  dateString: string,
+  settings?: SalonSettings,
+): { open: number; close: number } | null => {
+  if (!settings) {
+    return SALON_CONFIG.tradingHours;
+  }
+
+  const override = settings.dateOverrides[dateString];
+  if (override?.closed) return null;
+  if (override?.open !== undefined && override?.close !== undefined) {
+    return { open: override.open, close: override.close };
+  }
+
+  const date = parseLocalDate(dateString);
+  const dayKey = DAY_KEYS[date.getDay()];
+  const day = settings.weeklySchedule[dayKey];
+  if (!day.isOpen) return null;
+  return { open: day.open, close: day.close };
 };
 
 // Check if same-day booking cutoff has passed
@@ -135,18 +178,35 @@ export const isSlotAvailable = (
 
 // ── Main Slot Generator ───────────────────────────────────────────────────────
 
-// Generate all time slots for a given date and stylist
-// Returns each slot with availability status and reason if unavailable
+// Generate all time slots for a given date and stylist.
+// When salonSettings are provided, respects dynamic hours and date overrides.
+// When stylistHours are provided, further constrains to per-stylist working hours.
 export const generateSlots = (
   date: string,
   stylistId: string,
   serviceTotalTime: number,
   serviceActiveTime: number,
   existingBookings: Booking[],
+  settings?: SalonSettings,
+  stylistHours?: StylistWeeklyHours,
 ): { time: string; available: boolean; reason?: string }[] => {
   const slots: { time: string; available: boolean; reason?: string }[] = [];
 
-  const { open, close } = SALON_CONFIG.tradingHours;
+  // Resolve effective hours: date override → weekly schedule → SALON_CONFIG
+  const salonHours = getSalonHoursForDate(date, settings);
+  if (!salonHours) return []; // salon is closed this day
+
+  // Constrain to stylist's working hours if provided
+  let { open, close } = salonHours;
+  if (stylistHours) {
+    const dayKey = DAY_KEYS[parseLocalDate(date).getDay()];
+    const stylistDay = stylistHours[dayKey];
+    if (!stylistDay.isWorking) return [];
+    open = Math.max(open, stylistDay.start);
+    close = Math.min(close, stylistDay.end);
+    if (open >= close) return [];
+  }
+
   const interval = SALON_CONFIG.slotIntervalMinutes;
   const openMinutes = open * 60;
   const closeMinutes = close * 60;

@@ -9,8 +9,7 @@ import { useState } from "react";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
-import { SALON_CONFIG } from "../../../lib/config";
-import { minutesToTimeString } from "../../../lib/scheduling";
+import { minutesToTimeString, getSalonHoursForDate } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
 
@@ -35,17 +34,15 @@ const BREAK_DURATIONS = [
   { label: "2 hours", value: 120 },
 ];
 
-// Generate all time slots within trading hours
-const generateTimeSlots = (): string[] => {
-  const { open, close } = SALON_CONFIG.tradingHours;
+// Generate time slots within the salon's hours for a given date
+const generateTimeSlots = (date: string, salonHours?: { open: number; close: number }): string[] => {
+  const hours = salonHours ?? { open: 10, close: 18 };
   const slots: string[] = [];
-  for (let minutes = open * 60; minutes < close * 60; minutes += 30) {
+  for (let minutes = hours.open * 60; minutes < hours.close * 60; minutes += 30) {
     slots.push(minutesToTimeString(minutes));
   }
   return slots;
 };
-
-const TIME_SLOTS = generateTimeSlots();
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -75,14 +72,14 @@ const CreateBookingModal = ({
   onSuccess,
   onError,
 }: Props) => {
-  const { stylists, services } = useSalonData();
+  const { stylists, services, salonSettings } = useSalonData();
   const [activeTab, setActiveTab] = useState<ModalTab>("walkin");
   const [submitting, setSubmitting] = useState(false);
 
   // ── Walk-in form state ────────────────────────────────────────────────────
   const [walkin, setWalkin] = useState({
-    customerName: prefillCustomerName, // was ''
-    customerPhone: prefillCustomerPhone, // was ''
+    customerName: prefillCustomerName,
+    customerPhone: prefillCustomerPhone,
     stylistId: prefillStylistId,
     serviceId: "",
     date: prefillDate || new Date().toISOString().split("T")[0],
@@ -97,6 +94,10 @@ const CreateBookingModal = ({
     duration: 30,
     reason: "",
   });
+
+  // Derive time slots from the salon's configured hours for the selected date
+  const walkinHours = getSalonHoursForDate(walkin.date, salonSettings);
+  const breakHours = getSalonHoursForDate(breakForm.date, salonSettings);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -149,9 +150,12 @@ const CreateBookingModal = ({
         createdAt: new Date().toISOString(),
       };
 
-      const timestamp = Date.now();
-      const safeName = stylist.name.replace(/\s+/g, "-").toLowerCase();
-      const docId = `${walkin.date}_${safeName}_${timestamp}`;
+      const safeDate = walkin.date.replace(/-/g, "");
+      const [tp, period] = walkin.time.split(" ");
+      const [h, m] = tp.split(":").map(Number);
+      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const docId = `WI-${safeDate}-${stylist.id}-${hhmm}`;
       await setDoc(doc(collection(db, "bookings"), docId), booking);
 
       onSuccess(`Walk-in booking created for ${walkin.customerName}`);
@@ -196,9 +200,12 @@ const CreateBookingModal = ({
         createdAt: new Date().toISOString(),
       };
 
-      const timestamp = Date.now();
-      const safeName = stylist.name.replace(/\s+/g, "-").toLowerCase();
-      const docId = `${breakForm.date}_${safeName}_break_${timestamp}`;
+      const safeDate = breakForm.date.replace(/-/g, "");
+      const [tp, period] = breakForm.time.split(" ");
+      const [h, m] = tp.split(":").map(Number);
+      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const docId = `BR-${safeDate}-${stylist.id}-${hhmm}`;
       await setDoc(doc(collection(db, "bookings"), docId), booking);
 
       onSuccess(
@@ -351,7 +358,7 @@ const CreateBookingModal = ({
                 }
               >
                 <option value="">Select time...</option>
-                {TIME_SLOTS.map((slot) => (
+                {generateTimeSlots(walkin.date, walkinHours ?? undefined).map((slot) => (
                   <option key={slot} value={slot}>
                     {slot}
                   </option>
@@ -443,7 +450,7 @@ const CreateBookingModal = ({
                 }
               >
                 <option value="">Select time...</option>
-                {TIME_SLOTS.map((slot) => (
+                {generateTimeSlots(breakForm.date, breakHours ?? undefined).map((slot) => (
                   <option key={slot} value={slot}>
                     {slot}
                   </option>

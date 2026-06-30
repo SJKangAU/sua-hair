@@ -14,6 +14,45 @@ export interface TieredPrice {
   junior: number;
 }
 
+// ── Opening Hours ─────────────────────────────────────────────────────────────
+
+export type DayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+
+// Recurring schedule entry for a single day of the week
+export interface DaySchedule {
+  isOpen: boolean;
+  open: number;  // 24-hour integer, e.g. 10
+  close: number; // 24-hour integer, e.g. 18
+}
+
+// Overrides the recurring schedule for a single calendar date.
+// Either {closed: true} to block the day, or {open, close} for custom hours.
+export interface DateOverride {
+  closed?: boolean;
+  open?: number;
+  close?: number;
+}
+
+export type WeeklySchedule = Record<DayOfWeek, DaySchedule>;
+export type DateOverrides = Record<string, DateOverride>; // key: YYYY-MM-DD
+
+// The single salonSettings Firestore document
+export interface SalonSettings {
+  weeklySchedule: WeeklySchedule;
+  dateOverrides: DateOverrides;
+}
+
+// Per-stylist working hours for a single day
+export interface StylistDayHours {
+  isWorking: boolean;
+  start: number; // 24-hour integer
+  end: number;   // 24-hour integer
+}
+
+export type StylistWeeklyHours = Record<DayOfWeek, StylistDayHours>;
+
+// ── Stylist ───────────────────────────────────────────────────────────────────
+
 export interface Stylist {
   id: string;
   name: string;
@@ -23,6 +62,7 @@ export interface Stylist {
   instagram?: string;
   startDate: string;
   isTrainer: boolean;
+  workingHours?: StylistWeeklyHours; // undefined = uses full salon hours
   createdAt: string;
 }
 
@@ -87,4 +127,36 @@ export interface TimeBlock {
   activeEndMinutes: number;
   totalEndMinutes: number;
   isRestPeriod: boolean;
+}
+
+// ── Notifications (Phase 9) ───────────────────────────────────────────────────
+
+export interface Notification {
+  id: string;
+  recipientId: string;        // 'owner' | stylistId
+  recipientType: "owner" | "stylist";
+  bookingId: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+// ── Auth / Role (Phase 10) ────────────────────────────────────────────────────
+
+export interface AppUser {
+  uid: string;
+  role: "owner" | "stylist";
+  stylistId?: string; // only set when role === 'stylist'
+}
+
+// ── Waitlist (Phase 12) ───────────────────────────────────────────────────────
+
+export interface WaitlistEntry {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  requestedDate: string;          // YYYY-MM-DD
+  requestedStylistId?: string;    // optional — 'any' if no preference
+  createdAt: string;
+  status: "pending" | "contacted" | "resolved";
 }

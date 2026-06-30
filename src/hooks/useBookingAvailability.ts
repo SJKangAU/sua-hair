@@ -25,6 +25,7 @@ import {
   addDays,
   getDaysInMonth,
 } from "../lib/dates";
+import { useSalonData } from "../context/SalonDataContext";
 import type { Booking } from "../types";
 
 export interface Slot {
@@ -67,6 +68,12 @@ const useBookingAvailability = ({
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availableDays, setAvailableDays] = useState<Set<string>>(new Set());
+
+  const { salonSettings } = useSalonData();
+  const salonSettingsRef = useRef(salonSettings);
+  useEffect(() => {
+    salonSettingsRef.current = salonSettings;
+  });
 
   const today = todayString();
   const effTotal = totalTime > 0 ? totalTime : 30;
@@ -111,7 +118,7 @@ const useBookingAvailability = ({
   // Cancellation is handled at the effect level — if the user picks a new date
   // before the previous fetch completes, the stale result is discarded.
   useEffect(() => {
-    if (!date || isSalonClosed(date)) {
+    if (!date || isSalonClosed(date, salonSettings)) {
       setSlots([]);
       return;
     }
@@ -140,12 +147,13 @@ const useBookingAvailability = ({
         );
         if (cancelled) return;
 
+        const settings = salonSettingsRef.current;
         const bookings = snap.docs.map(
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
         const availMap: Record<string, boolean> = {};
         ids.forEach((id) => {
-          generateSlots(date, id, effTotal, effActive, bookings).forEach(
+          generateSlots(date, id, effTotal, effActive, bookings, settings).forEach(
             (slot) => {
               if (slot.available) availMap[slot.time] = true;
               else if (!(slot.time in availMap)) availMap[slot.time] = false;
@@ -153,7 +161,7 @@ const useBookingAvailability = ({
           );
         });
 
-        const base = generateSlots(date, ids[0], effTotal, effActive, bookings);
+        const base = generateSlots(date, ids[0], effTotal, effActive, bookings, settings);
         setSlots(
           base.map((slot) => ({
             time: slot.time,
@@ -171,7 +179,7 @@ const useBookingAvailability = ({
     return () => {
       cancelled = true;
     };
-  }, [date, stylistId, effTotal, effActive]);
+  }, [date, stylistId, effTotal, effActive, salonSettings]);
 
   // ── Fetch available days for current month ────────────────────────────────
   useEffect(() => {
@@ -184,14 +192,14 @@ const useBookingAvailability = ({
       : [];
     if (ids.length === 0) return;
 
+    const settings = salonSettingsRef.current;
     const days = getDaysInMonth(viewYear, viewMonth);
     const minDate = getMinBookableDate();
-    const futureDays = days.filter((d) => d >= minDate && !isSalonClosed(d));
+    const futureDays = days.filter(
+      (d) => d >= minDate && !isSalonClosed(d, settings),
+    );
 
-    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(
-      2,
-      "0",
-    )}-01`;
+    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-01`;
     const monthEnd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-31`;
 
     (async () => {
@@ -215,6 +223,7 @@ const useBookingAvailability = ({
               effTotalRef.current,
               effActiveRef.current,
               bookings,
+              settings,
             );
             if (daySlots.some((s) => s.available)) {
               available.add(day);
@@ -235,6 +244,7 @@ const useBookingAvailability = ({
     serviceId,
     effTotal,
     effActive,
+    salonSettings,
   ]);
 
   // ── Find and pre-select next available slot ───────────────────────────────
@@ -249,10 +259,11 @@ const useBookingAvailability = ({
 
     const effT = effTotalRef.current;
     const effA = effActiveRef.current;
+    const settings = salonSettingsRef.current;
 
     for (let i = 0; i < 14; i++) {
       const checkDate = addDays(getMinBookableDate(), i);
-      if (isSalonClosed(checkDate)) continue;
+      if (isSalonClosed(checkDate, settings)) continue;
       try {
         const snap = await getDocs(
           query(collection(db, "bookings"), where("date", "==", checkDate)),
@@ -261,7 +272,7 @@ const useBookingAvailability = ({
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
         for (const id of ids) {
-          const daySlots = generateSlots(checkDate, id, effT, effA, bookings);
+          const daySlots = generateSlots(checkDate, id, effT, effA, bookings, settings);
           const firstAvail = daySlots.find((s) => s.available);
           if (firstAvail) {
             onDateSelectRef.current(checkDate);
