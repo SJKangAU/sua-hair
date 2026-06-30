@@ -8,7 +8,7 @@ import { useToastContext } from "../../context/ToastContext";
 import Timeline from "../../components/admin/timeline/Timeline";
 import BookingDetailModal from "../../components/admin/modals/BookingDetailModal";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
-import DashboardStats from "../../components/admin/DashboardStats";
+import DashboardStatStrip from "../../components/admin/DashboardStatStrip";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
 import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
 import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
@@ -152,8 +152,8 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
       {isToday && activeRests.length > 0 && (
         <div
           style={{
-            background: "#fffbf4",
-            border: "1px solid #f0d9a8",
+            background: "var(--surface)",
+            border: `1px solid var(--border-strong)`,
             borderRadius: "10px",
             padding: "0.9rem 1.1rem",
           }}
@@ -161,14 +161,15 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           <p
             style={{
               margin: "0 0 0.6rem",
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              color: "#c9a96e",
-              letterSpacing: "0.04em",
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              color: "var(--grey-muted)",
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
+              fontFamily: "var(--font-body)",
             }}
           >
-            ⏱ Active Treatments — Phase 3 Countdown
+            Phase 3 Countdown
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {activeRests.map((r) => {
@@ -182,16 +183,16 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
                     alignItems: "center",
                     gap: "1rem",
                     padding: "0.5rem 0.75rem",
-                    background: urgent ? "#fff5f5" : "#fff",
-                    border: `1px solid ${urgent ? "#fca5a5" : "#f0e8d8"}`,
+                    background: urgent ? "var(--paper)" : "var(--paper)",
+                    border: `1px solid ${urgent ? "var(--border-strong)" : "var(--border)"}`,
                     borderRadius: "7px",
                   }}
                 >
                   <div>
-                    <span style={{ fontWeight: 500, fontSize: "0.88rem" }}>
+                    <span style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--ink)" }}>
                       {r.customerName}
                     </span>
-                    <span style={{ color: "#999", fontSize: "0.8rem", marginLeft: "0.5rem" }}>
+                    <span style={{ color: "var(--grey-muted)", fontSize: "0.8rem", marginLeft: "0.5rem" }}>
                       — {r.serviceName} · {r.stylistName}
                     </span>
                   </div>
@@ -199,9 +200,10 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
                     style={{
                       fontSize: "0.9rem",
                       fontWeight: 700,
-                      color: urgent ? "#e53e3e" : "#c9a96e",
+                      color: urgent ? "var(--error)" : "var(--ink)",
                       minWidth: 60,
                       textAlign: "right",
+                      fontFamily: "var(--font-body)",
                     }}
                   >
                     {formatMinutes(r.remainingSeconds)}
@@ -213,11 +215,11 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
         </div>
       )}
 
-      {/* Stats for selected date */}
+      {/* Stat strip — four key metrics for selected date */}
       {loading ? (
         <StatsSkeleton />
       ) : (
-        <DashboardStats bookings={dayBookings} selectedDate={selectedDate} />
+        <DashboardStatStrip bookings={dayBookings} selectedDate={selectedDate} />
       )}
 
       {/* Timeline */}
