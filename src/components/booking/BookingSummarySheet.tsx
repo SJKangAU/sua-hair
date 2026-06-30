@@ -116,7 +116,7 @@ const BookingSummarySheet = ({
               fontFamily: "var(--font-display)",
               fontSize: "1.85rem",
               fontWeight: 300,
-              color: "#0a0a0a",
+              color: "var(--ink)",
               letterSpacing: "-0.01em",
               margin: "0 0 0.25rem",
             }}
@@ -126,7 +126,7 @@ const BookingSummarySheet = ({
           <p
             style={{
               fontSize: "0.82rem",
-              color: "#999999",
+              color: "var(--grey-muted)",
               margin: "0 0 1.5rem",
             }}
           >
@@ -148,7 +148,7 @@ const BookingSummarySheet = ({
                   justifyContent: "space-between",
                   alignItems: "center",
                   padding: "0.75rem 0",
-                  borderBottom: "1px solid #f0f0f0",
+                  borderBottom: `1px solid var(--border)`,
                 }}
               >
                 <div>
@@ -157,7 +157,7 @@ const BookingSummarySheet = ({
                       margin: 0,
                       fontSize: "0.875rem",
                       fontWeight: 500,
-                      color: "#0a0a0a",
+                      color: "var(--ink)",
                     }}
                   >
                     {s.name}
@@ -166,7 +166,7 @@ const BookingSummarySheet = ({
                     style={{
                       margin: "2px 0 0",
                       fontSize: "0.75rem",
-                      color: "#aaaaaa",
+                      color: "var(--grey-muted)",
                     }}
                   >
                     {s.totalTime} min
@@ -176,7 +176,7 @@ const BookingSummarySheet = ({
                   style={{
                     fontSize: "0.875rem",
                     fontWeight: 600,
-                    color: "#0a0a0a",
+                    color: "var(--ink)",
                   }}
                 >
                   ${s.price}
@@ -188,7 +188,7 @@ const BookingSummarySheet = ({
           {/* Details card */}
           <div
             style={{
-              background: "#f8f8f8",
+              background: "var(--paper)",
               borderRadius: "10px",
               padding: "1rem",
               marginBottom: "1.25rem",
@@ -210,7 +210,7 @@ const BookingSummarySheet = ({
                   padding: "0.375rem 0",
                 }}
               >
-                <span style={{ color: "#777777" }}>{row.label}</span>
+                <span style={{ color: "var(--ink-soft)" }}>{row.label}</span>
                 <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
                   {row.value}
                 </span>
@@ -233,7 +233,7 @@ const BookingSummarySheet = ({
               style={{
                 fontSize: "0.875rem",
                 fontWeight: 600,
-                color: "#0a0a0a",
+                color: "var(--ink)",
               }}
             >
               Estimated Total
@@ -273,8 +273,8 @@ const BookingSummarySheet = ({
               width: "100%",
               padding: "0.875rem",
               background: "transparent",
-              color: "#555555",
-              border: "1.5px solid #e0e0e0",
+              color: "var(--ink-soft)",
+              border: `1.5px solid var(--border)`,
               borderRadius: "10px",
               fontSize: "0.875rem",
               cursor: "pointer",
