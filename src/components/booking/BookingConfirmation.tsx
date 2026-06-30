@@ -72,36 +72,36 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <h2
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "2.25rem",
+            fontSize: "2.1rem",
             fontWeight: 300,
-            color: "#0a0a0a",
+            color: "var(--ink)",
             letterSpacing: "-0.01em",
-            margin: "0 0 0.4rem",
-            lineHeight: 1.1,
+            margin: "0 0 0.5rem",
+            lineHeight: 1.15,
           }}
         >
-          Booking Confirmed
+          We can't wait to see you,{" "}
+          {booking.customerName.split(" ")[0]}.
         </h2>
         <p
           style={{
-            fontSize: "0.875rem",
-            color: "#999999",
+            fontSize: "0.82rem",
+            color: "var(--grey-muted)",
             marginBottom: "2rem",
           }}
         >
-          We look forward to seeing you,{" "}
-          <strong style={{ color: "#0a0a0a" }}>{booking.customerName}</strong>.
+          Your booking is confirmed — details below.
         </p>
 
         {/* Booking details */}
         <div
           style={{
-            background: "#f8f8f8",
+            background: "var(--paper)",
             borderRadius: "10px",
             padding: "1.25rem",
             marginBottom: "1.75rem",
             textAlign: "left",
-            border: "1px solid #eeeeee",
+            border: `1px solid var(--border)`,
           }}
         >
           {/* Stylist row */}
@@ -111,11 +111,11 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               justifyContent: "space-between",
               fontSize: "0.875rem",
               padding: "0.4rem 0",
-              borderBottom: "1px solid #e8e8e8",
+              borderBottom: `1px solid var(--border)`,
             }}
           >
-            <span style={{ color: "#777777" }}>Stylist</span>
-            <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+            <span style={{ color: "var(--ink-soft)" }}>Stylist</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
               {booking.stylistName}
             </span>
           </div>
@@ -130,13 +130,13 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
                   justifyContent: "space-between",
                   fontSize: "0.875rem",
                   padding: "0.4rem 0",
-                  borderBottom: "1px solid #e8e8e8",
+                  borderBottom: `1px solid var(--border)`,
                 }}
               >
-                <span style={{ color: "#777777" }}>
+                <span style={{ color: "var(--ink-soft)" }}>
                   {i === 0 ? "Service" : ""}
                 </span>
-                <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+                <span style={{ fontWeight: 500, color: "var(--ink)" }}>
                   {s.name}
                 </span>
               </div>
@@ -148,11 +148,11 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
                 justifyContent: "space-between",
                 fontSize: "0.875rem",
                 padding: "0.4rem 0",
-                borderBottom: "1px solid #e8e8e8",
+                borderBottom: `1px solid var(--border)`,
               }}
             >
-              <span style={{ color: "#777777" }}>Service</span>
-              <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+              <span style={{ color: "var(--ink-soft)" }}>Service</span>
+              <span style={{ fontWeight: 500, color: "var(--ink)" }}>
                 {booking.serviceName}
               </span>
             </div>
@@ -165,11 +165,11 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               justifyContent: "space-between",
               fontSize: "0.875rem",
               padding: "0.4rem 0",
-              borderBottom: "1px solid #e8e8e8",
+              borderBottom: `1px solid var(--border)`,
             }}
           >
-            <span style={{ color: "#777777" }}>Date</span>
-            <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+            <span style={{ color: "var(--ink-soft)" }}>Date</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
               {formattedDate}
             </span>
           </div>
@@ -181,11 +181,11 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               justifyContent: "space-between",
               fontSize: "0.875rem",
               padding: "0.4rem 0",
-              borderBottom: "1px solid #e8e8e8",
+              borderBottom: `1px solid var(--border)`,
             }}
           >
-            <span style={{ color: "#777777" }}>Time</span>
-            <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+            <span style={{ color: "var(--ink-soft)" }}>Time</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
               {booking.time}
             </span>
           </div>
@@ -199,8 +199,8 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               padding: "0.5rem 0 0",
             }}
           >
-            <span style={{ color: "#777777" }}>Estimated Total</span>
-            <span style={{ fontWeight: 700, color: "#0a0a0a" }}>
+            <span style={{ color: "var(--ink-soft)" }}>Estimated Total</span>
+            <span style={{ fontWeight: 700, color: "var(--ink)" }}>
               ${booking.servicePrice}
             </span>
           </div>
@@ -209,7 +209,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             <p
               style={{
                 fontSize: "0.75rem",
-                color: "#aaaaaa",
+                color: "var(--grey-muted)",
                 marginTop: "0.75rem",
                 marginBottom: 0,
               }}
@@ -227,7 +227,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#aaaaaa",
+            color: "var(--grey-muted)",
             marginBottom: "0.75rem",
           }}
         >
@@ -248,20 +248,20 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             style={{
               padding: "0.65rem 1.25rem",
               background: "#ffffff",
-              border: "1.5px solid #e0e0e0",
+              border: `1.5px solid var(--border)`,
               borderRadius: "8px",
               textDecoration: "none",
               fontSize: "0.82rem",
-              color: "#0a0a0a",
+              color: "var(--ink)",
               fontFamily: "var(--font-body)",
               fontWeight: 500,
               transition: "border-color 0.15s ease",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "#0a0a0a")
+              (e.currentTarget.style.borderColor = "var(--ink)")
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "#e0e0e0")
+              (e.currentTarget.style.borderColor = "var(--border)")
             }
           >
             Google Calendar
@@ -271,20 +271,20 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             style={{
               padding: "0.65rem 1.25rem",
               background: "#ffffff",
-              border: "1.5px solid #e0e0e0",
+              border: `1.5px solid var(--border)`,
               borderRadius: "8px",
               cursor: "pointer",
               fontSize: "0.82rem",
-              color: "#0a0a0a",
+              color: "var(--ink)",
               fontFamily: "var(--font-body)",
               fontWeight: 500,
               transition: "border-color 0.15s ease",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "#0a0a0a")
+              (e.currentTarget.style.borderColor = "var(--ink)")
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "#e0e0e0")
+              (e.currentTarget.style.borderColor = "var(--border)")
             }
           >
             Apple / Outlook
@@ -295,7 +295,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <p
           style={{
             fontSize: "0.82rem",
-            color: "#aaaaaa",
+            color: "var(--grey-muted)",
             marginBottom: "1.75rem",
           }}
         >
@@ -303,7 +303,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
           <a
             href="tel:0395690840"
             style={{
-              color: "#0a0a0a",
+              color: "var(--ink)",
               fontWeight: 500,
               textDecoration: "none",
             }}
