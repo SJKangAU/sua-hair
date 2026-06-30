@@ -11,7 +11,12 @@
 
 import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
-import type { Booking, TimeBlock, SalonSettings, StylistWeeklyHours } from "../types";
+import type {
+  Booking,
+  TimeBlock,
+  SalonSettings,
+  StylistWeeklyHours,
+} from "../types";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
@@ -54,7 +59,10 @@ export const isSalonClosed = (
     // Date override takes priority
     const override = settings.dateOverrides[dateString];
     if (override?.closed) return true;
-    if (override && (override.open !== undefined || override.close !== undefined)) {
+    if (
+      override &&
+      (override.open !== undefined || override.close !== undefined)
+    ) {
       return false; // explicit open override
     }
     // Fall through to weekly schedule

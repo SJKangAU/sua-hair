@@ -2,11 +2,11 @@
 // All input validation logic for the booking form
 // Centralised here so rules can be updated in one place
 
-import { SALON_CONFIG } from './config';
+import { SALON_CONFIG } from "./config";
 
 // Validate Australian mobile number — must be 10 digits starting with 04
 export const validatePhone = (phone: string): boolean => {
-  const cleaned = phone.replace(/\s/g, '');
+  const cleaned = phone.replace(/\s/g, "");
   return SALON_CONFIG.phoneRegex.test(cleaned);
 };
 
@@ -17,5 +17,5 @@ export const validateName = (name: string): boolean => {
 
 // Strip spaces from phone number before saving to Firestore
 export const cleanPhone = (phone: string): string => {
-  return phone.replace(/\s/g, '');
+  return phone.replace(/\s/g, "");
 };

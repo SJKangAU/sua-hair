@@ -255,8 +255,16 @@ const BookingForm = () => {
       const safeDate = date.replace(/-/g, "");
       const [tp, period] = time.split(" ");
       const [h, m] = tp.split(":").map(Number);
-      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const hour24 =
+        period === "PM" && h !== 12
+          ? h + 12
+          : period === "AM" && h === 12
+          ? 0
+          : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
+        2,
+        "0",
+      )}`;
       const stylistSlug = stylistId === "any" ? "any" : stylistId;
       const docId = `BK-${safeDate}-${stylistSlug}-${hhmm}`;
 

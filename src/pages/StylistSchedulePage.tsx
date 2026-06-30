@@ -48,7 +48,9 @@ const ScheduleInner = () => {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking)));
+        setBookings(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking)),
+        );
         setLoading(false);
       },
       () => setLoading(false),
@@ -87,15 +89,15 @@ const ScheduleInner = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "1.3rem", color: "#c9a96e", margin: 0 }}>Sua Hair</h1>
+          <h1 style={{ fontSize: "1.3rem", color: "#c9a96e", margin: 0 }}>
+            Sua Hair
+          </h1>
           <p style={{ fontSize: "0.75rem", color: "#777", margin: 0 }}>
             {stylist ? stylist.name : "Stylist Portal"}
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          {appUser?.stylistId && (
-            <NotificationBell />
-          )}
+          {appUser?.stylistId && <NotificationBell />}
           <button
             onClick={handleSignOut}
             style={{
@@ -136,7 +138,15 @@ const ScheduleInner = () => {
           >
             ‹
           </button>
-          <span style={{ fontWeight: 500, fontSize: "1rem", color: "#fff", minWidth: 180, textAlign: "center" }}>
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: "1rem",
+              color: "#fff",
+              minWidth: 180,
+              textAlign: "center",
+            }}
+          >
             {formatDisplayDate(selectedDate)}
           </span>
           <button
@@ -189,7 +199,9 @@ const ScheduleInner = () => {
             No bookings for this day.
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+          >
             {activeBookings.map((b) => (
               <div
                 key={b.id}
@@ -205,10 +217,22 @@ const ScheduleInner = () => {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: "1rem", fontWeight: 600, color: "#c9a96e" }}>
+                  <div
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: 600,
+                      color: "#c9a96e",
+                    }}
+                  >
                     {b.time}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "#555", marginTop: "0.15rem" }}>
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#555",
+                      marginTop: "0.15rem",
+                    }}
+                  >
                     {b.totalTime} min
                   </div>
                 </div>
@@ -216,11 +240,24 @@ const ScheduleInner = () => {
                   <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>
                     {b.customerName}
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.2rem" }}>
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#888",
+                      marginTop: "0.2rem",
+                    }}
+                  >
                     {b.serviceName}
                   </div>
                   {b.notes && (
-                    <div style={{ fontSize: "0.78rem", color: "#555", marginTop: "0.2rem", fontStyle: "italic" }}>
+                    <div
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "#555",
+                        marginTop: "0.2rem",
+                        fontStyle: "italic",
+                      }}
+                    >
                       {b.notes}
                     </div>
                   )}
@@ -256,7 +293,8 @@ const ScheduleInner = () => {
           >
             <span>{activeBookings.length} bookings</span>
             <span>
-              {activeBookings.reduce((sum, b) => sum + b.totalTime, 0)} min total
+              {activeBookings.reduce((sum, b) => sum + b.totalTime, 0)} min
+              total
             </span>
           </div>
         )}
@@ -271,7 +309,9 @@ const StylistSchedulePage = () => {
 
   return (
     <SalonDataProvider>
-      <NotificationProvider recipientId={appUser?.stylistId ?? appUser?.uid ?? ""}>
+      <NotificationProvider
+        recipientId={appUser?.stylistId ?? appUser?.uid ?? ""}
+      >
         <ScheduleInner />
       </NotificationProvider>
     </SalonDataProvider>

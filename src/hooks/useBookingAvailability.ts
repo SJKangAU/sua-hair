@@ -153,15 +153,27 @@ const useBookingAvailability = ({
         );
         const availMap: Record<string, boolean> = {};
         ids.forEach((id) => {
-          generateSlots(date, id, effTotal, effActive, bookings, settings).forEach(
-            (slot) => {
-              if (slot.available) availMap[slot.time] = true;
-              else if (!(slot.time in availMap)) availMap[slot.time] = false;
-            },
-          );
+          generateSlots(
+            date,
+            id,
+            effTotal,
+            effActive,
+            bookings,
+            settings,
+          ).forEach((slot) => {
+            if (slot.available) availMap[slot.time] = true;
+            else if (!(slot.time in availMap)) availMap[slot.time] = false;
+          });
         });
 
-        const base = generateSlots(date, ids[0], effTotal, effActive, bookings, settings);
+        const base = generateSlots(
+          date,
+          ids[0],
+          effTotal,
+          effActive,
+          bookings,
+          settings,
+        );
         setSlots(
           base.map((slot) => ({
             time: slot.time,
@@ -199,7 +211,10 @@ const useBookingAvailability = ({
       (d) => d >= minDate && !isSalonClosed(d, settings),
     );
 
-    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-01`;
+    const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(
+      2,
+      "0",
+    )}-01`;
     const monthEnd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-31`;
 
     (async () => {
@@ -272,7 +287,14 @@ const useBookingAvailability = ({
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
         for (const id of ids) {
-          const daySlots = generateSlots(checkDate, id, effT, effA, bookings, settings);
+          const daySlots = generateSlots(
+            checkDate,
+            id,
+            effT,
+            effA,
+            bookings,
+            settings,
+          );
           const firstAvail = daySlots.find((s) => s.available);
           if (firstAvail) {
             onDateSelectRef.current(checkDate);

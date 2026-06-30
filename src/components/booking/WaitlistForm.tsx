@@ -94,7 +94,15 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
         <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600 }}>
           You're on the waitlist
         </h3>
-        <p style={{ margin: 0, color: "#555", fontSize: "0.9rem", maxWidth: 300, lineHeight: 1.6 }}>
+        <p
+          style={{
+            margin: 0,
+            color: "#555",
+            fontSize: "0.9rem",
+            maxWidth: 300,
+            lineHeight: 1.6,
+          }}
+        >
           We'll be in touch as soon as a spot opens up for {requestedDate}.
         </p>
         <button
@@ -129,7 +137,14 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
       >
         Join the waitlist
       </h3>
-      <p style={{ margin: "0 0 1.5rem", fontSize: "0.9rem", color: "#555", lineHeight: 1.6 }}>
+      <p
+        style={{
+          margin: "0 0 1.5rem",
+          fontSize: "0.9rem",
+          color: "#555",
+          lineHeight: 1.6,
+        }}
+      >
         No appointments are available for {requestedDate}. Leave your details
         and we'll contact you the moment a spot opens.
       </p>
@@ -150,7 +165,13 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
             }}
           />
           {errors.name && (
-            <p style={{ margin: "0.3rem 0 0", fontSize: "0.8rem", color: "#e53e3e" }}>
+            <p
+              style={{
+                margin: "0.3rem 0 0",
+                fontSize: "0.8rem",
+                color: "#e53e3e",
+              }}
+            >
               {errors.name}
             </p>
           )}
@@ -171,7 +192,13 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
             }}
           />
           {errors.phone && (
-            <p style={{ margin: "0.3rem 0 0", fontSize: "0.8rem", color: "#e53e3e" }}>
+            <p
+              style={{
+                margin: "0.3rem 0 0",
+                fontSize: "0.8rem",
+                color: "#e53e3e",
+              }}
+            >
               {errors.phone}
             </p>
           )}

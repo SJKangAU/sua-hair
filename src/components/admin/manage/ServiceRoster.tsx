@@ -205,8 +205,12 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
     const neighbor = services[idx - 1];
     try {
       await Promise.all([
-        updateDoc(doc(db, "services", service.id), { sortOrder: neighbor.sortOrder }),
-        updateDoc(doc(db, "services", neighbor.id), { sortOrder: service.sortOrder }),
+        updateDoc(doc(db, "services", service.id), {
+          sortOrder: neighbor.sortOrder,
+        }),
+        updateDoc(doc(db, "services", neighbor.id), {
+          sortOrder: service.sortOrder,
+        }),
       ]);
       refetchServices();
     } catch {
@@ -220,8 +224,12 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
     const neighbor = services[idx + 1];
     try {
       await Promise.all([
-        updateDoc(doc(db, "services", service.id), { sortOrder: neighbor.sortOrder }),
-        updateDoc(doc(db, "services", neighbor.id), { sortOrder: service.sortOrder }),
+        updateDoc(doc(db, "services", service.id), {
+          sortOrder: neighbor.sortOrder,
+        }),
+        updateDoc(doc(db, "services", neighbor.id), {
+          sortOrder: service.sortOrder,
+        }),
       ]);
       refetchServices();
     } catch {
@@ -263,7 +271,13 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
             ✂️ Services
           </h3>
-          <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem", color: "var(--admin-muted)" }}>
+          <p
+            style={{
+              margin: "0.2rem 0 0",
+              fontSize: "0.75rem",
+              color: "var(--admin-muted)",
+            }}
+          >
             Use ↑ ↓ to set the order clients see services in the booking flow.
           </p>
         </div>
@@ -295,12 +309,22 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             background: "var(--admin-surface)",
           }}
         >
-          <p style={{ fontSize: "0.875rem", fontWeight: 600, margin: "0 0 1rem" }}>
+          <p
+            style={{
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              margin: "0 0 1rem",
+            }}
+          >
             {editingId ? "Edit Service" : "Add New Service"}
           </p>
 
           <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "0 1rem",
+            }}
           >
             <label style={labelStyle}>
               Service Name *
@@ -309,7 +333,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 type="text"
                 placeholder="e.g. Men's Cut"
                 value={form.name}
-                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, name: e.target.value }))
+                }
               />
             </label>
 
@@ -318,7 +344,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               <select
                 style={inputStyle}
                 value={form.category}
-                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, category: e.target.value }))
+                }
               >
                 <option value="">Select category...</option>
                 {SERVICE_CATEGORIES.map((c) => (
@@ -338,7 +366,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 step={5}
                 value={form.activeTime}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, activeTime: Number(e.target.value) }))
+                  setForm((prev) => ({
+                    ...prev,
+                    activeTime: Number(e.target.value),
+                  }))
                 }
               />
             </label>
@@ -352,21 +383,40 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 step={5}
                 value={form.restTime}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, restTime: Number(e.target.value) }))
+                  setForm((prev) => ({
+                    ...prev,
+                    restTime: Number(e.target.value),
+                  }))
                 }
               />
             </label>
           </div>
 
-          <p style={{ fontSize: "0.8rem", color: "var(--admin-muted)", margin: "-0.25rem 0 1rem" }}>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--admin-muted)",
+              margin: "-0.25rem 0 1rem",
+            }}
+          >
             Total appointment time: <strong>{totalTime} min</strong>
           </p>
 
-          <p style={{ fontSize: "0.82rem", fontWeight: 600, margin: "0 0 0.75rem" }}>
+          <p
+            style={{
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              margin: "0 0 0.75rem",
+            }}
+          >
             Pricing by Stylist Level
           </p>
           <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 1rem" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "0 1rem",
+            }}
           >
             <label style={labelStyle}>
               Director ($)
@@ -376,7 +426,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceDirector}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, priceDirector: Number(e.target.value) }))
+                  setForm((prev) => ({
+                    ...prev,
+                    priceDirector: Number(e.target.value),
+                  }))
                 }
               />
             </label>
@@ -388,7 +441,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceSenior}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, priceSenior: Number(e.target.value) }))
+                  setForm((prev) => ({
+                    ...prev,
+                    priceSenior: Number(e.target.value),
+                  }))
                 }
               />
             </label>
@@ -400,7 +456,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 min={0}
                 value={form.priceJunior}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, priceJunior: Number(e.target.value) }))
+                  setForm((prev) => ({
+                    ...prev,
+                    priceJunior: Number(e.target.value),
+                  }))
                 }
               />
             </label>
@@ -429,7 +488,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               disabled={submitting}
               style={{
                 padding: "0.5rem 1.25rem",
-                background: submitting ? "var(--admin-input-border)" : "var(--admin-bg)",
+                background: submitting
+                  ? "var(--admin-input-border)"
+                  : "var(--admin-bg)",
                 color: submitting ? "#999" : "white",
                 border: "none",
                 borderRadius: "6px",
@@ -438,7 +499,11 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 fontWeight: 500,
               }}
             >
-              {submitting ? "Saving..." : editingId ? "Save Changes" : "Add Service"}
+              {submitting
+                ? "Saving..."
+                : editingId
+                ? "Save Changes"
+                : "Add Service"}
             </button>
             <button
               onClick={handleCancel}
@@ -509,15 +574,33 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                   >
                     {/* Service info */}
                     <div>
-                      <p style={{ margin: 0, fontWeight: 600, fontSize: "0.875rem" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontWeight: 600,
+                          fontSize: "0.875rem",
+                        }}
+                      >
                         {service.name}
                         {service.status === "inactive" && (
-                          <span style={{ marginLeft: "0.4rem", fontSize: "0.68rem", color: "#aaa" }}>
+                          <span
+                            style={{
+                              marginLeft: "0.4rem",
+                              fontSize: "0.68rem",
+                              color: "#aaa",
+                            }}
+                          >
                             Inactive
                           </span>
                         )}
                       </p>
-                      <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--admin-muted)" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "0.75rem",
+                          color: "var(--admin-muted)",
+                        }}
+                      >
                         {service.totalTime} min
                         {service.restTime > 0 &&
                           ` (${service.activeTime} active + ${service.restTime} setting)`}
@@ -527,15 +610,28 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                     {/* Tiered prices */}
                     <div style={{ textAlign: "right", fontSize: "0.78rem" }}>
                       <p style={{ margin: 0, color: "var(--admin-muted)" }}>
-                        ${service.price.director} / ${service.price.senior} / ${service.price.junior}
+                        ${service.price.director} / ${service.price.senior} / $
+                        {service.price.junior}
                       </p>
-                      <p style={{ margin: 0, color: "#aaa", fontSize: "0.68rem" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "#aaa",
+                          fontSize: "0.68rem",
+                        }}
+                      >
                         Dir / Sen / Jun
                       </p>
                     </div>
 
                     {/* Reorder controls */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2px",
+                      }}
+                    >
                       <button
                         onClick={() => handleMoveUp(service)}
                         disabled={isFirst}
@@ -593,16 +689,20 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                       onClick={() => handleToggleStatus(service)}
                       style={{
                         padding: "0.3rem 0.7rem",
-                        background: service.status === "active" ? "#fcebeb" : "#e1f5ee",
+                        background:
+                          service.status === "active" ? "#fcebeb" : "#e1f5ee",
                         border: "none",
                         borderRadius: "5px",
                         fontSize: "0.75rem",
                         cursor: "pointer",
-                        color: service.status === "active" ? "#a32d2d" : "#085041",
+                        color:
+                          service.status === "active" ? "#a32d2d" : "#085041",
                         fontWeight: 500,
                       }}
                     >
-                      {service.status === "active" ? "Deactivate" : "Reactivate"}
+                      {service.status === "active"
+                        ? "Deactivate"
+                        : "Reactivate"}
                     </button>
                   </div>
                 );

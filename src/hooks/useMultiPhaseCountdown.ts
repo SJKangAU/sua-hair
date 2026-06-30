@@ -17,9 +17,9 @@ interface ActiveRest {
   serviceName: string;
   date: string;
   time: string;
-  restStartMinutes: number;  // = activeEndMinutes
-  restEndMinutes: number;    // = totalEndMinutes
-  remainingSeconds: number;  // seconds until rest ends (may be negative = overdue)
+  restStartMinutes: number; // = activeEndMinutes
+  restEndMinutes: number; // = totalEndMinutes
+  remainingSeconds: number; // seconds until rest ends (may be negative = overdue)
 }
 
 interface Result {
@@ -43,9 +43,7 @@ const useMultiPhaseCountdown = (
     return bookings
       .filter(
         (b) =>
-          b.date === selectedDate &&
-          b.restTime > 0 &&
-          b.status !== "cancelled",
+          b.date === selectedDate && b.restTime > 0 && b.status !== "cancelled",
       )
       .map((b) => {
         const startMinutes = timeStringToMinutes(b.time);
@@ -90,7 +88,9 @@ const useMultiPhaseCountdown = (
             stylistName: r.stylistName,
             date: r.date,
             time: r.time,
-            serviceName: `Phase 3 ready in ~${Math.ceil(r.remainingSeconds / 60)} min — ${r.serviceName}`,
+            serviceName: `Phase 3 ready in ~${Math.ceil(
+              r.remainingSeconds / 60,
+            )} min — ${r.serviceName}`,
           }).catch(console.error);
         }
       });

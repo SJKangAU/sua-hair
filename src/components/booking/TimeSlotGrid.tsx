@@ -44,15 +44,20 @@ const SectionLabel = ({ label }: { label: string }) => (
   </p>
 );
 
-const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect, stylistId }: Props) => {
+const TimeSlotGrid = ({
+  date,
+  time,
+  slots,
+  loading,
+  onTimeSelect,
+  stylistId,
+}: Props) => {
   const morningSlots = slots.filter((s) => s.time.endsWith("AM"));
   const afternoonSlots = slots.filter((s) => s.time.endsWith("PM"));
 
   const noSlotsAtAll = !loading && slots.length === 0 && date;
   const allUnavailable =
-    !loading &&
-    slots.length > 0 &&
-    slots.every((s) => !s.available);
+    !loading && slots.length > 0 && slots.every((s) => !s.available);
 
   const [showWaitlist, setShowWaitlist] = useState(false);
 
@@ -107,7 +112,14 @@ const TimeSlotGrid = ({ date, time, slots, loading, onTimeSelect, stylistId }: P
             border: "1px solid #e8e8e8",
           }}
         >
-          <p style={{ margin: 0, fontSize: "0.875rem", color: "#555", lineHeight: 1.5 }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.875rem",
+              color: "#555",
+              lineHeight: 1.5,
+            }}
+          >
             No appointments available for this day. Would you like to be
             notified when a spot opens?
           </p>

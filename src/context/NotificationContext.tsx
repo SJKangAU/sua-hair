@@ -16,14 +16,19 @@ interface NotificationContextValue {
   markAllRead: () => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextValue | null>(null);
+const NotificationContext = createContext<NotificationContextValue | null>(
+  null,
+);
 
 interface ProviderProps {
   children: ReactNode;
   recipientId: string; // 'owner' or a stylistId
 }
 
-export const NotificationProvider = ({ children, recipientId }: ProviderProps) => {
+export const NotificationProvider = ({
+  children,
+  recipientId,
+}: ProviderProps) => {
   const { notifications, unreadCount, loading, markRead, markAllRead } =
     useNotifications(recipientId);
 
@@ -38,7 +43,10 @@ export const NotificationProvider = ({ children, recipientId }: ProviderProps) =
 
 export const useNotificationContext = (): NotificationContextValue => {
   const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error("useNotificationContext must be used within NotificationProvider");
+  if (!ctx)
+    throw new Error(
+      "useNotificationContext must be used within NotificationProvider",
+    );
   return ctx;
 };
 

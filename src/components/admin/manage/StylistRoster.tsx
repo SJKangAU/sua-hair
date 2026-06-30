@@ -296,7 +296,9 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
               disabled={submitting}
               style={{
                 padding: "0.5rem 1.25rem",
-                background: submitting ? "var(--admin-input-border)" : "var(--admin-bg)",
+                background: submitting
+                  ? "var(--admin-input-border)"
+                  : "var(--admin-bg)",
                 color: submitting ? "#999" : "white",
                 border: "none",
                 borderRadius: "6px",
@@ -374,7 +376,13 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                     </span>
                   )}
                 </p>
-                <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--admin-muted)" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.78rem",
+                    color: "var(--admin-muted)",
+                  }}
+                >
                   {stylist.role} · {LEVEL_LABELS[stylist.level]}
                   {stylist.status === "inactive" && " · Inactive"}
                 </p>

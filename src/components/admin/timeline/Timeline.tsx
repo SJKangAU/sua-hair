@@ -9,7 +9,10 @@ import { useRef, useEffect } from "react";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { SALON_CONFIG } from "../../../lib/config";
-import { minutesToTimeString, getCurrentMinutes } from "../../../lib/scheduling";
+import {
+  minutesToTimeString,
+  getCurrentMinutes,
+} from "../../../lib/scheduling";
 import { todayString } from "../../../lib/dates";
 import TimelineColumn from "./TimelineColumn";
 import CurrentTimeBar from "./CurrentTimeBar";
@@ -146,7 +149,13 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
             >
               {stylist.name.split(" ")[0]}
             </p>
-            <p style={{ margin: 0, fontSize: "0.65rem", color: "var(--admin-dimmer)" }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "0.65rem",
+                color: "var(--admin-dimmer)",
+              }}
+            >
               {stylist.role.split(" ")[0]}
             </p>
           </div>

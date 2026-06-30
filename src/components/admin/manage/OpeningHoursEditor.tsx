@@ -135,10 +135,21 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1rem",
+        }}
+      >
         <div>
-          <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Opening Hours</h3>
-          <p style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+            Opening Hours
+          </h3>
+          <p
+            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+          >
             Set recurring weekly hours and one-off date overrides.
           </p>
         </div>
@@ -163,7 +174,9 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
       {/* Weekly schedule */}
       <div style={card}>
         <p style={sectionTitle}>Weekly Schedule</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}
+        >
           {DAY_ORDER.map(({ key, label }) => {
             const day = weekly[key];
             return (
@@ -178,42 +191,79 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                   borderBottom: "1px solid #f4f4f4",
                 }}
               >
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={day.isOpen}
                     onChange={(e) => updateDay(key, "isOpen", e.target.checked)}
                     style={{ accentColor: "#c9a96e", width: 16, height: 16 }}
                   />
-                  <span style={{ fontSize: "0.875rem", fontWeight: day.isOpen ? 500 : 400, color: day.isOpen ? "#1a1a1a" : "#aaa" }}>
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      fontWeight: day.isOpen ? 500 : 400,
+                      color: day.isOpen ? "#1a1a1a" : "#aaa",
+                    }}
+                  >
                     {label}
                   </span>
                 </label>
 
                 {day.isOpen ? (
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.5rem",
+                      alignItems: "center",
+                    }}
+                  >
                     <select
                       value={day.open}
-                      onChange={(e) => updateDay(key, "open", Number(e.target.value))}
+                      onChange={(e) =>
+                        updateDay(key, "open", Number(e.target.value))
+                      }
                       style={inputStyle}
                     >
                       {HOUR_OPTIONS.map((h) => (
-                        <option key={h} value={h}>{formatHour(h)}</option>
+                        <option key={h} value={h}>
+                          {formatHour(h)}
+                        </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: "0.8rem", color: "#999" }}>to</span>
+                    <span style={{ fontSize: "0.8rem", color: "#999" }}>
+                      to
+                    </span>
                     <select
                       value={day.close}
-                      onChange={(e) => updateDay(key, "close", Number(e.target.value))}
+                      onChange={(e) =>
+                        updateDay(key, "close", Number(e.target.value))
+                      }
                       style={inputStyle}
                     >
                       {HOUR_OPTIONS.filter((h) => h > day.open).map((h) => (
-                        <option key={h} value={h}>{formatHour(h)}</option>
+                        <option key={h} value={h}>
+                          {formatHour(h)}
+                        </option>
                       ))}
                     </select>
                   </div>
                 ) : (
-                  <span style={{ fontSize: "0.8rem", color: "#bbb", fontStyle: "italic" }}>Closed</span>
+                  <span
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#bbb",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Closed
+                  </span>
                 )}
               </div>
             );
@@ -224,13 +274,27 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
       {/* Date overrides */}
       <div style={card}>
         <p style={sectionTitle}>Date Overrides</p>
-        <p style={{ fontSize: "0.8rem", color: "#999", marginTop: "-0.5rem", marginBottom: "0.75rem" }}>
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "#999",
+            marginTop: "-0.5rem",
+            marginBottom: "0.75rem",
+          }}
+        >
           Close for a public holiday or set special hours for a single date.
         </p>
 
         {/* Existing overrides */}
         {overrides.length > 0 && (
-          <div style={{ marginBottom: "0.75rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+          <div
+            style={{
+              marginBottom: "0.75rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.4rem",
+            }}
+          >
             {overrides
               .slice()
               .sort((a, b) => a.date.localeCompare(b.date))
@@ -248,14 +312,25 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                   }}
                 >
                   <span style={{ fontWeight: 500 }}>{date}</span>
-                  <span style={{ color: override.closed ? "#e53e3e" : "#2d8a4e" }}>
+                  <span
+                    style={{ color: override.closed ? "#e53e3e" : "#2d8a4e" }}
+                  >
                     {override.closed
                       ? "Closed"
-                      : `${formatHour(override.open!)} – ${formatHour(override.close!)}`}
+                      : `${formatHour(override.open!)} – ${formatHour(
+                          override.close!,
+                        )}`}
                   </span>
                   <button
                     onClick={() => removeOverride(date)}
-                    style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: "1rem", padding: "0 0.25rem" }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#bbb",
+                      cursor: "pointer",
+                      fontSize: "1rem",
+                      padding: "0 0.25rem",
+                    }}
                     title="Remove override"
                   >
                     ×
@@ -266,9 +341,24 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
         )}
 
         {/* Add override form */}
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+          }}
+        >
           <div>
-            <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.2rem" }}>Date</div>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#666",
+                marginBottom: "0.2rem",
+              }}
+            >
+              Date
+            </div>
             <input
               type="date"
               value={newOverrideDate}
@@ -278,10 +368,20 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
           </div>
 
           <div>
-            <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.2rem" }}>Type</div>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#666",
+                marginBottom: "0.2rem",
+              }}
+            >
+              Type
+            </div>
             <select
               value={newOverrideClosed ? "closed" : "custom"}
-              onChange={(e) => setNewOverrideClosed(e.target.value === "closed")}
+              onChange={(e) =>
+                setNewOverrideClosed(e.target.value === "closed")
+              }
               style={inputStyle}
             >
               <option value="closed">Closed</option>
@@ -292,15 +392,47 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
           {!newOverrideClosed && (
             <>
               <div>
-                <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.2rem" }}>Open</div>
-                <select value={newOverrideOpen} onChange={(e) => setNewOverrideOpen(Number(e.target.value))} style={inputStyle}>
-                  {HOUR_OPTIONS.map((h) => <option key={h} value={h}>{formatHour(h)}</option>)}
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#666",
+                    marginBottom: "0.2rem",
+                  }}
+                >
+                  Open
+                </div>
+                <select
+                  value={newOverrideOpen}
+                  onChange={(e) => setNewOverrideOpen(Number(e.target.value))}
+                  style={inputStyle}
+                >
+                  {HOUR_OPTIONS.map((h) => (
+                    <option key={h} value={h}>
+                      {formatHour(h)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
-                <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.2rem" }}>Close</div>
-                <select value={newOverrideClose} onChange={(e) => setNewOverrideClose(Number(e.target.value))} style={inputStyle}>
-                  {HOUR_OPTIONS.filter((h) => h > newOverrideOpen).map((h) => <option key={h} value={h}>{formatHour(h)}</option>)}
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#666",
+                    marginBottom: "0.2rem",
+                  }}
+                >
+                  Close
+                </div>
+                <select
+                  value={newOverrideClose}
+                  onChange={(e) => setNewOverrideClose(Number(e.target.value))}
+                  style={inputStyle}
+                >
+                  {HOUR_OPTIONS.filter((h) => h > newOverrideOpen).map((h) => (
+                    <option key={h} value={h}>
+                      {formatHour(h)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </>

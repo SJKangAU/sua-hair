@@ -119,7 +119,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 75, senior: 65, junior: 65 },
     status: "active",
-    priceHistory: [{ price: { director: 75, senior: 65, junior: 65 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 75, senior: 65, junior: 65 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -132,7 +138,13 @@ const SERVICES = [
     totalTime: 60,
     price: { director: 95, senior: 85, junior: 85 },
     status: "active",
-    priceHistory: [{ price: { director: 95, senior: 85, junior: 85 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 95, senior: 85, junior: 85 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -145,7 +157,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
     status: "active",
-    priceHistory: [{ price: { director: 80, senior: 70, junior: 70 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 80, senior: 70, junior: 70 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -158,7 +176,13 @@ const SERVICES = [
     totalTime: 60,
     price: { director: 150, senior: 130, junior: 130 },
     status: "active",
-    priceHistory: [{ price: { director: 150, senior: 130, junior: 130 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 150, senior: 130, junior: 130 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -171,7 +195,13 @@ const SERVICES = [
     totalTime: 105,
     price: { director: 450, senior: 400, junior: 400 },
     status: "active",
-    priceHistory: [{ price: { director: 450, senior: 400, junior: 400 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 450, senior: 400, junior: 400 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -184,7 +214,13 @@ const SERVICES = [
     totalTime: 45,
     price: { director: 80, senior: 70, junior: 70 },
     status: "active",
-    priceHistory: [{ price: { director: 80, senior: 70, junior: 70 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 80, senior: 70, junior: 70 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -197,7 +233,13 @@ const SERVICES = [
     totalTime: 40,
     price: { director: 50, senior: 50, junior: 50 },
     status: "active",
-    priceHistory: [{ price: { director: 50, senior: 50, junior: 50 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 50, senior: 50, junior: 50 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -210,7 +252,13 @@ const SERVICES = [
     totalTime: 20,
     price: { director: 30, senior: 30, junior: 30 },
     status: "active",
-    priceHistory: [{ price: { director: 30, senior: 30, junior: 30 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 30, senior: 30, junior: 30 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -223,7 +271,13 @@ const SERVICES = [
     totalTime: 15,
     price: { director: 30, senior: 30, junior: 30 },
     status: "active",
-    priceHistory: [{ price: { director: 30, senior: 30, junior: 30 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 30, senior: 30, junior: 30 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
   {
@@ -236,14 +290,22 @@ const SERVICES = [
     totalTime: 120,
     price: { director: 380, senior: 350, junior: 350 },
     status: "active",
-    priceHistory: [{ price: { director: 380, senior: 350, junior: 350 }, effectiveFrom: "2024-01-01", recordedAt: new Date().toISOString() }],
+    priceHistory: [
+      {
+        price: { director: 380, senior: 350, junior: 350 },
+        effectiveFrom: "2024-01-01",
+        recordedAt: new Date().toISOString(),
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
 ];
 
 // ── Migration ─────────────────────────────────────────────────────────────────
 const migrate = async () => {
-  console.log("⚠️  WARNING: This permanently deletes ALL bookings and re-creates");
+  console.log(
+    "⚠️  WARNING: This permanently deletes ALL bookings and re-creates",
+  );
   console.log("    stylists and services with new human-readable IDs.\n");
 
   console.log("Step 1/5 — Deleting all booking documents...");
@@ -273,8 +335,12 @@ const migrate = async () => {
   console.log("\n🎉 Migration complete!");
   console.log("\nNew naming conventions going forward:");
   console.log("  stylists/  lastname-firstname        hwang-steve, lee-elly");
-  console.log("  services/  category-slug             cut-mens, colour-balayage");
-  console.log("  bookings/  BK-YYYYMMDD-stylist-HHMM  BK-20260628-hwang-steve-1000");
+  console.log(
+    "  services/  category-slug             cut-mens, colour-balayage",
+  );
+  console.log(
+    "  bookings/  BK-YYYYMMDD-stylist-HHMM  BK-20260628-hwang-steve-1000",
+  );
   console.log("             WI-YYYYMMDD-stylist-HHMM  walk-ins");
   console.log("             BR-YYYYMMDD-stylist-HHMM  break blocks");
   process.exit(0);

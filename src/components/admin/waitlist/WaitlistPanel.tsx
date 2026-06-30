@@ -20,7 +20,10 @@ const STATUS_LABELS: Record<WaitlistEntry["status"], string> = {
   resolved: "Resolved",
 };
 
-const STATUS_COLORS: Record<WaitlistEntry["status"], { bg: string; text: string }> = {
+const STATUS_COLORS: Record<
+  WaitlistEntry["status"],
+  { bg: string; text: string }
+> = {
   pending: { bg: "#fff8ec", text: "#c9a96e" },
   contacted: { bg: "#eef4ff", text: "#3366cc" },
   resolved: { bg: "#f0faf4", text: "#2d8a4e" },
@@ -31,10 +34,16 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
   const [filter, setFilter] = useState<Filter>("all");
   const [updating, setUpdating] = useState<string | null>(null);
 
-  const visible = entries.filter((e) => filter === "all" || e.status === filter);
+  const visible = entries.filter(
+    (e) => filter === "all" || e.status === filter,
+  );
   const pendingCount = entries.filter((e) => e.status === "pending").length;
 
-  const handleUpdate = async (id: string, status: WaitlistEntry["status"], name: string) => {
+  const handleUpdate = async (
+    id: string,
+    status: WaitlistEntry["status"],
+    name: string,
+  ) => {
     setUpdating(id);
     try {
       await updateStatus(id, status);
@@ -93,16 +102,29 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
               </span>
             )}
           </h3>
-          <p style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}>
+          <p
+            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+          >
             Clients waiting for an opening — oldest requests first.
           </p>
         </div>
       </div>
 
       {/* Filter pills */}
-      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.4rem",
+          marginBottom: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
         {(["all", "pending", "contacted", "resolved"] as Filter[]).map((f) => (
-          <button key={f} onClick={() => setFilter(f)} style={pillStyle(filter === f)}>
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            style={pillStyle(filter === f)}
+          >
             {f === "all" ? "All" : STATUS_LABELS[f as WaitlistEntry["status"]]}
           </button>
         ))}
@@ -127,7 +149,9 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
           {filter === "all" ? "No waitlist entries." : `No ${filter} entries.`}
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}
+        >
           {visible.map((entry) => {
             const statusColor = STATUS_COLORS[entry.status];
             const isUpdating = updating === entry.id;
@@ -146,7 +170,14 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                 }}
               >
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.25rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.6rem",
+                      marginBottom: "0.25rem",
+                    }}
+                  >
                     <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>
                       {entry.customerName}
                     </span>
@@ -169,7 +200,13 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                       Requested: {entry.requestedDate}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "#bbb", marginTop: "0.2rem" }}>
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#bbb",
+                      marginTop: "0.2rem",
+                    }}
+                  >
                     Joined {formatDate(entry.createdAt)}
                   </div>
                 </div>
@@ -178,7 +215,9 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                 <div style={{ display: "flex", gap: "0.4rem" }}>
                   {entry.status === "pending" && (
                     <button
-                      onClick={() => handleUpdate(entry.id, "contacted", entry.customerName)}
+                      onClick={() =>
+                        handleUpdate(entry.id, "contacted", entry.customerName)
+                      }
                       disabled={isUpdating}
                       style={{
                         padding: "0.4rem 0.85rem",
@@ -197,7 +236,9 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                   )}
                   {entry.status !== "resolved" && (
                     <button
-                      onClick={() => handleUpdate(entry.id, "resolved", entry.customerName)}
+                      onClick={() =>
+                        handleUpdate(entry.id, "resolved", entry.customerName)
+                      }
                       disabled={isUpdating}
                       style={{
                         padding: "0.4rem 0.85rem",

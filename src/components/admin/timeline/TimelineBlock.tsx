@@ -9,7 +9,10 @@
 
 import { useState, useEffect } from "react";
 import Badge from "../../ui/Badge";
-import { getCurrentMinutes, timeStringToMinutes } from "../../../lib/scheduling";
+import {
+  getCurrentMinutes,
+  timeStringToMinutes,
+} from "../../../lib/scheduling";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -65,7 +68,13 @@ const TimelineBlock = ({
     compute();
     const interval = setInterval(compute, 10_000); // refresh every 10 s
     return () => clearInterval(interval);
-  }, [isToday, hasRestPeriod, booking.time, booking.activeTime, booking.totalTime]);
+  }, [
+    isToday,
+    hasRestPeriod,
+    booking.time,
+    booking.activeTime,
+    booking.totalTime,
+  ]);
 
   // Base styles shared across all block types
   const baseStyle: React.CSSProperties = {
@@ -212,7 +221,10 @@ const TimelineBlock = ({
             style={{
               margin: 0,
               fontSize: "0.6rem",
-              color: restSecondsLeft !== null && restSecondsLeft <= 300 ? "#e53e3e" : "#c9a96e",
+              color:
+                restSecondsLeft !== null && restSecondsLeft <= 300
+                  ? "#e53e3e"
+                  : "#c9a96e",
               fontWeight: 600,
               whiteSpace: "nowrap",
             }}

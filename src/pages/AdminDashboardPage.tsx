@@ -86,7 +86,13 @@ const DashboardInner = () => {
           <h1 style={{ fontSize: "1.5rem", color: "var(--gold)", margin: 0 }}>
             Sua Hair
           </h1>
-          <p style={{ fontSize: "0.75rem", color: "var(--admin-faint)", margin: 0 }}>
+          <p
+            style={{
+              fontSize: "0.75rem",
+              color: "var(--admin-faint)",
+              margin: 0,
+            }}
+          >
             Admin Dashboard
           </p>
         </div>

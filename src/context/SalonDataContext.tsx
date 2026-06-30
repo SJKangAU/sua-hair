@@ -2,14 +2,14 @@
 // Provides stylists, services, and salonSettings to the entire app.
 // One fetch per data source, shared everywhere via context.
 
-import { createContext, useContext } from 'react';
-import type { ReactNode } from 'react';
-import useStylists from '../hooks/useStylists';
-import useServices from '../hooks/useServices';
-import useSalonSettings from '../hooks/useSalonSettings';
-import type { FirestoreStylist } from '../hooks/useStylists';
-import type { FirestoreService } from '../hooks/useServices';
-import type { SalonSettings } from '../types';
+import { createContext, useContext } from "react";
+import type { ReactNode } from "react";
+import useStylists from "../hooks/useStylists";
+import useServices from "../hooks/useServices";
+import useSalonSettings from "../hooks/useSalonSettings";
+import type { FirestoreStylist } from "../hooks/useStylists";
+import type { FirestoreService } from "../hooks/useServices";
+import type { SalonSettings } from "../types";
 
 interface SalonDataContextValue {
   stylists: FirestoreStylist[];
@@ -42,21 +42,24 @@ export const SalonDataProvider = ({ children }: { children: ReactNode }) => {
     refetch: refetchServices,
   } = useServices(true); // active only
 
-  const { settings: salonSettings, loading: settingsLoading } = useSalonSettings();
+  const { settings: salonSettings, loading: settingsLoading } =
+    useSalonSettings();
 
   return (
-    <SalonDataContext.Provider value={{
-      stylists,
-      stylistsLoading,
-      stylistsError,
-      refetchStylists,
-      services,
-      servicesLoading,
-      servicesError,
-      refetchServices,
-      salonSettings,
-      settingsLoading,
-    }}>
+    <SalonDataContext.Provider
+      value={{
+        stylists,
+        stylistsLoading,
+        stylistsError,
+        refetchStylists,
+        services,
+        servicesLoading,
+        servicesError,
+        refetchServices,
+        salonSettings,
+        settingsLoading,
+      }}
+    >
       {children}
     </SalonDataContext.Provider>
   );
@@ -67,7 +70,7 @@ export const SalonDataProvider = ({ children }: { children: ReactNode }) => {
 export const useSalonData = (): SalonDataContextValue => {
   const context = useContext(SalonDataContext);
   if (!context) {
-    throw new Error('useSalonData must be used within a SalonDataProvider');
+    throw new Error("useSalonData must be used within a SalonDataProvider");
   }
   return context;
 };

@@ -7,7 +7,11 @@ import { useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
-import type { DayOfWeek, StylistWeeklyHours, StylistDayHours } from "../../../types";
+import type {
+  DayOfWeek,
+  StylistWeeklyHours,
+  StylistDayHours,
+} from "../../../types";
 
 interface Props {
   onSuccess: (msg: string) => void;
@@ -26,13 +30,19 @@ const DAY_ORDER: { key: DayOfWeek; label: string }[] = [
 
 // Build a default working hours map that mirrors salon hours for the given day
 const buildDefaultHours = (
-  salonSchedule: Record<DayOfWeek, { isOpen: boolean; open: number; close: number }>,
+  salonSchedule: Record<
+    DayOfWeek,
+    { isOpen: boolean; open: number; close: number }
+  >,
 ): StylistWeeklyHours => {
   const days: DayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   return Object.fromEntries(
     days.map((day) => {
       const salon = salonSchedule[day];
-      return [day, { isWorking: salon.isOpen, start: salon.open, end: salon.close }];
+      return [
+        day,
+        { isWorking: salon.isOpen, start: salon.open, end: salon.close },
+      ];
     }),
   ) as StylistWeeklyHours;
 };
@@ -65,8 +75,9 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
   const selected = activeStylists.find((s) => s.id === selectedId);
 
   // Local hours state — initialised from stylist doc or salon defaults
-  const [hours, setHours] = useState<StylistWeeklyHours>(() =>
-    selected?.workingHours ?? buildDefaultHours(salonSettings.weeklySchedule),
+  const [hours, setHours] = useState<StylistWeeklyHours>(
+    () =>
+      selected?.workingHours ?? buildDefaultHours(salonSettings.weeklySchedule),
   );
 
   // When switching stylist, reinitialise hours
@@ -115,8 +126,12 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
         }}
       >
         <div>
-          <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Stylist Hours</h3>
-          <p style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+            Stylist Hours
+          </h3>
+          <p
+            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+          >
             Per-stylist working hours within salon bounds.
           </p>
         </div>
@@ -167,7 +182,9 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
           padding: "1.25rem",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}
+        >
           {DAY_ORDER.map(({ key, label }) => {
             const dayHours = hours[key];
             const salon = salonSchedule[key];
@@ -204,14 +221,18 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                     type="checkbox"
                     checked={!salonClosed && dayHours.isWorking}
                     disabled={salonClosed}
-                    onChange={(e) => updateDay(key, "isWorking", e.target.checked)}
+                    onChange={(e) =>
+                      updateDay(key, "isWorking", e.target.checked)
+                    }
                     style={{ accentColor: "#c9a96e", width: 14, height: 14 }}
                   />
                   <span
                     style={{
                       fontSize: "0.8rem",
-                      fontWeight: dayHours.isWorking && !salonClosed ? 500 : 400,
-                      color: dayHours.isWorking && !salonClosed ? "#1a1a1a" : "#aaa",
+                      fontWeight:
+                        dayHours.isWorking && !salonClosed ? 500 : 400,
+                      color:
+                        dayHours.isWorking && !salonClosed ? "#1a1a1a" : "#aaa",
                     }}
                   >
                     {label}
@@ -219,35 +240,63 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                 </label>
 
                 {salonClosed ? (
-                  <span style={{ fontSize: "0.78rem", color: "#ccc", fontStyle: "italic" }}>
+                  <span
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "#ccc",
+                      fontStyle: "italic",
+                    }}
+                  >
                     Salon closed
                   </span>
                 ) : dayHours.isWorking ? (
-                  <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.4rem",
+                      alignItems: "center",
+                    }}
+                  >
                     <select
                       value={dayHours.start}
-                      onChange={(e) => updateDay(key, "start", Number(e.target.value))}
+                      onChange={(e) =>
+                        updateDay(key, "start", Number(e.target.value))
+                      }
                       style={inputStyle}
                     >
                       {hourOptions.slice(0, -1).map((h) => (
-                        <option key={h} value={h}>{formatHour(h)}</option>
+                        <option key={h} value={h}>
+                          {formatHour(h)}
+                        </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: "0.75rem", color: "#bbb" }}>–</span>
+                    <span style={{ fontSize: "0.75rem", color: "#bbb" }}>
+                      –
+                    </span>
                     <select
                       value={dayHours.end}
-                      onChange={(e) => updateDay(key, "end", Number(e.target.value))}
+                      onChange={(e) =>
+                        updateDay(key, "end", Number(e.target.value))
+                      }
                       style={inputStyle}
                     >
                       {hourOptions
                         .filter((h) => h > dayHours.start)
                         .map((h) => (
-                          <option key={h} value={h}>{formatHour(h)}</option>
+                          <option key={h} value={h}>
+                            {formatHour(h)}
+                          </option>
                         ))}
                     </select>
                   </div>
                 ) : (
-                  <span style={{ fontSize: "0.78rem", color: "#bbb", fontStyle: "italic" }}>
+                  <span
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "#bbb",
+                      fontStyle: "italic",
+                    }}
+                  >
                     Not working
                   </span>
                 )}

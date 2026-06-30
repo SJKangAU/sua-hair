@@ -21,7 +21,7 @@ export type DayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 // Recurring schedule entry for a single day of the week
 export interface DaySchedule {
   isOpen: boolean;
-  open: number;  // 24-hour integer, e.g. 10
+  open: number; // 24-hour integer, e.g. 10
   close: number; // 24-hour integer, e.g. 18
 }
 
@@ -46,7 +46,7 @@ export interface SalonSettings {
 export interface StylistDayHours {
   isWorking: boolean;
   start: number; // 24-hour integer
-  end: number;   // 24-hour integer
+  end: number; // 24-hour integer
 }
 
 export type StylistWeeklyHours = Record<DayOfWeek, StylistDayHours>;
@@ -133,7 +133,7 @@ export interface TimeBlock {
 
 export interface Notification {
   id: string;
-  recipientId: string;        // 'owner' | stylistId
+  recipientId: string; // 'owner' | stylistId
   recipientType: "owner" | "stylist";
   bookingId: string;
   message: string;
@@ -155,8 +155,8 @@ export interface WaitlistEntry {
   id: string;
   customerName: string;
   customerPhone: string;
-  requestedDate: string;          // YYYY-MM-DD
-  requestedStylistId?: string;    // optional — 'any' if no preference
+  requestedDate: string; // YYYY-MM-DD
+  requestedStylistId?: string; // optional — 'any' if no preference
   createdAt: string;
   status: "pending" | "contacted" | "resolved";
 }

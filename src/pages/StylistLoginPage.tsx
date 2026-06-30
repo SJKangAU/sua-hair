@@ -79,7 +79,13 @@ const StylistLoginPage = () => {
           <h1 style={{ fontSize: "1.75rem", color: "#c9a96e", margin: 0 }}>
             Sua Hair
           </h1>
-          <p style={{ color: "#6b6b6b", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+          <p
+            style={{
+              color: "#6b6b6b",
+              fontSize: "0.85rem",
+              marginTop: "0.25rem",
+            }}
+          >
             Stylist Portal
           </p>
         </div>
@@ -144,7 +150,13 @@ const StylistLoginPage = () => {
           </button>
         </form>
 
-        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.85rem" }}>
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+            fontSize: "0.85rem",
+          }}
+        >
           <a href="/" style={{ color: "#c9a96e", textDecoration: "none" }}>
             ← Back to booking
           </a>

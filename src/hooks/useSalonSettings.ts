@@ -52,7 +52,8 @@ const useSalonSettings = (): Result => {
         if (snap.exists()) {
           const data = snap.data() as Omit<SalonSettings, never>;
           setSettings({
-            weeklySchedule: data.weeklySchedule ?? DEFAULT_SETTINGS.weeklySchedule,
+            weeklySchedule:
+              data.weeklySchedule ?? DEFAULT_SETTINGS.weeklySchedule,
             dateOverrides: data.dateOverrides ?? {},
           });
         } else {

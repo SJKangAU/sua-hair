@@ -9,7 +9,10 @@ import { useState } from "react";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
-import { minutesToTimeString, getSalonHoursForDate } from "../../../lib/scheduling";
+import {
+  minutesToTimeString,
+  getSalonHoursForDate,
+} from "../../../lib/scheduling";
 import { writeBookingNotifications } from "../../../lib/notifications";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
@@ -36,10 +39,17 @@ const BREAK_DURATIONS = [
 ];
 
 // Generate time slots within the salon's hours for a given date
-const generateTimeSlots = (date: string, salonHours?: { open: number; close: number }): string[] => {
+const generateTimeSlots = (
+  date: string,
+  salonHours?: { open: number; close: number },
+): string[] => {
   const hours = salonHours ?? { open: 10, close: 18 };
   const slots: string[] = [];
-  for (let minutes = hours.open * 60; minutes < hours.close * 60; minutes += 30) {
+  for (
+    let minutes = hours.open * 60;
+    minutes < hours.close * 60;
+    minutes += 30
+  ) {
     slots.push(minutesToTimeString(minutes));
   }
   return slots;
@@ -154,8 +164,16 @@ const CreateBookingModal = ({
       const safeDate = walkin.date.replace(/-/g, "");
       const [tp, period] = walkin.time.split(" ");
       const [h, m] = tp.split(":").map(Number);
-      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const hour24 =
+        period === "PM" && h !== 12
+          ? h + 12
+          : period === "AM" && h === 12
+          ? 0
+          : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
+        2,
+        "0",
+      )}`;
       const docId = `WI-${safeDate}-${stylist.id}-${hhmm}`;
       await setDoc(doc(collection(db, "bookings"), docId), booking);
 
@@ -214,8 +232,16 @@ const CreateBookingModal = ({
       const safeDate = breakForm.date.replace(/-/g, "");
       const [tp, period] = breakForm.time.split(" ");
       const [h, m] = tp.split(":").map(Number);
-      const hour24 = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+      const hour24 =
+        period === "PM" && h !== 12
+          ? h + 12
+          : period === "AM" && h === 12
+          ? 0
+          : h;
+      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
+        2,
+        "0",
+      )}`;
       const docId = `BR-${safeDate}-${stylist.id}-${hhmm}`;
       await setDoc(doc(collection(db, "bookings"), docId), booking);
 
@@ -369,11 +395,13 @@ const CreateBookingModal = ({
                 }
               >
                 <option value="">Select time...</option>
-                {generateTimeSlots(walkin.date, walkinHours ?? undefined).map((slot) => (
-                  <option key={slot} value={slot}>
-                    {slot}
-                  </option>
-                ))}
+                {generateTimeSlots(walkin.date, walkinHours ?? undefined).map(
+                  (slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
           </div>
@@ -461,11 +489,13 @@ const CreateBookingModal = ({
                 }
               >
                 <option value="">Select time...</option>
-                {generateTimeSlots(breakForm.date, breakHours ?? undefined).map((slot) => (
-                  <option key={slot} value={slot}>
-                    {slot}
-                  </option>
-                ))}
+                {generateTimeSlots(breakForm.date, breakHours ?? undefined).map(
+                  (slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
           </div>

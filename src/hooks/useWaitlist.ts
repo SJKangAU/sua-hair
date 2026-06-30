@@ -25,10 +25,7 @@ const useWaitlist = (): Result => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "waitlist"),
-      orderBy("createdAt", "asc"),
-    );
+    const q = query(collection(db, "waitlist"), orderBy("createdAt", "asc"));
 
     const unsub = onSnapshot(
       q,

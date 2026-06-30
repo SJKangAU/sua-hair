@@ -3,10 +3,10 @@
 // Used by ProtectedRoute to guard admin pages
 // Returns null while auth state is loading to prevent flash of login screen
 
-import { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import type { User } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 interface AuthState {
   user: User | null;
