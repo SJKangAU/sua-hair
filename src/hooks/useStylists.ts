@@ -19,6 +19,7 @@ export interface FirestoreStylist {
   startDate: string;
   isTrainer: boolean;
   createdAt: string;
+  workingHours?: import("../types").StylistWeeklyHours;
 }
 
 interface UseStylists {

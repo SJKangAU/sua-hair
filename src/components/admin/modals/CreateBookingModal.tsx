@@ -40,7 +40,7 @@ const BREAK_DURATIONS = [
 
 // Generate time slots within the salon's hours for a given date
 const generateTimeSlots = (
-  date: string,
+  _date: string,
   salonHours?: { open: number; close: number },
 ): string[] => {
   const hours = salonHours ?? { open: 10, close: 18 };
