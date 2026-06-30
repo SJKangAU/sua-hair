@@ -47,18 +47,18 @@ const LABEL_STYLE: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
-  color: "#555555",
+  color: "var(--ink-soft)",
   marginBottom: "0.5rem",
 };
 
 const INPUT_BASE: React.CSSProperties = {
   width: "100%",
   padding: "0.875rem 1rem",
-  border: "1.5px solid #e0e0e0",
+  border: `1.5px solid var(--border)`,
   borderRadius: "8px",
   fontSize: "0.9rem",
   background: "#ffffff",
-  color: "#0a0a0a",
+  color: "var(--ink)",
   outline: "none",
   boxSizing: "border-box",
   fontFamily: "var(--font-body)",
@@ -99,7 +99,7 @@ const DetailsStep = ({
             fontFamily: "var(--font-display)",
             fontSize: "2rem",
             fontWeight: 300,
-            color: "#0a0a0a",
+            color: "var(--ink)",
             letterSpacing: "-0.01em",
             margin: "0 0 0.25rem",
             lineHeight: 1.15,
@@ -115,7 +115,7 @@ const DetailsStep = ({
       {/* Compact booking summary */}
       <div
         style={{
-          background: "#f8f8f8",
+          background: "var(--paper)",
           borderRadius: "10px",
           padding: "1.125rem",
           marginBottom: "1.75rem",
@@ -127,7 +127,7 @@ const DetailsStep = ({
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#aaaaaa",
+            color: "var(--grey-muted)",
             margin: "0 0 0.875rem",
           }}
         >
@@ -158,7 +158,7 @@ const DetailsStep = ({
         {/* Stylist / date / time */}
         <div
           style={{
-            borderTop: "1px solid #e8e8e8",
+            borderTop: `1px solid var(--border)`,
             marginTop: "0.75rem",
             paddingTop: "0.75rem",
           }}
@@ -178,7 +178,7 @@ const DetailsStep = ({
         {/* Total */}
         <div
           style={{
-            borderTop: "1px solid #e8e8e8",
+            borderTop: `1px solid var(--border)`,
             marginTop: "0.75rem",
             paddingTop: "0.75rem",
             display: "flex",
@@ -209,13 +209,13 @@ const DetailsStep = ({
             placeholder="e.g. 0412 345 678"
             style={{
               ...INPUT_BASE,
-              borderColor: errors.phone ? "#e24b4a" : "#e0e0e0",
+              borderColor: errors.phone ? "var(--error)" : "var(--border)",
             }}
           />
           {errors.phone && (
             <p
               style={{
-                color: "#e24b4a",
+                color: "var(--error)",
                 fontSize: "0.75rem",
                 marginTop: "0.375rem",
               }}
@@ -226,7 +226,7 @@ const DetailsStep = ({
           {lookingUp && (
             <p
               style={{
-                color: "#aaaaaa",
+                color: "var(--grey-muted)",
                 fontSize: "0.75rem",
                 marginTop: "0.375rem",
               }}
@@ -239,11 +239,11 @@ const DetailsStep = ({
               style={{
                 marginTop: "0.5rem",
                 padding: "0.5rem 0.75rem",
-                background: "#f0f7f0",
-                border: "1px solid #c0d8c0",
+                background: "var(--paper)",
+                border: `1px solid var(--border-strong)`,
                 borderRadius: "6px",
                 fontSize: "0.75rem",
-                color: "#2d6a4f",
+                color: "var(--ink-soft)",
                 display: "flex",
                 alignItems: "center",
                 gap: "0.375rem",
@@ -269,13 +269,13 @@ const DetailsStep = ({
             placeholder="Your full name"
             style={{
               ...INPUT_BASE,
-              borderColor: errors.name ? "#e24b4a" : "#e0e0e0",
+              borderColor: errors.name ? "var(--error)" : "var(--border)",
             }}
           />
           {errors.name && (
             <p
               style={{
-                color: "#e24b4a",
+                color: "var(--error)",
                 fontSize: "0.75rem",
                 marginTop: "0.375rem",
               }}
@@ -294,7 +294,7 @@ const DetailsStep = ({
                 fontWeight: 400,
                 textTransform: "none",
                 letterSpacing: 0,
-                color: "#aaaaaa",
+                color: "var(--grey-muted)",
               }}
             >
               (optional)
