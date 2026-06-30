@@ -1,12 +1,7 @@
 // StepIndicator.tsx
-// 3-step B&W progress indicator for the booking flow
-//
-// Steps: 1 Services  →  2 Date & Stylist  →  3 Your Details
-// Circle states:
-//   future    — white fill, grey border, grey number
-//   active    — black fill, white number
-//   completed — black fill, white checkmark SVG
-// Connecting lines turn black as steps are completed.
+// 3-step progress indicator for the booking flow.
+// Circle states: future = outlined, active = filled accent, completed = filled + checkmark.
+// Connecting lines fill as steps complete.
 
 interface Props {
   currentStep: number;
@@ -55,9 +50,10 @@ const StepIndicator = ({ currentStep }: Props) => {
                   width: 26,
                   height: 26,
                   borderRadius: "50%",
-                  background: completed || active ? "#0a0a0a" : "transparent",
+                  background:
+                    completed || active ? "var(--ink)" : "transparent",
                   border: `2px solid ${
-                    completed || active ? "#0a0a0a" : "#d0d0d0"
+                    completed || active ? "var(--ink)" : "var(--border-strong)"
                   }`,
                   display: "flex",
                   alignItems: "center",
@@ -81,7 +77,7 @@ const StepIndicator = ({ currentStep }: Props) => {
                     style={{
                       fontSize: "0.68rem",
                       fontWeight: 600,
-                      color: active ? "#ffffff" : "#999999",
+                      color: active ? "#ffffff" : "var(--grey-muted)",
                       fontFamily: "var(--font-body)",
                       lineHeight: 1,
                     }}
@@ -96,7 +92,11 @@ const StepIndicator = ({ currentStep }: Props) => {
                 style={{
                   fontSize: "0.65rem",
                   fontWeight: active ? 600 : 400,
-                  color: active ? "#0a0a0a" : completed ? "#555555" : "#aaaaaa",
+                  color: active
+                    ? "var(--ink)"
+                    : completed
+                    ? "var(--ink-soft)"
+                    : "var(--grey-muted)",
                   letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
                   transition: "color 0.2s ease",
@@ -113,7 +113,7 @@ const StepIndicator = ({ currentStep }: Props) => {
                 style={{
                   flex: 1,
                   height: "1.5px",
-                  background: completed ? "#0a0a0a" : "#e0e0e0",
+                  background: completed ? "var(--ink)" : "var(--border)",
                   margin: "0 0.375rem",
                   marginTop: "11px",
                   transition: "background 0.2s ease",
