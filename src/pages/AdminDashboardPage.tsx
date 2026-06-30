@@ -69,48 +69,63 @@ const DashboardInner = () => {
       style={{
         minHeight: "100vh",
         background: "var(--admin-page-bg)",
-        fontFamily: "Georgia, serif",
+        fontFamily: "var(--font-body)",
       }}
     >
       {/* Header */}
       <header
         style={{
           background: "var(--admin-bg)",
-          padding: "1rem 2rem",
+          padding: "0.875rem 2rem",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          borderBottom: "1px solid var(--admin-border)",
         }}
       >
         <div>
-          <h1 style={{ fontSize: "1.5rem", color: "var(--gold)", margin: 0 }}>
-            Sua Hair
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.35rem",
+              fontWeight: 400,
+              color: "var(--surface)",
+              margin: 0,
+              letterSpacing: "0.01em",
+              lineHeight: 1.2,
+            }}
+          >
+            Sua Hair Studio
           </h1>
           <p
             style={{
-              fontSize: "0.75rem",
-              color: "var(--admin-faint)",
+              fontSize: "0.7rem",
+              color: "var(--admin-dimmer)",
               margin: 0,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontFamily: "var(--font-body)",
             }}
           >
-            Admin Dashboard
+            Admin
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <NotificationBell />
-          <span style={{ color: "var(--admin-faint)", fontSize: "0.82rem" }}>
+          <span style={{ color: "var(--admin-dimmer)", fontSize: "0.78rem" }}>
             {user?.email}
           </span>
           <button
             onClick={handleSignOut}
             style={{
               background: "none",
-              border: "1px solid #555555",
+              border: "1px solid var(--admin-dim)",
               color: "var(--admin-faint)",
-              padding: "0.4rem 0.9rem",
+              padding: "0.375rem 0.875rem",
               borderRadius: "4px",
               cursor: "pointer",
-              fontSize: "0.8rem",
+              fontSize: "0.78rem",
+              fontFamily: "var(--font-body)",
             }}
           >
             Sign out
@@ -118,15 +133,16 @@ const DashboardInner = () => {
           <a
             href="/"
             style={{
-              border: "1px solid var(--gold)",
-              color: "var(--gold)",
-              padding: "0.4rem 0.9rem",
+              border: "1px solid var(--admin-dim)",
+              color: "var(--admin-faint)",
+              padding: "0.375rem 0.875rem",
               borderRadius: "4px",
-              fontSize: "0.8rem",
+              fontSize: "0.78rem",
               textDecoration: "none",
+              fontFamily: "var(--font-body)",
             }}
           >
-            View booking page
+            View site
           </a>
         </div>
       </header>
