@@ -40,8 +40,8 @@ const CheckCircle = ({ selected }: { selected: boolean }) => (
       width: 26,
       height: 26,
       borderRadius: "50%",
-      background: selected ? "#0a0a0a" : "transparent",
-      border: `2px solid ${selected ? "#0a0a0a" : "#d0d0d0"}`,
+      background: selected ? "var(--ink)" : "transparent",
+      border: `2px solid ${selected ? "var(--ink)" : "var(--border-strong)"}`,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -103,7 +103,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
             fontFamily: "var(--font-display)",
             fontSize: "2rem",
             fontWeight: 300,
-            color: "#0a0a0a",
+            color: "var(--ink)",
             letterSpacing: "-0.01em",
             margin: "0 0 0.25rem",
             lineHeight: 1.15,
@@ -111,7 +111,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
         >
           Select Services
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#999999", margin: 0 }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--grey-muted)", margin: 0 }}>
           Choose as many services as you'd like
         </p>
       </div>
@@ -135,7 +135,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                   padding: "0.875rem 0",
                   background: "none",
                   border: "none",
-                  borderTop: "1px solid #e8e8e8",
+                  borderTop: `1px solid var(--border)`,
                   cursor: "pointer",
                   textAlign: "left",
                 }}
@@ -146,7 +146,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                     fontWeight: 700,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
-                    color: "#0a0a0a",
+                    color: "var(--ink)",
                   }}
                 >
                   {categoryLabel(cat)}
@@ -154,7 +154,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                 <span
                   style={{
                     fontSize: "0.8rem",
-                    color: "#aaaaaa",
+                    color: "var(--grey-muted)",
                     transform: isOpen ? "rotate(180deg)" : "none",
                     transition: "transform 0.22s ease",
                     lineHeight: 1,
@@ -186,7 +186,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                         padding: "0.75rem 0",
                         background: "none",
                         border: "none",
-                        borderBottom: "1px solid #f2f2f2",
+                        borderBottom: `1px solid var(--border)`,
                         cursor: "pointer",
                         textAlign: "left",
                       }}
@@ -198,7 +198,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                             margin: 0,
                             fontSize: "0.875rem",
                             fontWeight: isSelected ? 600 : 400,
-                            color: "#0a0a0a",
+                            color: "var(--ink)",
                             transition: "font-weight 0.1s",
                           }}
                         >
@@ -208,7 +208,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                           style={{
                             margin: "2px 0 0",
                             fontSize: "0.75rem",
-                            color: "#aaaaaa",
+                            color: "var(--grey-muted)",
                           }}
                         >
                           {service.totalTime} min
@@ -223,7 +223,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                         style={{
                           fontSize: "0.82rem",
                           fontWeight: 500,
-                          color: "#0a0a0a",
+                          color: "var(--ink)",
                           flexShrink: 0,
                           minWidth: "56px",
                           textAlign: "right",
@@ -243,7 +243,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
         })}
 
         {/* Bottom border after last category */}
-        <div style={{ borderTop: "1px solid #e8e8e8" }} />
+        <div style={{ borderTop: `1px solid var(--border)` }} />
       </div>
 
       {/* Selection summary bar */}
@@ -255,12 +255,12 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
             alignItems: "center",
             marginTop: "1.25rem",
             padding: "0.875rem 1rem",
-            background: "#0a0a0a",
+            background: "var(--ink)",
             borderRadius: "8px",
             animation: "bkFadeIn 0.2s ease both",
           }}
         >
-          <span style={{ fontSize: "0.82rem", color: "#aaaaaa" }}>
+          <span style={{ fontSize: "0.82rem", color: "var(--grey-muted)" }}>
             {selectedIds.length} service{selectedIds.length !== 1 ? "s" : ""}{" "}
             selected
           </span>
