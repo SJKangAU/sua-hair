@@ -41,8 +41,8 @@ const RadioCircle = ({ selected }: { selected: boolean }) => (
       width: 20,
       height: 20,
       borderRadius: "50%",
-      border: `2px solid ${selected ? "#0a0a0a" : "#d0d0d0"}`,
-      background: selected ? "#0a0a0a" : "transparent",
+      border: `2px solid ${selected ? "var(--ink)" : "var(--border-strong)"}`,
+      background: selected ? "var(--ink)" : "transparent",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -134,7 +134,7 @@ const StylistDateStep = ({
             fontFamily: "var(--font-display)",
             fontSize: "2rem",
             fontWeight: 300,
-            color: "#0a0a0a",
+            color: "var(--ink)",
             letterSpacing: "-0.01em",
             margin: "0 0 0.25rem",
             lineHeight: 1.15,
@@ -142,7 +142,7 @@ const StylistDateStep = ({
         >
           Date & Stylist
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#999999", margin: 0 }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--grey-muted)", margin: 0 }}>
           Choose who you'd like, then select a time
         </p>
       </div>
@@ -155,7 +155,7 @@ const StylistDateStep = ({
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#aaaaaa",
+            color: "var(--grey-muted)",
             marginBottom: "0.75rem",
           }}
         >
@@ -173,7 +173,7 @@ const StylistDateStep = ({
             padding: "0.875rem 0",
             background: "none",
             border: "none",
-            borderBottom: "1px solid #f2f2f2",
+            borderBottom: `1px solid var(--border)`,
             cursor: "pointer",
             textAlign: "left",
           }}
@@ -185,7 +185,7 @@ const StylistDateStep = ({
                 margin: 0,
                 fontSize: "0.875rem",
                 fontWeight: isAny ? 600 : 400,
-                color: "#0a0a0a",
+                color: "var(--ink)",
               }}
             >
               Any Available Stylist
@@ -194,7 +194,7 @@ const StylistDateStep = ({
               style={{
                 margin: "2px 0 0",
                 fontSize: "0.75rem",
-                color: "#aaaaaa",
+                color: "var(--grey-muted)",
               }}
             >
               First available stylist will be assigned
@@ -217,7 +217,7 @@ const StylistDateStep = ({
                 padding: "0.875rem 0",
                 background: "none",
                 border: "none",
-                borderBottom: "1px solid #f2f2f2",
+                borderBottom: `1px solid var(--border)`,
                 cursor: "pointer",
                 textAlign: "left",
               }}
@@ -229,7 +229,7 @@ const StylistDateStep = ({
                     margin: 0,
                     fontSize: "0.875rem",
                     fontWeight: isSelected ? 600 : 400,
-                    color: "#0a0a0a",
+                    color: "var(--ink)",
                   }}
                 >
                   {stylist.name}
@@ -238,7 +238,7 @@ const StylistDateStep = ({
                   style={{
                     margin: "2px 0 0",
                     fontSize: "0.75rem",
-                    color: "#aaaaaa",
+                    color: "var(--grey-muted)",
                   }}
                 >
                   {stylist.role}
@@ -265,7 +265,7 @@ const StylistDateStep = ({
               fontWeight: 700,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "#aaaaaa",
+              color: "var(--grey-muted)",
               margin: 0,
             }}
           >
