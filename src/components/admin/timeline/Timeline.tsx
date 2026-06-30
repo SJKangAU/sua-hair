@@ -10,6 +10,7 @@ import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { SALON_CONFIG } from "../../../lib/config";
 import { minutesToTimeString, getCurrentMinutes } from "../../../lib/scheduling";
+import { todayString } from "../../../lib/dates";
 import TimelineColumn from "./TimelineColumn";
 import CurrentTimeBar from "./CurrentTimeBar";
 import type { Booking } from "../../../types";
@@ -237,6 +238,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                 bookings={dayBookings}
                 onBlockClick={onBlockClick}
                 onEmptySlotClick={onEmptySlotClick}
+                isToday={selectedDate === todayString()}
               />
             ))}
           </div>

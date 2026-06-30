@@ -1,6 +1,6 @@
 // TodayPage.tsx
 // Today tab — day navigation, stats, timeline, and booking modals
-// Uses ToastContext directly — no addToast prop needed
+// Phase 11: adds active multi-phase treatment summary panel and live countdown trigger
 
 import { useState } from "react";
 import { useBookingContext } from "../../context/BookingContext";
@@ -11,6 +11,7 @@ import CreateBookingModal from "../../components/admin/modals/CreateBookingModal
 import DashboardStats from "../../components/admin/DashboardStats";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
 import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
+import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -19,6 +20,13 @@ interface Props {
     status: "pending" | "confirmed" | "cancelled",
   ) => void;
 }
+
+const formatMinutes = (totalSeconds: number): string => {
+  if (totalSeconds <= 0) return "Now";
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+};
 
 const TodayPage = ({ onUpdateStatus }: Props) => {
   const { bookings, loading } = useBookingContext();
@@ -32,7 +40,11 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
   } | null>(null);
 
   const isToday = selectedDate === todayString();
-  const dayBookings = bookings.filter(b => b.date === selectedDate);
+  const dayBookings = bookings.filter((b) => b.date === selectedDate);
+
+  // Multi-phase countdown — only meaningful for today's date.
+  // useMultiPhaseCountdown handles the 5-minute notification trigger internally.
+  const { activeRests } = useMultiPhaseCountdown(bookings, selectedDate);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -48,7 +60,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <button
-            onClick={() => setSelectedDate(d => addDays(d, -1))}
+            onClick={() => setSelectedDate((d) => addDays(d, -1))}
             style={{
               padding: "0.4rem 0.75rem",
               background: "#1a1a1a",
@@ -73,7 +85,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
             {formatDisplayDate(selectedDate)}
           </h2>
           <button
-            onClick={() => setSelectedDate(d => addDays(d, 1))}
+            onClick={() => setSelectedDate((d) => addDays(d, 1))}
             style={{
               padding: "0.4rem 0.75rem",
               background: "#1a1a1a",
@@ -136,6 +148,71 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
         </button>
       </div>
 
+      {/* Active multi-phase treatments panel — only shown when any are in rest period */}
+      {isToday && activeRests.length > 0 && (
+        <div
+          style={{
+            background: "#fffbf4",
+            border: "1px solid #f0d9a8",
+            borderRadius: "10px",
+            padding: "0.9rem 1.1rem",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 0.6rem",
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              color: "#c9a96e",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            ⏱ Active Treatments — Phase 3 Countdown
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {activeRests.map((r) => {
+              const urgent = r.remainingSeconds <= 300;
+              return (
+                <div
+                  key={r.bookingId}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    alignItems: "center",
+                    gap: "1rem",
+                    padding: "0.5rem 0.75rem",
+                    background: urgent ? "#fff5f5" : "#fff",
+                    border: `1px solid ${urgent ? "#fca5a5" : "#f0e8d8"}`,
+                    borderRadius: "7px",
+                  }}
+                >
+                  <div>
+                    <span style={{ fontWeight: 500, fontSize: "0.88rem" }}>
+                      {r.customerName}
+                    </span>
+                    <span style={{ color: "#999", fontSize: "0.8rem", marginLeft: "0.5rem" }}>
+                      — {r.serviceName} · {r.stylistName}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: 700,
+                      color: urgent ? "#e53e3e" : "#c9a96e",
+                      minWidth: 60,
+                      textAlign: "right",
+                    }}
+                  >
+                    {formatMinutes(r.remainingSeconds)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Stats for selected date */}
       {loading ? (
         <StatsSkeleton />
@@ -171,8 +248,8 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           prefillTime={createModal.time}
           prefillDate={selectedDate}
           onClose={() => setCreateModal(null)}
-          onSuccess={msg => addToast(msg, "success")}
-          onError={msg => addToast(msg, "error")}
+          onSuccess={(msg) => addToast(msg, "success")}
+          onError={(msg) => addToast(msg, "error")}
         />
       )}
     </div>

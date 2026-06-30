@@ -5,8 +5,11 @@
 // Confirmed bookings are solid gold
 // Blocked time (breaks) shows a cross-hatch pattern
 // Clicking a block opens the booking detail modal
+// Rest period shows a live countdown when rendering for today's date
 
+import { useState, useEffect } from "react";
 import Badge from "../../ui/Badge";
+import { getCurrentMinutes, timeStringToMinutes } from "../../../lib/scheduling";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -15,7 +18,15 @@ interface Props {
   heightPercent: number; // height as % of grid height
   restHeightPercent: number; // rest period height as % of grid height
   onClick: (booking: Booking) => void;
+  isToday?: boolean; // enables live countdown in rest period section
 }
+
+const formatCountdown = (totalSeconds: number): string => {
+  if (totalSeconds <= 0) return "Now";
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
 
 const TimelineBlock = ({
   booking,
@@ -23,6 +34,7 @@ const TimelineBlock = ({
   heightPercent,
   restHeightPercent,
   onClick,
+  isToday = false,
 }: Props) => {
   const isBreak = booking.bookingType === "break";
   const isPending = booking.status === "pending";
@@ -31,6 +43,29 @@ const TimelineBlock = ({
 
   // Active period height is total minus rest
   const activeHeightPercent = heightPercent - restHeightPercent;
+
+  // Live countdown for rest period — only computed for today's bookings
+  const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isToday || !hasRestPeriod) return;
+
+    const compute = () => {
+      const nowMin = getCurrentMinutes();
+      const startMin = timeStringToMinutes(booking.time);
+      const restStartMin = startMin + booking.activeTime;
+      const restEndMin = startMin + booking.totalTime;
+      if (nowMin >= restStartMin && nowMin < restEndMin) {
+        setRestSecondsLeft((restEndMin - nowMin) * 60);
+      } else {
+        setRestSecondsLeft(null);
+      }
+    };
+
+    compute();
+    const interval = setInterval(compute, 10_000); // refresh every 10 s
+    return () => clearInterval(interval);
+  }, [isToday, hasRestPeriod, booking.time, booking.activeTime, booking.totalTime]);
 
   // Base styles shared across all block types
   const baseStyle: React.CSSProperties = {
@@ -150,7 +185,7 @@ const TimelineBlock = ({
         )}
       </div>
 
-      {/* Rest period section — lighter hatched gold */}
+      {/* Rest period section — lighter hatched gold with optional countdown */}
       {hasRestPeriod && (
         <div
           style={{
@@ -177,12 +212,14 @@ const TimelineBlock = ({
             style={{
               margin: 0,
               fontSize: "0.6rem",
-              color: "#c9a96e",
+              color: restSecondsLeft !== null && restSecondsLeft <= 300 ? "#e53e3e" : "#c9a96e",
               fontWeight: 600,
               whiteSpace: "nowrap",
             }}
           >
-            ⚡ Return
+            {restSecondsLeft !== null
+              ? `⏱ ${formatCountdown(restSecondsLeft)}`
+              : "⚡ Return"}
           </p>
         </div>
       )}

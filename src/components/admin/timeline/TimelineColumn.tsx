@@ -16,6 +16,7 @@ interface Props {
   bookings: Booking[];
   onBlockClick: (booking: Booking) => void;
   onEmptySlotClick: (stylistId: string, time: string) => void;
+  isToday?: boolean;
 }
 
 // Total trading minutes in the day
@@ -32,6 +33,7 @@ const TimelineColumn = ({
   bookings,
   onBlockClick,
   onEmptySlotClick,
+  isToday = false,
 }: Props) => {
   // Filter bookings for this stylist only
   const stylistBookings = useMemo(
@@ -89,6 +91,7 @@ const TimelineColumn = ({
             onClick={(b) => {
               onBlockClick(b);
             }}
+            isToday={isToday}
           />
         );
       })}
