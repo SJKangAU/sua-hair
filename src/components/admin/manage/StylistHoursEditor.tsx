@@ -140,7 +140,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
           disabled={saving || !selectedId}
           style={{
             padding: "0.55rem 1.25rem",
-            background: saving || !selectedId ? "#ddd" : "#c9a96e",
+            background: saving || !selectedId ? "var(--border-strong)" : "var(--accent)",
             color: saving || !selectedId ? "#999" : "#fff",
             border: "none",
             borderRadius: "6px",
@@ -224,7 +224,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                     onChange={(e) =>
                       updateDay(key, "isWorking", e.target.checked)
                     }
-                    style={{ accentColor: "#c9a96e", width: 14, height: 14 }}
+                    style={{ accentColor: "var(--ink)", width: 14, height: 14 }}
                   />
                   <span
                     style={{
