@@ -1,11 +1,12 @@
 // TimelineColumn.tsx
-// Renders a single stylist column in the timeline grid
-// Calculates vertical position and height for each booking block
-// Handles click on empty slots to open create booking modal
-// Shows booking blocks with correct positioning based on time
+// Renders a single stylist column in the timeline grid.
+// Booking blocks open QuickActionPopover as the primary click target;
+// break/training blocks skip the popover and go straight to the detail modal.
+// Clicking an empty slot opens the create booking modal.
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import TimelineBlock from "./TimelineBlock";
+import QuickActionPopover from "./QuickActionPopover";
 import { SALON_CONFIG } from "../../../lib/config";
 import { timeStringToMinutes } from "../../../lib/scheduling";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
@@ -35,6 +36,13 @@ const TimelineColumn = ({
   onEmptySlotClick,
   isToday = false,
 }: Props) => {
+  // Quick action popover state — anchored at the click position
+  const [popover, setPopover] = useState<{
+    booking: Booking;
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Filter bookings for this stylist only
   const stylistBookings = useMemo(
     () =>
@@ -43,6 +51,15 @@ const TimelineColumn = ({
       ),
     [bookings, stylist.id],
   );
+
+  const handleBlockClick = (booking: Booking, e: React.MouseEvent) => {
+    // Breaks and training have no confirm/cancel workflow — open detail modal directly
+    if (booking.bookingType === "break" || booking.bookingType === "training") {
+      onBlockClick(booking);
+      return;
+    }
+    setPopover({ booking, x: e.clientX, y: e.clientY });
+  };
 
   // Handle click on empty area — calculate which time slot was clicked
   const handleColumnClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -70,7 +87,7 @@ const TimelineColumn = ({
       style={{
         flex: 1,
         position: "relative",
-        borderRight: "1px solid #2a2a2a",
+        borderRight: "1px solid var(--admin-border)",
         cursor: "crosshair",
         minWidth: 0,
       }}
@@ -88,13 +105,21 @@ const TimelineColumn = ({
             topPercent={topPercent}
             heightPercent={heightPercent}
             restHeightPercent={restHeightPercent}
-            onClick={(b) => {
-              onBlockClick(b);
-            }}
+            onClick={handleBlockClick}
             isToday={isToday}
           />
         );
       })}
+
+      {popover && (
+        <QuickActionPopover
+          booking={popover.booking}
+          anchorX={popover.x}
+          anchorY={popover.y}
+          onViewDetails={onBlockClick}
+          onClose={() => setPopover(null)}
+        />
+      )}
     </div>
   );
 };
