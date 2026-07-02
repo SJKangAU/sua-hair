@@ -44,6 +44,74 @@ const SectionLabel = ({ label }: { label: string }) => (
   </p>
 );
 
+// Module scope — defining this inside TimeSlotGrid gave it a new identity on
+// every parent render, unmounting WaitlistForm and wiping typed name/phone.
+interface WaitlistPromptProps {
+  date: string;
+  stylistId?: string;
+  showWaitlist: boolean;
+  onShow: () => void;
+  onDone: () => void;
+}
+
+const WaitlistPrompt = ({
+  date,
+  stylistId,
+  showWaitlist,
+  onShow,
+  onDone,
+}: WaitlistPromptProps) => (
+  <div style={{ marginTop: "0.75rem" }}>
+    {showWaitlist ? (
+      <WaitlistForm
+        requestedDate={date}
+        requestedStylistId={stylistId}
+        onDone={onDone}
+      />
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: "0.5rem",
+          padding: "0.85rem 1rem",
+          background: "#f8f8f8",
+          borderRadius: "10px",
+          border: "1px solid #e8e8e8",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.875rem",
+            color: "#555",
+            lineHeight: 1.5,
+          }}
+        >
+          No appointments available for this day. Would you like to be
+          notified when a spot opens?
+        </p>
+        <button
+          onClick={onShow}
+          style={{
+            padding: "0.6rem 1.25rem",
+            background: "#0a0a0a",
+            color: "#fff",
+            border: "none",
+            borderRadius: "7px",
+            cursor: "pointer",
+            fontSize: "0.85rem",
+            fontWeight: 500,
+          }}
+        >
+          Join Waitlist
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 const TimeSlotGrid = ({
   date,
   time,
@@ -90,59 +158,6 @@ const TimeSlotGrid = ({
     );
   };
 
-  // Waitlist prompt — shown when date is chosen but no available slots
-  const WaitlistPrompt = () => (
-    <div style={{ marginTop: "0.75rem" }}>
-      {showWaitlist ? (
-        <WaitlistForm
-          requestedDate={date}
-          requestedStylistId={stylistId}
-          onDone={() => setShowWaitlist(false)}
-        />
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "0.5rem",
-            padding: "0.85rem 1rem",
-            background: "#f8f8f8",
-            borderRadius: "10px",
-            border: "1px solid #e8e8e8",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.875rem",
-              color: "#555",
-              lineHeight: 1.5,
-            }}
-          >
-            No appointments available for this day. Would you like to be
-            notified when a spot opens?
-          </p>
-          <button
-            onClick={() => setShowWaitlist(true)}
-            style={{
-              padding: "0.6rem 1.25rem",
-              background: "#0a0a0a",
-              color: "#fff",
-              border: "none",
-              borderRadius: "7px",
-              cursor: "pointer",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-            }}
-          >
-            Join Waitlist
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       {/* Date heading */}
@@ -173,7 +188,15 @@ const TimeSlotGrid = ({
         )}
       </div>
 
-      {(noSlotsAtAll || allUnavailable) && <WaitlistPrompt />}
+      {(noSlotsAtAll || allUnavailable) && (
+        <WaitlistPrompt
+          date={date}
+          stylistId={stylistId}
+          showWaitlist={showWaitlist}
+          onShow={() => setShowWaitlist(true)}
+          onDone={() => setShowWaitlist(false)}
+        />
+      )}
 
       {/* Morning */}
       {morningSlots.length > 0 && (
