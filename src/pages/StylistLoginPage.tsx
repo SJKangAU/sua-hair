@@ -76,8 +76,16 @@ const StylistLoginPage = () => {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1 style={{ fontSize: "1.75rem", color: "#c9a96e", margin: 0 }}>
-            Sua Hair
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.75rem",
+              fontWeight: 400,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            Sua Hair Studio
           </h1>
           <p
             style={{
@@ -120,7 +128,7 @@ const StylistLoginPage = () => {
           {error && (
             <p
               style={{
-                color: "#e24b4a",
+                color: "var(--error)",
                 fontSize: "0.85rem",
                 marginBottom: "1rem",
                 textAlign: "center",
@@ -136,7 +144,7 @@ const StylistLoginPage = () => {
             style={{
               width: "100%",
               padding: "0.85rem",
-              background: loading ? "#ddd" : "#c9a96e",
+              background: loading ? "var(--border-strong)" : "var(--accent)",
               color: loading ? "#999" : "white",
               border: "none",
               borderRadius: "6px",
@@ -157,7 +165,7 @@ const StylistLoginPage = () => {
             fontSize: "0.85rem",
           }}
         >
-          <a href="/" style={{ color: "#c9a96e", textDecoration: "none" }}>
+          <a href="/" style={{ color: "var(--ink-soft)", textDecoration: "none" }}>
             ← Back to booking
           </a>
         </p>
