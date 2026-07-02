@@ -20,13 +20,23 @@ const STATUS_LABELS: Record<WaitlistEntry["status"], string> = {
   resolved: "Resolved",
 };
 
-const STATUS_COLORS: Record<
-  WaitlistEntry["status"],
-  { bg: string; text: string }
-> = {
-  pending: { bg: "#fff8ec", text: "#c9a96e" },
-  contacted: { bg: "#eef4ff", text: "#3366cc" },
-  resolved: { bg: "#f0faf4", text: "#2d8a4e" },
+// Monochrome status chips — border treatment encodes progress, not colour
+const STATUS_STYLES: Record<WaitlistEntry["status"], React.CSSProperties> = {
+  pending: {
+    border: "1.5px dashed var(--border-strong)",
+    color: "var(--ink)",
+    fontWeight: 600,
+  },
+  contacted: {
+    border: "1px solid var(--border-strong)",
+    color: "var(--ink-soft)",
+    fontWeight: 500,
+  },
+  resolved: {
+    border: "1px solid transparent",
+    color: "var(--grey-muted)",
+    fontWeight: 400,
+  },
 };
 
 const WaitlistPanel = ({ onSuccess, onError }: Props) => {
@@ -89,7 +99,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
               <span
                 style={{
                   marginLeft: "0.5rem",
-                  background: "#c9a96e",
+                  background: "var(--ink)",
                   color: "#fff",
                   borderRadius: "999px",
                   padding: "0.1rem 0.5rem",
@@ -153,7 +163,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
           style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}
         >
           {visible.map((entry) => {
-            const statusColor = STATUS_COLORS[entry.status];
+            const statusStyle = STATUS_STYLES[entry.status];
             const isUpdating = updating === entry.id;
             return (
               <div
@@ -184,11 +194,10 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                     <span
                       style={{
                         fontSize: "0.7rem",
-                        fontWeight: 600,
                         padding: "0.15rem 0.5rem",
                         borderRadius: "999px",
-                        background: statusColor.bg,
-                        color: statusColor.text,
+                        background: "transparent",
+                        ...statusStyle,
                       }}
                     >
                       {STATUS_LABELS[entry.status]}
@@ -243,8 +252,8 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                       style={{
                         padding: "0.4rem 0.85rem",
                         background: "none",
-                        color: isUpdating ? "#ccc" : "#2d8a4e",
-                        border: `1px solid ${isUpdating ? "#eee" : "#2d8a4e"}`,
+                        color: isUpdating ? "var(--border-strong)" : "var(--ink-soft)",
+                        border: `1px solid ${isUpdating ? "var(--border)" : "var(--border-strong)"}`,
                         borderRadius: "6px",
                         cursor: isUpdating ? "not-allowed" : "pointer",
                         fontSize: "0.78rem",
