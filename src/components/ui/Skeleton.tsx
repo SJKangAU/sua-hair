@@ -23,7 +23,7 @@ const Skeleton = ({
           100% { background-position:  200% 0; }
         }
         .skeleton-shimmer {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background: linear-gradient(90deg, var(--border) 25%, var(--paper) 50%, var(--border) 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
         }
@@ -40,7 +40,7 @@ const Skeleton = ({
 export const BookingCardSkeleton = () => (
   <div
     style={{
-      background: "white",
+      background: "var(--surface)",
       borderRadius: "10px",
       padding: "1.25rem 1.5rem",
       boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -73,7 +73,7 @@ export const StatsSkeleton = () => (
       <div
         key={i}
         style={{
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "10px",
           padding: "1.25rem 1.5rem",
           flex: 1,
@@ -106,7 +106,7 @@ export const StylistCardSkeleton = () => (
         key={i}
         style={{
           padding: "0.75rem",
-          border: "2px solid #eee",
+          border: `2px solid var(--border)`,
           borderRadius: "10px",
           display: "flex",
           alignItems: "center",
