@@ -1,14 +1,22 @@
 // TimelineBlock.tsx
-// Renders a single booking block on the timeline grid
-// Shows client name, service, and visually separates active vs rest period
-// Pending bookings have a gold border with white fill
-// Confirmed bookings are solid gold
-// Blocked time (breaks) shows a cross-hatch pattern
-// Clicking a block opens the booking detail modal
-// Rest period shows a live countdown when rendering for today's date
+// Renders a single booking block on the timeline grid — monochrome texture system.
+// Status is encoded by fill density (never colour):
+//   confirmed — solid --ink-soft fill, white text
+//   pending   — outline only, white text
+//   break     — diagonal hairline stripe
+//   rest      — dotted top border + hatch (processing)
+// Category is encoded by a small lucide icon derived from the serviceId prefix.
+// Rest period shows a live countdown when rendering for today's date.
 
 import { useState, useEffect } from "react";
-import Badge from "../../ui/Badge";
+import {
+  Scissors,
+  Droplet,
+  Sparkles,
+  Waves,
+  Brush,
+  type LucideIcon,
+} from "lucide-react";
 import {
   getCurrentMinutes,
   timeStringToMinutes,
@@ -20,9 +28,24 @@ interface Props {
   topPercent: number; // vertical position as % of grid height
   heightPercent: number; // height as % of grid height
   restHeightPercent: number; // rest period height as % of grid height
-  onClick: (booking: Booking) => void;
+  onClick: (booking: Booking, e: React.MouseEvent) => void;
   isToday?: boolean; // enables live countdown in rest period section
 }
+
+// serviceId convention is "category-slug" — first segment is the category
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  cut: Scissors,
+  grooming: Scissors,
+  colour: Droplet,
+  treatment: Sparkles,
+  perm: Waves,
+  styling: Brush,
+};
+
+const categoryIcon = (serviceId: string): LucideIcon | null => {
+  const prefix = serviceId.split("-")[0];
+  return CATEGORY_ICONS[prefix] ?? null;
+};
 
 const formatCountdown = (totalSeconds: number): string => {
   if (totalSeconds <= 0) return "Now";
@@ -91,53 +114,55 @@ const TimelineBlock = ({
     transition: "opacity 0.15s, transform 0.1s",
   };
 
-  // Break block — cross-hatch pattern
+  // Break block — diagonal hairline stripe
   if (isBreak) {
     return (
       <div
         onClick={(e) => {
           e.stopPropagation();
-          onClick(booking);
+          onClick(booking, e);
         }}
         style={{
           ...baseStyle,
           background: `repeating-linear-gradient(
             45deg,
-            #f0f0f0,
-            #f0f0f0 4px,
-            #e0e0e0 4px,
-            #e0e0e0 8px
+            #232322,
+            #232322 4px,
+            #2c2c2a 4px,
+            #2c2c2a 8px
           )`,
-          border: "1px solid #ccc",
+          border: "1px solid var(--admin-border)",
         }}
       >
         <div
           style={{
             padding: "4px 6px",
             fontSize: "0.65rem",
-            color: "#6b6b6b",
+            color: "var(--admin-faint)",
             fontWeight: 500,
           }}
         >
-          🔴 {booking.notes || "Break"}
+          {booking.notes || "Break"}
         </div>
       </div>
     );
   }
 
+  const Icon = categoryIcon(booking.serviceId);
+
   return (
     <div
       onClick={(e) => {
         e.stopPropagation();
-        onClick(booking);
+        onClick(booking, e);
       }}
       style={{
         ...baseStyle,
-        border: isPending ? "2px solid #c9a96e" : "none",
+        border: isPending ? "1.5px solid var(--admin-faint)" : "none",
         background: "transparent",
       }}
     >
-      {/* Active period section — solid gold */}
+      {/* Active period — solid fill = confirmed, outline = pending */}
       <div
         style={{
           position: "absolute",
@@ -147,7 +172,7 @@ const TimelineBlock = ({
           height: hasRestPeriod
             ? `${(activeHeightPercent / heightPercent) * 100}%`
             : "100%",
-          background: isPending ? "white" : "#c9a96e",
+          background: isPending ? "transparent" : "var(--ink-soft)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
@@ -155,28 +180,47 @@ const TimelineBlock = ({
           overflow: "hidden",
         }}
       >
-        {/* Client name */}
-        <p
+        {/* Client name + category icon */}
+        <div
           style={{
-            margin: 0,
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            color: isPending ? "#c9a96e" : "white",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            lineHeight: 1.3,
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            minWidth: 0,
           }}
         >
-          {booking.customerName}
-        </p>
+          {Icon && (
+            <Icon
+              size={11}
+              strokeWidth={2}
+              color={isPending ? "var(--admin-faint)" : "rgba(255,255,255,0.75)"}
+              style={{ flexShrink: 0 }}
+            />
+          )}
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              color: "#ffffff",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.3,
+            }}
+          >
+            {booking.customerName}
+          </p>
+        </div>
 
         {/* Service name */}
         <p
           style={{
             margin: 0,
             fontSize: "0.62rem",
-            color: isPending ? "#6b6b6b" : "rgba(255,255,255,0.85)",
+            color: isPending
+              ? "var(--admin-dimmer)"
+              : "rgba(255,255,255,0.75)",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -186,15 +230,29 @@ const TimelineBlock = ({
           {booking.serviceName}
         </p>
 
-        {/* Pending badge */}
+        {/* Pending marker — outline chip, no colour */}
         {isPending && (
-          <div style={{ marginTop: "2px" }}>
-            <Badge variant="pending" />
-          </div>
+          <span
+            style={{
+              marginTop: "2px",
+              alignSelf: "flex-start",
+              fontSize: "0.56rem",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--admin-faint)",
+              border: "1px dashed var(--admin-dim)",
+              borderRadius: "3px",
+              padding: "0 4px",
+              lineHeight: 1.6,
+            }}
+          >
+            Pending
+          </span>
         )}
       </div>
 
-      {/* Rest period section — lighter hatched gold with optional countdown */}
+      {/* Rest period — dotted top border + hatch (processing texture) */}
       {hasRestPeriod && (
         <div
           style={{
@@ -205,12 +263,12 @@ const TimelineBlock = ({
             height: `${(restHeightPercent / heightPercent) * 100}%`,
             background: `repeating-linear-gradient(
             45deg,
-            #fdf6ec,
-            #fdf6ec 4px,
-            #f5e6cc 4px,
-            #f5e6cc 8px
+            #232322,
+            #232322 4px,
+            #2c2c2a 4px,
+            #2c2c2a 8px
           )`,
-            borderTop: "1px dashed #c9a96e",
+            borderTop: "1px dotted var(--admin-faint)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -223,15 +281,16 @@ const TimelineBlock = ({
               fontSize: "0.6rem",
               color:
                 restSecondsLeft !== null && restSecondsLeft <= 300
-                  ? "#e53e3e"
-                  : "#c9a96e",
-              fontWeight: 600,
+                  ? "#ffffff"
+                  : "var(--admin-faint)",
+              fontWeight:
+                restSecondsLeft !== null && restSecondsLeft <= 300 ? 700 : 600,
               whiteSpace: "nowrap",
             }}
           >
             {restSecondsLeft !== null
-              ? `⏱ ${formatCountdown(restSecondsLeft)}`
-              : "⚡ Return"}
+              ? formatCountdown(restSecondsLeft)
+              : "Return"}
           </p>
         </div>
       )}
