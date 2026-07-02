@@ -278,17 +278,17 @@ const CreateBookingModal = ({
               border: "none",
               borderBottom:
                 activeTab === tab
-                  ? "2px solid #c9a96e"
+                  ? "2px solid var(--ink)"
                   : "2px solid transparent",
               marginBottom: "-2px",
-              color: activeTab === tab ? "#c9a96e" : "#6b6b6b",
+              color: activeTab === tab ? "var(--ink)" : "var(--grey-muted)",
               cursor: "pointer",
               fontWeight: activeTab === tab ? 600 : 400,
               fontSize: "0.875rem",
               textTransform: "capitalize",
             }}
           >
-            {tab === "walkin" ? "🚶 Walk-in" : "🔴 Block Time"}
+            {tab === "walkin" ? "Walk-in" : "Block Time"}
           </button>
         ))}
       </div>
@@ -424,7 +424,7 @@ const CreateBookingModal = ({
             style={{
               width: "100%",
               padding: "0.75rem",
-              background: submitting ? "#ddd" : "#c9a96e",
+              background: submitting ? "var(--border-strong)" : "var(--accent)",
               color: submitting ? "#999" : "white",
               border: "none",
               borderRadius: "6px",
