@@ -166,7 +166,10 @@ const QuickActionPopover = ({
       <>
         <style>{SHEET_CSS}</style>
         <div
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           style={{
             position: "fixed",
             inset: 0,
@@ -176,6 +179,7 @@ const QuickActionPopover = ({
           }}
         />
         <div
+          onClick={(e) => e.stopPropagation()}
           style={{
             position: "fixed",
             bottom: 0,
@@ -203,7 +207,10 @@ const QuickActionPopover = ({
     <>
       <style>{SHEET_CSS}</style>
       <div
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         style={{
           position: "fixed",
           inset: 0,
@@ -211,6 +218,7 @@ const QuickActionPopover = ({
         }}
       />
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           position: "fixed",
           left,
