@@ -263,7 +263,11 @@ const useBookingAvailability = ({
   ]);
 
   // ── Find and pre-select next available slot ───────────────────────────────
-  // Stable callback — reads all dynamic values from refs
+  // One range query covers the whole 14-day search window — previously this
+  // fired up to 14 sequential per-day queries. buildTimeBlocks (inside
+  // generateSlots) filters the fetched bookings by date, so passing the full
+  // window's bookings to every day's generateSlots call is correct.
+  // Stable callback — reads all dynamic values from refs.
   const findNextAvailable = useCallback(async () => {
     const ids = isAnyRef.current
       ? allStylistIdsRef.current
@@ -276,36 +280,44 @@ const useBookingAvailability = ({
     const effA = effActiveRef.current;
     const settings = salonSettingsRef.current;
 
+    const windowStart = getMinBookableDate();
+    const windowEnd = addDays(windowStart, 13); // 14 days inclusive
+
+    let bookings: Booking[] = [];
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, "bookings"),
+          where("date", ">=", windowStart),
+          where("date", "<=", windowEnd),
+        ),
+      );
+      bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking));
+    } catch (err) {
+      console.error("findNextAvailable range fetch:", err);
+      return;
+    }
+
     for (let i = 0; i < 14; i++) {
-      const checkDate = addDays(getMinBookableDate(), i);
+      const checkDate = addDays(windowStart, i);
       if (isSalonClosed(checkDate, settings)) continue;
-      try {
-        const snap = await getDocs(
-          query(collection(db, "bookings"), where("date", "==", checkDate)),
+      for (const id of ids) {
+        const daySlots = generateSlots(
+          checkDate,
+          id,
+          effT,
+          effA,
+          bookings,
+          settings,
         );
-        const bookings = snap.docs.map(
-          (d) => ({ id: d.id, ...d.data() } as Booking),
-        );
-        for (const id of ids) {
-          const daySlots = generateSlots(
-            checkDate,
-            id,
-            effT,
-            effA,
-            bookings,
-            settings,
-          );
-          const firstAvail = daySlots.find((s) => s.available);
-          if (firstAvail) {
-            onDateSelectRef.current(checkDate);
-            onTimeSelectRef.current(firstAvail.time);
-            const d = parseLocalDate(checkDate);
-            onViewChangeRef.current(d.getFullYear(), d.getMonth());
-            return;
-          }
+        const firstAvail = daySlots.find((s) => s.available);
+        if (firstAvail) {
+          onDateSelectRef.current(checkDate);
+          onTimeSelectRef.current(firstAvail.time);
+          const d = parseLocalDate(checkDate);
+          onViewChangeRef.current(d.getFullYear(), d.getMonth());
+          return;
         }
-      } catch {
-        /* silent fail */
       }
     }
   }, []); // stable — all values read from refs
