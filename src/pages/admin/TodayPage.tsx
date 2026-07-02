@@ -40,7 +40,6 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
   } | null>(null);
 
   const isToday = selectedDate === todayString();
-  const dayBookings = bookings.filter((b) => b.date === selectedDate);
 
   // Multi-phase countdown — only meaningful for today's date.
   // useMultiPhaseCountdown handles the 5-minute notification trigger internally.
@@ -215,11 +214,13 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
         </div>
       )}
 
-      {/* Stat strip — four key metrics for selected date */}
+      {/* Stat strip — four key metrics for selected date.
+          Full unfiltered array: the strip filters by day itself, and the
+          weekly stat needs the whole week's bookings, not just one day's. */}
       {loading ? (
         <StatsSkeleton />
       ) : (
-        <DashboardStatStrip bookings={dayBookings} selectedDate={selectedDate} />
+        <DashboardStatStrip bookings={bookings} selectedDate={selectedDate} />
       )}
 
       {/* Timeline */}
