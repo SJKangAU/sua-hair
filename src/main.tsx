@@ -17,7 +17,8 @@ const preloadSalonData = async () => {
   try {
     const promises: Promise<void>[] = [];
 
-    if (!sessionStorage.getItem("sua_hair_stylists")) {
+    // Keys match useStylists/useServices active-only cache keys
+    if (!sessionStorage.getItem("sua_hair_stylists_active")) {
       promises.push(
         getDocs(
           query(
@@ -27,12 +28,15 @@ const preloadSalonData = async () => {
           ),
         ).then((snap) => {
           const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          sessionStorage.setItem("sua_hair_stylists", JSON.stringify(data));
+          sessionStorage.setItem(
+            "sua_hair_stylists_active",
+            JSON.stringify(data),
+          );
         }),
       );
     }
 
-    if (!sessionStorage.getItem("sua_hair_services")) {
+    if (!sessionStorage.getItem("sua_hair_services_active")) {
       promises.push(
         getDocs(
           query(
@@ -42,7 +46,10 @@ const preloadSalonData = async () => {
           ),
         ).then((snap) => {
           const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          sessionStorage.setItem("sua_hair_services", JSON.stringify(data));
+          sessionStorage.setItem(
+            "sua_hair_services_active",
+            JSON.stringify(data),
+          );
         }),
       );
     }

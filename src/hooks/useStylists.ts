@@ -29,9 +29,14 @@ interface UseStylists {
   refetch: () => void;
 }
 
-const CACHE_KEY = "sua_hair_stylists";
-
 const useStylists = (activeOnly = true): UseStylists => {
+  // Cache key is scoped by the activeOnly flag — the active-only list (booking
+  // flow) and the full list (manage roster) must never share a cache entry,
+  // or inactive stylists leak into the client flow / vanish from the roster.
+  const CACHE_KEY = activeOnly
+    ? "sua_hair_stylists_active"
+    : "sua_hair_stylists_all";
+
   // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
   const getCached = (): FirestoreStylist[] => {
     try {

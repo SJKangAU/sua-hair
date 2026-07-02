@@ -41,9 +41,14 @@ interface UseServices {
   refetch: () => void;
 }
 
-const CACHE_KEY = "sua_hair_services";
-
 const useServices = (activeOnly = true): UseServices => {
+  // Cache key is scoped by the activeOnly flag — the active-only list (booking
+  // flow) and the full list (manage roster) must never share a cache entry,
+  // or inactive services leak into the client flow / vanish from the roster.
+  const CACHE_KEY = activeOnly
+    ? "sua_hair_services_active"
+    : "sua_hair_services_all";
+
   // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
   const getCached = (): FirestoreService[] => {
     try {
