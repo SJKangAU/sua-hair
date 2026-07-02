@@ -30,7 +30,7 @@ const BookingCard = ({ booking, selected, onSelect, onUpdate }: Props) => {
         gridTemplateColumns: "auto 1fr 1fr 1fr auto",
         alignItems: "center",
         gap: "1rem",
-        border: selected ? "1px solid #c9a96e" : "1px solid transparent",
+        border: selected ? "1.5px solid var(--ink)" : "1px solid transparent",
         transition: "all 0.1s",
       }}
     >
