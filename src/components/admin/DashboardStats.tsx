@@ -24,19 +24,27 @@ interface StatCardProps {
 const StatCard = ({ label, value, color }: StatCardProps) => (
   <div
     style={{
-      background: "white",
-      borderRadius: "10px",
+      background: "var(--surface)",
+      borderRadius: "8px",
       padding: "1.25rem 1.5rem",
       flex: 1,
-      borderTop: `4px solid ${color}`,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+      border: `1px solid var(--border)`,
       minWidth: "120px",
     }}
   >
-    <p style={{ fontSize: "2rem", fontWeight: 600, color, margin: 0 }}>
+    <p style={{ fontSize: "2rem", fontWeight: 700, color, margin: 0 }}>
       {value}
     </p>
-    <p style={{ fontSize: "0.82rem", color: "#6b6b6b", marginTop: "0.25rem" }}>
+    <p
+      style={{
+        fontSize: "0.7rem",
+        fontWeight: 600,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: "var(--grey-muted)",
+        marginTop: "0.25rem",
+      }}
+    >
       {label}
     </p>
   </div>
@@ -97,10 +105,11 @@ const DashboardStats = ({ bookings, selectedDate }: Props) => {
 
   const statRow = (stats: ReturnType<typeof countByStatus>) => (
     <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-      <StatCard label="Total" value={stats.total} color="#c9a96e" />
-      <StatCard label="Confirmed" value={stats.confirmed} color="#1d9e75" />
-      <StatCard label="Pending" value={stats.pending} color="#ef9f27" />
-      <StatCard label="Cancelled" value={stats.cancelled} color="#e24b4a" />
+      {/* Shade encodes certainty — darkest = total, lightest = cancelled */}
+      <StatCard label="Total" value={stats.total} color="var(--ink)" />
+      <StatCard label="Confirmed" value={stats.confirmed} color="var(--ink)" />
+      <StatCard label="Pending" value={stats.pending} color="var(--ink-soft)" />
+      <StatCard label="Cancelled" value={stats.cancelled} color="var(--grey-muted)" />
     </div>
   );
 
