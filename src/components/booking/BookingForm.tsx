@@ -18,6 +18,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { bookingConverter } from "../../lib/converters";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
 import { writeBookingNotifications } from "../../lib/notifications";
 import { useSalonData } from "../../context/SalonDataContext";
@@ -201,15 +202,14 @@ const BookingForm = () => {
     setLookingUp(true);
     try {
       const q = query(
-        collection(db, "bookings"),
+        collection(db, "bookings").withConverter(bookingConverter),
         where("customerPhone", "==", cleaned),
         orderBy("createdAt", "desc"),
       );
       const snap = await getDocs(q);
       if (!snap.empty) {
-        const bookings = snap.docs.map(
-          (d) => ({ id: d.id, ...d.data() } as Booking),
-        );
+        // Converter applies defaults — no unchecked spread-cast needed
+        const bookings = snap.docs.map((d) => d.data());
         const recent = bookings[0];
         setCustomerProfile({
           name: recent.customerName,

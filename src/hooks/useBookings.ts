@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { todayString, addDays } from "../lib/dates";
+import { bookingConverter } from "../lib/converters";
 import type { Booking } from "../types";
 
 interface UseBookings {
@@ -50,7 +51,7 @@ const useBookings = (): UseBookings => {
   useEffect(() => {
     const windowStart = addDays(todayString(), -90);
     const q = query(
-      collection(db, "bookings"),
+      collection(db, "bookings").withConverter(bookingConverter),
       where("date", ">=", windowStart),
       orderBy("date", "asc"),
     );
@@ -58,12 +59,8 @@ const useBookings = (): UseBookings => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Booking[];
-
-        setBookings(data);
+        // Converter applies defaults — no unchecked spread-cast needed
+        setBookings(snapshot.docs.map((doc) => doc.data()));
         setLoading(false);
       },
       (err) => {
