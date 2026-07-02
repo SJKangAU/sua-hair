@@ -132,10 +132,37 @@ const BookingForm = () => {
     return stylist ? service.price[stylist.level] : service.price.junior;
   };
 
+  // Max tier price — used to show a min–max range when no stylist is chosen
+  const getMaxPrice = (service: FirestoreService): number =>
+    Math.max(
+      service.price.director,
+      service.price.senior,
+      service.price.junior,
+    );
+
+  // Display string per service: exact price for a chosen stylist,
+  // "$min – $max" range for "First Available" (any tier may take the booking)
+  const getPriceDisplay = (service: FirestoreService): string => {
+    const min = getPrice(service);
+    if (stylistId !== "any") return `$${min}`;
+    const max = getMaxPrice(service);
+    return min === max ? `$${min}` : `$${min} – $${max}`;
+  };
+
   const estimatedTotal = selectedServices.reduce(
     (sum, s) => sum + getPrice(s),
     0,
   );
+
+  const estimatedTotalMax = selectedServices.reduce(
+    (sum, s) => sum + (stylistId === "any" ? getMaxPrice(s) : getPrice(s)),
+    0,
+  );
+
+  const estimatedTotalDisplay =
+    stylistId === "any" && estimatedTotalMax !== estimatedTotal
+      ? `$${estimatedTotal} – $${estimatedTotalMax}`
+      : `$${estimatedTotal}`;
 
   const stylist = stylists.find((s) => s.id === stylistId);
   const stylistName =
@@ -367,14 +394,14 @@ const BookingForm = () => {
               selectedServices={selectedServices.map((s) => ({
                 id: s.id,
                 name: s.name,
-                resolvedPrice: getPrice(s),
+                priceDisplay: getPriceDisplay(s),
                 totalTime: s.totalTime,
               }))}
               stylistName={stylistName}
               date={date}
               time={time}
               totalTime={totalTime}
-              estimatedTotal={estimatedTotal}
+              estimatedTotalDisplay={estimatedTotalDisplay}
               customerName={customerName}
               customerPhone={customerPhone}
               notes={notes}
@@ -461,13 +488,13 @@ const BookingForm = () => {
           services={selectedServices.map((s) => ({
             id: s.id,
             name: s.name,
-            price: getPrice(s),
+            priceDisplay: getPriceDisplay(s),
             totalTime: s.totalTime,
           }))}
           stylistName={stylistName}
           date={date}
           time={time}
-          estimatedTotal={estimatedTotal}
+          estimatedTotalDisplay={estimatedTotalDisplay}
           totalTime={totalTime}
           onConfirm={() => {
             setShowSummarySheet(false);

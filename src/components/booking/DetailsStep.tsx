@@ -1,7 +1,7 @@
 // DetailsStep.tsx
 // Step 3 — customer details form with a compact booking summary at the top
 //
-// Receives selectedServices with resolvedPrice already computed (accounting
+// Receives selectedServices with priceDisplay already computed (accounting
 // for the chosen stylist level), so this component does no price maths.
 //
 // Phone lookup: fires against the bookings collection on each valid phone
@@ -19,7 +19,7 @@ import type { CustomerProfile } from "../../types";
 interface SelectedServiceDisplay {
   id: string;
   name: string;
-  resolvedPrice: number;
+  priceDisplay: string; // "$45" or "$45 – $80" for first-available
   totalTime: number;
 }
 
@@ -29,7 +29,7 @@ interface Props {
   date: string;
   time: string;
   totalTime: number;
-  estimatedTotal: number;
+  estimatedTotalDisplay: string; // "$120" or "$120 – $180"
   customerName: string;
   customerPhone: string;
   notes: string;
@@ -71,7 +71,7 @@ const DetailsStep = ({
   date,
   time,
   totalTime,
-  estimatedTotal,
+  estimatedTotalDisplay,
   customerName,
   customerPhone,
   notes,
@@ -150,7 +150,7 @@ const DetailsStep = ({
             <span
               style={{ fontSize: "0.82rem", fontWeight: 600, color: "#0a0a0a" }}
             >
-              ${s.resolvedPrice}
+              {s.priceDisplay}
             </span>
           </div>
         ))}
@@ -192,7 +192,7 @@ const DetailsStep = ({
             Estimated Total
           </span>
           <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0a0a0a" }}>
-            ${estimatedTotal}
+            {estimatedTotalDisplay}
           </span>
         </div>
       </div>

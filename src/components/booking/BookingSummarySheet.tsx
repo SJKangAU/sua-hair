@@ -27,7 +27,7 @@ const SHEET_CSS = `
 interface ServiceLine {
   id: string;
   name: string;
-  price: number;
+  priceDisplay: string; // "$45" or "$45 – $80" for first-available
   totalTime: number;
 }
 
@@ -36,7 +36,7 @@ interface Props {
   stylistName: string;
   date: string;
   time: string;
-  estimatedTotal: number;
+  estimatedTotalDisplay: string; // "$120" or "$120 – $180"
   totalTime: number;
   onConfirm: () => void;
   onClose: () => void;
@@ -47,7 +47,7 @@ const BookingSummarySheet = ({
   stylistName,
   date,
   time,
-  estimatedTotal,
+  estimatedTotalDisplay,
   totalTime,
   onConfirm,
   onClose,
@@ -179,7 +179,7 @@ const BookingSummarySheet = ({
                     color: "var(--ink)",
                   }}
                 >
-                  ${s.price}
+                  {s.priceDisplay}
                 </span>
               </div>
             ))}
@@ -241,7 +241,7 @@ const BookingSummarySheet = ({
             <span
               style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0a0a0a" }}
             >
-              ${estimatedTotal}
+              {estimatedTotalDisplay}
             </span>
           </div>
 

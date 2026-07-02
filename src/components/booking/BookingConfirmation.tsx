@@ -201,7 +201,9 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
           >
             <span style={{ color: "var(--ink-soft)" }}>Estimated Total</span>
             <span style={{ fontWeight: 700, color: "var(--ink)" }}>
-              ${booking.servicePrice}
+              {booking.stylistId === "any"
+                ? `from $${booking.servicePrice}`
+                : `$${booking.servicePrice}`}
             </span>
           </div>
 
