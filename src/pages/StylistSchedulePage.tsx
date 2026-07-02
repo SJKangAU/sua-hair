@@ -18,10 +18,11 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useEffect } from "react";
 
+// Monochrome status treatment on dark cards — shade encodes state, not colour
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: "#2d8a4e",
-  pending: "#c9a96e",
-  cancelled: "#e53e3e",
+  confirmed: "#ffffff",
+  pending: "var(--admin-faint)",
+  cancelled: "var(--admin-dim)",
 };
 
 const ScheduleInner = () => {
@@ -89,8 +90,16 @@ const ScheduleInner = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "1.3rem", color: "#c9a96e", margin: 0 }}>
-            Sua Hair
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.3rem",
+              fontWeight: 400,
+              color: "#ffffff",
+              margin: 0,
+            }}
+          >
+            Sua Hair Studio
           </h1>
           <p style={{ fontSize: "0.75rem", color: "#777", margin: 0 }}>
             {stylist ? stylist.name : "Stylist Portal"}
@@ -167,7 +176,7 @@ const ScheduleInner = () => {
               onClick={() => setSelectedDate(todayString())}
               style={{
                 padding: "0.4rem 0.75rem",
-                background: "#c9a96e",
+                background: "var(--ink-soft)",
                 color: "#fff",
                 border: "none",
                 borderRadius: "6px",
@@ -221,7 +230,7 @@ const ScheduleInner = () => {
                     style={{
                       fontSize: "1rem",
                       fontWeight: 600,
-                      color: "#c9a96e",
+                      color: "#ffffff",
                     }}
                   >
                     {b.time}
