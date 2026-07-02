@@ -74,7 +74,7 @@ const StylistDateStep = ({
   onDateSelect,
   onTimeSelect,
 }: Props) => {
-  const { stylists } = useSalonData();
+  const { stylists, salonSettings } = useSalonData();
   const today = todayString();
 
   // Calendar view state (internal — resets on remount, which is fine)
@@ -281,6 +281,7 @@ const StylistDateStep = ({
           selectedDate={date}
           today={today}
           availableDays={availableDays}
+          salonSettings={salonSettings}
           onDateSelect={(d) => {
             onDateSelect(d);
             onTimeSelect("");

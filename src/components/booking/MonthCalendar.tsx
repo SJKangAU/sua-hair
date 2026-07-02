@@ -10,6 +10,7 @@
 
 import { getDaysInMonth, parseLocalDate } from "../../lib/dates";
 import { getMinBookableDate, isSalonClosed } from "../../lib/scheduling";
+import type { SalonSettings } from "../../types";
 
 interface Props {
   viewYear: number;
@@ -17,6 +18,10 @@ interface Props {
   selectedDate: string;
   today: string;
   availableDays: Set<string>;
+  // Dynamic opening hours from Firestore — closed-day checks must use the
+  // same source as the slot engine, or the calendar disagrees with the slots.
+  // isSalonClosed falls back to SALON_CONFIG when undefined.
+  salonSettings?: SalonSettings;
   onDateSelect: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -35,6 +40,7 @@ const MonthCalendar = ({
   selectedDate,
   today,
   availableDays,
+  salonSettings,
   onDateSelect,
   onPrevMonth,
   onNextMonth,
@@ -152,7 +158,7 @@ const MonthCalendar = ({
           const dayNum = parseLocalDate(day).getDate();
           const isSelected = day === selectedDate;
           const isToday = day === today;
-          const isDisabled = day < minDate || isSalonClosed(day);
+          const isDisabled = day < minDate || isSalonClosed(day, salonSettings);
           const hasAvailability = availableDays.has(day);
 
           return (
