@@ -114,7 +114,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                   objectFit: "cover",
                   margin: "0 auto 0.35rem",
                   display: "block",
-                  border: "2px solid var(--gold)",
+                  border: "2px solid var(--admin-dim)",
                 }}
               />
             ) : (
@@ -123,7 +123,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  background: "var(--gold)",
+                  background: "var(--ink-soft)",
                   color: "white",
                   display: "flex",
                   alignItems: "center",
