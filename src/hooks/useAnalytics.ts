@@ -1,10 +1,12 @@
 // useAnalytics.ts
-// Derives all analytics data from the live bookings array in BookingContext
-// Extracted so AnalyticsStats and RevenueChart share one computation
-// instead of each running their own useMemo over the same data
+// Derives all analytics data from the bookings array passed in.
+// The caller (AnalyticsPage) supplies the FULL confirmed booking history via
+// a dedicated one-time query — the shared BookingContext is scoped to a
+// rolling 90-day window and would silently truncate all-time totals.
+// Extracted so AnalyticsStats and RevenueChart share one computation.
 
 import { useMemo } from "react";
-import { useBookingContext } from "../context/BookingContext";
+import type { Booking } from "../types";
 
 export interface MonthlyRevenue {
   month: string; // e.g. "Apr '26"
@@ -33,9 +35,7 @@ export interface AnalyticsData {
   stylistRevenue: StylistRevenue[];
 }
 
-const useAnalytics = (): AnalyticsData => {
-  const { bookings } = useBookingContext();
-
+const useAnalytics = (bookings: Booking[]): AnalyticsData => {
   return useMemo(() => {
     // Only confirmed customer/walkin bookings count toward revenue
     const confirmed = bookings.filter(

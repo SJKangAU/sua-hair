@@ -3,6 +3,7 @@
 // All computation delegated to useAnalytics hook
 
 import useAnalytics from "../../../hooks/useAnalytics";
+import type { Booking } from "../../../types";
 
 // Monochrome — grey scale differentiates stylists, darkest = first
 const BAR_COLOR = "#3a3a38";
@@ -21,8 +22,12 @@ const EMPTY_MSG = (
   </p>
 );
 
-const RevenueChart = () => {
-  const { monthlyRevenue, stylistRevenue } = useAnalytics();
+interface Props {
+  bookings: Booking[]; // full confirmed history — supplied by AnalyticsPage
+}
+
+const RevenueChart = ({ bookings }: Props) => {
+  const { monthlyRevenue, stylistRevenue } = useAnalytics(bookings);
 
   const maxMonthly = Math.max(...monthlyRevenue.map((m) => m.revenue), 1);
   const maxStylist = Math.max(...stylistRevenue.map((s) => s.revenue), 1);

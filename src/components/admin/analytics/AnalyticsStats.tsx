@@ -13,8 +13,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import useAnalytics from "../../../hooks/useAnalytics";
+import type { Booking } from "../../../types";
 
-const AnalyticsStats = () => {
+interface Props {
+  bookings: Booking[]; // full confirmed history — supplied by AnalyticsPage
+}
+
+const AnalyticsStats = ({ bookings }: Props) => {
   const {
     totalRevenue,
     monthRevenue,
@@ -23,7 +28,7 @@ const AnalyticsStats = () => {
     topService,
     topStylist,
     busiestDay,
-  } = useAnalytics();
+  } = useAnalytics(bookings);
 
   const cards: {
     label: string;

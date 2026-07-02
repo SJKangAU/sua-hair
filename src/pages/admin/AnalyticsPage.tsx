@@ -1,12 +1,50 @@
 // AnalyticsPage.tsx
-// Analytics tab — revenue overview and stylist breakdown
-// All data derived from live Firestore bookings via BookingContext
-// No extra fetches needed — stats and charts compute from existing subscription
+// Analytics tab — revenue overview and stylist breakdown.
+// Fetches the FULL confirmed booking history with a one-time getDocs query,
+// independent of the shared BookingContext (which is scoped to a rolling
+// 90-day window for cost reasons and would truncate all-time totals).
+// No onSnapshot — analytics doesn't need real-time updates.
 
+import { useState, useEffect } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../lib/firebase";
 import AnalyticsStats from "../../components/admin/analytics/AnalyticsStats";
 import RevenueChart from "../../components/admin/analytics/RevenueChart";
+import type { Booking } from "../../types";
 
 const AnalyticsPage = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "bookings"),
+            where("status", "==", "confirmed"),
+          ),
+        );
+        if (cancelled) return;
+        setBookings(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking)),
+        );
+      } catch (err) {
+        console.error("Analytics history fetch:", err);
+        if (!cancelled) setError("Failed to load analytics data.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Header */}
@@ -21,11 +59,21 @@ const AnalyticsPage = () => {
         </p>
       </div>
 
-      {/* Summary stat cards */}
-      <AnalyticsStats />
+      {loading ? (
+        <p style={{ color: "var(--admin-muted)", fontSize: "0.9rem" }}>
+          Loading analytics…
+        </p>
+      ) : error ? (
+        <p style={{ color: "var(--error)", fontSize: "0.9rem" }}>{error}</p>
+      ) : (
+        <>
+          {/* Summary stat cards */}
+          <AnalyticsStats bookings={bookings} />
 
-      {/* Revenue chart and stylist breakdown */}
-      <RevenueChart />
+          {/* Revenue chart and stylist breakdown */}
+          <RevenueChart bookings={bookings} />
+        </>
+      )}
     </div>
   );
 };
