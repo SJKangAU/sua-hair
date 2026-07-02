@@ -46,7 +46,8 @@ interface Props {
 // Build a ClientProfile from a group of bookings for the same phone number
 const buildProfile = (bookings: Booking[]): ClientProfile => {
   const sorted = [...bookings].sort((a, b) => a.date.localeCompare(b.date));
-  const confirmed = bookings.filter((b) => b.status !== "cancelled");
+  // Confirmed only — pending bookings must not inflate visit count or spend
+  const confirmed = bookings.filter((b) => b.status === "confirmed");
 
   // Count visits per stylist to find the favourite
   const stylistCounts: Record<string, number> = {};
