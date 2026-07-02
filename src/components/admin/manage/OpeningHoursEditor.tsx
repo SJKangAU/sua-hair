@@ -158,7 +158,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
           disabled={saving}
           style={{
             padding: "0.55rem 1.25rem",
-            background: saving ? "#ddd" : "#c9a96e",
+            background: saving ? "var(--border-strong)" : "var(--accent)",
             color: saving ? "#999" : "#fff",
             border: "none",
             borderRadius: "6px",
@@ -203,7 +203,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     type="checkbox"
                     checked={day.isOpen}
                     onChange={(e) => updateDay(key, "isOpen", e.target.checked)}
-                    style={{ accentColor: "#c9a96e", width: 16, height: 16 }}
+                    style={{ accentColor: "var(--ink)", width: 16, height: 16 }}
                   />
                   <span
                     style={{
@@ -313,7 +313,12 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                 >
                   <span style={{ fontWeight: 500 }}>{date}</span>
                   <span
-                    style={{ color: override.closed ? "#e53e3e" : "#2d8a4e" }}
+                    style={{
+                      color: override.closed
+                        ? "var(--grey-muted)"
+                        : "var(--ink)",
+                      fontStyle: override.closed ? "italic" : "normal",
+                    }}
                   >
                     {override.closed
                       ? "Closed"
