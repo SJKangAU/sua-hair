@@ -154,7 +154,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
           <input
             style={{
               ...inputStyle,
-              ...(errors.name ? { borderColor: "#e53e3e" } : {}),
+              ...(errors.name ? { borderColor: "var(--error)" } : {}),
             }}
             type="text"
             placeholder="Full name"
@@ -169,7 +169,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
               style={{
                 margin: "0.3rem 0 0",
                 fontSize: "0.8rem",
-                color: "#e53e3e",
+                color: "var(--error)",
               }}
             >
               {errors.name}
@@ -181,7 +181,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
           <input
             style={{
               ...inputStyle,
-              ...(errors.phone ? { borderColor: "#e53e3e" } : {}),
+              ...(errors.phone ? { borderColor: "var(--error)" } : {}),
             }}
             type="tel"
             placeholder="Mobile number"
@@ -196,7 +196,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
               style={{
                 margin: "0.3rem 0 0",
                 fontSize: "0.8rem",
-                color: "#e53e3e",
+                color: "var(--error)",
               }}
             >
               {errors.phone}
