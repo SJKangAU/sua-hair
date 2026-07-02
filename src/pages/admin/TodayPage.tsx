@@ -103,7 +103,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
               onClick={() => setSelectedDate(todayString())}
               style={{
                 padding: "0.4rem 0.75rem",
-                background: "#c9a96e",
+                background: "var(--ink-soft)",
                 color: "white",
                 border: "none",
                 borderRadius: "6px",
@@ -135,7 +135,7 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           onClick={() => setCreateModal({ stylistId: "", time: "" })}
           style={{
             padding: "0.5rem 1.25rem",
-            background: "#c9a96e",
+            background: "var(--accent)",
             color: "white",
             border: "none",
             borderRadius: "6px",
