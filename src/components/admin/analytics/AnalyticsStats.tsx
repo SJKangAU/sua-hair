@@ -1,7 +1,17 @@
 // AnalyticsStats.tsx
-// Summary stat cards for the analytics tab
-// All computation delegated to useAnalytics hook
+// Summary stat cards for the analytics tab — monochrome, lucide icons.
+// All computation delegated to useAnalytics hook.
 
+import {
+  DollarSign,
+  Calendar,
+  Target,
+  ClipboardList,
+  Scissors,
+  Star,
+  CalendarDays,
+  type LucideIcon,
+} from "lucide-react";
 import useAnalytics from "../../../hooks/useAnalytics";
 
 const AnalyticsStats = () => {
@@ -15,47 +25,31 @@ const AnalyticsStats = () => {
     busiestDay,
   } = useAnalytics();
 
-  const cards = [
+  const cards: {
+    label: string;
+    value: string;
+    icon: LucideIcon;
+    small?: boolean;
+  }[] = [
     {
       label: "Total Revenue",
       value: `$${totalRevenue.toLocaleString()}`,
-      color: "#c9a96e",
-      icon: "💰",
+      icon: DollarSign,
     },
     {
       label: "This Month",
       value: `$${monthRevenue.toLocaleString()}`,
-      color: "#1d9e75",
-      icon: "📅",
+      icon: Calendar,
     },
-    { label: "Avg Spend", value: `$${avgSpend}`, color: "#3b82f6", icon: "🎯" },
+    { label: "Avg Spend", value: `$${avgSpend}`, icon: Target },
     {
       label: "Total Bookings",
       value: totalBookings.toString(),
-      color: "#8b5cf6",
-      icon: "📋",
+      icon: ClipboardList,
     },
-    {
-      label: "Top Service",
-      value: topService,
-      color: "#ef9f27",
-      icon: "✂️",
-      small: true,
-    },
-    {
-      label: "Top Stylist",
-      value: topStylist,
-      color: "#e24b4a",
-      icon: "⭐",
-      small: true,
-    },
-    {
-      label: "Busiest Day",
-      value: busiestDay,
-      color: "#6b7280",
-      icon: "📆",
-      small: true,
-    },
+    { label: "Top Service", value: topService, icon: Scissors, small: true },
+    { label: "Top Stylist", value: topStylist, icon: Star, small: true },
+    { label: "Busiest Day", value: busiestDay, icon: CalendarDays, small: true },
   ];
 
   return (
@@ -66,42 +60,50 @@ const AnalyticsStats = () => {
         gap: "1rem",
       }}
     >
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          style={{
-            background: "white",
-            borderRadius: "10px",
-            padding: "1.25rem",
-            borderTop: `4px solid ${card.color}`,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <p style={{ fontSize: "1.25rem", margin: "0 0 0.25rem" }}>
-            {card.icon}
-          </p>
-          <p
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <div
+            key={card.label}
             style={{
-              fontSize: card.small ? "0.95rem" : "1.6rem",
-              fontWeight: 700,
-              color: card.color,
-              margin: 0,
-              lineHeight: 1.2,
+              background: "var(--surface)",
+              borderRadius: "8px",
+              padding: "1.25rem",
+              border: `1px solid var(--border)`,
             }}
           >
-            {card.value}
-          </p>
-          <p
-            style={{
-              fontSize: "0.75rem",
-              color: "#6b6b6b",
-              margin: "0.25rem 0 0",
-            }}
-          >
-            {card.label}
-          </p>
-        </div>
-      ))}
+            <Icon
+              size={18}
+              strokeWidth={1.75}
+              color="var(--ink-soft)"
+              style={{ marginBottom: "0.5rem" }}
+            />
+            <p
+              style={{
+                fontSize: card.small ? "0.95rem" : "1.6rem",
+                fontWeight: 700,
+                color: "var(--ink)",
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              {card.value}
+            </p>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--grey-muted)",
+                margin: "0.25rem 0 0",
+              }}
+            >
+              {card.label}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 };
