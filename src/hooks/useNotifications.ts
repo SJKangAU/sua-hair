@@ -8,6 +8,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   onSnapshot,
   doc,
   updateDoc,
@@ -35,10 +36,13 @@ const useNotifications = (recipientId: string | null): Result => {
       return;
     }
 
+    // limit(30) — the bell UI only shows 30; without a limit this subscription
+    // grows unbounded (2 notification docs are written per booking, forever)
     const q = query(
       collection(db, "notifications"),
       where("recipientId", "==", recipientId),
       orderBy("createdAt", "desc"),
+      limit(30),
     );
 
     const unsub = onSnapshot(
