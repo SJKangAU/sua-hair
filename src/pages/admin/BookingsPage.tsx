@@ -73,7 +73,7 @@ const BookingsPage = ({ onUpdateStatus }: Props) => {
           {[1, 2, 3].map(i => <BookingCardSkeleton key={i} />)}
         </div>
       ) : error ? (
-        <p style={{ textAlign: 'center', color: '#e24b4a' }}>{error}</p>
+        <p style={{ textAlign: 'center', color: 'var(--error)' }}>{error}</p>
       ) : (
         <BookingTable
           bookings={bookings}
