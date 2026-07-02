@@ -4,6 +4,7 @@
 // Clicking a notification marks it read; "Mark all read" clears the badge.
 
 import { useState, useRef, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { useNotificationContext } from "../../context/NotificationContext";
 
 const NotificationBell = () => {
@@ -59,18 +60,18 @@ const NotificationBell = () => {
           justifyContent: "center",
           transition: "background 0.15s",
         }}
-        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#f5f5f5")}
+        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)")}
         onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "none")}
       >
-        🔔
+        <Bell size={18} strokeWidth={1.75} color="var(--admin-faint)" />
         {unreadCount > 0 && (
           <span
             style={{
               position: "absolute",
               top: 2,
               right: 2,
-              background: "#e53e3e",
-              color: "#fff",
+              background: "#ffffff",
+              color: "var(--ink)",
               borderRadius: "50%",
               width: 16,
               height: 16,
@@ -121,7 +122,7 @@ const NotificationBell = () => {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#c9a96e",
+                  color: "var(--ink-soft)",
                   cursor: "pointer",
                   fontSize: "0.78rem",
                   fontWeight: 500,
@@ -155,7 +156,7 @@ const NotificationBell = () => {
                     padding: "0.75rem 1rem",
                     borderBottom: "1px solid #f8f8f8",
                     cursor: n.read ? "default" : "pointer",
-                    background: n.read ? "#fff" : "#fffbf4",
+                    background: n.read ? "var(--surface)" : "var(--paper)",
                     display: "flex",
                     gap: "0.6rem",
                     alignItems: "flex-start",
@@ -167,7 +168,7 @@ const NotificationBell = () => {
                       width: 7,
                       height: 7,
                       borderRadius: "50%",
-                      background: n.read ? "transparent" : "#c9a96e",
+                      background: n.read ? "transparent" : "var(--ink)",
                       flexShrink: 0,
                       marginTop: 5,
                     }}
