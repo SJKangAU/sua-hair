@@ -217,6 +217,10 @@ const useBookingAvailability = ({
     )}-01`;
     const monthEnd = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-31`;
 
+    // Cancellation guard — rapid month navigation must not let a stale
+    // month's response overwrite the currently-viewed month's dots
+    let cancelled = false;
+
     (async () => {
       try {
         const snap = await getDocs(
@@ -226,6 +230,7 @@ const useBookingAvailability = ({
             where("date", "<=", monthEnd),
           ),
         );
+        if (cancelled) return;
         const bookings = snap.docs.map(
           (d) => ({ id: d.id, ...d.data() } as Booking),
         );
@@ -248,9 +253,13 @@ const useBookingAvailability = ({
         });
         setAvailableDays(available);
       } catch (err) {
-        console.error("Error fetching month availability:", err);
+        if (!cancelled) console.error("Error fetching month availability:", err);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     viewYear,
     viewMonth,
@@ -268,7 +277,19 @@ const useBookingAvailability = ({
   // generateSlots) filters the fetched bookings by date, so passing the full
   // window's bookings to every day's generateSlots call is correct.
   // Stable callback — reads all dynamic values from refs.
+  // Generation counter: a newer call (stylist/service changed mid-flight) or
+  // unmount invalidates any in-flight search so a stale result can't apply
+  // an outdated date/time selection.
+  const findGeneration = useRef(0);
+  useEffect(() => {
+    return () => {
+      findGeneration.current++; // invalidate in-flight searches on unmount
+    };
+  }, []);
+
   const findNextAvailable = useCallback(async () => {
+    const generation = ++findGeneration.current;
+
     const ids = isAnyRef.current
       ? allStylistIdsRef.current
       : stylistIdRef.current
@@ -297,6 +318,8 @@ const useBookingAvailability = ({
       console.error("findNextAvailable range fetch:", err);
       return;
     }
+
+    if (generation !== findGeneration.current) return; // superseded
 
     for (let i = 0; i < 14; i++) {
       const checkDate = addDays(windowStart, i);
