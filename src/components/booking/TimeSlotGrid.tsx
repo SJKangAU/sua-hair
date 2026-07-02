@@ -22,6 +22,21 @@ interface Props {
   stylistId?: string; // passed to waitlist entry if a specific stylist was chosen
 }
 
+// Responsive slot grid — 4 columns by default, 2 on narrow phones.
+// A class + media query because inline styles can't express breakpoints.
+const GRID_CSS = `
+  .bk-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+  @media (max-width: 400px) {
+    .bk-slot-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+`;
+
 const formatDateDisplay = (dateStr: string): string =>
   parseLocalDate(dateStr).toLocaleDateString("en-AU", {
     weekday: "long",
@@ -140,6 +155,7 @@ const TimeSlotGrid = ({
         title={unavailable ? slot.reason : undefined}
         style={{
           padding: "0.6rem 0.25rem",
+          minHeight: "44px", // touch target minimum
           textAlign: "center",
           border: `1.5px solid ${isSelected ? "#0a0a0a" : "#e0e0e0"}`,
           borderRadius: "8px",
@@ -160,6 +176,7 @@ const TimeSlotGrid = ({
 
   return (
     <div style={{ marginBottom: "1.25rem" }}>
+      <style>{GRID_CSS}</style>
       {/* Date heading */}
       <div
         style={{
@@ -202,13 +219,7 @@ const TimeSlotGrid = ({
       {morningSlots.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <SectionLabel label="Morning" />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "0.5rem",
-            }}
-          >
+          <div className="bk-slot-grid">
             {morningSlots.map(renderSlot)}
           </div>
         </div>
@@ -218,13 +229,7 @@ const TimeSlotGrid = ({
       {afternoonSlots.length > 0 && (
         <div>
           <SectionLabel label="Afternoon" />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "0.5rem",
-            }}
-          >
+          <div className="bk-slot-grid">
             {afternoonSlots.map(renderSlot)}
           </div>
         </div>
