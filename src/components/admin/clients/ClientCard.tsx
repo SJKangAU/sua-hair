@@ -40,7 +40,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            background: '#c9a96e',
+            background: 'var(--ink-soft)',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
@@ -59,28 +59,28 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             </p>
             <a
               href={`tel:${client.phone}`}
-              style={{ color: '#c9a96e', fontSize: '0.85rem', textDecoration: 'none' }}
+              style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', textDecoration: 'underline' }}
             >
               {client.phone}
             </a>
             <div style={{ marginTop: '4px' }}>
               {client.visitCount >= 10 ? (
                 <span style={{
-                  background: '#faeeda',
-                  color: '#854f0b',
+                  border: '1.5px solid var(--ink)',
+                  color: 'var(--ink)',
                   fontSize: '0.7rem',
                   fontWeight: 600,
                   padding: '2px 8px',
                   borderRadius: '20px',
                 }}>
-                  ⭐ Loyal client
+                  Loyal client
                 </span>
               ) : client.visitCount >= 5 ? (
                 <span style={{
-                  background: '#e6f1fb',
-                  color: '#0c447c',
+                  border: '1px solid var(--border-strong)',
+                  color: 'var(--ink-soft)',
                   fontSize: '0.7rem',
-                  fontWeight: 600,
+                  fontWeight: 500,
                   padding: '2px 8px',
                   borderRadius: '20px',
                 }}>
@@ -94,7 +94,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
         {/* Stats */}
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#c9a96e', margin: 0 }}>
+            <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
               {client.visitCount}
             </p>
             <p style={{ fontSize: '0.72rem', color: '#6b6b6b', margin: 0 }}>visits</p>
@@ -139,7 +139,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             onClick={() => onBookAgain(client.phone, client.name)}
             style={{
               padding: '0.35rem 0.85rem',
-              background: '#c9a96e',
+              background: 'var(--accent)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
