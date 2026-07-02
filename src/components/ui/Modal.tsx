@@ -1,7 +1,7 @@
 // Modal.tsx
-// Reusable modal wrapper for the admin dashboard
-// Closes on backdrop click and Escape key press
-// Used for booking detail, create booking, and other admin modals
+// Reusable modal wrapper for the admin dashboard.
+// Bodoni Moda title, --surface panel, --border hairline header rule.
+// Closes on backdrop click and Escape key press.
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
@@ -38,7 +38,7 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.5)",
+        background: "rgba(22,22,21,0.5)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -50,14 +50,15 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "white",
+          background: "var(--surface)",
+          border: `1px solid var(--border)`,
           borderRadius: "12px",
           width: "100%",
           maxWidth: width,
           maxHeight: "90vh",
           overflowY: "auto",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          fontFamily: "Georgia, serif",
+          boxShadow: "var(--shadow-lg)",
+          fontFamily: "var(--font-body)",
         }}
       >
         {/* Modal header */}
@@ -67,15 +68,17 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
             justifyContent: "space-between",
             alignItems: "center",
             padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid #eee",
+            borderBottom: `1px solid var(--border)`,
           }}
         >
           <h2
             style={{
               margin: 0,
-              fontSize: "1.1rem",
-              fontWeight: 600,
-              color: "#1a1a1a",
+              fontFamily: "var(--font-display)",
+              fontSize: "1.2rem",
+              fontWeight: 500,
+              color: "var(--ink)",
+              letterSpacing: "0.01em",
             }}
           >
             {title}
@@ -87,7 +90,7 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
               border: "none",
               fontSize: "1.25rem",
               cursor: "pointer",
-              color: "#6b6b6b",
+              color: "var(--grey-muted)",
               lineHeight: 1,
               padding: "0.25rem",
             }}
