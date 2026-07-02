@@ -29,6 +29,13 @@ const ClientsPage = () => {
     setLoading(isLoading);
   }, []);
 
+  // Short or cleared input — back to the prompt state, not "no clients found"
+  const handleReset = useCallback(() => {
+    setClients([]);
+    setHasSearched(false);
+    setLoading(false);
+  }, []);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
@@ -42,7 +49,11 @@ const ClientsPage = () => {
         </p>
       </div>
 
-      <ClientSearch onResults={handleResults} onLoading={handleLoading} />
+      <ClientSearch
+        onResults={handleResults}
+        onLoading={handleLoading}
+        onReset={handleReset}
+      />
 
       {loading && (
         <p

@@ -38,6 +38,9 @@ export interface ClientProfile {
 interface Props {
   onResults: (clients: ClientProfile[]) => void;
   onLoading: (loading: boolean) => void;
+  // Called for short (<2 char) or cleared input — restores the prompt state
+  // instead of showing "no clients found" for a search that never ran
+  onReset: () => void;
 }
 
 // Build a ClientProfile from a group of bookings for the same phone number
@@ -65,7 +68,7 @@ const buildProfile = (bookings: Booking[]): ClientProfile => {
   };
 };
 
-const ClientSearch = ({ onResults, onLoading }: Props) => {
+const ClientSearch = ({ onResults, onLoading, onReset }: Props) => {
   const [queryStr, setQueryStr] = useState("");
 
   // Monotonic id — a stale (slower) search must never overwrite a newer one
@@ -74,7 +77,9 @@ const ClientSearch = ({ onResults, onLoading }: Props) => {
   const search = useCallback(
     async (q: string) => {
       if (q.length < 2) {
-        onResults([]);
+        // Not a real search — invalidate any in-flight one and reset to prompt
+        requestId.current++;
+        onReset();
         return;
       }
 
@@ -138,7 +143,7 @@ const ClientSearch = ({ onResults, onLoading }: Props) => {
         if (id === requestId.current) onLoading(false);
       }
     },
-    [onResults, onLoading],
+    [onResults, onLoading, onReset],
   );
 
   // 300ms debounce
@@ -180,7 +185,7 @@ const ClientSearch = ({ onResults, onLoading }: Props) => {
         <button
           onClick={() => {
             setQueryStr("");
-            onResults([]);
+            onReset();
           }}
           style={{
             position: "absolute",
