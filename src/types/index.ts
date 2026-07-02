@@ -87,6 +87,9 @@ export interface BookedService {
 
 export interface Booking {
   id: string;
+  // Human-readable reference (e.g. BK-20260702-hwang-steve-1030) stored as a
+  // field, not the doc ID — doc IDs are auto-generated to prevent collisions
+  bookingRef?: string;
   customerName: string;
   customerPhone: string;
   stylistId: string;
