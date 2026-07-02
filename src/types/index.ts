@@ -91,6 +91,9 @@ export interface Booking {
   // field, not the doc ID — doc IDs are auto-generated to prevent collisions
   bookingRef?: string;
   customerName: string;
+  // Lowercased copy written at creation time — enables case-insensitive
+  // prefix search in the admin Clients tab (Firestore has no ilike)
+  customerNameLower?: string;
   customerPhone: string;
   stylistId: string;
   stylistName: string;

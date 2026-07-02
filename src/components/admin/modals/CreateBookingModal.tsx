@@ -145,6 +145,7 @@ const CreateBookingModal = ({
         bookingType: "walkin",
         status: "confirmed", // walk-ins are auto-confirmed
         customerName: walkin.customerName.trim(),
+        customerNameLower: walkin.customerName.trim().toLowerCase(),
         customerPhone: walkin.customerPhone.trim(),
         stylistId: stylist.id,
         stylistName: stylist.name,

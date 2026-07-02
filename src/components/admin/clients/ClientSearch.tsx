@@ -1,11 +1,27 @@
 // ClientSearch.tsx
-// Debounced search input for the clients tab
-// Filters from BookingContext (already in memory) instead of making a
-// fresh Firestore query on every keystroke — avoids fetching the entire
-// bookings collection each time the admin searches for a client.
+// Debounced search input for the clients tab.
+// Fires on-demand Firestore queries so results cover the FULL booking
+// history — the shared BookingContext subscription is scoped to a rolling
+// 90-day window and can no longer serve as the search source.
+//
+// Two query paths, run in parallel and merged:
+//   1. Exact phone match:  where("customerPhone", "==", cleanPhone(q))
+//   2. Name prefix match:  where("customerNameLower", ">=", q.toLowerCase())
+//                          where("customerNameLower", "<",  q.toLowerCase() + "")
+//                          limit(50)
+// Note: customerNameLower is written at booking creation — bookings created
+// before this field existed are findable by phone but not by name.
 
-import { useState, useEffect, useCallback } from "react";
-import { useBookingContext } from "../../../context/BookingContext";
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  limit,
+} from "firebase/firestore";
+import { db } from "../../../lib/firebase";
+import { cleanPhone } from "../../../lib/validation";
 import type { Booking } from "../../../types";
 
 export interface ClientProfile {
@@ -50,43 +66,79 @@ const buildProfile = (bookings: Booking[]): ClientProfile => {
 };
 
 const ClientSearch = ({ onResults, onLoading }: Props) => {
-  const { bookings } = useBookingContext();
   const [queryStr, setQueryStr] = useState("");
 
-  // Filter in-memory bookings — no Firestore call needed
+  // Monotonic id — a stale (slower) search must never overwrite a newer one
+  const requestId = useRef(0);
+
   const search = useCallback(
-    (q: string) => {
+    async (q: string) => {
       if (q.length < 2) {
         onResults([]);
         return;
       }
 
+      const id = ++requestId.current;
       onLoading(true);
 
-      const lower = q.toLowerCase();
-      const matched = bookings.filter(
-        (b) =>
-          b.customerName.toLowerCase().includes(lower) ||
-          b.customerPhone.includes(q),
-      );
+      try {
+        const bookingsRef = collection(db, "bookings");
+        const lower = q.toLowerCase();
+        const digits = cleanPhone(q);
+        const looksLikePhone = /^\d{4,}$/.test(digits);
 
-      // Group by phone number (fall back to name if no phone)
-      const grouped: Record<string, Booking[]> = {};
-      matched.forEach((b) => {
-        const key = b.customerPhone || b.customerName;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(b);
-      });
+        const queries = [
+          // Name prefix — case-insensitive via customerNameLower
+          getDocs(
+            query(
+              bookingsRef,
+              where("customerNameLower", ">=", lower),
+              where("customerNameLower", "<", lower + ""),
+              limit(50),
+            ),
+          ),
+        ];
 
-      // Build profiles and sort by most recent visit
-      const profiles = Object.values(grouped)
-        .map(buildProfile)
-        .sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
+        // Exact phone match across all time — primary path for phone input
+        if (looksLikePhone) {
+          queries.push(
+            getDocs(query(bookingsRef, where("customerPhone", "==", digits))),
+          );
+        }
 
-      onResults(profiles);
-      onLoading(false);
+        const snaps = await Promise.all(queries);
+        if (id !== requestId.current) return; // superseded by a newer search
+
+        // Merge and dedupe by document id
+        const byId = new Map<string, Booking>();
+        snaps.forEach((snap) =>
+          snap.docs.forEach((d) =>
+            byId.set(d.id, { id: d.id, ...d.data() } as Booking),
+          ),
+        );
+
+        // Group by phone number (fall back to name if no phone)
+        const grouped: Record<string, Booking[]> = {};
+        byId.forEach((b) => {
+          const key = b.customerPhone || b.customerName;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(b);
+        });
+
+        // Build profiles and sort by most recent visit
+        const profiles = Object.values(grouped)
+          .map(buildProfile)
+          .sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
+
+        onResults(profiles);
+      } catch (err) {
+        console.error("Client search error:", err);
+        if (id === requestId.current) onResults([]);
+      } finally {
+        if (id === requestId.current) onLoading(false);
+      }
     },
-    [bookings, onResults, onLoading],
+    [onResults, onLoading],
   );
 
   // 300ms debounce

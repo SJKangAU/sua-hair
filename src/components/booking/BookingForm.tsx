@@ -279,6 +279,7 @@ const BookingForm = () => {
         status: "pending",
         bookingRef,
         customerName: customerName.trim(),
+        customerNameLower: customerName.trim().toLowerCase(),
         customerPhone: cleanPhone(customerPhone),
         stylistId,
         stylistName: finalStylistName,
