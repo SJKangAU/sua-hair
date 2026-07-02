@@ -4,8 +4,9 @@
 
 import useAnalytics from "../../../hooks/useAnalytics";
 
-const BAR_COLOR = "#c9a96e";
-const STYLIST_COLORS = ["#c9a96e", "#1d9e75", "#3b82f6", "#8b5cf6", "#ef9f27"];
+// Monochrome — grey scale differentiates stylists, darkest = first
+const BAR_COLOR = "#3a3a38";
+const STYLIST_COLORS = ["#161615", "#3a3a38", "#5a5a58", "#8a8884", "#b0aea9"];
 
 const EMPTY_MSG = (
   <p
