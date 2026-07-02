@@ -73,8 +73,8 @@ const BookingDetailModal = ({ booking, onClose, onUpdateStatus }: Props) => {
               href={`tel:${booking.customerPhone}`}
               style={{
                 ...valueStyle,
-                color: "#c9a96e",
-                textDecoration: "none",
+                color: "var(--ink)",
+                textDecoration: "underline",
               }}
             >
               {booking.customerPhone}
