@@ -10,10 +10,12 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
   doc,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { todayString, addDays } from "../lib/dates";
 import type { Booking } from "../types";
 
 interface UseBookings {
@@ -39,10 +41,19 @@ const useBookings = (): UseBookings => {
     bookingsRef.current = bookings;
   }, [bookings]);
 
-  // Subscribe to real-time booking updates via onSnapshot
-  // Unsubscribes automatically on component unmount
+  // Subscribe to real-time booking updates via onSnapshot.
+  // Scoped to a rolling 90-day window and forward — an unbounded subscription
+  // streams the entire collection every admin session and grows without limit.
+  // Consumers needing full history (analytics, client search) run their own
+  // on-demand queries instead of reading this context.
+  // Unsubscribes automatically on component unmount.
   useEffect(() => {
-    const q = query(collection(db, "bookings"), orderBy("date", "asc"));
+    const windowStart = addDays(todayString(), -90);
+    const q = query(
+      collection(db, "bookings"),
+      where("date", ">=", windowStart),
+      orderBy("date", "asc"),
+    );
 
     const unsubscribe = onSnapshot(
       q,
