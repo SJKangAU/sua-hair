@@ -1,8 +1,9 @@
 // CurrentTimeBar.tsx
-// Renders a red horizontal line across all stylist columns
-// showing the current time on the timeline
-// Updates every minute via setInterval
-// Only visible during trading hours (10am - 6pm)
+// Horizontal line across all stylist columns showing the current time.
+// Monochrome: white line + dot on the dark timeline background
+// (spec calls for --ink, but ink on ink is invisible — white is the
+// monochrome equivalent on the dark surface).
+// Updates every minute via setInterval; only visible during trading hours.
 
 import { useState, useEffect } from "react";
 import { SALON_CONFIG } from "../../../lib/config";
@@ -43,8 +44,8 @@ const CurrentTimeBar = ({ gridHeight: _gridHeight }: Props) => {
         top: `${topPercent}%`,
         left: 0,
         right: 0,
-        height: "2px",
-        background: "#e24b4a",
+        height: "1.5px",
+        background: "#ffffff",
         zIndex: 10,
         pointerEvents: "none", // don't block clicks on blocks behind it
       }}
@@ -55,8 +56,8 @@ const CurrentTimeBar = ({ gridHeight: _gridHeight }: Props) => {
           position: "absolute",
           left: "-52px",
           top: "-9px",
-          background: "#e24b4a",
-          color: "white",
+          background: "#ffffff",
+          color: "var(--ink)",
           fontSize: "0.7rem",
           fontWeight: 600,
           padding: "2px 5px",
@@ -71,16 +72,16 @@ const CurrentTimeBar = ({ gridHeight: _gridHeight }: Props) => {
         })}
       </div>
 
-      {/* Red dot on the left edge */}
+      {/* Dot on the left edge */}
       <div
         style={{
           position: "absolute",
           left: 0,
           top: "-4px",
-          width: "10px",
-          height: "10px",
+          width: "9px",
+          height: "9px",
           borderRadius: "50%",
-          background: "#e24b4a",
+          background: "#ffffff",
         }}
       />
     </div>
