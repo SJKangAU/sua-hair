@@ -72,7 +72,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <h2
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "2.1rem",
+            fontSize: "clamp(1.65rem, 6.5vw, 2.1rem)",
             fontWeight: 300,
             color: "var(--ink)",
             letterSpacing: "-0.01em",
@@ -238,6 +238,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <div
           style={{
             display: "flex",
+            flexWrap: "wrap",
             gap: "0.75rem",
             justifyContent: "center",
             marginBottom: "1.75rem",

@@ -94,7 +94,7 @@ const BookingSummarySheet = ({
             background: "#ffffff",
             borderRadius: "20px 20px 0 0",
             padding: "1.75rem 1.5rem 2.5rem",
-            maxHeight: "88vh",
+            maxHeight: "88dvh", // dvh — vh overshoots on mobile when the URL bar is visible
             overflowY: "auto",
             animation: "bkSheetUp 0.38s cubic-bezier(0.34, 1.4, 0.64, 1) both",
           }}

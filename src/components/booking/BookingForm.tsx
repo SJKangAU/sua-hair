@@ -44,6 +44,15 @@ const ANIM_CSS = `
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+
+  /* Layout paddings live in classes (not inline) so they can shrink on
+     narrow phones — inline styles can't express breakpoints. */
+  .bk-step-pad { padding: 1.75rem 1.5rem 0.5rem; }
+  .bk-nav-bar  { padding: 1.25rem 1.5rem; }
+  @media (max-width: 420px) {
+    .bk-step-pad { padding: 1.5rem 1.125rem 0.5rem; }
+    .bk-nav-bar  { padding: 1rem 1.125rem; }
+  }
 `;
 
 const PRIMARY_BTN: React.CSSProperties = {
@@ -366,11 +375,11 @@ const BookingForm = () => {
       <div style={{ overflow: "hidden" }}>
         <div
           key={step}
+          className="bk-step-pad"
           style={{
             animation: `${
               direction === "forward" ? "bkSlideFromRight" : "bkSlideFromLeft"
             } 0.32s cubic-bezier(0.22, 1, 0.36, 1) both`,
-            padding: "1.75rem 1.5rem 0.5rem",
           }}
         >
           {step === 1 && (
@@ -427,11 +436,11 @@ const BookingForm = () => {
 
       {/* Navigation bar */}
       <div
+        className="bk-nav-bar"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "1.25rem 1.5rem",
           borderTop: "1px solid #e8e8e8",
           marginTop: "0.5rem",
         }}
