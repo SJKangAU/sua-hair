@@ -28,3 +28,8 @@ dist-ssr
 
 .vercel
 .env*
+
+# Software Foundry platform files
+.cdf-config/
+.cdf-settings/
+.nanobot/

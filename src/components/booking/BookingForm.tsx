@@ -177,7 +177,7 @@ const BookingForm = () => {
 
   const stylist = stylists.find((s) => s.id === stylistId);
   const stylistName =
-    stylistId === "any" ? "Any Available Stylist" : stylist?.name ?? "";
+    stylistId === "any" ? "Any Available Stylist" : (stylist?.name ?? "");
 
   const serviceHash = [...selectedServiceIds].sort().join(",");
 
@@ -258,9 +258,9 @@ const BookingForm = () => {
     }));
 
     const finalStylistName =
-      stylistId === "any" ? "Any available stylist" : stylist?.name ?? "";
+      stylistId === "any" ? "Any available stylist" : (stylist?.name ?? "");
     const finalStylistLevel =
-      stylistId === "any" ? "junior" : stylist?.level ?? "junior";
+      stylistId === "any" ? "junior" : (stylist?.level ?? "junior");
     const totalRestTime = totalTime - totalActiveTime;
 
     setSubmitting(true);
@@ -276,8 +276,8 @@ const BookingForm = () => {
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
