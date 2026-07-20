@@ -37,52 +37,61 @@ const Tabs = ({ tabs, activeTab, onChange }: Props) => {
   return (
     <div
       style={{
-        display: "flex",
         borderBottom: `1px solid var(--admin-border)`,
         background: "var(--admin-bg)",
-        padding: "0 1.5rem",
-        gap: "0.25rem",
       }}
     >
-      {tabs.map((tab) => {
-        const active = tab.id === activeTab;
-        const Icon = TAB_ICONS[tab.id];
+      <div
+        style={{
+          display: "flex",
+          padding: "0 1.5rem",
+          gap: "0.25rem",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "thin",
+        }}
+      >
+        {tabs.map((tab) => {
+          const active = tab.id === activeTab;
+          const Icon = TAB_ICONS[tab.id];
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onChange(tab.id)}
-            style={{
-              padding: "1rem 1.125rem",
-              background: "none",
-              border: "none",
-              borderBottom: active
-                ? "2px solid var(--surface)"
-                : "2px solid transparent",
-              marginBottom: "-1px",
-              color: active ? "var(--surface)" : "var(--admin-dimmer)",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-              fontWeight: active ? 600 : 400,
-              fontFamily: "var(--font-body)",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              transition: "color 0.15s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {Icon && (
-              <Icon
-                size={16}
-                strokeWidth={active ? 2 : 1.5}
-                color="currentColor"
-              />
-            )}
-            {tab.label}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onChange(tab.id)}
+              style={{
+                padding: "1rem 1.125rem",
+                background: "none",
+                border: "none",
+                borderBottom: active
+                  ? "2px solid var(--surface)"
+                  : "2px solid transparent",
+                marginBottom: "-1px",
+                color: active ? "var(--surface)" : "var(--admin-dimmer)",
+                cursor: "pointer",
+                fontSize: "0.8rem",
+                fontWeight: active ? 600 : 400,
+                fontFamily: "var(--font-body)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                transition: "color 0.15s",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              {Icon && (
+                <Icon
+                  size={16}
+                  strokeWidth={active ? 2 : 1.5}
+                  color="currentColor"
+                />
+              )}
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

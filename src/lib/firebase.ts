@@ -54,6 +54,15 @@ export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
+  // Behind the platform's preview reverse proxy, Firestore's default
+  // WebChannel/fetch-stream transport periodically has its connection
+  // aborted mid-stream, which the SDK surfaces as an unhandled
+  // "AbortError: The user aborted a request." promise rejection. Forcing
+  // long-polling (with a timeout under the proxy's ~30s ceiling) avoids
+  // that transport entirely instead of just detecting and falling back to
+  // it after the fact.
+  experimentalForceLongPolling: true,
+  experimentalLongPollingOptions: { timeoutSeconds: 25 },
 });
 
 export const auth = getAuth(app);

@@ -90,6 +90,7 @@ body {
 /* Scrollbar — paper tones, intentional not generic */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--surface);

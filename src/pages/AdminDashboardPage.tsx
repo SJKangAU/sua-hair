@@ -76,10 +76,12 @@ const DashboardInner = () => {
       <header
         style={{
           background: "var(--admin-bg)",
-          padding: "0.875rem 2rem",
+          padding: "0.875rem clamp(1rem, 4vw, 2rem)",
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: "0.75rem",
           borderBottom: "1px solid var(--admin-border)",
         }}
       >
@@ -110,9 +112,28 @@ const DashboardInner = () => {
             Admin
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+            gap: "0.75rem",
+            minWidth: 0,
+          }}
+        >
           <NotificationBell />
-          <span style={{ color: "var(--admin-dimmer)", fontSize: "0.78rem" }}>
+          <span
+            style={{
+              color: "var(--admin-dimmer)",
+              fontSize: "0.78rem",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "clamp(90px, 35vw, 220px)",
+            }}
+            title={user?.email ?? undefined}
+          >
             {user?.email}
           </span>
           <button
@@ -126,6 +147,7 @@ const DashboardInner = () => {
               cursor: "pointer",
               fontSize: "0.78rem",
               fontFamily: "var(--font-body)",
+              whiteSpace: "nowrap",
             }}
           >
             Sign out
@@ -140,6 +162,7 @@ const DashboardInner = () => {
               fontSize: "0.78rem",
               textDecoration: "none",
               fontFamily: "var(--font-body)",
+              whiteSpace: "nowrap",
             }}
           >
             View site
