@@ -27,6 +27,22 @@ const TRAINING_ROW_CSS = `
   }
 `;
 
+const SectionLabel = ({ text, count }: { text: string; count: number }) => (
+  <p
+    style={{
+      fontSize: "0.78rem",
+      fontWeight: 600,
+      color: "#6b6b6b",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      margin: "0 0 0.75rem",
+    }}
+  >
+    {text}
+    <span style={{ marginLeft: "0.5rem", fontWeight: 400 }}>({count})</span>
+  </p>
+);
+
 const TrainingList = () => {
   const { bookings, loading } = useBookingContext();
   const today = new Date().toISOString().split("T")[0];
@@ -140,22 +156,6 @@ const TrainingList = () => {
       {/* Status */}
       <Badge variant="training" />
     </div>
-  );
-
-  const SectionLabel = ({ text, count }: { text: string; count: number }) => (
-    <p
-      style={{
-        fontSize: "0.78rem",
-        fontWeight: 600,
-        color: "#6b6b6b",
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        margin: "0 0 0.75rem",
-      }}
-    >
-      {text}
-      <span style={{ marginLeft: "0.5rem", fontWeight: 400 }}>({count})</span>
-    </p>
   );
 
   return (

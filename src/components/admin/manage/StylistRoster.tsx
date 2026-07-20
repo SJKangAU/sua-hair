@@ -132,7 +132,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
         }`,
       );
       refetchStylists();
-    } catch (err) {
+    } catch {
       onError("Failed to update status.");
     }
   };

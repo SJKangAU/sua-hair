@@ -8,7 +8,7 @@
 // Category is encoded by a small lucide icon derived from the serviceId prefix.
 // Rest period shows a live countdown when rendering for today's date.
 
-import { useState, useEffect } from "react";
+import { createElement, useState, useEffect } from "react";
 import {
   Scissors,
   Droplet,
@@ -148,7 +148,10 @@ const TimelineBlock = ({
     );
   }
 
-  const Icon = categoryIcon(booking.serviceId);
+  // Selected from the static CATEGORY_ICONS map — not defined during render.
+  // Rendered via createElement below because react-hooks/static-components
+  // can't distinguish selecting a stable component from creating one.
+  const icon = categoryIcon(booking.serviceId);
 
   return (
     <div
@@ -189,16 +192,15 @@ const TimelineBlock = ({
             minWidth: 0,
           }}
         >
-          {Icon && (
-            <Icon
-              size={11}
-              strokeWidth={2}
-              color={
-                isPending ? "var(--admin-faint)" : "rgba(255,255,255,0.75)"
-              }
-              style={{ flexShrink: 0 }}
-            />
-          )}
+          {icon &&
+            createElement(icon, {
+              size: 11,
+              strokeWidth: 2,
+              color: isPending
+                ? "var(--admin-faint)"
+                : "rgba(255,255,255,0.75)",
+              style: { flexShrink: 0 },
+            })}
           <p
             style={{
               margin: 0,

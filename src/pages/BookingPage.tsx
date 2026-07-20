@@ -9,7 +9,7 @@
 // the illusion that the form "floats" out of the dark section.
 
 import BookingForm from "../components/booking/BookingForm";
-import { SalonDataProvider } from "../context/SalonDataContext";
+import { SalonDataProvider } from "../context/SalonDataProvider";
 
 const BookingPage = () => {
   return (

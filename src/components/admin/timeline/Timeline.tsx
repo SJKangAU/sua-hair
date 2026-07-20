@@ -262,7 +262,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
             </div>
 
             {/* Current time indicator */}
-            <CurrentTimeBar gridHeight={GRID_HEIGHT} />
+            <CurrentTimeBar />
 
             {/* Stylist columns */}
             {stylists.map((stylist) => (

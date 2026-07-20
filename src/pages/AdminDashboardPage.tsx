@@ -3,16 +3,18 @@
 // All tab content lives in src/pages/admin/* for separation of concerns
 // Wrapped with BookingProvider, SalonDataProvider, and ToastProvider
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import useAuth from "../hooks/useAuth";
 import useAppUser from "../hooks/useAppUser";
-import { BookingProvider, useBookingContext } from "../context/BookingContext";
-import { SalonDataProvider } from "../context/SalonDataContext";
-import { ToastProvider, useToastContext } from "../context/ToastContext";
-import { NotificationProvider } from "../context/NotificationContext";
+import { useBookingContext } from "../context/BookingContext";
+import { BookingProvider } from "../context/BookingProvider";
+import { SalonDataProvider } from "../context/SalonDataProvider";
+import { useToastContext } from "../context/ToastContext";
+import { ToastProvider } from "../context/ToastProvider";
+import { NotificationProvider } from "../context/NotificationProvider";
 import NotificationBell from "../components/ui/NotificationBell";
 import Tabs from "../components/ui/Tabs";
 import TodayPage from "./admin/TodayPage";
@@ -57,14 +59,11 @@ const DashboardInner = () => {
     tab.id === "approvals" ? { ...tab, badgeCount: pendingCount } : tab,
   );
 
-  // Defense in depth: if the active tab becomes owner-only-restricted (e.g.
-  // the role resolves to "stylist" after an owner-only tab was selected),
-  // bounce back to a tab everyone can see.
-  useEffect(() => {
-    if (OWNER_ONLY_TAB_IDS.has(activeTab) && !isOwner) {
-      setActiveTab("today");
-    }
-  }, [activeTab, isOwner]);
+  // Defense in depth: if the selected tab is owner-only-restricted (e.g. the
+  // role resolves to "stylist" after an owner-only tab was selected), render
+  // a tab everyone can see instead — derived, not synced via an effect.
+  const effectiveTab =
+    OWNER_ONLY_TAB_IDS.has(activeTab) && !isOwner ? "today" : activeTab;
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -216,32 +215,32 @@ const DashboardInner = () => {
       </header>
 
       {/* Tab navigation */}
-      <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+      <Tabs tabs={tabs} activeTab={effectiveTab} onChange={setActiveTab} />
 
       {/* Active tab content */}
       <main
         style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}
       >
-        {activeTab === "today" && (
+        {effectiveTab === "today" && (
           <TodayPage onUpdateStatus={handleUpdateStatus} isOwner={isOwner} />
         )}
-        {activeTab === "approvals" && (
+        {effectiveTab === "approvals" && (
           <ApprovalsPage
             onUpdateStatus={handleUpdateStatus}
             onSetFlag={handleSetFlag}
           />
         )}
-        {activeTab === "bookings" && (
+        {effectiveTab === "bookings" && (
           <BookingsPage
             onUpdateStatus={handleUpdateStatus}
             onSetFlag={handleSetFlag}
             isOwner={isOwner}
           />
         )}
-        {activeTab === "clients" && <ClientsPage />}
-        {activeTab === "training" && <TrainingPage />}
-        {activeTab === "analytics" && isOwner && <AnalyticsPage />}
-        {activeTab === "manage" && <ManagePage />}
+        {effectiveTab === "clients" && <ClientsPage />}
+        {effectiveTab === "training" && <TrainingPage />}
+        {effectiveTab === "analytics" && isOwner && <AnalyticsPage />}
+        {effectiveTab === "manage" && <ManagePage />}
       </main>
     </div>
   );

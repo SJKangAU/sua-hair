@@ -28,7 +28,8 @@ export const parseLocalDate = (dateStr: string): Date => {
 export const parseBookingDateTime = (date: string, time: string): Date => {
   const base = parseLocalDate(date);
   const [rawTime, period] = time.split(" ");
-  let [hours, minutes] = rawTime.split(":").map(Number);
+  const [rawHours, minutes] = rawTime.split(":").map(Number);
+  let hours = rawHours;
   if (period === "PM" && hours !== 12) hours += 12;
   if (period === "AM" && hours === 12) hours = 0;
   base.setHours(hours, minutes, 0, 0);

@@ -16,45 +16,47 @@ interface Result {
 
 const useAppUser = (): Result => {
   const { user, loading: authLoading } = useAuth();
-  const [appUser, setAppUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Role snapshot keyed by the uid it was resolved for — appUser and loading
+  // are derived from it at render time, so the effect never writes state
+  // synchronously (react-hooks/set-state-in-effect) and a stale role can
+  // never be attributed to a newly signed-in user.
+  const [role, setRole] = useState<{
+    uid: string;
+    appUser: AppUser | null;
+  } | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || !user) return;
 
-    if (!user) {
-      setAppUser(null);
-      setLoading(false);
-      return;
-    }
-
-    const ref = doc(db, "users", user.uid);
+    const uid = user.uid;
+    const ref = doc(db, "users", uid);
     const unsub = onSnapshot(
       ref,
       (snap) => {
         if (snap.exists()) {
-          setAppUser({ uid: user.uid, ...snap.data() } as AppUser);
+          setRole({ uid, appUser: { uid, ...snap.data() } as AppUser });
         } else {
           // No role document — deny by default. A signed-in Firebase
           // account with no role doc must NOT be treated as an owner or
           // stylist; provision a `users/{uid}` doc (owner or stylist) to
           // grant access instead.
           console.warn(
-            `useAppUser: no role document for uid ${user.uid} — denying access`,
+            `useAppUser: no role document for uid ${uid} — denying access`,
           );
-          setAppUser(null);
+          setRole({ uid, appUser: null });
         }
-        setLoading(false);
       },
       (err) => {
         console.error("useAppUser:", err);
-        setAppUser(null);
-        setLoading(false);
+        setRole({ uid, appUser: null });
       },
     );
 
     return unsub;
   }, [user, authLoading]);
+
+  const appUser = user && role?.uid === user.uid ? role.appUser : null;
+  const loading = authLoading || (user != null && role?.uid !== user.uid);
 
   return { appUser, loading };
 };

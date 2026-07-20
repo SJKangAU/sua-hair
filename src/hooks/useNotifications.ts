@@ -30,11 +30,9 @@ const useNotifications = (recipientId: string | null): Result => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!recipientId) {
-      setNotifications([]);
-      setLoading(false);
-      return;
-    }
+    // No recipient → nothing to subscribe to. The empty/settled result is
+    // derived below instead of set here (react-hooks/set-state-in-effect).
+    if (!recipientId) return;
 
     // limit(30) — the bell UI only shows 30; without a limit this subscription
     // grows unbounded (2 notification docs are written per booking, forever)
@@ -62,12 +60,16 @@ const useNotifications = (recipientId: string | null): Result => {
     return unsub;
   }, [recipientId]);
 
+  // With no recipient, present an empty, settled list — derived at render
+  // time rather than written into state by the effect above.
+  const visible = recipientId ? notifications : [];
+
   const markRead = async (id: string) => {
     await updateDoc(doc(db, "notifications", id), { read: true });
   };
 
   const markAllRead = async () => {
-    const unread = notifications.filter((n) => !n.read);
+    const unread = visible.filter((n) => !n.read);
     if (unread.length === 0) return;
     const batch = writeBatch(db);
     unread.forEach((n) =>
@@ -76,9 +78,15 @@ const useNotifications = (recipientId: string | null): Result => {
     await batch.commit();
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = visible.filter((n) => !n.read).length;
 
-  return { notifications, unreadCount, loading, markRead, markAllRead };
+  return {
+    notifications: visible,
+    unreadCount,
+    loading: recipientId ? loading : false,
+    markRead,
+    markAllRead,
+  };
 };
 
 export default useNotifications;

@@ -70,14 +70,16 @@ const useServices = (activeOnly = true): UseServices => {
   const refetch = () => {
     try {
       sessionStorage.removeItem(CACHE_KEY);
-    } catch {}
+    } catch {
+      /* cache clear is best-effort — a refetch still runs */
+    }
     setTrigger((t) => t + 1);
   };
 
   useEffect(() => {
-    // Skip fetch if we have cached data and haven't been asked to refetch
+    // Skip fetch if we have cached data and haven't been asked to refetch.
+    // loading already initialised to false in this case (see useState above).
     if (initialData.length > 0 && trigger === 0) {
-      setLoading(false);
       return;
     }
 
@@ -110,7 +112,9 @@ const useServices = (activeOnly = true): UseServices => {
         // Cache for this browser session
         try {
           sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        } catch {}
+        } catch {
+          /* cache write is best-effort — state already holds the data */
+        }
       } catch (err) {
         console.error("Error fetching services:", err);
         setError("Failed to load services. Please refresh and try again.");

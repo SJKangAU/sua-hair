@@ -33,7 +33,7 @@ const AdminLoginPage = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/admin", { replace: true });
-    } catch (err) {
+    } catch {
       // Generic error message — don't reveal whether email or password is wrong
       setError("Invalid email or password. Please try again.");
     }

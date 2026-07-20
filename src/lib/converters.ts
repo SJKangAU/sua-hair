@@ -19,9 +19,11 @@ import type {
 import type { Booking } from "../types";
 
 export const bookingConverter: FirestoreDataConverter<Booking> = {
-  // Writes pass through untouched — creation sites build complete objects
+  // Writes pass through untouched — creation sites build complete objects.
+  // The doc ID lives on the reference, never as a field.
   toFirestore: (booking: Booking) => {
-    const { id: _id, ...data } = booking;
+    const data: Record<string, unknown> = { ...booking };
+    delete data.id;
     return data;
   },
 

@@ -8,13 +8,7 @@
 import { useState, useEffect } from "react";
 import { SALON_CONFIG } from "../../../lib/config";
 
-interface Props {
-  // Total height of the timeline grid in pixels
-  // Used to calculate the vertical position of the bar
-  gridHeight: number;
-}
-
-const CurrentTimeBar = ({ gridHeight: _gridHeight }: Props) => {
+const CurrentTimeBar = () => {
   const [now, setNow] = useState(new Date());
 
   // Update every minute

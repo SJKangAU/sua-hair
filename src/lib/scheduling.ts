@@ -32,7 +32,8 @@ export const getCurrentMinutes = (): number => {
 // Convert a time string like "10:30 AM" to minutes from midnight (e.g. 630)
 export const timeStringToMinutes = (time: string): number => {
   const [rawTime, period] = time.split(" ");
-  let [hours, minutes] = rawTime.split(":").map(Number);
+  const [rawHours, minutes] = rawTime.split(":").map(Number);
+  let hours = rawHours;
   if (period === "PM" && hours !== 12) hours += 12;
   if (period === "AM" && hours === 12) hours = 0;
   return hours * 60 + minutes;
