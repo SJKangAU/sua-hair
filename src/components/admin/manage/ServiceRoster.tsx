@@ -320,9 +320,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           </p>
 
           <div
+            className="admin-form-grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
               gap: "0 1rem",
             }}
           >
@@ -412,9 +411,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             Pricing by Stylist Level
           </p>
           <div
+            className="admin-form-grid-3"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
               gap: "0 1rem",
             }}
           >
@@ -502,8 +500,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               {submitting
                 ? "Saving..."
                 : editingId
-                ? "Save Changes"
-                : "Add Service"}
+                  ? "Save Changes"
+                  : "Add Service"}
             </button>
             <button
               onClick={handleCancel}

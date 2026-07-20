@@ -5,6 +5,27 @@
    Fonts: Bodoni Moda (display) + Inter (body/UI).
 */
 
+/* Admin form field grids (CreateBookingModal, TrainingForm, ServiceRoster):
+   2- and 3-column label/input layouts that collapse to a single column on
+   phone widths. Inline styles can't express media queries, so the column
+   count lives in these classes while dynamic gap/spacing stays inline.
+   Breakpoint mirrors MOBILE_BREAKPOINT in src/lib/breakpoints.ts (640px) —
+   keep both in sync if that value ever changes. */
+.admin-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.admin-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+@media (max-width: 640px) {
+  .admin-form-grid-2,
+  .admin-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 :root {
   /* Core palette */
   --ink: #161615;           /* primary text, near-black */

@@ -180,9 +180,8 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
       </h3>
 
       <div
+        className="admin-form-grid-2"
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
           gap: "0 1rem",
         }}
       >

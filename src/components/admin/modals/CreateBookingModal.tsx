@@ -169,8 +169,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -237,8 +237,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -368,9 +368,8 @@ const CreateBookingModal = ({
           </label>
 
           <div
+            className="admin-form-grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
               gap: "0.75rem",
             }}
           >
@@ -462,9 +461,8 @@ const CreateBookingModal = ({
           </label>
 
           <div
+            className="admin-form-grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
               gap: "0.75rem",
             }}
           >
