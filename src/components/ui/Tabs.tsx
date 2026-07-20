@@ -5,6 +5,7 @@
 import {
   Calendar,
   ClipboardList,
+  ClipboardCheck,
   Users,
   GraduationCap,
   BarChart3,
@@ -14,6 +15,7 @@ import {
 
 const TAB_ICONS: Record<string, LucideIcon> = {
   today: Calendar,
+  approvals: ClipboardCheck,
   bookings: ClipboardList,
   clients: Users,
   training: GraduationCap,
@@ -25,6 +27,7 @@ interface Tab {
   id: string;
   label: string;
   icon?: string; // kept for backward compat — ignored in favour of lucide lookup
+  badgeCount?: number; // e.g. pending-approval count — rendered as a small pill
 }
 
 interface Props {
@@ -88,6 +91,28 @@ const Tabs = ({ tabs, activeTab, onChange }: Props) => {
                 />
               )}
               {tab.label}
+              {!!tab.badgeCount && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: "18px",
+                    height: "18px",
+                    padding: "0 5px",
+                    borderRadius: "999px",
+                    background: active
+                      ? "var(--surface)"
+                      : "var(--admin-dimmer)",
+                    color: "var(--ink)",
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
+                >
+                  {tab.badgeCount}
+                </span>
+              )}
             </button>
           );
         })}

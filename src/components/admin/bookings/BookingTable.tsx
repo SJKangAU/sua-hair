@@ -11,12 +11,13 @@ import BookingCard from "./BookingCard";
 import SearchBar from "./SearchBar";
 import BulkActions from "./BulkActions";
 import type { Booking } from "../../../types";
-import type { Filters } from "../FilterBar";
+import { filterBookings, type Filters } from "../../../lib/bookingFilters";
 
 interface Props {
   bookings: Booking[];
   filters: Filters;
   onUpdate: (id: string, status: "pending" | "confirmed" | "cancelled") => void;
+  onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }
 
 // Convert bookings array to CSV string and trigger download
@@ -66,26 +67,12 @@ const exportToCSV = (bookings: Booking[]) => {
   URL.revokeObjectURL(url);
 };
 
-const BookingTable = ({ bookings, filters, onUpdate }: Props) => {
+const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Apply filters
-  const filtered = bookings.filter((b) => {
-    if (filters.stylistId && b.stylistId !== filters.stylistId) return false;
-    if (filters.date && b.date !== filters.date) return false;
-    if (filters.status && b.status !== filters.status) return false;
-    return true;
-  });
-
-  // Apply search — matches name or phone
-  const searched = searchQuery
-    ? filtered.filter(
-        (b) =>
-          b.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (b.customerPhone && b.customerPhone.includes(searchQuery)),
-      )
-    : filtered;
+  // Filters + search share the exact predicate BookingsPage uses for its count
+  const searched = filterBookings(bookings, filters, searchQuery);
 
   // Sort by date then time ascending
   const sorted = [...searched].sort((a, b) => {
@@ -226,6 +213,7 @@ const BookingTable = ({ bookings, filters, onUpdate }: Props) => {
           selected={selectedIds.has(booking.id)}
           onSelect={handleSelect}
           onUpdate={onUpdate}
+          onSetFlag={onSetFlag}
         />
       ))}
     </div>

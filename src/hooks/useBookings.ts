@@ -27,6 +27,7 @@ interface UseBookings {
     id: string,
     status: "pending" | "confirmed" | "cancelled",
   ) => Promise<void>;
+  setFlag: (id: string, flagged: boolean, reason?: string) => Promise<void>;
 }
 
 const useBookings = (): UseBookings => {
@@ -107,7 +108,43 @@ const useBookings = (): UseBookings => {
     [],
   ); // stable — no dependencies needed now that we use bookingsRef
 
-  return { bookings, loading, error, updateStatus };
+  // Flag/unflag a booking for owner review (walk-in oddities, discrepancies).
+  // Same optimistic-update-then-write-then-rollback pattern as updateStatus.
+  const setFlag = useCallback(
+    async (id: string, flagged: boolean, reason?: string) => {
+      const previous = bookingsRef.current.find((b) => b.id === id);
+      if (!previous) return;
+
+      const flagReason = flagged ? (reason ?? "").trim() : "";
+
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, flagged, flagReason } : b)),
+      );
+
+      try {
+        await updateDoc(doc(db, "bookings", id), { flagged, flagReason });
+      } catch (err) {
+        console.error("Error updating booking flag:", err);
+
+        setBookings((prev) =>
+          prev.map((b) =>
+            b.id === id
+              ? {
+                  ...b,
+                  flagged: previous.flagged,
+                  flagReason: previous.flagReason,
+                }
+              : b,
+          ),
+        );
+
+        throw err;
+      }
+    },
+    [],
+  );
+
+  return { bookings, loading, error, updateStatus, setFlag };
 };
 
 export default useBookings;

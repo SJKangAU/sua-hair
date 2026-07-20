@@ -111,6 +111,10 @@ export interface Booking {
   time: string;
   notes?: string;
   status: "pending" | "confirmed" | "cancelled";
+  // Owner-facing review flag — marks a booking (typically a walk-in or a
+  // data discrepancy) for follow-up. Independent of `status`.
+  flagged?: boolean;
+  flagReason?: string;
   bookingType: "customer" | "walkin" | "break" | "training";
   blockReason?: string;
   traineeId?: string;

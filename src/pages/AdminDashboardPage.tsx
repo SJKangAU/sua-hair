@@ -16,6 +16,7 @@ import { NotificationProvider } from "../context/NotificationContext";
 import NotificationBell from "../components/ui/NotificationBell";
 import Tabs from "../components/ui/Tabs";
 import TodayPage from "./admin/TodayPage";
+import ApprovalsPage from "./admin/ApprovalsPage";
 import BookingsPage from "./admin/BookingsPage";
 import ClientsPage from "./admin/ClientsPage";
 import TrainingPage from "./admin/TrainingPage";
@@ -24,6 +25,7 @@ import ManagePage from "./admin/ManagePage";
 
 const ALL_TABS = [
   { id: "today", label: "Today", icon: "📅" },
+  { id: "approvals", label: "Approvals", icon: "✅" },
   { id: "bookings", label: "Bookings", icon: "📋" },
   { id: "clients", label: "Clients", icon: "👥" },
   { id: "training", label: "Training", icon: "🎓" },
@@ -39,16 +41,21 @@ const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { appUser } = useAppUser();
-  const { updateStatus } = useBookingContext();
+  const { bookings, updateStatus, setFlag } = useBookingContext();
   const { addToast } = useToastContext();
   const [activeTab, setActiveTab] = useState("today");
 
   // Fail closed: until the role doc resolves, treat the user as non-owner so
   // finance data never flashes before the role is confirmed.
   const isOwner = appUser?.role === "owner";
-  const tabs = isOwner
-    ? ALL_TABS
-    : ALL_TABS.filter((tab) => !OWNER_ONLY_TAB_IDS.has(tab.id));
+  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+  const tabs = (
+    isOwner
+      ? ALL_TABS
+      : ALL_TABS.filter((tab) => !OWNER_ONLY_TAB_IDS.has(tab.id))
+  ).map((tab) =>
+    tab.id === "approvals" ? { ...tab, badgeCount: pendingCount } : tab,
+  );
 
   // Defense in depth: if the active tab becomes owner-only-restricted (e.g.
   // the role resolves to "stylist" after an owner-only tab was selected),
@@ -82,6 +89,23 @@ const DashboardInner = () => {
       );
     } catch {
       addToast("Failed to update booking. Please try again.", "error");
+    }
+  };
+
+  // Centralised flag/unflag with toast feedback — mirrors handleUpdateStatus
+  const handleSetFlag = async (
+    id: string,
+    flagged: boolean,
+    reason?: string,
+  ) => {
+    try {
+      await setFlag(id, flagged, reason);
+      addToast(
+        flagged ? "Booking flagged for follow-up" : "Flag cleared",
+        flagged ? "warning" : "success",
+      );
+    } catch {
+      addToast("Failed to update flag. Please try again.", "error");
     }
   };
 
@@ -199,10 +223,20 @@ const DashboardInner = () => {
         style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}
       >
         {activeTab === "today" && (
-          <TodayPage onUpdateStatus={handleUpdateStatus} />
+          <TodayPage onUpdateStatus={handleUpdateStatus} isOwner={isOwner} />
+        )}
+        {activeTab === "approvals" && (
+          <ApprovalsPage
+            onUpdateStatus={handleUpdateStatus}
+            onSetFlag={handleSetFlag}
+          />
         )}
         {activeTab === "bookings" && (
-          <BookingsPage onUpdateStatus={handleUpdateStatus} />
+          <BookingsPage
+            onUpdateStatus={handleUpdateStatus}
+            onSetFlag={handleSetFlag}
+            isOwner={isOwner}
+          />
         )}
         {activeTab === "clients" && <ClientsPage />}
         {activeTab === "training" && <TrainingPage />}

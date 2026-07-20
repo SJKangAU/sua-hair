@@ -26,9 +26,10 @@ interface Props {
     status: "pending" | "confirmed" | "cancelled",
   ) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
+  isOwner?: boolean;
 }
 
-const BookingsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
+const BookingsPage = ({ onUpdateStatus, onSetFlag, isOwner }: Props) => {
   const { bookings, loading, error } = useBookingContext();
   const { addToast } = useToastContext();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -41,7 +42,11 @@ const BookingsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Stats */}
-      {loading ? <StatsSkeleton /> : <DashboardStats bookings={bookings} />}
+      {loading ? (
+        <StatsSkeleton />
+      ) : (
+        <DashboardStats bookings={bookings} isOwner={isOwner} />
+      )}
 
       {/* Heading */}
       <div
