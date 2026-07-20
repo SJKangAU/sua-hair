@@ -22,10 +22,11 @@ const router = createBrowserRouter([
     element: <AdminLoginPage />,
   },
   {
-    // Admin dashboard — requires any authenticated user
+    // Admin dashboard — owner-only. A stylist account (or any account
+    // missing a role document) is redirected, never granted access.
     path: "/admin",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requiredRole="owner">
         <AdminDashboardPage />
       </ProtectedRoute>
     ),
