@@ -1,0 +1,65 @@
+# CI — typecheck, lint, unit tests, and emulator-backed Firestore rules tests.
+# Runs on every push and pull request so "committed but never ran" states
+# (missing installs, stale rules, lint regressions) get caught immediately.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc -b
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests (scheduling engine, date utils)
+        run: npm run test:unit
+
+  rules-tests:
+    name: Firestore rules tests (emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # firebase-tools v15+ requires Java 21 for the Firestore emulator
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Firestore emulator
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}
+
+      - name: Rules permission matrix
+        run: npm run test:rules
+
+      - name: Security / PII-leak tests
+        run: npm run test:security
