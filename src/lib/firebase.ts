@@ -50,7 +50,15 @@ const firebaseConfig = hasRealFirebaseConfig
 
 const app = initializeApp(firebaseConfig);
 
-export const db = initializeFirestore(app, {
+// `useFetchStreams` is an internal/experimental Firestore setting not part
+// of the public `FirestoreSettings` type, even though the SDK accepts it at
+// runtime (see firebase-js-sdk PrivateSettings). Extend the settings param
+// type locally instead of casting to `any` so this stays fully typed.
+type FirestoreDevSettings = Parameters<typeof initializeFirestore>[1] & {
+  useFetchStreams?: boolean;
+};
+
+const firestoreSettings: FirestoreDevSettings = {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
@@ -60,9 +68,18 @@ export const db = initializeFirestore(app, {
   // "AbortError: The user aborted a request." promise rejection. Forcing
   // long-polling (with a timeout under the proxy's ~30s ceiling) avoids
   // that transport entirely instead of just detecting and falling back to
-  // it after the fact.
+  // it after the fact. `useFetchStreams: false` additionally makes the
+  // long-polling transport itself use XMLHttpRequest instead of
+  // fetch()/ReadableStream — XHR aborts surface as a plain 'abort' event,
+  // not a rejected Promise, so the reconnect cycle no longer produces
+  // unhandled-rejection noise at all (rather than trying to catch/suppress
+  // a rejection after the SDK's own internal streaming code creates it,
+  // which can't be reliably intercepted from application code).
   experimentalForceLongPolling: true,
   experimentalLongPollingOptions: { timeoutSeconds: 25 },
-});
+  useFetchStreams: false,
+};
+
+export const db = initializeFirestore(app, firestoreSettings);
 
 export const auth = getAuth(app);
