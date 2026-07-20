@@ -1,547 +1,348 @@
-// BookingForm.tsx
-// ─────────────────────────────────────────────────────────────────────────────
-// 3-step booking orchestrator — B&W luxury redesign
-// ─────────────────────────────────────────────────────────────────────────────
-// Step 1  ServiceStep      — multi-select services
-// Step 2  StylistDateStep  — choose stylist, date and time (merged)
-// Step 3  DetailsStep      — customer phone, name, notes
-// Sheet   BookingSummarySheet — slide-up review before going to step 3
-// ─────────────────────────────────────────────────────────────────────────────
+// BookingConfirmation.tsx
+// Confirmation screen shown after a successful booking — B&W luxury theme
+//
+// Renders booking.services[] when present (new multi-service bookings) and
+// falls back to the legacy booking.serviceName field for older single-service
+// records and admin-created entries.
+//
+// Calendar export buttons:
+//   Google Calendar — opens a pre-filled URL in a new tab (getGoogleCalendarLink)
+//   Apple / Outlook — downloads an .ics file (downloadICSFile)
+// Both helpers live in lib/calendar.ts and accept the full Booking object.
 
-import { useState } from "react";
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  orderBy,
-} from "firebase/firestore";
-import { db } from "../../lib/firebase";
-import { bookingConverter } from "../../lib/converters";
-import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
-import { writeBookingNotifications } from "../../lib/notifications";
-import { computeReturnTime } from "../../lib/scheduling";
-import { useSalonData } from "../../context/SalonDataContext";
-import StepIndicator from "./StepIndicator";
-import ServiceStep from "./ServiceStep";
-import StylistDateStep from "./StylistDateStep";
-import DetailsStep from "./DetailsStep";
-import BookingSummarySheet from "./BookingSummarySheet";
-import BookingConfirmation from "./BookingConfirmation";
-import type { Booking, BookedService, CustomerProfile } from "../../types";
-import type { FirestoreService } from "../../hooks/useServices";
+import { getGoogleCalendarLink, downloadICSFile } from "../../lib/calendar";
+import { parseLocalDate } from "../../lib/dates";
+import type { Booking } from "../../types";
 
-const ANIM_CSS = `
-  @keyframes bkSlideFromRight {
-    from { transform: translateX(40px); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  @keyframes bkSlideFromLeft {
-    from { transform: translateX(-40px); opacity: 0; }
-    to   { transform: translateX(0);     opacity: 1; }
-  }
-  @keyframes bkFadeIn {
-    from { opacity: 0; transform: translateY(6px); }
+interface Props {
+  booking: Omit<Booking, "id">;
+  onReset: () => void;
+}
+
+const CONFIRM_CSS = `
+  @keyframes bkConfirmIn {
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Layout paddings live in classes (not inline) so they can shrink on
-     narrow phones — inline styles can't express breakpoints. */
-  .bk-step-pad { padding: 1.75rem 1.5rem 0.5rem; }
-  .bk-nav-bar  { padding: 1.25rem 1.5rem; }
-  @media (max-width: 420px) {
-    .bk-step-pad { padding: 1.5rem 1.125rem 0.5rem; }
-    .bk-nav-bar  { padding: 1rem 1.125rem; }
   }
 `;
 
-const PRIMARY_BTN: React.CSSProperties = {
-  padding: "0.75rem 1.75rem",
-  background: "#0a0a0a",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontSize: "0.875rem",
-  fontWeight: 600,
-  fontFamily: "var(--font-body)",
-  letterSpacing: "0.04em",
-  transition: "opacity 0.15s ease",
-};
-
-const DISABLED_BTN: React.CSSProperties = {
-  ...PRIMARY_BTN,
-  background: "#e8e8e8",
-  color: "#aaaaaa",
-  cursor: "not-allowed",
-};
-
-const BACK_BTN: React.CSSProperties = {
-  padding: "0.75rem 1.25rem",
-  background: "transparent",
-  border: "1.5px solid #e0e0e0",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontSize: "0.875rem",
-  color: "#555555",
-  fontFamily: "var(--font-body)",
-  transition: "border-color 0.15s ease, color 0.15s ease",
-};
-
-const BookingForm = () => {
-  const { stylists, services } = useSalonData();
-
-  // ── Step navigation ────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
-  const [showSummarySheet, setShowSummarySheet] = useState(false);
-
-  // ── Booking selections ─────────────────────────────────────────────────────
-  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
-  const [stylistId, setStylistId] = useState("any");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-
-  // ── Customer details ───────────────────────────────────────────────────────
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [lookingUp, setLookingUp] = useState(false);
-  const [customerProfile, setCustomerProfile] =
-    useState<CustomerProfile | null>(null);
-  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
-
-  // ── Submit state ───────────────────────────────────────────────────────────
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [confirmedBooking, setConfirmedBooking] = useState<Omit<
-    Booking,
-    "id"
-  > | null>(null);
-
-  // ── Derived values ─────────────────────────────────────────────────────────
-  const selectedServices: FirestoreService[] = services.filter((s) =>
-    selectedServiceIds.includes(s.id),
+const BookingConfirmation = ({ booking, onReset }: Props) => {
+  const formattedDate = parseLocalDate(booking.date).toLocaleDateString(
+    "en-AU",
+    { weekday: "long", day: "numeric", month: "long" },
   );
 
-  const totalTime = selectedServices.reduce((sum, s) => sum + s.totalTime, 0);
-  const totalActiveTime = selectedServices.reduce(
-    (sum, s) => sum + s.activeTime,
-    0,
-  );
+  const hasMultipleServices = booking.services && booking.services.length > 0;
 
-  const getPrice = (service: FirestoreService): number => {
-    if (stylistId === "any") {
-      return Math.min(
-        service.price.director,
-        service.price.senior,
-        service.price.junior,
-      );
-    }
-    const stylist = stylists.find((s) => s.id === stylistId);
-    return stylist ? service.price[stylist.level] : service.price.junior;
-  };
-
-  // Max tier price — used to show a min–max range when no stylist is chosen
-  const getMaxPrice = (service: FirestoreService): number =>
-    Math.max(
-      service.price.director,
-      service.price.senior,
-      service.price.junior,
-    );
-
-  // Display string per service: exact price for a chosen stylist,
-  // "$min – $max" range for "First Available" (any tier may take the booking)
-  const getPriceDisplay = (service: FirestoreService): string => {
-    const min = getPrice(service);
-    if (stylistId !== "any") return `$${min}`;
-    const max = getMaxPrice(service);
-    return min === max ? `$${min}` : `$${min} – $${max}`;
-  };
-
-  const estimatedTotal = selectedServices.reduce(
-    (sum, s) => sum + getPrice(s),
-    0,
-  );
-
-  const estimatedTotalMax = selectedServices.reduce(
-    (sum, s) => sum + (stylistId === "any" ? getMaxPrice(s) : getPrice(s)),
-    0,
-  );
-
-  const estimatedTotalDisplay =
-    stylistId === "any" && estimatedTotalMax !== estimatedTotal
-      ? `$${estimatedTotal} – $${estimatedTotalMax}`
-      : `$${estimatedTotal}`;
-
-  const stylist = stylists.find((s) => s.id === stylistId);
-  const stylistName =
-    stylistId === "any" ? "Any Available Stylist" : (stylist?.name ?? "");
-
-  const serviceHash = [...selectedServiceIds].sort().join(",");
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
-  const goTo = (newStep: number) => {
-    setDirection(newStep > step ? "forward" : "back");
-    setStep(newStep);
-  };
-
-  // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleServiceToggle = (id: string) => {
-    setSelectedServiceIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-    // Clear availability since total duration changes
-    setDate("");
-    setTime("");
-  };
-
-  const handleStylistSelect = (id: string) => {
-    setStylistId(id);
-    // useBookingAvailability clears date/time on stylistId change
-  };
-
-  const handlePhoneChange = async (value: string) => {
-    setCustomerPhone(value);
-    setErrors((prev) => ({ ...prev, phone: undefined }));
-    const cleaned = cleanPhone(value);
-    if (!validatePhone(value)) return;
-
-    setLookingUp(true);
-    try {
-      const q = query(
-        collection(db, "bookings").withConverter(bookingConverter),
-        where("customerPhone", "==", cleaned),
-        orderBy("createdAt", "desc"),
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        // Converter applies defaults — no unchecked spread-cast needed
-        const bookings = snap.docs.map((d) => d.data());
-        const recent = bookings[0];
-        setCustomerProfile({
-          name: recent.customerName,
-          phone: cleaned,
-          visitCount: bookings.length,
-          lastVisit: recent.date,
-        });
-        setCustomerName(recent.customerName);
-      } else {
-        setCustomerProfile(null);
-      }
-    } catch (err) {
-      console.error("Customer lookup error:", err);
-    }
-    setLookingUp(false);
-  };
-
-  // ── Submit ─────────────────────────────────────────────────────────────────
-  const handleSubmit = async () => {
-    const newErrors: { name?: string; phone?: string } = {};
-    if (!validatePhone(customerPhone))
-      newErrors.phone = "Please enter a valid Australian mobile number";
-    if (!validateName(customerName))
-      newErrors.name = "Please enter your full name";
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    const bookedServices: BookedService[] = selectedServices.map((s) => ({
-      id: s.id,
-      name: s.name,
-      price: getPrice(s),
-      activeTime: s.activeTime,
-      restTime: s.restTime,
-      totalTime: s.totalTime,
-    }));
-
-    const finalStylistName =
-      stylistId === "any" ? "Any available stylist" : (stylist?.name ?? "");
-    const finalStylistLevel =
-      stylistId === "any" ? "junior" : (stylist?.level ?? "junior");
-    const totalRestTime = totalTime - totalActiveTime;
-    const returnTime =
-      totalRestTime > 0 ? computeReturnTime(time, totalTime) : undefined;
-
-    setSubmitting(true);
-    setSubmitError(null);
-    try {
-      // Human-readable reference stored as a field — the doc ID itself is
-      // auto-generated by addDoc so two customers racing for the same slot
-      // can never silently overwrite each other's booking.
-      const safeDate = date.replace(/-/g, "");
-      const [tp, period] = time.split(" ");
-      const [h, m] = tp.split(":").map(Number);
-      const hour24 =
-        period === "PM" && h !== 12
-          ? h + 12
-          : period === "AM" && h === 12
-            ? 0
-            : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
-        2,
-        "0",
-      )}`;
-      const stylistSlug = stylistId === "any" ? "any" : stylistId;
-      const bookingRef = `BK-${safeDate}-${stylistSlug}-${hhmm}`;
-
-      const booking: Omit<Booking, "id"> = {
-        bookingType: "customer",
-        status: "pending",
-        bookingRef,
-        customerName: customerName.trim(),
-        customerNameLower: customerName.trim().toLowerCase(),
-        customerPhone: cleanPhone(customerPhone),
-        stylistId,
-        stylistName: finalStylistName,
-        stylistLevel: finalStylistLevel,
-        // Multi-service fields
-        services: bookedServices,
-        // Legacy single-service fields for admin backward compat
-        serviceId: bookedServices[0]?.id ?? "",
-        serviceName: bookedServices.map((s) => s.name).join(" + "),
-        servicePrice: estimatedTotal,
-        activeTime: totalActiveTime,
-        restTime: totalRestTime,
-        totalTime,
-        date,
-        time,
-        ...(notes.trim() ? { notes: notes.trim() } : {}),
-        ...(returnTime ? { returnTime } : {}),
-        createdAt: new Date().toISOString(),
-      };
-
-      const docRef = await addDoc(collection(db, "bookings"), booking);
-
-      // Fire-and-forget — don't block confirmation on notification write
-      writeBookingNotifications({
-        bookingId: docRef.id,
-        customerName: customerName.trim(),
-        stylistId,
-        stylistName: finalStylistName,
-        date,
-        time,
-        serviceName: booking.serviceName,
-      }).catch(console.error);
-
-      setConfirmedBooking(booking);
-      setConfirmed(true);
-    } catch (err) {
-      console.error("Booking submission error:", err);
-      setSubmitError(
-        "Something went wrong while confirming your booking. Please try again, or call us on (03) 9569 0840.",
-      );
-    }
-    setSubmitting(false);
-  };
-
-  // ── Reset ──────────────────────────────────────────────────────────────────
-  const resetForm = () => {
-    setSubmitError(null);
-    setConfirmed(false);
-    setConfirmedBooking(null);
-    setStep(1);
-    setDirection("forward");
-    setShowSummarySheet(false);
-    setSelectedServiceIds([]);
-    setStylistId("any");
-    setDate("");
-    setTime("");
-    setCustomerName("");
-    setCustomerPhone("");
-    setNotes("");
-    setCustomerProfile(null);
-    setErrors({});
-  };
-
-  // ── Confirmation screen ───────────────────────────────────────────────────
-  if (confirmed && confirmedBooking) {
-    return (
-      <BookingConfirmation booking={confirmedBooking} onReset={resetForm} />
-    );
-  }
-
-  // ── Step 3 submit button state ────────────────────────────────────────────
-  const canSubmit =
-    validatePhone(customerPhone) && validateName(customerName) && !submitting;
-
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ fontFamily: "var(--font-body)" }}>
-      <style>{ANIM_CSS}</style>
-
-      <StepIndicator currentStep={step} />
-
-      {/* Step content with slide animation */}
-      <div style={{ overflow: "hidden" }}>
-        <div
-          key={step}
-          className="bk-step-pad"
-          style={{
-            animation: `${
-              direction === "forward" ? "bkSlideFromRight" : "bkSlideFromLeft"
-            } 0.32s cubic-bezier(0.22, 1, 0.36, 1) both`,
-          }}
-        >
-          {step === 1 && (
-            <ServiceStep
-              selectedIds={selectedServiceIds}
-              onToggle={handleServiceToggle}
-              services={services}
-            />
-          )}
-
-          {step === 2 && (
-            <StylistDateStep
-              stylistId={stylistId}
-              date={date}
-              time={time}
-              totalTime={totalTime > 0 ? totalTime : 30}
-              totalActiveTime={totalActiveTime > 0 ? totalActiveTime : 30}
-              serviceHash={serviceHash}
-              onStylistSelect={handleStylistSelect}
-              onDateSelect={setDate}
-              onTimeSelect={setTime}
-            />
-          )}
-
-          {step === 3 && (
-            <DetailsStep
-              selectedServices={selectedServices.map((s) => ({
-                id: s.id,
-                name: s.name,
-                priceDisplay: getPriceDisplay(s),
-                totalTime: s.totalTime,
-              }))}
-              stylistName={stylistName}
-              date={date}
-              time={time}
-              totalTime={totalTime}
-              estimatedTotalDisplay={estimatedTotalDisplay}
-              customerName={customerName}
-              customerPhone={customerPhone}
-              notes={notes}
-              lookingUp={lookingUp}
-              customerProfile={customerProfile}
-              errors={errors}
-              onPhoneChange={handlePhoneChange}
-              onNameChange={(v) => {
-                setCustomerName(v);
-                setErrors((p) => ({ ...p, name: undefined }));
-              }}
-              onNotesChange={setNotes}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Navigation bar */}
+    <>
+      <style>{CONFIRM_CSS}</style>
       <div
-        className="bk-nav-bar"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderTop: "1px solid #e8e8e8",
-          marginTop: "0.5rem",
+          padding: "2.5rem 1.75rem",
+          fontFamily: "var(--font-body)",
+          textAlign: "center",
+          animation: "bkConfirmIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
         }}
       >
-        {/* Back button */}
-        {step > 1 ? (
-          <button
-            onClick={() => goTo(step - 1)}
-            style={BACK_BTN}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#0a0a0a";
-              e.currentTarget.style.color = "#0a0a0a";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#e0e0e0";
-              e.currentTarget.style.color = "#555555";
-            }}
-          >
-            ← Back
-          </button>
-        ) : (
-          <span />
-        )}
-
-        {/* Forward action */}
-        {step === 1 && (
-          <button
-            onClick={() => selectedServiceIds.length > 0 && goTo(2)}
-            disabled={selectedServiceIds.length === 0}
-            style={selectedServiceIds.length > 0 ? PRIMARY_BTN : DISABLED_BTN}
-          >
-            Continue
-          </button>
-        )}
-
-        {step === 2 && (
-          <button
-            onClick={() => date && time && setShowSummarySheet(true)}
-            disabled={!date || !time}
-            style={date && time ? PRIMARY_BTN : DISABLED_BTN}
-          >
-            Review Booking
-          </button>
-        )}
-
-        {step === 3 && (
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            style={canSubmit ? PRIMARY_BTN : DISABLED_BTN}
-          >
-            {submitting ? "Confirming..." : "Confirm Booking"}
-          </button>
-        )}
-      </div>
-
-      {/* Submit failure — inline error (the client flow has no toast provider) */}
-      {submitError && step === 3 && (
+        {/* Check circle */}
         <div
           style={{
-            margin: "0 1.5rem 1.25rem",
-            padding: "0.75rem 1rem",
-            border: `1.5px solid var(--error)`,
-            borderRadius: "8px",
-            background: "var(--error-bg)",
-            color: "var(--error)",
-            fontSize: "0.82rem",
-            lineHeight: 1.5,
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "#0a0a0a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 1.25rem",
           }}
         >
-          {submitError}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M4 12l5 5 11-11"
+              stroke="#ffffff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
-      )}
 
-      {/* Booking summary sheet */}
-      {showSummarySheet && (
-        <BookingSummarySheet
-          services={selectedServices.map((s) => ({
-            id: s.id,
-            name: s.name,
-            priceDisplay: getPriceDisplay(s),
-            totalTime: s.totalTime,
-          }))}
-          stylistName={stylistName}
-          date={date}
-          time={time}
-          estimatedTotalDisplay={estimatedTotalDisplay}
-          totalTime={totalTime}
-          onConfirm={() => {
-            setShowSummarySheet(false);
-            goTo(3);
+        <h2
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(1.65rem, 6.5vw, 2.1rem)",
+            fontWeight: 300,
+            color: "var(--ink)",
+            letterSpacing: "-0.01em",
+            margin: "0 0 0.5rem",
+            lineHeight: 1.15,
           }}
-          onClose={() => setShowSummarySheet(false)}
-        />
-      )}
-    </div>
+        >
+          We can't wait to see you, {booking.customerName.split(" ")[0]}.
+        </h2>
+        <p
+          style={{
+            fontSize: "0.82rem",
+            color: "var(--grey-muted)",
+            marginBottom: "2rem",
+          }}
+        >
+          Your booking is confirmed — details below.
+        </p>
+
+        {/* Booking details */}
+        <div
+          style={{
+            background: "var(--paper)",
+            borderRadius: "10px",
+            padding: "1.25rem",
+            marginBottom: "1.75rem",
+            textAlign: "left",
+            border: `1px solid var(--border)`,
+          }}
+        >
+          {/* Stylist row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.875rem",
+              padding: "0.4rem 0",
+              borderBottom: `1px solid var(--border)`,
+            }}
+          >
+            <span style={{ color: "var(--ink-soft)" }}>Stylist</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
+              {booking.stylistName}
+            </span>
+          </div>
+
+          {/* Services rows */}
+          {hasMultipleServices ? (
+            booking.services!.map((s, i) => (
+              <div
+                key={s.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.875rem",
+                  padding: "0.4rem 0",
+                  borderBottom: `1px solid var(--border)`,
+                }}
+              >
+                <span style={{ color: "var(--ink-soft)" }}>
+                  {i === 0 ? "Service" : ""}
+                </span>
+                <span style={{ fontWeight: 500, color: "var(--ink)" }}>
+                  {s.name}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "0.875rem",
+                padding: "0.4rem 0",
+                borderBottom: `1px solid var(--border)`,
+              }}
+            >
+              <span style={{ color: "var(--ink-soft)" }}>Service</span>
+              <span style={{ fontWeight: 500, color: "var(--ink)" }}>
+                {booking.serviceName}
+              </span>
+            </div>
+          )}
+
+          {/* Date */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.875rem",
+              padding: "0.4rem 0",
+              borderBottom: `1px solid var(--border)`,
+            }}
+          >
+            <span style={{ color: "var(--ink-soft)" }}>Date</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
+              {formattedDate}
+            </span>
+          </div>
+
+          {/* Time */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.875rem",
+              padding: "0.4rem 0",
+              borderBottom: `1px solid var(--border)`,
+            }}
+          >
+            <span style={{ color: "var(--ink-soft)" }}>Time</span>
+            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
+              {booking.time}
+            </span>
+          </div>
+
+          {/* Total */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.875rem",
+              padding: "0.5rem 0 0",
+            }}
+          >
+            <span style={{ color: "var(--ink-soft)" }}>Estimated Total</span>
+            <span style={{ fontWeight: 700, color: "var(--ink)" }}>
+              {booking.stylistId === "any"
+                ? `from $${booking.servicePrice}`
+                : `$${booking.servicePrice}`}
+            </span>
+          </div>
+
+          {booking.restTime > 0 && (
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--grey-muted)",
+                marginTop: "0.75rem",
+                marginBottom: 0,
+              }}
+            >
+              {booking.activeTime} min active + {booking.restTime} min setting
+              time
+              {booking.returnTime && (
+                <>
+                  {" — "}
+                  <strong style={{ color: "var(--ink)" }}>
+                    back with you by {booking.returnTime}
+                  </strong>
+                </>
+              )}
+            </p>
+          )}
+        </div>
+
+        {/* Calendar buttons */}
+        <p
+          style={{
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--grey-muted)",
+            marginBottom: "0.75rem",
+          }}
+        >
+          Add to calendar
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+            justifyContent: "center",
+            marginBottom: "1.75rem",
+          }}
+        >
+          <a
+            href={getGoogleCalendarLink(booking)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: "0.65rem 1.25rem",
+              background: "#ffffff",
+              border: `1.5px solid var(--border)`,
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontSize: "0.82rem",
+              color: "var(--ink)",
+              fontFamily: "var(--font-body)",
+              fontWeight: 500,
+              transition: "border-color 0.15s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "var(--ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "var(--border)")
+            }
+          >
+            Google Calendar
+          </a>
+          <button
+            onClick={() => downloadICSFile(booking)}
+            style={{
+              padding: "0.65rem 1.25rem",
+              background: "#ffffff",
+              border: `1.5px solid var(--border)`,
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "0.82rem",
+              color: "var(--ink)",
+              fontFamily: "var(--font-body)",
+              fontWeight: 500,
+              transition: "border-color 0.15s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "var(--ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "var(--border)")
+            }
+          >
+            Apple / Outlook
+          </button>
+        </div>
+
+        {/* Contact note */}
+        <p
+          style={{
+            fontSize: "0.82rem",
+            color: "var(--grey-muted)",
+            marginBottom: "1.75rem",
+          }}
+        >
+          Need to make changes? Call us on{" "}
+          <a
+            href="tel:0395690840"
+            style={{
+              color: "var(--ink)",
+              fontWeight: 500,
+              textDecoration: "none",
+            }}
+          >
+            (03) 9569 0840
+          </a>
+        </p>
+
+        {/* Book again */}
+        <button
+          onClick={onReset}
+          style={{
+            padding: "0.75rem 2.5rem",
+            background: "#0a0a0a",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            fontFamily: "var(--font-body)",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Make another booking
+        </button>
+      </div>
+    </>
   );
 };
 
-export default BookingForm;
+export default BookingConfirmation;

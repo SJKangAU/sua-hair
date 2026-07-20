@@ -175,8 +175,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-            ? 0
-            : h;
+          ? 0
+          : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -243,8 +243,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-            ? 0
-            : h;
+          ? 0
+          : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",

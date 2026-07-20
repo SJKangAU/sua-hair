@@ -96,16 +96,16 @@ const BookingCard = ({
           background: selected
             ? "#fdf6ec"
             : booking.flagged
-              ? "#fff5f4"
-              : "white",
+            ? "#fff5f4"
+            : "white",
           borderRadius: "10px",
           padding: "1rem 1.25rem",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           border: selected
             ? "1.5px solid var(--ink)"
             : booking.flagged
-              ? "1.5px solid #d9534f"
-              : "1px solid transparent",
+            ? "1.5px solid #d9534f"
+            : "1px solid transparent",
           transition: "all 0.1s",
         }}
       >

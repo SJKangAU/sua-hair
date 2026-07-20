@@ -296,8 +296,8 @@ const TimelineBlock = ({
             {restSecondsLeft !== null
               ? formatCountdown(restSecondsLeft)
               : booking.returnTime
-                ? `Back ${booking.returnTime}`
-                : "Return"}
+              ? `Back ${booking.returnTime}`
+              : "Return"}
           </p>
         </div>
       )}
