@@ -6,9 +6,10 @@
 // Saved outside trading hours — no slot conflict checking needed
 
 import { useState } from "react";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
+import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -141,7 +142,10 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
       const docId = `${form.date}_training_${selectedTrainee.name
         .replace(/\s+/g, "-")
         .toLowerCase()}_${timestamp}`;
-      await setDoc(doc(collection(db, "bookings"), docId), booking);
+      const batch = writeBatch(db);
+      batch.set(doc(collection(db, "bookings"), docId), booking);
+      queueSlotBlockCreate(batch, docId, booking);
+      await batch.commit();
 
       onSuccess(
         `Training session created — ${selectedTrainer.name} → ${selectedTrainee.name}: ${effectiveTopic}`,

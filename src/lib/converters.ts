@@ -46,6 +46,7 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       activeTime: d.activeTime ?? 0,
       restTime: d.restTime ?? 0,
       totalTime: d.totalTime ?? d.activeTime ?? 0,
+      returnTime: d.returnTime,
       date: d.date ?? "",
       time: d.time ?? "",
       notes: d.notes ?? "",

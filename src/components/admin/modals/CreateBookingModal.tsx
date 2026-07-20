@@ -6,10 +6,12 @@
 // Saves to Firestore with appropriate bookingType
 
 import { useState } from "react";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, doc, writeBatch, increment } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
+import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
+import { cleanPhone } from "../../../lib/validation";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
@@ -182,7 +184,24 @@ const CreateBookingModal = ({
         "0",
       )}`;
       const docId = `WI-${safeDate}-${stylist.id}-${hhmm}`;
-      await setDoc(doc(collection(db, "bookings"), docId), booking);
+      const batch = writeBatch(db);
+      batch.set(doc(collection(db, "bookings"), docId), booking);
+      queueSlotBlockCreate(batch, docId, booking);
+      if (booking.customerPhone.trim()) {
+        // Keep the "returning customer" greeting lookup in sync with
+        // walk-ins too, matching the phone recognition customers get on the
+        // public booking page — see firestore.rules `customerLookups`.
+        batch.set(
+          doc(db, "customerLookups", cleanPhone(booking.customerPhone)),
+          {
+            name: booking.customerName,
+            lastVisit: booking.date,
+            visitCount: increment(1),
+          },
+          { merge: true },
+        );
+      }
+      await batch.commit();
 
       writeBookingNotifications({
         bookingId: docId,
@@ -250,7 +269,10 @@ const CreateBookingModal = ({
         "0",
       )}`;
       const docId = `BR-${safeDate}-${stylist.id}-${hhmm}`;
-      await setDoc(doc(collection(db, "bookings"), docId), booking);
+      const batch = writeBatch(db);
+      batch.set(doc(collection(db, "bookings"), docId), booking);
+      queueSlotBlockCreate(batch, docId, booking);
+      await batch.commit();
 
       onSuccess(
         `Break blocked for ${stylist.name} at ${breakForm.time} (${breakForm.duration} min)`,

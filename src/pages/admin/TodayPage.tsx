@@ -3,6 +3,7 @@
 // Phase 11: adds active multi-phase treatment summary panel and live countdown trigger
 
 import { useState } from "react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useBookingContext } from "../../context/BookingContext";
 import { useToastContext } from "../../context/ToastContext";
 import Timeline from "../../components/admin/timeline/Timeline";
@@ -31,7 +32,7 @@ const formatMinutes = (totalSeconds: number): string => {
 };
 
 const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
-  const { bookings, loading } = useBookingContext();
+  const { bookings, loading, updateTimes } = useBookingContext();
   const { addToast } = useToastContext();
 
   const [selectedDate, setSelectedDate] = useState(todayString);
@@ -59,77 +60,125 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
           gap: "0.75rem",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "10px",
+            padding: "0.4rem 0.5rem",
+          }}
+        >
           <button
             onClick={() => setSelectedDate((d) => addDays(d, -1))}
+            aria-label="Previous day"
             style={{
-              padding: "0.4rem 0.75rem",
-              background: "var(--ink)",
-              color: "var(--surface)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "32px",
+              height: "32px",
+              background: "none",
+              color: "var(--ink)",
               border: "none",
-              borderRadius: "6px",
+              borderRadius: "7px",
               cursor: "pointer",
-              fontSize: "0.9rem",
             }}
           >
-            ← Prev
+            <ChevronLeft size={17} strokeWidth={2} />
           </button>
+
           <h2
             style={{
               margin: 0,
+              padding: "0 0.35rem",
               fontSize: "1rem",
-              fontWeight: 500,
+              fontWeight: 600,
               color: "var(--ink)",
               whiteSpace: "nowrap",
+              fontFamily: "var(--font-body)",
             }}
           >
             {formatDisplayDate(selectedDate)}
           </h2>
+
           <button
             onClick={() => setSelectedDate((d) => addDays(d, 1))}
+            aria-label="Next day"
             style={{
-              padding: "0.4rem 0.75rem",
-              background: "var(--ink)",
-              color: "var(--surface)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "32px",
+              height: "32px",
+              background: "none",
+              color: "var(--ink)",
               border: "none",
-              borderRadius: "6px",
+              borderRadius: "7px",
               cursor: "pointer",
-              fontSize: "0.9rem",
             }}
           >
-            Next →
+            <ChevronRight size={17} strokeWidth={2} />
           </button>
+
+          <div
+            style={{
+              width: "1px",
+              height: "20px",
+              background: "var(--border)",
+              margin: "0 0.15rem",
+            }}
+          />
+
           {!isToday && (
             <button
               onClick={() => setSelectedDate(todayString())}
               style={{
-                padding: "0.4rem 0.75rem",
-                background: "var(--ink-soft)",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
+                padding: "0.35rem 0.65rem",
+                background: "none",
+                color: "var(--ink)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "7px",
                 cursor: "pointer",
-                fontSize: "0.85rem",
+                fontSize: "0.8rem",
+                fontWeight: 500,
               }}
             >
               Today
             </button>
           )}
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+
+          <label
             style={{
-              padding: "0.4rem 0.75rem",
-              background: "var(--ink)",
-              color: "var(--surface)",
-              border: "none",
-              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.35rem",
+              padding: "0.35rem 0.55rem",
+              background: "var(--paper)",
+              border: "1px solid var(--border)",
+              borderRadius: "7px",
               cursor: "pointer",
-              fontSize: "0.85rem",
-              colorScheme: "dark",
             }}
-          />
+          >
+            <CalendarDays size={15} strokeWidth={2} color="var(--grey-muted)" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) =>
+                e.target.value && setSelectedDate(e.target.value)
+              }
+              style={{
+                background: "none",
+                color: "var(--ink)",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.82rem",
+                colorScheme: "light",
+              }}
+            />
+          </label>
         </div>
 
         <button
@@ -263,6 +312,8 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
             await onUpdateStatus(id, status);
             setSelectedBooking(null);
           }}
+          allBookings={bookings}
+          onUpdateTimes={updateTimes}
         />
       )}
 

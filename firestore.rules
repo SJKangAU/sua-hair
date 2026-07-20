@@ -1,0 +1,158 @@
+// Firestore Security Rules
+//
+// This is the authoritative fix for the "public availability queries return
+// full booking PII" finding. Firestore Rules cannot redact individual
+// fields from an authorized read — a rule can only authorize or deny a
+// whole document/query. That means restricting client code alone is not
+// enough: anyone with the project's public Firebase Web config can replay
+// any query the rules permit, directly against the SDK, regardless of what
+// the app's own UI sends. Locking down `bookings` here is what actually
+// closes the hole; see src/lib/slotBlocks.ts and src/hooks/useBookingAvailability.ts
+// for the matching app-side change (the public calendar now reads a
+// PII-free `slotBlocks` projection instead of `bookings`).
+//
+// Deploy with: firebase deploy --only firestore:rules
+// (requires `firebase use <project-id>` once, using the Firebase project
+// backing this app's VITE_FIREBASE_PROJECT_ID).
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Any signed-in account in this app is a staff account (owner or
+    // stylist) — customers never authenticate. See src/hooks/useAppUser.ts.
+    function isStaff() {
+      return request.auth != null;
+    }
+
+    // ── bookings ────────────────────────────────────────────────────────
+    // Full booking records, including customer PII (name, phone, notes).
+    // Reads/list/updates/deletes require a staff account. Anonymous
+    // customers may only *create* their own pending booking — never read
+    // any booking back, including the one they just created — and the
+    // shape is validated so a public write can't masquerade as an
+    // admin-only booking type or arrive pre-confirmed.
+    match /bookings/{bookingId} {
+      allow read, list, update, delete: if isStaff();
+
+      allow create: if isStaff() || isValidPublicBooking();
+
+      function isValidPublicBooking() {
+        let b = request.resource.data;
+        return b.bookingType == 'customer'
+          && b.status == 'pending'
+          && b.customerName is string && b.customerName.size() > 0
+          && b.customerPhone is string && b.customerPhone.size() > 0
+          && b.stylistId is string
+          && b.date is string
+          && b.time is string
+          && b.activeTime is number
+          && b.totalTime is number
+          && b.restTime is number;
+      }
+    }
+
+    // ── slotBlocks ──────────────────────────────────────────────────────
+    // PII-free projection of `bookings` (stylistId/date/time/activeTime/
+    // totalTime/restTime/status only) used solely to compute public
+    // availability. Safe to read publicly — it never carries a customer
+    // name, phone number, or note. Writes are staff-only except the
+    // paired create a public customer booking performs alongside its
+    // `bookings` write (see src/lib/slotBlocks.ts).
+    match /slotBlocks/{bookingId} {
+      allow read, list: if true;
+      allow update, delete: if isStaff();
+
+      allow create: if isStaff() || isValidPublicSlotBlock();
+
+      function isValidPublicSlotBlock() {
+        let s = request.resource.data;
+        return s.keys().hasOnly(
+            ['stylistId', 'date', 'time', 'activeTime', 'totalTime', 'restTime', 'status']
+          )
+          && s.status == 'pending'
+          && s.stylistId is string
+          && s.date is string
+          && s.time is string
+          && s.activeTime is number
+          && s.totalTime is number
+          && s.restTime is number;
+      }
+    }
+
+    // ── Reference data used by the public booking flow ─────────────────
+    // Publicly readable so the calendar can show stylists/services/hours;
+    // writes are staff-only (Manage → Stylists/Services/Hours screens).
+    match /stylists/{stylistId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /salonSettings/{settingsId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ── notifications ───────────────────────────────────────────────────
+    // Never read by anonymous clients (only the staff notification bell
+    // reads this collection), but the public booking flow and admin
+    // booking flows both create notification records for staff to see.
+    match /notifications/{notificationId} {
+      allow read, delete: if isStaff();
+      allow update: if isStaff();
+      allow create: if true;
+    }
+
+    // ── waitlist ─────────────────────────────────────────────────────────
+    // Same shape as notifications: customers submit entries anonymously
+    // through the public waitlist form, but only staff ever list/read them
+    // back.
+    match /waitlist/{waitlistId} {
+      allow read, update, delete: if isStaff();
+      allow create: if true;
+    }
+
+    // ── customerLookups ─────────────────────────────────────────────────
+    // "Returning customer" greeting lookup, keyed by cleaned phone number
+    // (the document ID *is* the phone number). Deliberately NOT the
+    // `bookings` collection: a `get` by document ID is evaluated against
+    // the actual document's data, not a query's potential result set, so
+    // an anonymous customer who already knows their own phone number can
+    // fetch only that one record — never list or scan the collection.
+    // Written on booking creation by both the public form and admin
+    // walk-in flow (see src/components/booking/BookingForm.tsx and
+    // src/components/admin/modals/CreateBookingModal.tsx).
+    match /customerLookups/{phone} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow delete: if isStaff();
+
+      allow create, update: if isStaff() || isValidLookupWrite();
+
+      function isValidLookupWrite() {
+        let l = request.resource.data;
+        return l.keys().hasOnly(['name', 'lastVisit', 'visitCount'])
+          && l.name is string && l.name.size() > 0
+          && l.lastVisit is string
+          && l.visitCount is number;
+      }
+    }
+
+    // ── users ────────────────────────────────────────────────────────────
+    // Role documents (owner/stylist). Provisioned out-of-band (Firebase
+    // console/admin SDK) — the app never writes this collection. A signed
+    // in user may only read their own role document.
+    match /users/{userId} {
+      allow read: if isStaff() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // Deny everything else by default.
+  }
+}

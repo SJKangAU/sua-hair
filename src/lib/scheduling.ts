@@ -13,6 +13,7 @@ import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
 import type {
   Booking,
+  SlotBlock,
   TimeBlock,
   SalonSettings,
   StylistWeeklyHours,
@@ -130,11 +131,32 @@ export const computeReturnTime = (
 ): string =>
   minutesToTimeString(timeStringToMinutes(startTime) + totalTimeMinutes);
 
+// Check whether overriding a single existing booking's active/rest time
+// (a per-session quick-edit, distinct from editing the Service template in
+// Manage → Services) would overlap another booking for the same stylist on
+// the same date. The booking being resized is excluded from its own
+// conflict check.
+export const canResizeBooking = (
+  booking: Booking,
+  newActiveTime: number,
+  newTotalTime: number,
+  allBookings: SlotBlock[],
+): boolean => {
+  const startMinutes = timeStringToMinutes(booking.time);
+  const otherBookings = allBookings.filter((b) => b.id !== booking.id);
+  const timeBlocks = buildTimeBlocks(
+    otherBookings,
+    booking.stylistId,
+    booking.date,
+  );
+  return isSlotAvailable(startMinutes, newTotalTime, newActiveTime, timeBlocks);
+};
+
 // ── Time Block Builder ─────────────────────────────────────────────────────────
 
 // Convert existing bookings into TimeBlock objects for a specific stylist and date
 export const buildTimeBlocks = (
-  bookings: Booking[],
+  bookings: SlotBlock[],
   stylistId: string,
   date: string,
 ): TimeBlock[] => {
@@ -205,7 +227,7 @@ export const generateSlots = (
   stylistId: string,
   serviceTotalTime: number,
   serviceActiveTime: number,
-  existingBookings: Booking[],
+  existingBookings: SlotBlock[],
   settings?: SalonSettings,
   stylistHours?: StylistWeeklyHours,
 ): { time: string; available: boolean; reason?: string }[] => {

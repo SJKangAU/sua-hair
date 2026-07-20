@@ -26,7 +26,7 @@ import {
   getDaysInMonth,
 } from "../lib/dates";
 import { useSalonData } from "../context/SalonDataContext";
-import type { Booking } from "../types";
+import type { SlotBlock } from "../types";
 
 export interface Slot {
   time: string;
@@ -142,14 +142,18 @@ const useBookingAvailability = ({
 
     (async () => {
       try {
+        // Read from the PII-free `slotBlocks` projection, not `bookings` —
+        // this collection never contains customerName/customerPhone/notes,
+        // so a public availability query can't leak booking PII even if the
+        // Firestore query itself is replayed directly by a third party.
         const snap = await getDocs(
-          query(collection(db, "bookings"), where("date", "==", date)),
+          query(collection(db, "slotBlocks"), where("date", "==", date)),
         );
         if (cancelled) return;
 
         const settings = salonSettingsRef.current;
         const bookings = snap.docs.map(
-          (d) => ({ id: d.id, ...d.data() } as Booking),
+          (d) => ({ id: d.id, ...d.data() } as SlotBlock),
         );
         const availMap: Record<string, boolean> = {};
         ids.forEach((id) => {
@@ -223,16 +227,18 @@ const useBookingAvailability = ({
 
     (async () => {
       try {
+        // See note above — availability reads only ever hit the PII-free
+        // `slotBlocks` projection collection.
         const snap = await getDocs(
           query(
-            collection(db, "bookings"),
+            collection(db, "slotBlocks"),
             where("date", ">=", monthStart),
             where("date", "<=", monthEnd),
           ),
         );
         if (cancelled) return;
         const bookings = snap.docs.map(
-          (d) => ({ id: d.id, ...d.data() } as Booking),
+          (d) => ({ id: d.id, ...d.data() } as SlotBlock),
         );
         const available = new Set<string>();
         futureDays.forEach((day) => {
@@ -253,7 +259,8 @@ const useBookingAvailability = ({
         });
         setAvailableDays(available);
       } catch (err) {
-        if (!cancelled) console.error("Error fetching month availability:", err);
+        if (!cancelled)
+          console.error("Error fetching month availability:", err);
       }
     })();
 
@@ -304,16 +311,18 @@ const useBookingAvailability = ({
     const windowStart = getMinBookableDate();
     const windowEnd = addDays(windowStart, 13); // 14 days inclusive
 
-    let bookings: Booking[] = [];
+    let bookings: SlotBlock[] = [];
     try {
+      // See note above — availability reads only ever hit the PII-free
+      // `slotBlocks` projection collection.
       const snap = await getDocs(
         query(
-          collection(db, "bookings"),
+          collection(db, "slotBlocks"),
           where("date", ">=", windowStart),
           where("date", "<=", windowEnd),
         ),
       );
-      bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking));
+      bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as SlotBlock));
     } catch (err) {
       console.error("findNextAvailable range fetch:", err);
       return;

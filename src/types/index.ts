@@ -129,6 +129,26 @@ export interface Booking {
   createdAt: string;
 }
 
+// Minimal, PII-free projection of a Booking used to compute public
+// availability. Firestore Security Rules cannot redact individual fields
+// from an authorized document read (see firestore.rules), so the public
+// booking calendar reads exclusively from the `slotBlocks` collection —
+// which never contains customerName/customerPhone/notes — instead of the
+// full `bookings` collection, which requires staff auth to read. Kept in
+// sync with `bookings` on every create/status/time-edit write; see
+// src/lib/slotBlocks.ts.
+export type SlotBlock = Pick<
+  Booking,
+  | "id"
+  | "stylistId"
+  | "date"
+  | "time"
+  | "activeTime"
+  | "totalTime"
+  | "restTime"
+  | "status"
+>;
+
 export interface CustomerProfile {
   name: string;
   phone: string;

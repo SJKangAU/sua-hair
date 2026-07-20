@@ -13,10 +13,13 @@ import {
   where,
   doc,
   updateDoc,
+  writeBatch,
+  deleteField,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { todayString, addDays } from "../lib/dates";
 import { bookingConverter } from "../lib/converters";
+import { computeReturnTime } from "../lib/scheduling";
 import type { Booking } from "../types";
 
 interface UseBookings {
@@ -28,6 +31,15 @@ interface UseBookings {
     status: "pending" | "confirmed" | "cancelled",
   ) => Promise<void>;
   setFlag: (id: string, flagged: boolean, reason?: string) => Promise<void>;
+  // Per-session override of a single booking's active/rest time split —
+  // distinct from editing the Service template in Manage → Services, which
+  // only affects future bookings. Recomputes totalTime and the locked-in
+  // returnTime, then persists just this booking's record.
+  updateTimes: (
+    id: string,
+    activeTime: number,
+    restTime: number,
+  ) => Promise<void>;
 }
 
 const useBookings = (): UseBookings => {
@@ -90,8 +102,14 @@ const useBookings = (): UseBookings => {
       );
 
       try {
-        // Write to Firestore in the background
-        await updateDoc(doc(db, "bookings", id), { status });
+        // slotBlocks/{id} is the PII-free projection the public
+        // availability calendar reads from — keep its status in sync so a
+        // cancelled/confirmed booking's slot correctly frees up or stays
+        // blocked. Batched so both writes succeed or fail together.
+        const batch = writeBatch(db);
+        batch.update(doc(db, "bookings", id), { status });
+        batch.update(doc(db, "slotBlocks", id), { status });
+        await batch.commit();
       } catch (err) {
         console.error("Error updating booking status:", err);
 
@@ -144,7 +162,67 @@ const useBookings = (): UseBookings => {
     [],
   );
 
-  return { bookings, loading, error, updateStatus, setFlag };
+  // Per-session time override — same optimistic-update-then-write-then-
+  // rollback pattern as updateStatus/setFlag. Recomputes totalTime and the
+  // locked returnTime from the new split so the timeline, booking cards, and
+  // confirmation views stay consistent with the override immediately.
+  const updateTimes = useCallback(
+    async (id: string, activeTime: number, restTime: number) => {
+      const previous = bookingsRef.current.find((b) => b.id === id);
+      if (!previous) return;
+
+      const totalTime = activeTime + restTime;
+      const returnTime =
+        restTime > 0 ? computeReturnTime(previous.time, totalTime) : undefined;
+
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === id
+            ? { ...b, activeTime, restTime, totalTime, returnTime }
+            : b,
+        ),
+      );
+
+      try {
+        // Keep the slotBlocks projection's schedule fields in sync —
+        // batched with the bookings write so they never drift apart.
+        const batch = writeBatch(db);
+        batch.update(doc(db, "bookings", id), {
+          activeTime,
+          restTime,
+          totalTime,
+          returnTime: returnTime ?? deleteField(),
+        });
+        batch.update(doc(db, "slotBlocks", id), {
+          activeTime,
+          restTime,
+          totalTime,
+        });
+        await batch.commit();
+      } catch (err) {
+        console.error("Error updating booking times:", err);
+
+        setBookings((prev) =>
+          prev.map((b) =>
+            b.id === id
+              ? {
+                  ...b,
+                  activeTime: previous.activeTime,
+                  restTime: previous.restTime,
+                  totalTime: previous.totalTime,
+                  returnTime: previous.returnTime,
+                }
+              : b,
+          ),
+        );
+
+        throw err;
+      }
+    },
+    [],
+  );
+
+  return { bookings, loading, error, updateStatus, setFlag, updateTimes };
 };
 
 export default useBookings;
