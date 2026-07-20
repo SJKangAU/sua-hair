@@ -7,6 +7,25 @@
 import { useMemo } from "react";
 import { useBookingContext } from "../../../context/BookingContext";
 import Badge from "../../ui/Badge";
+import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
+
+// Inline styles can't express media queries, so the row's grid layout lives
+// in a class that collapses to a single column on phones.
+const TRAINING_ROW_CSS = `
+  .admin-training-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 1fr 60px auto;
+    align-items: center;
+    gap: 1rem;
+  }
+  @media (max-width: ${MOBILE_BREAKPOINT}px) {
+    .admin-training-row {
+      grid-template-columns: 1fr;
+      align-items: start;
+      gap: 0.5rem;
+    }
+  }
+`;
 
 const TrainingList = () => {
   const { bookings, loading } = useBookingContext();
@@ -56,11 +75,8 @@ const TrainingList = () => {
 
   const SessionRow = ({ session }: { session: (typeof bookings)[0] }) => (
     <div
+      className="admin-training-row"
       style={{
-        display: "grid",
-        gridTemplateColumns: "100px 1fr 1fr 1fr 60px auto",
-        alignItems: "center",
-        gap: "1rem",
         padding: "0.875rem 1.25rem",
         background: "white",
         borderRadius: "8px",
@@ -144,6 +160,7 @@ const TrainingList = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+      <style>{TRAINING_ROW_CSS}</style>
       {/* Upcoming sessions */}
       {upcoming.length > 0 && (
         <div>
