@@ -197,12 +197,18 @@ const DetailsStep = ({
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* Phone */}
         <div>
-          <label style={LABEL_STYLE}>Mobile Number</label>
+          <label htmlFor="booking-phone" style={LABEL_STYLE}>
+            Mobile Number
+          </label>
           <input
+            id="booking-phone"
             type="tel"
+            autoComplete="tel"
             value={customerPhone}
             onChange={(e) => onPhoneChange(e.target.value)}
             placeholder="e.g. 0412 345 678"
+            aria-invalid={Boolean(errors.phone)}
+            aria-describedby={errors.phone ? "booking-phone-error" : undefined}
             style={{
               ...INPUT_BASE,
               borderColor: errors.phone ? "var(--error)" : "var(--border)",
@@ -210,6 +216,8 @@ const DetailsStep = ({
           />
           {errors.phone && (
             <p
+              id="booking-phone-error"
+              role="alert"
               style={{
                 color: "var(--error)",
                 fontSize: "0.75rem",
@@ -223,12 +231,18 @@ const DetailsStep = ({
 
         {/* Name */}
         <div>
-          <label style={LABEL_STYLE}>Full Name</label>
+          <label htmlFor="booking-name" style={LABEL_STYLE}>
+            Full Name
+          </label>
           <input
+            id="booking-name"
             type="text"
+            autoComplete="name"
             value={customerName}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="Your full name"
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? "booking-name-error" : undefined}
             style={{
               ...INPUT_BASE,
               borderColor: errors.name ? "var(--error)" : "var(--border)",
@@ -236,6 +250,8 @@ const DetailsStep = ({
           />
           {errors.name && (
             <p
+              id="booking-name-error"
+              role="alert"
               style={{
                 color: "var(--error)",
                 fontSize: "0.75rem",
@@ -249,7 +265,7 @@ const DetailsStep = ({
 
         {/* Notes */}
         <div>
-          <label style={LABEL_STYLE}>
+          <label htmlFor="booking-notes" style={LABEL_STYLE}>
             Notes{" "}
             <span
               style={{
@@ -263,6 +279,7 @@ const DetailsStep = ({
             </span>
           </label>
           <textarea
+            id="booking-notes"
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder="Any special requests or preferences..."

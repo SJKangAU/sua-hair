@@ -127,6 +127,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
               {/* Category header */}
               <button
                 onClick={() => toggleCategory(cat)}
+                aria-expanded={isOpen}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -178,6 +179,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                     <button
                       key={service.id}
                       onClick={() => onToggle(service.id)}
+                      aria-pressed={isSelected}
                       style={{
                         display: "flex",
                         alignItems: "center",

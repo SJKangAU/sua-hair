@@ -165,6 +165,7 @@ const StylistDateStep = ({
         {/* Any Available */}
         <button
           onClick={() => onStylistSelect("any")}
+          aria-pressed={isAny}
           style={{
             display: "flex",
             alignItems: "center",
@@ -209,6 +210,7 @@ const StylistDateStep = ({
             <button
               key={stylist.id}
               onClick={() => onStylistSelect(stylist.id)}
+              aria-pressed={isSelected}
               style={{
                 display: "flex",
                 alignItems: "center",

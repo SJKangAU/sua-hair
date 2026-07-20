@@ -3,7 +3,7 @@
 // Bodoni Moda title, --surface panel, --border hairline header rule.
 // Closes on backdrop click and Escape key press.
 
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -14,6 +14,9 @@ interface Props {
 }
 
 const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+
   // Close on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,6 +25,12 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  // Move focus into the dialog on open so keyboard/screen-reader users
+  // land inside it rather than on the page behind the backdrop.
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -48,6 +57,11 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
     >
       {/* Modal panel — stop click propagation to prevent backdrop close */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",
@@ -72,6 +86,7 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
           }}
         >
           <h2
+            id={titleId}
             style={{
               margin: 0,
               fontFamily: "var(--font-display)",
@@ -85,6 +100,7 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             style={{
               background: "none",
               border: "none",

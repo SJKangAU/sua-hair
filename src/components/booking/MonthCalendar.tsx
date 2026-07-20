@@ -75,6 +75,7 @@ const MonthCalendar = ({
       >
         <button
           onClick={onPrevMonth}
+          aria-label="Previous month"
           style={{
             background: "none",
             border: "none",
@@ -89,6 +90,7 @@ const MonthCalendar = ({
           ←
         </button>
         <span
+          aria-live="polite"
           style={{
             fontWeight: 600,
             fontSize: "0.82rem",
@@ -100,6 +102,7 @@ const MonthCalendar = ({
         </span>
         <button
           onClick={onNextMonth}
+          aria-label="Next month"
           style={{
             background: "none",
             border: "none",
@@ -160,12 +163,25 @@ const MonthCalendar = ({
           const isToday = day === today;
           const isDisabled = day < minDate || isSalonClosed(day, salonSettings);
           const hasAvailability = availableDays.has(day);
+          const fullDate = parseLocalDate(day).toLocaleDateString("en-AU", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          });
 
           return (
             <button
               key={day}
               onClick={() => !isDisabled && onDateSelect(day)}
               disabled={isDisabled}
+              aria-label={`${fullDate}${
+                isDisabled
+                  ? ", unavailable"
+                  : hasAvailability
+                  ? ", times available"
+                  : ""
+              }`}
+              aria-pressed={isSelected}
               style={{
                 position: "relative",
                 width: "100%",

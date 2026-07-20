@@ -153,6 +153,10 @@ const TimeSlotGrid = ({
         onClick={() => slot.available && onTimeSelect(slot.time)}
         disabled={unavailable}
         title={unavailable ? slot.reason : undefined}
+        aria-label={`${slot.time}${
+          unavailable ? `, unavailable — ${slot.reason ?? "booked"}` : ""
+        }`}
+        aria-pressed={isSelected}
         style={{
           padding: "0.6rem 0.25rem",
           minHeight: "44px", // touch target minimum
@@ -199,7 +203,10 @@ const TimeSlotGrid = ({
           {date ? formatDateDisplay(date) : "Select a date"}
         </p>
         {loading && (
-          <span style={{ fontSize: "0.72rem", color: "#aaaaaa" }}>
+          <span
+            aria-live="polite"
+            style={{ fontSize: "0.72rem", color: "#aaaaaa" }}
+          >
             Checking availability...
           </span>
         )}
