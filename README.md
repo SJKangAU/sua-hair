@@ -8,12 +8,13 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 
 ## Built With
 
-- React 18 + TypeScript
+- React 19 + TypeScript
 - Firebase Firestore (real-time database)
 - Firebase Authentication (admin only)
-- Firebase Hosting (deployment)
-- React Router v6
+- Vercel (deployment) + Firebase Security Rules
+- React Router v7
 - Vite
+- Vitest (unit tests + emulator-backed Firestore rules tests)
 
 ---
 
@@ -26,7 +27,6 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - **Category accordion** — services grouped by category (Haircuts, Colour, Styling, etc.) with smooth expand/collapse
 - **Stylist picker** — choose any available stylist or a specific one; calendar updates live to show that stylist's availability
 - **Slide-up summary sheet** — review all services, stylist, date, time, duration, and estimated total before confirming
-- **Mobile number lookup** — returning customers auto-recognised and greeted by name with visit count
 - Australian mobile validation (04xx format)
 - **Tiered pricing** — service prices resolve dynamically to the selected stylist's level (Director / Senior / Junior); shows "from $X" before a stylist is chosen
 - Live availability — fetched from Firestore in real time per stylist and per combined service duration
@@ -54,6 +54,29 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - **Manage tab** — add, edit, deactivate, and reorder stylists and services
   - Deactivation confirmation dialogs to prevent accidental removal
   - **Service sort order** — drag-free ↑↓ reorder buttons; order reflected in the booking flow
+
+---
+
+## Security & Privacy
+
+Firestore Security Rules cannot redact individual fields from an authorised read — a rule either allows a whole document/query or denies it. The public booking calendar therefore never reads the `bookings` collection (which holds customer names, phones, and notes). Instead:
+
+- **`slotBlocks` projection** — every booking write also writes a PII-free projection document (`stylistId`, `date`, `time`, durations, `status` only). Public availability queries read exclusively from this collection.
+- **`bookings` is staff-only** — anonymous customers can create their own pending booking but can never read any booking back, including their own.
+- **`customerLookups` is staff-only to read** — customer identity is never returned to an anonymous client, even by exact phone-number lookup (knowing a phone number is not proof of owning it).
+- **Rules are tested against a real emulator** — `tests/firestore/` replays the actual queries an attacker could send (enumeration, pivoting, shape-violation writes) and asserts the emulator's allow/deny decisions and returned fields.
+
+---
+
+## Testing
+
+```bash
+npm run test:unit      # scheduling engine + date utils (no emulator needed)
+npm run test:rules     # firestore.rules permission matrix (needs Java 21)
+npm run test:security  # PII-leak evidence tests (needs Java 21)
+```
+
+The rules suites wrap Vitest in `firebase emulators:exec`, so a local Firestore emulator backs every assertion. CI (`.github/workflows/ci.yml`) runs typecheck, lint, and all three suites on every push and pull request.
 
 ---
 
@@ -226,9 +249,12 @@ src/
       Skeleton.tsx               # Loading skeleton components
       Toast.tsx                  # Toast notification system
   context/
-    BookingContext.tsx           # Global booking state and mutations
-    SalonDataContext.tsx         # Stylists and services shared state
-    ToastContext.tsx             # Global toast notifications
+    BookingContext.ts            # Booking context + consumer hook
+    BookingProvider.tsx          # Booking provider (admin dashboard)
+    SalonDataContext.ts          # Stylists/services context + consumer hook
+    SalonDataProvider.tsx        # Salon data provider
+    ToastContext.ts              # Toast context + consumer hook
+    ToastProvider.tsx            # Toast provider
   hooks/
     useAuth.ts                   # Firebase auth state
     useBookingAvailability.ts    # Slot + month availability + next-available logic
@@ -239,9 +265,13 @@ src/
     firebase.ts                  # Firebase initialisation
     config.ts                    # Business rules (single source of truth)
     scheduling.ts                # Slot generation and availability engine
+    slotBlocks.ts                # PII-free public availability projection
     calendar.ts                  # Google Calendar URL and ICS generation
     dates.ts                     # Date utilities
     validation.ts                # Phone and name validation
+  ../tests/
+    unit/                        # Scheduling engine + date utils unit tests
+    firestore/                   # Emulator-backed security rules tests
   pages/
     BookingPage.tsx              # Customer facing (wrapped in SalonDataProvider)
     AdminLoginPage.tsx           # Admin login
@@ -266,9 +296,9 @@ src/
 | 1         | Admin shell — tabs, toasts, modals, error boundaries          | ✅ Done    |
 | 2         | Today tab — visual timeline grid                              | ✅ Done    |
 | 3         | Bookings tab — filterable list, stats, filtered count         | ✅ Done    |
-| 4         | Clients tab — CRM and visit history                           | ⏳ Planned |
+| 4         | Clients tab — CRM and visit history                           | ✅ Done    |
 | 5         | Training tab — after-hours sessions                           | ✅ Done    |
-| 6         | Analytics tab — revenue and occupancy charts                  | ⏳ Planned |
+| 6         | Analytics tab — revenue and occupancy charts                  | ✅ Done    |
 | 7         | Manage tab — stylist and service roster with sort order       | ✅ Done    |
 | 8         | Booking flow redesign — B&W luxury, multi-service, animations | ✅ Done    |
 
@@ -278,8 +308,9 @@ src/
 
 ### Prerequisites
 
-- Node.js v18+
+- Node.js v20+
 - Firebase project with Firestore and Authentication enabled
+- Java 21+ (only for running the Firestore rules test suites locally)
 
 ### Installation
 
@@ -316,9 +347,10 @@ npx tsx src/scripts/seedFirestore.ts
 
 ### Deploy
 
+The app deploys to Vercel (pushes to `main` auto-deploy). Firestore Security Rules deploy separately — **a local edit to `firestore.rules` does nothing until deployed**:
+
 ```bash
-npm run build
-firebase deploy
+npx firebase deploy --only firestore:rules --project <your-project-id>
 ```
 
 ---
