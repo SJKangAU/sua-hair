@@ -35,9 +35,14 @@ const useAppUser = (): Result => {
         if (snap.exists()) {
           setAppUser({ uid: user.uid, ...snap.data() } as AppUser);
         } else {
-          // No role document — treat as owner for backward compat
-          // (existing admin accounts predate the users collection)
-          setAppUser({ uid: user.uid, role: "owner" });
+          // No role document — deny by default. A signed-in Firebase
+          // account with no role doc must NOT be treated as an owner or
+          // stylist; provision a `users/{uid}` doc (owner or stylist) to
+          // grant access instead.
+          console.warn(
+            `useAppUser: no role document for uid ${user.uid} — denying access`,
+          );
+          setAppUser(null);
         }
         setLoading(false);
       },
