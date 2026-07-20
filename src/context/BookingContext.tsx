@@ -16,16 +16,19 @@ interface BookingContextValue {
     id: string,
     status: "pending" | "confirmed" | "cancelled",
   ) => Promise<void>;
+  setFlag: (id: string, flagged: boolean, reason?: string) => Promise<void>;
 }
 
 const BookingContext = createContext<BookingContextValue | null>(null);
 
 // Provider component — wrap around AdminDashboardPage
 export const BookingProvider = ({ children }: { children: ReactNode }) => {
-  const { bookings, loading, error, updateStatus } = useBookings();
+  const { bookings, loading, error, updateStatus, setFlag } = useBookings();
 
   return (
-    <BookingContext.Provider value={{ bookings, loading, error, updateStatus }}>
+    <BookingContext.Provider
+      value={{ bookings, loading, error, updateStatus, setFlag }}
+    >
       {children}
     </BookingContext.Provider>
   );
