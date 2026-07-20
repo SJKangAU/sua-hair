@@ -21,6 +21,7 @@ import { db } from "../../lib/firebase";
 import { bookingConverter } from "../../lib/converters";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
 import { writeBookingNotifications } from "../../lib/notifications";
+import { computeReturnTime } from "../../lib/scheduling";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
@@ -43,6 +44,15 @@ const ANIM_CSS = `
   @keyframes bkFadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Layout paddings live in classes (not inline) so they can shrink on
+     narrow phones — inline styles can't express breakpoints. */
+  .bk-step-pad { padding: 1.75rem 1.5rem 0.5rem; }
+  .bk-nav-bar  { padding: 1.25rem 1.5rem; }
+  @media (max-width: 420px) {
+    .bk-step-pad { padding: 1.5rem 1.125rem 0.5rem; }
+    .bk-nav-bar  { padding: 1rem 1.125rem; }
   }
 `;
 
@@ -168,7 +178,7 @@ const BookingForm = () => {
 
   const stylist = stylists.find((s) => s.id === stylistId);
   const stylistName =
-    stylistId === "any" ? "Any Available Stylist" : stylist?.name ?? "";
+    stylistId === "any" ? "Any Available Stylist" : (stylist?.name ?? "");
 
   const serviceHash = [...selectedServiceIds].sort().join(",");
 
@@ -249,10 +259,12 @@ const BookingForm = () => {
     }));
 
     const finalStylistName =
-      stylistId === "any" ? "Any available stylist" : stylist?.name ?? "";
+      stylistId === "any" ? "Any available stylist" : (stylist?.name ?? "");
     const finalStylistLevel =
-      stylistId === "any" ? "junior" : stylist?.level ?? "junior";
+      stylistId === "any" ? "junior" : (stylist?.level ?? "junior");
     const totalRestTime = totalTime - totalActiveTime;
+    const returnTime =
+      totalRestTime > 0 ? computeReturnTime(time, totalTime) : undefined;
 
     setSubmitting(true);
     setSubmitError(null);
@@ -267,8 +279,8 @@ const BookingForm = () => {
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -298,6 +310,7 @@ const BookingForm = () => {
         date,
         time,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
+        ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 
@@ -366,11 +379,11 @@ const BookingForm = () => {
       <div style={{ overflow: "hidden" }}>
         <div
           key={step}
+          className="bk-step-pad"
           style={{
             animation: `${
               direction === "forward" ? "bkSlideFromRight" : "bkSlideFromLeft"
             } 0.32s cubic-bezier(0.22, 1, 0.36, 1) both`,
-            padding: "1.75rem 1.5rem 0.5rem",
           }}
         >
           {step === 1 && (
@@ -427,11 +440,11 @@ const BookingForm = () => {
 
       {/* Navigation bar */}
       <div
+        className="bk-nav-bar"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "1.25rem 1.5rem",
           borderTop: "1px solid #e8e8e8",
           marginTop: "0.5rem",
         }}

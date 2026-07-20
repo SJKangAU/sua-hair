@@ -9,6 +9,15 @@ interface Props {
 
 const STEPS = ["Services", "Date & Stylist", "Your Details"];
 
+// Labels are nowrap so they set the minimum width of the whole indicator —
+// shrink them on very narrow phones via a class (inline styles can't do this).
+const LABEL_CSS = `
+  .bk-step-ind-label { font-size: 0.65rem; letter-spacing: 0.02em; }
+  @media (max-width: 360px) {
+    .bk-step-ind-label { font-size: 0.58rem; letter-spacing: 0; }
+  }
+`;
+
 const StepIndicator = ({ currentStep }: Props) => {
   return (
     <div
@@ -19,6 +28,7 @@ const StepIndicator = ({ currentStep }: Props) => {
         gap: 0,
       }}
     >
+      <style>{LABEL_CSS}</style>
       {STEPS.map((label, i) => {
         const stepNum = i + 1;
         const completed = currentStep > stepNum;
@@ -89,15 +99,14 @@ const StepIndicator = ({ currentStep }: Props) => {
 
               {/* Label */}
               <span
+                className="bk-step-ind-label"
                 style={{
-                  fontSize: "0.65rem",
                   fontWeight: active ? 600 : 400,
                   color: active
                     ? "var(--ink)"
                     : completed
                     ? "var(--ink-soft)"
                     : "var(--grey-muted)",
-                  letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
                   transition: "color 0.2s ease",
                   textAlign: "center",

@@ -13,11 +13,13 @@ import type { Booking } from "../../types";
 interface Props {
   bookings: Booking[];
   selectedDate?: string;
+  // Owner-only revenue subtotal — hidden entirely for stylists.
+  isOwner?: boolean;
 }
 
 interface StatCardProps {
   label: string;
-  value: number;
+  value: number | string;
   color: string;
 }
 
@@ -50,7 +52,19 @@ const StatCard = ({ label, value, color }: StatCardProps) => (
   </div>
 );
 
-const DashboardStats = ({ bookings, selectedDate }: Props) => {
+// Revenue counts the same way useAnalytics.ts does: confirmed bookings only,
+// excluding internal blockers (breaks) and unpaid training sessions.
+const sumRevenue = (list: Booking[]): number =>
+  list
+    .filter(
+      (b) =>
+        b.status === "confirmed" &&
+        b.bookingType !== "break" &&
+        b.bookingType !== "training",
+    )
+    .reduce((sum, b) => sum + (b.servicePrice ?? 0), 0);
+
+const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
   const today = selectedDate ?? todayString();
   const { start, end } = getWeekRange();
 
@@ -66,6 +80,8 @@ const DashboardStats = ({ bookings, selectedDate }: Props) => {
 
   const todayStats = countByStatus(todayBookings);
   const weekStats = countByStatus(weekBookings);
+  const todayRevenue = sumRevenue(todayBookings);
+  const weekRevenue = sumRevenue(weekBookings);
 
   const isToday = today === todayString();
   const todayLabel = isToday
@@ -103,13 +119,27 @@ const DashboardStats = ({ bookings, selectedDate }: Props) => {
     </h2>
   );
 
-  const statRow = (stats: ReturnType<typeof countByStatus>) => (
+  const statRow = (
+    stats: ReturnType<typeof countByStatus>,
+    revenue?: number,
+  ) => (
     <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
       {/* Shade encodes certainty — darkest = total, lightest = cancelled */}
       <StatCard label="Total" value={stats.total} color="var(--ink)" />
       <StatCard label="Confirmed" value={stats.confirmed} color="var(--ink)" />
       <StatCard label="Pending" value={stats.pending} color="var(--ink-soft)" />
-      <StatCard label="Cancelled" value={stats.cancelled} color="var(--grey-muted)" />
+      <StatCard
+        label="Cancelled"
+        value={stats.cancelled}
+        color="var(--grey-muted)"
+      />
+      {isOwner && revenue !== undefined && (
+        <StatCard
+          label="Revenue"
+          value={`$${revenue.toLocaleString()}`}
+          color="var(--ink)"
+        />
+      )}
     </div>
   );
 
@@ -117,11 +147,11 @@ const DashboardStats = ({ bookings, selectedDate }: Props) => {
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       <div>
         {sectionLabel(todayLabel)}
-        {statRow(todayStats)}
+        {statRow(todayStats, todayRevenue)}
       </div>
       <div>
         {sectionLabel(weekLabel)}
-        {statRow(weekStats)}
+        {statRow(weekStats, weekRevenue)}
       </div>
     </div>
   );

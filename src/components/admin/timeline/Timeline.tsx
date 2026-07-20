@@ -40,6 +40,13 @@ const TIME_LABELS = generateTimeLabels();
 const ROW_HEIGHT = 60;
 const GRID_HEIGHT = (TIME_LABELS.length - 1) * ROW_HEIGHT;
 
+// Minimum width of a stylist column — below this, booking blocks become
+// unreadable slivers, so columns hold this floor and the timeline scrolls
+// horizontally instead of squishing further. Must match TimelineColumn.tsx.
+const COLUMN_MIN_WIDTH = 140;
+// Width of the sticky time-label gutter (kept in sync with both header and grid rows)
+const GUTTER_WIDTH = 60;
+
 const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
   const { stylists, stylistsLoading } = useSalonData();
   const { bookings } = useBookingContext();
@@ -79,29 +86,44 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
         boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
       }}
     >
-      {/* Stylist header row */}
-      <div
-        style={{
-          display: "flex",
-          borderBottom: `1px solid var(--admin-border)`,
-          background: "var(--admin-bg-darker)",
-        }}
-      >
-        {/* Time label column header */}
-        <div style={{ width: "60px", flexShrink: 0 }} />
-
-        {/* Stylist name headers */}
-        {stylists.map((stylist) => (
+      {/*
+        Shared horizontal scroll container — the header row and the grid
+        below it scroll together since they're both inside it, so stylist
+        columns never need to squish narrower than COLUMN_MIN_WIDTH.
+      */}
+      <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        {/* Stylist header row */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: `1px solid var(--admin-border)`,
+            background: "var(--admin-bg-darker)",
+          }}
+        >
+          {/* Time label column header — sticky so it stays visible while the row scrolls */}
           <div
-            key={stylist.id}
             style={{
-              flex: 1,
-              padding: "0.75rem 0.5rem",
-              textAlign: "center",
-              borderLeft: "1px solid var(--admin-border)",
-              minWidth: 0,
+              width: `${GUTTER_WIDTH}px`,
+              flexShrink: 0,
+              position: "sticky",
+              left: 0,
+              zIndex: 2,
+              background: "var(--admin-bg-darker)",
             }}
-          >
+          />
+
+          {/* Stylist name headers */}
+          {stylists.map((stylist) => (
+            <div
+              key={stylist.id}
+              style={{
+                flex: `1 1 ${COLUMN_MIN_WIDTH}px`,
+                minWidth: `${COLUMN_MIN_WIDTH}px`,
+                padding: "0.75rem 0.5rem",
+                textAlign: "center",
+                borderLeft: "1px solid var(--admin-border)",
+              }}
+            >
             {/* Headshot */}
             {stylist.photoUrl ? (
               <img
@@ -178,12 +200,15 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
             position: "relative",
           }}
         >
-          {/* Time labels column */}
+          {/* Time labels column — sticky so it stays visible while the grid scrolls horizontally */}
           <div
             style={{
-              width: "60px",
+              width: `${GUTTER_WIDTH}px`,
               flexShrink: 0,
-              position: "relative",
+              position: "sticky",
+              left: 0,
+              zIndex: 2,
+              background: "var(--admin-bg)",
             }}
           >
             {TIME_LABELS.map((label, i) => (
@@ -252,6 +277,8 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
             ))}
           </div>
         </div>
+      </div>
+      {/* closes the shared horizontal scroll wrapper */}
       </div>
     </div>
   );

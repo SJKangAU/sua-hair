@@ -16,7 +16,7 @@ const BookingPage = () => {
     <SalonDataProvider>
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "100svh",
           background: "#f5f5f5",
           fontFamily: "var(--font-body)",
         }}
@@ -25,7 +25,7 @@ const BookingPage = () => {
         <header
           style={{
             background: "#0a0a0a",
-            padding: "0 1.75rem",
+            padding: "0 clamp(1rem, 4vw, 1.75rem)",
             height: "60px",
             display: "flex",
             justifyContent: "space-between",
@@ -67,7 +67,7 @@ const BookingPage = () => {
         <div
           style={{
             background: "#0a0a0a",
-            padding: "3rem 2rem 4.5rem",
+            padding: "3rem 1.5rem 4.5rem",
             textAlign: "center",
           }}
         >

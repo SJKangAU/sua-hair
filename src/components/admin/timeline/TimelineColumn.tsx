@@ -29,6 +29,11 @@ const OPEN_MINUTES = open * 60;
 const toPercent = (minutes: number): number =>
   ((minutes - OPEN_MINUTES) / TOTAL_MINUTES) * 100;
 
+// Minimum width of a stylist column — must match COLUMN_MIN_WIDTH in Timeline.tsx.
+// Below this, booking blocks become unreadable slivers on narrow screens,
+// so the column holds this floor and the ancestor timeline scrolls horizontally instead.
+const COLUMN_MIN_WIDTH = 140;
+
 const TimelineColumn = ({
   stylist,
   bookings,
@@ -85,11 +90,11 @@ const TimelineColumn = ({
     <div
       onClick={handleColumnClick}
       style={{
-        flex: 1,
+        flex: `1 1 ${COLUMN_MIN_WIDTH}px`,
         position: "relative",
         borderRight: "1px solid var(--admin-border)",
         cursor: "crosshair",
-        minWidth: 0,
+        minWidth: `${COLUMN_MIN_WIDTH}px`,
       }}
     >
       {stylistBookings.map((booking) => {

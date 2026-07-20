@@ -50,6 +50,8 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       time: d.time ?? "",
       notes: d.notes ?? "",
       status: d.status ?? "pending",
+      flagged: d.flagged ?? false,
+      flagReason: d.flagReason ?? "",
       bookingType: d.bookingType ?? "customer",
       blockReason: d.blockReason,
       traineeId: d.traineeId,

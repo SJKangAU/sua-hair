@@ -3,12 +3,12 @@
 // Consumes stylists from SalonDataContext (Firestore) instead of hardcoded data.ts
 
 import { useSalonData } from "../../context/SalonDataContext";
+import {
+  hasActiveFilters as computeHasActiveFilters,
+  type Filters,
+} from "../../lib/bookingFilters";
 
-export interface Filters {
-  stylistId: string;
-  date: string;
-  status: string;
-}
+export type { Filters };
 
 interface Props {
   filters: Filters;
@@ -30,7 +30,7 @@ const selectStyle = {
 const FilterBar = ({ filters, onChange, onClear }: Props) => {
   // Consume stylists from Firestore via context
   const { stylists } = useSalonData();
-  const hasActiveFilters = filters.stylistId || filters.date || filters.status;
+  const hasActiveFilters = computeHasActiveFilters(filters);
 
   return (
     <div
@@ -63,13 +63,26 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         ))}
       </select>
 
-      {/* Date filter */}
-      <input
-        type="date"
-        style={{ ...selectStyle, colorScheme: "dark" }}
-        value={filters.date}
-        onChange={(e) => onChange({ ...filters, date: e.target.value })}
-      />
+      {/* Date range filter */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <input
+          type="date"
+          aria-label="From date"
+          style={{ ...selectStyle, colorScheme: "dark" }}
+          value={filters.dateFrom}
+          max={filters.dateTo || undefined}
+          onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })}
+        />
+        <span style={{ color: "#666", fontSize: "0.8rem" }}>to</span>
+        <input
+          type="date"
+          aria-label="To date"
+          style={{ ...selectStyle, colorScheme: "dark" }}
+          value={filters.dateTo}
+          min={filters.dateFrom || undefined}
+          onChange={(e) => onChange({ ...filters, dateTo: e.target.value })}
+        />
+      </div>
 
       {/* Status filter */}
       <select
@@ -82,6 +95,28 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         <option value="confirmed">Confirmed</option>
         <option value="cancelled">Cancelled</option>
       </select>
+
+      {/* Flagged-only toggle */}
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.4rem",
+          color: "#aaa",
+          fontSize: "0.85rem",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={filters.flaggedOnly}
+          onChange={(e) =>
+            onChange({ ...filters, flaggedOnly: e.target.checked })
+          }
+          style={{ cursor: "pointer", width: "15px", height: "15px" }}
+        />
+        🚩 Flagged only
+      </label>
 
       {hasActiveFilters && (
         <button

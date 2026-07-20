@@ -19,6 +19,8 @@ interface Props {
     id: string,
     status: "pending" | "confirmed" | "cancelled",
   ) => void;
+  // Gates the revenue subtotal in the stat strip — owner only.
+  isOwner?: boolean;
 }
 
 const formatMinutes = (totalSeconds: number): string => {
@@ -28,7 +30,7 @@ const formatMinutes = (totalSeconds: number): string => {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 };
 
-const TodayPage = ({ onUpdateStatus }: Props) => {
+const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
   const { bookings, loading } = useBookingContext();
   const { addToast } = useToastContext();
 
@@ -170,7 +172,9 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
           >
             Phase 3 Countdown
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
             {activeRests.map((r) => {
               const urgent = r.remainingSeconds <= 300;
               return (
@@ -188,10 +192,22 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
                   }}
                 >
                   <div>
-                    <span style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--ink)" }}>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "0.88rem",
+                        color: "var(--ink)",
+                      }}
+                    >
                       {r.customerName}
                     </span>
-                    <span style={{ color: "var(--grey-muted)", fontSize: "0.8rem", marginLeft: "0.5rem" }}>
+                    <span
+                      style={{
+                        color: "var(--grey-muted)",
+                        fontSize: "0.8rem",
+                        marginLeft: "0.5rem",
+                      }}
+                    >
                       — {r.serviceName} · {r.stylistName}
                     </span>
                   </div>
@@ -220,7 +236,11 @@ const TodayPage = ({ onUpdateStatus }: Props) => {
       {loading ? (
         <StatsSkeleton />
       ) : (
-        <DashboardStatStrip bookings={bookings} selectedDate={selectedDate} />
+        <DashboardStatStrip
+          bookings={bookings}
+          selectedDate={selectedDate}
+          isOwner={isOwner}
+        />
       )}
 
       {/* Timeline */}

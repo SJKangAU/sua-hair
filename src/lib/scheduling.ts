@@ -119,6 +119,17 @@ export const getMinBookableDate = (): string => {
   return today;
 };
 
+// Compute the exact clock time a booking's rest/processing period ends —
+// i.e. when the stylist returns to finish that client. Called once at
+// booking creation and stored on the record (Booking.returnTime) so a later
+// edit to a service's restTime never retroactively changes an existing
+// booking's displayed return time.
+export const computeReturnTime = (
+  startTime: string,
+  totalTimeMinutes: number,
+): string =>
+  minutesToTimeString(timeStringToMinutes(startTime) + totalTimeMinutes);
+
 // ── Time Block Builder ─────────────────────────────────────────────────────────
 
 // Convert existing bookings into TimeBlock objects for a specific stylist and date

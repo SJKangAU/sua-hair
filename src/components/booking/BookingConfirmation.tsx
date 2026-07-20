@@ -72,7 +72,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <h2
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "2.1rem",
+            fontSize: "clamp(1.65rem, 6.5vw, 2.1rem)",
             fontWeight: 300,
             color: "var(--ink)",
             letterSpacing: "-0.01em",
@@ -80,8 +80,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             lineHeight: 1.15,
           }}
         >
-          We can't wait to see you,{" "}
-          {booking.customerName.split(" ")[0]}.
+          We can't wait to see you, {booking.customerName.split(" ")[0]}.
         </h2>
         <p
           style={{
@@ -218,6 +217,14 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             >
               {booking.activeTime} min active + {booking.restTime} min setting
               time
+              {booking.returnTime && (
+                <>
+                  {" — "}
+                  <strong style={{ color: "var(--ink)" }}>
+                    back with you by {booking.returnTime}
+                  </strong>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -238,6 +245,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
         <div
           style={{
             display: "flex",
+            flexWrap: "wrap",
             gap: "0.75rem",
             justifyContent: "center",
             marginBottom: "1.75rem",

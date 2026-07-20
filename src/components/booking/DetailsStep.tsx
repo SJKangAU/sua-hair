@@ -56,7 +56,7 @@ const INPUT_BASE: React.CSSProperties = {
   padding: "0.875rem 1rem",
   border: `1.5px solid var(--border)`,
   borderRadius: "8px",
-  fontSize: "0.9rem",
+  fontSize: "1rem", // 16px minimum — below this iOS Safari auto-zooms on focus
   background: "#ffffff",
   color: "var(--ink)",
   outline: "none",

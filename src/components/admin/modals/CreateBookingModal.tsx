@@ -9,11 +9,12 @@ import { useState } from "react";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
+import { writeBookingNotifications } from "../../../lib/notifications";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
+  computeReturnTime,
 } from "../../../lib/scheduling";
-import { writeBookingNotifications } from "../../../lib/notifications";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
 
@@ -138,6 +139,10 @@ const CreateBookingModal = ({
     if (!service || !stylist) return;
 
     const resolvedPrice = service.price[stylist.level];
+    const returnTime =
+      service.restTime > 0
+        ? computeReturnTime(walkin.time, service.totalTime)
+        : undefined;
 
     setSubmitting(true);
     try {
@@ -159,6 +164,7 @@ const CreateBookingModal = ({
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
+        ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 
@@ -169,8 +175,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -237,8 +243,8 @@ const CreateBookingModal = ({
         period === "PM" && h !== 12
           ? h + 12
           : period === "AM" && h === 12
-          ? 0
-          : h;
+            ? 0
+            : h;
       const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
         2,
         "0",
@@ -368,9 +374,8 @@ const CreateBookingModal = ({
           </label>
 
           <div
+            className="admin-form-grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
               gap: "0.75rem",
             }}
           >
@@ -462,9 +467,8 @@ const CreateBookingModal = ({
           </label>
 
           <div
+            className="admin-form-grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
               gap: "0.75rem",
             }}
           >
