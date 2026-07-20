@@ -169,6 +169,7 @@ const BookingCard = ({
           {booking.restTime > 0 && (
             <p style={{ color: "#aaa", fontSize: "0.72rem", margin: 0 }}>
               {booking.activeTime}min + {booking.restTime}min setting
+              {booking.returnTime && ` · returns ${booking.returnTime}`}
             </p>
           )}
         </div>

@@ -193,7 +193,9 @@ const TimelineBlock = ({
             <Icon
               size={11}
               strokeWidth={2}
-              color={isPending ? "var(--admin-faint)" : "rgba(255,255,255,0.75)"}
+              color={
+                isPending ? "var(--admin-faint)" : "rgba(255,255,255,0.75)"
+              }
               style={{ flexShrink: 0 }}
             />
           )}
@@ -218,9 +220,7 @@ const TimelineBlock = ({
           style={{
             margin: 0,
             fontSize: "0.62rem",
-            color: isPending
-              ? "var(--admin-dimmer)"
-              : "rgba(255,255,255,0.75)",
+            color: isPending ? "var(--admin-dimmer)" : "rgba(255,255,255,0.75)",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -255,6 +255,11 @@ const TimelineBlock = ({
       {/* Rest period — dotted top border + hatch (processing texture) */}
       {hasRestPeriod && (
         <div
+          title={
+            booking.returnTime
+              ? `Stylist returns at ${booking.returnTime}`
+              : undefined
+          }
           style={{
             position: "absolute",
             bottom: 0,
@@ -290,7 +295,9 @@ const TimelineBlock = ({
           >
             {restSecondsLeft !== null
               ? formatCountdown(restSecondsLeft)
-              : "Return"}
+              : booking.returnTime
+                ? `Back ${booking.returnTime}`
+                : "Return"}
           </p>
         </div>
       )}

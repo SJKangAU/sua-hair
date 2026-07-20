@@ -21,6 +21,7 @@ import { db } from "../../lib/firebase";
 import { bookingConverter } from "../../lib/converters";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
 import { writeBookingNotifications } from "../../lib/notifications";
+import { computeReturnTime } from "../../lib/scheduling";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
@@ -262,6 +263,8 @@ const BookingForm = () => {
     const finalStylistLevel =
       stylistId === "any" ? "junior" : (stylist?.level ?? "junior");
     const totalRestTime = totalTime - totalActiveTime;
+    const returnTime =
+      totalRestTime > 0 ? computeReturnTime(time, totalTime) : undefined;
 
     setSubmitting(true);
     setSubmitError(null);
@@ -307,6 +310,7 @@ const BookingForm = () => {
         date,
         time,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
+        ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 

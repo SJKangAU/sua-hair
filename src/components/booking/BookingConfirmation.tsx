@@ -80,8 +80,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             lineHeight: 1.15,
           }}
         >
-          We can't wait to see you,{" "}
-          {booking.customerName.split(" ")[0]}.
+          We can't wait to see you, {booking.customerName.split(" ")[0]}.
         </h2>
         <p
           style={{
@@ -218,6 +217,14 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             >
               {booking.activeTime} min active + {booking.restTime} min setting
               time
+              {booking.returnTime && (
+                <>
+                  {" — "}
+                  <strong style={{ color: "var(--ink)" }}>
+                    back with you by {booking.returnTime}
+                  </strong>
+                </>
+              )}
             </p>
           )}
         </div>

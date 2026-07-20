@@ -115,6 +115,12 @@ export interface Booking {
   // data discrepancy) for follow-up. Independent of `status`.
   flagged?: boolean;
   flagReason?: string;
+  // Exact clock time the rest/processing period ends (e.g. "2:15 PM"),
+  // computed once at booking creation from that service's activeTime/restTime
+  // and locked into the record. Only set when restTime > 0. Locking it in
+  // means editing a service's restTime later never changes an already-made
+  // booking's displayed return time.
+  returnTime?: string;
   bookingType: "customer" | "walkin" | "break" | "training";
   blockReason?: string;
   traineeId?: string;

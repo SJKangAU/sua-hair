@@ -9,11 +9,12 @@ import { useState } from "react";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
+import { writeBookingNotifications } from "../../../lib/notifications";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
+  computeReturnTime,
 } from "../../../lib/scheduling";
-import { writeBookingNotifications } from "../../../lib/notifications";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
 
@@ -138,6 +139,10 @@ const CreateBookingModal = ({
     if (!service || !stylist) return;
 
     const resolvedPrice = service.price[stylist.level];
+    const returnTime =
+      service.restTime > 0
+        ? computeReturnTime(walkin.time, service.totalTime)
+        : undefined;
 
     setSubmitting(true);
     try {
@@ -159,6 +164,7 @@ const CreateBookingModal = ({
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
+        ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 
