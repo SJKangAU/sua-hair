@@ -149,13 +149,6 @@ export type SlotBlock = Pick<
   | "status"
 >;
 
-export interface CustomerProfile {
-  name: string;
-  phone: string;
-  visitCount: number;
-  lastVisit: string;
-}
-
 export interface TimeBlock {
   stylistId: string;
   date: string;

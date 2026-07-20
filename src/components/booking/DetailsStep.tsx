@@ -4,17 +4,17 @@
 // Receives selectedServices with priceDisplay already computed (accounting
 // for the chosen stylist level), so this component does no price maths.
 //
-// Phone lookup: fires against the bookings collection on each valid phone
-// entry.  On a match it pre-fills customerName and surfaces a returning-
-// customer banner.  The lookup is triggered by the parent (BookingForm) via
-// the onPhoneChange prop, keeping async Firebase logic out of this component.
+// Phone number is entered manually — the public form deliberately never
+// looks up a customer's identity by phone: `customerLookups` reads are
+// staff-only (see firestore.rules), because a get-by-phone would let an
+// anonymous visitor learn another customer's name and visit count just
+// by knowing/guessing their number. See BookingForm.handlePhoneChange.
 //
 // Validation errors (phone / name) are set by BookingForm on submit and
 // cleared here on each keystroke so feedback disappears as soon as the user
 // starts correcting.
 
 import { parseLocalDate } from "../../lib/dates";
-import type { CustomerProfile } from "../../types";
 
 interface SelectedServiceDisplay {
   id: string;
@@ -33,8 +33,6 @@ interface Props {
   customerName: string;
   customerPhone: string;
   notes: string;
-  lookingUp: boolean;
-  customerProfile: CustomerProfile | null;
   errors: { name?: string; phone?: string };
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
@@ -75,8 +73,6 @@ const DetailsStep = ({
   customerName,
   customerPhone,
   notes,
-  lookingUp,
-  customerProfile,
   errors,
   onPhoneChange,
   onNameChange,
@@ -222,40 +218,6 @@ const DetailsStep = ({
             >
               {errors.phone}
             </p>
-          )}
-          {lookingUp && (
-            <p
-              style={{
-                color: "var(--grey-muted)",
-                fontSize: "0.75rem",
-                marginTop: "0.375rem",
-              }}
-            >
-              Looking up your details...
-            </p>
-          )}
-          {customerProfile && !lookingUp && (
-            <div
-              style={{
-                marginTop: "0.5rem",
-                padding: "0.5rem 0.75rem",
-                background: "var(--paper)",
-                border: `1px solid var(--border-strong)`,
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-                color: "var(--ink-soft)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.375rem",
-              }}
-            >
-              <span>✓</span>
-              <span>
-                Welcome back, <strong>{customerProfile.name}</strong>!{" "}
-                {customerProfile.visitCount} previous visit
-                {customerProfile.visitCount !== 1 ? "s" : ""}
-              </span>
-            </div>
           )}
         </div>
 

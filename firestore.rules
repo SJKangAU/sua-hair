@@ -119,18 +119,18 @@ service cloud.firestore {
     }
 
     // ── customerLookups ─────────────────────────────────────────────────
-    // "Returning customer" greeting lookup, keyed by cleaned phone number
-    // (the document ID *is* the phone number). Deliberately NOT the
-    // `bookings` collection: a `get` by document ID is evaluated against
-    // the actual document's data, not a query's potential result set, so
-    // an anonymous customer who already knows their own phone number can
-    // fetch only that one record — never list or scan the collection.
-    // Written on booking creation by both the public form and admin
-    // walk-in flow (see src/components/booking/BookingForm.tsx and
-    // src/components/admin/modals/CreateBookingModal.tsx).
+    // Customer identity + visit history, keyed by cleaned phone number.
+    // Even a get-by-document-ID lookup exposes the account holder's name
+    // and visit count to anyone who merely *knows* (or enumerates) a
+    // phone number — that is not proof the requester owns the number, so
+    // this can never be anonymously readable. Reads are staff-only.
+    // Anonymous customers may still create/update their own record when
+    // they submit a booking (see isValidLookupWrite below) — a write of
+    // your own data isn't a disclosure — but the public booking form no
+    // longer reads it back for a "welcome back" greeting; see
+    // src/components/booking/BookingForm.tsx.
     match /customerLookups/{phone} {
-      allow get: if true;
-      allow list: if isStaff();
+      allow get, list: if isStaff();
       allow delete: if isStaff();
 
       allow create, update: if isStaff() || isValidLookupWrite();

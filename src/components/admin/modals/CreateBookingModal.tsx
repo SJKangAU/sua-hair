@@ -188,9 +188,9 @@ const CreateBookingModal = ({
       batch.set(doc(collection(db, "bookings"), docId), booking);
       queueSlotBlockCreate(batch, docId, booking);
       if (booking.customerPhone.trim()) {
-        // Keep the "returning customer" greeting lookup in sync with
-        // walk-ins too, matching the phone recognition customers get on the
-        // public booking page — see firestore.rules `customerLookups`.
+        // Keep the customer visit-history record in sync for walk-ins too.
+        // Reads are staff-only (see firestore.rules `customerLookups`) —
+        // the public booking page no longer looks this up anonymously.
         batch.set(
           doc(db, "customerLookups", cleanPhone(booking.customerPhone)),
           {

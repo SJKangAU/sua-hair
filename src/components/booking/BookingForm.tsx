@@ -9,13 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import {
-  collection,
-  doc,
-  getDoc,
-  writeBatch,
-  increment,
-} from "firebase/firestore";
+import { collection, doc, writeBatch, increment } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { queueSlotBlockCreate } from "../../lib/slotBlocks";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
@@ -28,7 +22,7 @@ import StylistDateStep from "./StylistDateStep";
 import DetailsStep from "./DetailsStep";
 import BookingSummarySheet from "./BookingSummarySheet";
 import BookingConfirmation from "./BookingConfirmation";
-import type { Booking, BookedService, CustomerProfile } from "../../types";
+import type { Booking, BookedService } from "../../types";
 import type { FirestoreService } from "../../hooks/useServices";
 
 const ANIM_CSS = `
@@ -106,9 +100,7 @@ const BookingForm = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [notes, setNotes] = useState("");
-  const [lookingUp, setLookingUp] = useState(false);
-  const [customerProfile, setCustomerProfile] =
-    useState<CustomerProfile | null>(null);
+
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
 
   // ── Submit state ───────────────────────────────────────────────────────────
@@ -202,40 +194,15 @@ const BookingForm = () => {
     // useBookingAvailability clears date/time on stylistId change
   };
 
-  const handlePhoneChange = async (value: string) => {
+  const handlePhoneChange = (value: string) => {
     setCustomerPhone(value);
     setErrors((prev) => ({ ...prev, phone: undefined }));
-    const cleaned = cleanPhone(value);
-    if (!validatePhone(value)) return;
-
-    setLookingUp(true);
-    try {
-      // Looked up by document ID (a `get`, never a `where`/`list` query) so
-      // an anonymous customer can only ever retrieve the single record for
-      // the exact phone number they already typed in — see firestore.rules
-      // `customerLookups`. This never touches the `bookings` collection,
-      // which requires staff auth to read.
-      const snap = await getDoc(doc(db, "customerLookups", cleaned));
-      if (snap.exists()) {
-        const lookup = snap.data() as {
-          name: string;
-          visitCount: number;
-          lastVisit: string;
-        };
-        setCustomerProfile({
-          name: lookup.name,
-          phone: cleaned,
-          visitCount: lookup.visitCount,
-          lastVisit: lookup.lastVisit,
-        });
-        setCustomerName(lookup.name);
-      } else {
-        setCustomerProfile(null);
-      }
-    } catch (err) {
-      console.error("Customer lookup error:", err);
-    }
-    setLookingUp(false);
+    // No lookup here: `customerLookups` reads are staff-only (see
+    // firestore.rules). Even a get-by-phone-number lookup would let an
+    // anonymous visitor learn another customer's name and visit count
+    // just by knowing/guessing their phone number, without proving they
+    // own it — so the public form never reads customer identity back.
+    // Returning customers simply re-enter their name.
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -322,10 +289,11 @@ const BookingForm = () => {
       const batch = writeBatch(db);
       batch.set(bookingRefDoc, booking);
       queueSlotBlockCreate(batch, bookingRefDoc.id, booking);
-      // Keep the "returning customer" greeting lookup in sync — a get-by-ID
-      // doc, never a listable query, so it can stay anonymously readable
-      // without exposing any other customer's booking data (see
-      // firestore.rules `customerLookups`).
+      // Keep the customer visit-history record in sync for staff use — a
+      // get-by-ID doc, never a listable query, but reads are staff-only
+      // (see firestore.rules `customerLookups`). This write never leaks
+      // data back to the anonymous submitter; it's staff who benefit from
+      // it (e.g. admin walk-in creation).
       batch.set(
         doc(db, "customerLookups", cleanPhone(booking.customerPhone)),
         {
@@ -375,7 +343,6 @@ const BookingForm = () => {
     setCustomerName("");
     setCustomerPhone("");
     setNotes("");
-    setCustomerProfile(null);
     setErrors({});
   };
 
@@ -446,8 +413,6 @@ const BookingForm = () => {
               customerName={customerName}
               customerPhone={customerPhone}
               notes={notes}
-              lookingUp={lookingUp}
-              customerProfile={customerProfile}
               errors={errors}
               onPhoneChange={handlePhoneChange}
               onNameChange={(v) => {
