@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:unit": "vitest run tests/unit",
     "test:rules": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/rules.test.ts\"",
     "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\""
   },
