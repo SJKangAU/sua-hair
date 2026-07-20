@@ -31,7 +31,7 @@ const SearchBar = ({
           left: "0.75rem",
           top: "50%",
           transform: "translateY(-50%)",
-          color: "#6b6b6b",
+          color: "var(--grey-muted)",
           fontSize: "0.9rem",
           pointerEvents: "none",
         }}
@@ -46,11 +46,11 @@ const SearchBar = ({
         style={{
           width: "100%",
           padding: "0.6rem 0.75rem 0.6rem 2.25rem",
-          border: "1px solid #ccc",
+          border: "1px solid var(--admin-input-border)",
           borderRadius: "6px",
           fontSize: "0.9rem",
-          background: "#1a1a1a",
-          color: "white",
+          background: "var(--surface)",
+          color: "var(--ink)",
           boxSizing: "border-box",
           outline: "none",
         }}
@@ -66,7 +66,7 @@ const SearchBar = ({
             transform: "translateY(-50%)",
             background: "none",
             border: "none",
-            color: "#888",
+            color: "var(--grey-muted)",
             cursor: "pointer",
             fontSize: "0.9rem",
             padding: 0,

@@ -108,7 +108,7 @@ const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
     <h2
       style={{
         fontSize: "0.82rem",
-        color: "#6b6b6b",
+        color: "var(--grey-muted)",
         marginBottom: "0.75rem",
         fontWeight: 500,
         textTransform: "uppercase",
@@ -136,7 +136,7 @@ const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
       {isOwner && revenue !== undefined && (
         <StatCard
           label="Revenue"
-          value={`$${revenue.toLocaleString()}`}
+          value={`${revenue.toLocaleString()}`}
           color="var(--ink)"
         />
       )}

@@ -135,9 +135,9 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
           onClick={() => exportToCSV(sorted)}
           style={{
             padding: "0.6rem 1rem",
-            background: "#1a1a1a",
-            color: "#aaa",
-            border: "1px solid #555",
+            background: "var(--surface)",
+            color: "var(--ink)",
+            border: "1px solid var(--border-strong)",
             borderRadius: "6px",
             cursor: "pointer",
             fontSize: "0.82rem",
@@ -165,7 +165,7 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
             gap: "0.5rem",
             padding: "0.4rem 1.25rem",
             fontSize: "0.82rem",
-            color: "#6b6b6b",
+            color: "var(--grey-muted)",
           }}
         >
           <input
@@ -188,10 +188,11 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
           style={{
             textAlign: "center",
             padding: "3rem",
-            background: "white",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
             borderRadius: "10px",
-            color: "#6b6b6b",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            color: "var(--grey-muted)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>

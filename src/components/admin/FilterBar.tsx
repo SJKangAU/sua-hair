@@ -18,11 +18,11 @@ interface Props {
 
 const selectStyle = {
   padding: "0.5rem 0.75rem",
-  border: "1px solid #ccc",
+  border: "1px solid var(--admin-input-border)",
   borderRadius: "6px",
   fontSize: "0.9rem",
-  background: "#1a1a1a",
-  color: "white",
+  background: "var(--surface)",
+  color: "var(--ink)",
   cursor: "pointer",
   outline: "none",
 };
@@ -40,12 +40,19 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         alignItems: "center",
         flexWrap: "wrap",
         padding: "1rem 1.25rem",
-        background: "#2a2a2a",
-        borderRadius: "10px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        boxShadow: "var(--shadow-sm)",
       }}
     >
-      <span style={{ color: "#aaa", fontSize: "0.82rem", fontWeight: 500 }}>
+      <span
+        style={{
+          color: "var(--admin-muted)",
+          fontSize: "0.82rem",
+          fontWeight: 500,
+        }}
+      >
         Filter by:
       </span>
 
@@ -68,16 +75,18 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         <input
           type="date"
           aria-label="From date"
-          style={{ ...selectStyle, colorScheme: "dark" }}
+          style={{ ...selectStyle, colorScheme: "light" }}
           value={filters.dateFrom}
           max={filters.dateTo || undefined}
           onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })}
         />
-        <span style={{ color: "#666", fontSize: "0.8rem" }}>to</span>
+        <span style={{ color: "var(--grey-muted)", fontSize: "0.8rem" }}>
+          to
+        </span>
         <input
           type="date"
           aria-label="To date"
-          style={{ ...selectStyle, colorScheme: "dark" }}
+          style={{ ...selectStyle, colorScheme: "light" }}
           value={filters.dateTo}
           min={filters.dateFrom || undefined}
           onChange={(e) => onChange({ ...filters, dateTo: e.target.value })}
@@ -102,7 +111,7 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
           display: "flex",
           alignItems: "center",
           gap: "0.4rem",
-          color: "#aaa",
+          color: "var(--admin-muted)",
           fontSize: "0.85rem",
           cursor: "pointer",
         }}
@@ -124,10 +133,10 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
           style={{
             padding: "0.5rem 0.75rem",
             background: "none",
-            border: "1px solid #555",
+            border: "1px solid var(--border-strong)",
             borderRadius: "6px",
             fontSize: "0.82rem",
-            color: "#aaa",
+            color: "var(--grey-muted)",
             cursor: "pointer",
           }}
         >

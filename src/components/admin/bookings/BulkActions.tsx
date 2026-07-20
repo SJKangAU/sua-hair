@@ -25,12 +25,18 @@ const BulkActions = ({
         alignItems: "center",
         gap: "0.75rem",
         padding: "0.75rem 1.25rem",
-        background: "#1a1a1a",
+        background: "var(--admin-bg)",
         borderRadius: "8px",
         flexWrap: "wrap",
       }}
     >
-      <span style={{ color: "white", fontSize: "0.875rem", fontWeight: 500 }}>
+      <span
+        style={{
+          color: "var(--surface)",
+          fontSize: "0.875rem",
+          fontWeight: 500,
+        }}
+      >
         {selectedCount} booking{selectedCount > 1 ? "s" : ""} selected
       </span>
 
@@ -40,8 +46,8 @@ const BulkActions = ({
           onClick={onConfirmAll}
           style={{
             padding: "0.4rem 1rem",
-            background: "#e1f5ee",
-            color: "#085041",
+            background: "var(--success-bg)",
+            color: "var(--success)",
             border: "none",
             borderRadius: "6px",
             cursor: "pointer",
@@ -57,8 +63,8 @@ const BulkActions = ({
           onClick={onCancelAll}
           style={{
             padding: "0.4rem 1rem",
-            background: "#fcebeb",
-            color: "#a32d2d",
+            background: "var(--error-bg)",
+            color: "var(--error)",
             border: "none",
             borderRadius: "6px",
             cursor: "pointer",
@@ -75,8 +81,8 @@ const BulkActions = ({
           style={{
             padding: "0.4rem 1rem",
             background: "none",
-            border: "1px solid #555",
-            color: "#aaa",
+            border: "1px solid var(--admin-dim)",
+            color: "var(--admin-faint)",
             borderRadius: "6px",
             cursor: "pointer",
             fontSize: "0.82rem",

@@ -64,8 +64,8 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
             onClick={() => setSelectedDate((d) => addDays(d, -1))}
             style={{
               padding: "0.4rem 0.75rem",
-              background: "#1a1a1a",
-              color: "white",
+              background: "var(--ink)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
@@ -79,7 +79,7 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
               margin: 0,
               fontSize: "1rem",
               fontWeight: 500,
-              color: "#1a1a1a",
+              color: "var(--ink)",
               whiteSpace: "nowrap",
             }}
           >
@@ -89,8 +89,8 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
             onClick={() => setSelectedDate((d) => addDays(d, 1))}
             style={{
               padding: "0.4rem 0.75rem",
-              background: "#1a1a1a",
-              color: "white",
+              background: "var(--ink)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
@@ -121,8 +121,8 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
             onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
             style={{
               padding: "0.4rem 0.75rem",
-              background: "#1a1a1a",
-              color: "white",
+              background: "var(--ink)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
@@ -187,7 +187,9 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
                     gap: "1rem",
                     padding: "0.5rem 0.75rem",
                     background: urgent ? "var(--paper)" : "var(--paper)",
-                    border: `1px solid ${urgent ? "var(--border-strong)" : "var(--border)"}`,
+                    border: `1px solid ${
+                      urgent ? "var(--border-strong)" : "var(--border)"
+                    }`,
                     borderRadius: "7px",
                   }}
                 >
