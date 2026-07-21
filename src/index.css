@@ -27,20 +27,22 @@
 }
 
 :root {
-  /* Core palette */
-  --ink: #161615;           /* primary text, near-black */
-  --ink-soft: #3a3a38;      /* secondary headings, hover states */
+  /* Core palette — the ONLY neutrals used across the app. Every component
+     references these tokens; no raw hex greys/blacks/whites in components. */
+  --ink: #161615;           /* primary text, near-black, dark fills */
+  --ink-soft: #3a3a38;      /* strong secondary text, hover states */
+  --ink-muted: #6b6a65;     /* secondary body text (AA on white ~5:1) */
   --paper: #faf9f7;         /* page background */
-  --surface: #ffffff;       /* card surfaces */
+  --surface: #ffffff;       /* card surfaces, white text on dark */
+  --surface-raised: #f0eeea;/* subtly raised tint panels, hover fills */
   --border: #e7e5e0;        /* default hairline */
-  --border-strong: #cfccc5; /* emphasis, dividers */
-  --grey-muted: #8a8884;    /* secondary text, placeholders */
+  --border-strong: #cfccc5; /* emphasis dividers, disabled controls */
+  --grey-muted: #8a8884;    /* faint meta text, placeholders, disabled */
   --accent: #161615;        /* ONLY fill colour — primary CTAs and active nav */
 
   /* Legacy aliases — kept so existing components don't break during migration */
   --white: #ffffff;
   --off-white: #faf9f7;
-  --surface-raised: #f0eeea;
   --text-primary: #161615;
   --text-secondary: #3a3a38;
   --text-muted: #8a8884;
@@ -59,6 +61,7 @@
   --admin-dim: #5a5a58;
   --admin-dimmer: #8a8884;
   --admin-faint: #b0aea9;
+  --admin-panel: #1e1e1d;    /* raised dark surface — stylist portal cards */
 
   /* Admin light surfaces */
   --admin-card-border: #e7e5e0;
@@ -71,6 +74,17 @@
   /* Typography */
   --font-display: "Bodoni Moda", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
+
+  /* Type scale — collapses the previous ad-hoc 0.65–1rem sizes into a
+     consistent ramp. Display sizes stay inline on headline elements. */
+  --text-2xs: 0.6875rem;    /* 11px — micro labels, badges, eyebrow caps */
+  --text-xs: 0.75rem;       /* 12px — small meta, timestamps */
+  --text-sm: 0.8125rem;     /* 13px — secondary text */
+  --text-base: 0.875rem;    /* 14px — body / UI default */
+  --text-md: 1rem;          /* 16px — emphasis */
+
+  /* Motion — one shared easing/duration for hover & focus micro-interactions */
+  --transition-fast: 120ms ease;
 
   /* Radii */
   --radius-sm: 4px;
@@ -102,6 +116,112 @@
 
 body {
   background: var(--paper);
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────────
+   One designed focus ring for keyboard users (mouse clicks don't trigger
+   :focus-visible). Ink on light surfaces; a white variant for the dark
+   admin header / stylist portal where ink would be invisible. */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.admin-dark :focus-visible,
+[data-theme="dark"] :focus-visible {
+  outline-color: var(--surface);
+}
+
+/* ── Hover micro-interactions ──────────────────────────────────────────
+   Inline styles can't express :hover, so interactive surfaces opt in via
+   these classes. Restrained by design — borders darken, faint fills appear,
+   the primary CTA deepens; all on one shared 120ms ease. Suppressed for
+   users who prefer reduced motion and for :disabled controls. */
+
+/* Time slots & calendar days — border darkens toward ink on hover */
+.bk-slot:not(:disabled):hover,
+.bk-day:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+/* List rows (stylist / service pickers, booking rows) — faint tint fill */
+.bk-row:not(:disabled):hover {
+  background: var(--surface-raised);
+}
+
+/* Primary CTA — deepen ink on hover, subtle lift */
+.bk-cta:not(:disabled):hover {
+  background: var(--ink-soft);
+}
+
+/* Icon / ghost buttons — faint tint + darken to ink */
+.bk-ghost:not(:disabled):hover {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.bk-slot,
+.bk-day,
+.bk-row,
+.bk-cta,
+.bk-ghost {
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-slot,
+  .bk-day,
+  .bk-row,
+  .bk-cta,
+  .bk-ghost {
+    transition: none;
+  }
+}
+
+/* ── Loading skeleton & fade-in ────────────────────────────────────────
+   Used by the availability slot grid so results arrive gracefully instead
+   of popping in. Shimmer sweeps a tint gradient; real content fades up. */
+.bk-skeleton {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-raised) 25%,
+    var(--border) 37%,
+    var(--surface-raised) 63%
+  );
+  background-size: 400% 100%;
+  animation: bkShimmer 1.4s ease infinite;
+}
+@keyframes bkShimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+.bk-fade-in {
+  animation: bkFadeIn 0.28s ease both;
+}
+@keyframes bkFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-skeleton { animation: none; }
+  .bk-fade-in { animation: none; }
+}
+
+/* Screen-reader-only — visually hidden but announced (live regions, labels) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 #root {

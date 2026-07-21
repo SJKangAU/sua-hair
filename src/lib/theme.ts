@@ -7,18 +7,28 @@
 export const THEME = {
   colors: {
     ink: "#161615",        // primary text, near-black
-    inkSoft: "#3a3a38",    // secondary headings, hover states
+    inkSoft: "#3a3a38",    // strong secondary text, hover states
+    inkMuted: "#6b6a65",   // secondary body text (AA on white ~5:1)
     paper: "#faf9f7",      // page background
-    surface: "#ffffff",    // card surfaces
+    surface: "#ffffff",    // card surfaces, white text on dark
+    surfaceRaised: "#f0eeea", // raised tint panels, hover fills
     border: "#e7e5e0",     // default hairline
-    borderStrong: "#cfccc5", // emphasis, dividers
-    greyMuted: "#8a8884",  // secondary text, placeholders
+    borderStrong: "#cfccc5", // emphasis, dividers, disabled controls
+    greyMuted: "#8a8884",  // faint meta text, placeholders, disabled
     // accent is the ONLY fill colour — reserved for primary CTAs and active nav
     accent: "#161615",
   },
   fonts: {
     display: "'Bodoni Moda', Georgia, serif",  // headlines, confirmation screen
     body: "'Inter', system-ui, sans-serif",    // all UI text
+  },
+  // Type scale — mirrors --text-* in index.css. Display sizes stay inline.
+  text: {
+    "2xs": "0.6875rem", // 11px — micro labels, badges
+    xs: "0.75rem",      // 12px — small meta, timestamps
+    sm: "0.8125rem",    // 13px — secondary text
+    base: "0.875rem",   // 14px — body / UI default
+    md: "1rem",         // 16px — emphasis
   },
   spacing: {
     xs: "0.25rem",
