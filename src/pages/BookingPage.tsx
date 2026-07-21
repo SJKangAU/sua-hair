@@ -17,14 +17,14 @@ const BookingPage = () => {
       <div
         style={{
           minHeight: "100svh",
-          background: "#f5f5f5",
+          background: "var(--paper)",
           fontFamily: "var(--font-body)",
         }}
       >
         {/* Header */}
         <header
           style={{
-            background: "#0a0a0a",
+            background: "var(--ink)",
             padding: "0 clamp(1rem, 4vw, 1.75rem)",
             height: "60px",
             display: "flex",
@@ -40,7 +40,7 @@ const BookingPage = () => {
               fontFamily: "var(--font-display)",
               fontSize: "1.5rem",
               fontWeight: 400,
-              color: "#ffffff",
+              color: "var(--surface)",
               letterSpacing: "0.06em",
             }}
           >
@@ -49,15 +49,15 @@ const BookingPage = () => {
           <a
             href="/admin/login"
             style={{
-              color: "#888888",
-              fontSize: "0.72rem",
+              color: "var(--grey-muted)",
+              fontSize: "var(--text-xs)",
               textDecoration: "none",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              transition: "color 0.15s ease",
+              transition: "color var(--transition-fast)",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#888888")}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--surface)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--grey-muted)")}
           >
             Staff login
           </a>
@@ -66,7 +66,7 @@ const BookingPage = () => {
         {/* Hero */}
         <div
           style={{
-            background: "#0a0a0a",
+            background: "var(--ink)",
             padding: "3rem 1.5rem 4.5rem",
             textAlign: "center",
           }}
@@ -74,11 +74,11 @@ const BookingPage = () => {
           <p
             style={{
               fontFamily: "var(--font-body)",
-              fontSize: "0.68rem",
+              fontSize: "var(--text-2xs)",
               fontWeight: 600,
               letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "#888888",
+              color: "var(--grey-muted)",
               marginBottom: "0.875rem",
             }}
           >
@@ -89,7 +89,7 @@ const BookingPage = () => {
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
               fontWeight: 300,
-              color: "#ffffff",
+              color: "var(--surface)",
               lineHeight: 1.1,
               letterSpacing: "-0.01em",
               margin: "0 0 0.75rem",
@@ -99,8 +99,8 @@ const BookingPage = () => {
           </h1>
           <p
             style={{
-              color: "#666666",
-              fontSize: "0.875rem",
+              color: "var(--ink-muted)",
+              fontSize: "var(--text-base)",
               letterSpacing: "0.04em",
             }}
           >
@@ -118,7 +118,7 @@ const BookingPage = () => {
         >
           <div
             style={{
-              background: "#ffffff",
+              background: "var(--surface)",
               borderRadius: "16px",
               boxShadow:
                 "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
@@ -132,11 +132,11 @@ const BookingPage = () => {
         {/* Footer */}
         <footer
           style={{
-            borderTop: "1px solid #e8e8e8",
+            borderTop: "1px solid var(--border)",
             padding: "2rem",
             textAlign: "center",
-            color: "#aaaaaa",
-            fontSize: "0.78rem",
+            color: "var(--grey-muted)",
+            fontSize: "var(--text-xs)",
             letterSpacing: "0.02em",
           }}
         >
@@ -146,7 +146,7 @@ const BookingPage = () => {
               href="https://suahair.com.au"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#555555", textDecoration: "none" }}
+              style={{ color: "var(--ink-muted)", textDecoration: "none" }}
             >
               suahair.com.au
             </a>

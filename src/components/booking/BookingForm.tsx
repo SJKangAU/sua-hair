@@ -34,10 +34,7 @@ const ANIM_CSS = `
     from { transform: translateX(-40px); opacity: 0; }
     to   { transform: translateX(0);     opacity: 1; }
   }
-  @keyframes bkFadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  /* bkFadeIn is defined globally in index.css (shared with the slot grid). */
 
   /* Layout paddings live in classes (not inline) so they can shrink on
      narrow phones — inline styles can't express breakpoints. */
@@ -51,35 +48,34 @@ const ANIM_CSS = `
 
 const PRIMARY_BTN: React.CSSProperties = {
   padding: "0.75rem 1.75rem",
-  background: "#0a0a0a",
-  color: "#ffffff",
+  background: "var(--accent)",
+  color: "var(--surface)",
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
-  fontSize: "0.875rem",
+  fontSize: "var(--text-base)",
   fontWeight: 600,
   fontFamily: "var(--font-body)",
   letterSpacing: "0.04em",
-  transition: "opacity 0.15s ease",
 };
 
 const DISABLED_BTN: React.CSSProperties = {
   ...PRIMARY_BTN,
-  background: "#e8e8e8",
-  color: "#aaaaaa",
+  background: "var(--border)",
+  color: "var(--grey-muted)",
   cursor: "not-allowed",
 };
 
 const BACK_BTN: React.CSSProperties = {
   padding: "0.75rem 1.25rem",
   background: "transparent",
-  border: "1.5px solid #e0e0e0",
+  border: "1.5px solid var(--border)",
   borderRadius: "8px",
   cursor: "pointer",
-  fontSize: "0.875rem",
-  color: "#555555",
+  fontSize: "var(--text-base)",
+  color: "var(--ink-muted)",
   fontFamily: "var(--font-body)",
-  transition: "border-color 0.15s ease, color 0.15s ease",
+  transition: "border-color var(--transition-fast), color var(--transition-fast)",
 };
 
 const BookingForm = () => {
@@ -432,7 +428,7 @@ const BookingForm = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderTop: "1px solid #e8e8e8",
+          borderTop: "1px solid var(--border)",
           marginTop: "0.5rem",
         }}
       >
@@ -442,12 +438,12 @@ const BookingForm = () => {
             onClick={() => goTo(step - 1)}
             style={BACK_BTN}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#0a0a0a";
-              e.currentTarget.style.color = "#0a0a0a";
+              e.currentTarget.style.borderColor = "var(--ink)";
+              e.currentTarget.style.color = "var(--ink)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#e0e0e0";
-              e.currentTarget.style.color = "#555555";
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.color = "var(--ink-muted)";
             }}
           >
             ← Back
@@ -459,6 +455,7 @@ const BookingForm = () => {
         {/* Forward action */}
         {step === 1 && (
           <button
+            className="bk-cta"
             onClick={() => selectedServiceIds.length > 0 && goTo(2)}
             disabled={selectedServiceIds.length === 0}
             style={selectedServiceIds.length > 0 ? PRIMARY_BTN : DISABLED_BTN}
@@ -469,6 +466,7 @@ const BookingForm = () => {
 
         {step === 2 && (
           <button
+            className="bk-cta"
             onClick={() => date && time && setShowSummarySheet(true)}
             disabled={!date || !time}
             style={date && time ? PRIMARY_BTN : DISABLED_BTN}
@@ -479,6 +477,7 @@ const BookingForm = () => {
 
         {step === 3 && (
           <button
+            className="bk-cta"
             onClick={handleSubmit}
             disabled={!canSubmit}
             style={canSubmit ? PRIMARY_BTN : DISABLED_BTN}

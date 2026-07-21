@@ -51,7 +51,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             width: 56,
             height: 56,
             borderRadius: "50%",
-            background: "#0a0a0a",
+            background: "var(--ink)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -61,7 +61,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path
               d="M4 12l5 5 11-11"
-              stroke="#ffffff"
+              stroke="var(--surface)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -257,7 +257,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             rel="noopener noreferrer"
             style={{
               padding: "0.65rem 1.25rem",
-              background: "#ffffff",
+              background: "var(--surface)",
               border: `1.5px solid var(--border)`,
               borderRadius: "8px",
               textDecoration: "none",
@@ -280,7 +280,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             onClick={() => downloadICSFile(booking)}
             style={{
               padding: "0.65rem 1.25rem",
-              background: "#ffffff",
+              background: "var(--surface)",
               border: `1.5px solid var(--border)`,
               borderRadius: "8px",
               cursor: "pointer",
@@ -324,15 +324,16 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
 
         {/* Book again */}
         <button
+          className="bk-cta"
           onClick={onReset}
           style={{
             padding: "0.75rem 2.5rem",
-            background: "#0a0a0a",
-            color: "#ffffff",
+            background: "var(--ink)",
+            color: "var(--surface)",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
-            fontSize: "0.875rem",
+            fontSize: "var(--text-base)",
             fontWeight: 500,
             fontFamily: "var(--font-body)",
             letterSpacing: "0.04em",

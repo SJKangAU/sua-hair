@@ -91,7 +91,7 @@ const BookingSummarySheet = ({
         <div
           style={{
             position: "relative",
-            background: "#ffffff",
+            background: "var(--surface)",
             borderRadius: "20px 20px 0 0",
             padding: "1.75rem 1.5rem 2.5rem",
             maxHeight: "88dvh", // dvh — vh overshoots on mobile when the URL bar is visible
@@ -105,7 +105,7 @@ const BookingSummarySheet = ({
               width: 36,
               height: 4,
               borderRadius: 2,
-              background: "#d8d8d8",
+              background: "var(--border-strong)",
               margin: "0 auto 1.5rem",
             }}
           />
@@ -136,7 +136,7 @@ const BookingSummarySheet = ({
           {/* Services */}
           <div
             style={{
-              borderTop: "1.5px solid #0a0a0a",
+              borderTop: "1.5px solid var(--ink)",
               marginBottom: "1rem",
             }}
           >
@@ -211,7 +211,7 @@ const BookingSummarySheet = ({
                 }}
               >
                 <span style={{ color: "var(--ink-soft)" }}>{row.label}</span>
-                <span style={{ fontWeight: 500, color: "#0a0a0a" }}>
+                <span style={{ fontWeight: 500, color: "var(--ink)" }}>
                   {row.value}
                 </span>
               </div>
@@ -225,7 +225,7 @@ const BookingSummarySheet = ({
               justifyContent: "space-between",
               alignItems: "center",
               padding: "1rem 0",
-              borderTop: "2px solid #0a0a0a",
+              borderTop: "2px solid var(--ink)",
               marginBottom: "1.5rem",
             }}
           >
@@ -239,7 +239,7 @@ const BookingSummarySheet = ({
               Estimated Total
             </span>
             <span
-              style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0a0a0a" }}
+              style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--ink)" }}
             >
               {estimatedTotalDisplay}
             </span>
@@ -247,16 +247,17 @@ const BookingSummarySheet = ({
 
           {/* Actions */}
           <button
+            className="bk-cta"
             onClick={onConfirm}
             style={{
               display: "block",
               width: "100%",
               padding: "1rem",
-              background: "#0a0a0a",
-              color: "#ffffff",
+              background: "var(--ink)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "10px",
-              fontSize: "0.9rem",
+              fontSize: "var(--text-base)",
               fontWeight: 600,
               cursor: "pointer",
               letterSpacing: "0.03em",

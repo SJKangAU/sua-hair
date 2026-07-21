@@ -56,7 +56,7 @@ const RadioCircle = ({ selected }: { selected: boolean }) => (
           width: 7,
           height: 7,
           borderRadius: "50%",
-          background: "#ffffff",
+          background: "var(--surface)",
         }}
       />
     )}
@@ -164,6 +164,7 @@ const StylistDateStep = ({
 
         {/* Any Available */}
         <button
+          className="bk-row"
           onClick={() => onStylistSelect("any")}
           aria-pressed={isAny}
           style={{
@@ -209,6 +210,7 @@ const StylistDateStep = ({
           return (
             <button
               key={stylist.id}
+              className="bk-row"
               onClick={() => onStylistSelect(stylist.id)}
               aria-pressed={isSelected}
               style={{

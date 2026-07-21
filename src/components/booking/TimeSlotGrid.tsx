@@ -47,16 +47,36 @@ const formatDateDisplay = (dateStr: string): string =>
 const SectionLabel = ({ label }: { label: string }) => (
   <p
     style={{
-      fontSize: "0.65rem",
+      fontSize: "var(--text-2xs)",
       fontWeight: 700,
       letterSpacing: "0.12em",
       textTransform: "uppercase",
-      color: "#aaaaaa",
+      color: "var(--grey-muted)",
       margin: "0 0 0.5rem",
     }}
   >
     {label}
   </p>
+);
+
+// Placeholder slot grid shown while availability loads — same shape as the
+// real grid so results fade in without shifting layout.
+const SkeletonSlots = () => (
+  <div aria-hidden="true">
+    {["Morning", "Afternoon"].map((label, section) => (
+      <div
+        key={label}
+        style={{ marginBottom: section === 0 ? "1rem" : 0 }}
+      >
+        <SectionLabel label={label} />
+        <div className="bk-slot-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="bk-skeleton" style={{ height: "44px" }} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
 );
 
 // Module scope — defining this inside TimeSlotGrid gave it a new identity on
@@ -91,16 +111,16 @@ const WaitlistPrompt = ({
           alignItems: "flex-start",
           gap: "0.5rem",
           padding: "0.85rem 1rem",
-          background: "#f8f8f8",
+          background: "var(--surface-raised)",
           borderRadius: "10px",
-          border: "1px solid #e8e8e8",
+          border: "1px solid var(--border)",
         }}
       >
         <p
           style={{
             margin: 0,
-            fontSize: "0.875rem",
-            color: "#555",
+            fontSize: "var(--text-base)",
+            color: "var(--ink-muted)",
             lineHeight: 1.5,
           }}
         >
@@ -108,15 +128,16 @@ const WaitlistPrompt = ({
           notified when a spot opens?
         </p>
         <button
+          className="bk-cta"
           onClick={onShow}
           style={{
             padding: "0.6rem 1.25rem",
-            background: "#0a0a0a",
-            color: "#fff",
+            background: "var(--accent)",
+            color: "var(--surface)",
             border: "none",
             borderRadius: "7px",
             cursor: "pointer",
-            fontSize: "0.85rem",
+            fontSize: "var(--text-sm)",
             fontWeight: 500,
           }}
         >
@@ -150,6 +171,7 @@ const TimeSlotGrid = ({
     return (
       <button
         key={slot.time}
+        className="bk-slot"
         onClick={() => slot.available && onTimeSelect(slot.time)}
         disabled={unavailable}
         title={unavailable ? slot.reason : undefined}
@@ -161,15 +183,18 @@ const TimeSlotGrid = ({
           padding: "0.6rem 0.25rem",
           minHeight: "44px", // touch target minimum
           textAlign: "center",
-          border: `1.5px solid ${isSelected ? "#0a0a0a" : "#e0e0e0"}`,
+          border: `1.5px solid ${isSelected ? "var(--ink)" : "var(--border)"}`,
           borderRadius: "8px",
           cursor: unavailable ? "default" : "pointer",
-          background: isSelected ? "#0a0a0a" : "#ffffff",
-          fontSize: "0.78rem",
+          background: isSelected ? "var(--ink)" : "var(--surface)",
+          fontSize: "var(--text-sm)",
           fontWeight: isSelected ? 600 : 400,
-          color: isSelected ? "#ffffff" : unavailable ? "#cccccc" : "#0a0a0a",
+          color: isSelected
+            ? "var(--surface)"
+            : unavailable
+            ? "var(--border-strong)"
+            : "var(--ink)",
           fontFamily: "var(--font-body)",
-          transition: "all 0.1s ease",
           textDecoration: unavailable ? "line-through" : "none",
         }}
       >
@@ -192,54 +217,60 @@ const TimeSlotGrid = ({
       >
         <p
           style={{
-            fontSize: "0.72rem",
+            fontSize: "var(--text-xs)",
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#0a0a0a",
+            color: "var(--ink)",
             margin: 0,
           }}
         >
           {date ? formatDateDisplay(date) : "Select a date"}
         </p>
-        {loading && (
-          <span
-            aria-live="polite"
-            style={{ fontSize: "0.72rem", color: "#aaaaaa" }}
-          >
-            Checking availability...
-          </span>
-        )}
       </div>
 
-      {(noSlotsAtAll || allUnavailable) && (
-        <WaitlistPrompt
-          date={date}
-          stylistId={stylistId}
-          showWaitlist={showWaitlist}
-          onShow={() => setShowWaitlist(true)}
-          onDone={() => setShowWaitlist(false)}
-        />
-      )}
+      {/* Live region — announces the loading/loaded transition to AT users
+          while the visual skeleton conveys it to sighted users. */}
+      <span className="sr-only" aria-live="polite">
+        {loading ? "Checking availability" : ""}
+      </span>
 
-      {/* Morning */}
-      {morningSlots.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          <SectionLabel label="Morning" />
-          <div className="bk-slot-grid">
-            {morningSlots.map(renderSlot)}
-          </div>
-        </div>
-      )}
+      {loading ? (
+        <SkeletonSlots />
+      ) : (
+        <>
+          {(noSlotsAtAll || allUnavailable) && (
+            <WaitlistPrompt
+              date={date}
+              stylistId={stylistId}
+              showWaitlist={showWaitlist}
+              onShow={() => setShowWaitlist(true)}
+              onDone={() => setShowWaitlist(false)}
+            />
+          )}
 
-      {/* Afternoon */}
-      {afternoonSlots.length > 0 && (
-        <div>
-          <SectionLabel label="Afternoon" />
-          <div className="bk-slot-grid">
-            {afternoonSlots.map(renderSlot)}
+          <div className="bk-fade-in">
+            {/* Morning */}
+            {morningSlots.length > 0 && (
+              <div style={{ marginBottom: "1rem" }}>
+                <SectionLabel label="Morning" />
+                <div className="bk-slot-grid">
+                  {morningSlots.map(renderSlot)}
+                </div>
+              </div>
+            )}
+
+            {/* Afternoon */}
+            {afternoonSlots.length > 0 && (
+              <div>
+                <SectionLabel label="Afternoon" />
+                <div className="bk-slot-grid">
+                  {afternoonSlots.map(renderSlot)}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

@@ -76,7 +76,7 @@ const StepIndicator = ({ currentStep }: Props) => {
                   <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                     <path
                       d="M1.5 5.5l2.75 2.75 4.75-4.75"
-                      stroke="#ffffff"
+                      stroke="var(--surface)"
                       strokeWidth="1.75"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -87,7 +87,7 @@ const StepIndicator = ({ currentStep }: Props) => {
                     style={{
                       fontSize: "0.68rem",
                       fontWeight: 600,
-                      color: active ? "#ffffff" : "var(--grey-muted)",
+                      color: active ? "var(--surface)" : "var(--grey-muted)",
                       fontFamily: "var(--font-body)",
                       lineHeight: 1,
                     }}

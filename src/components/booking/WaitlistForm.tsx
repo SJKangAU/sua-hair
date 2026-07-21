@@ -68,14 +68,14 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "0.85rem 1rem",
-    border: "1.5px solid #e8e8e8",
+    border: "1.5px solid var(--border)",
     borderRadius: "8px",
     fontSize: "1rem",
-    background: "#fafafa",
-    color: "#0a0a0a",
+    background: "var(--paper)",
+    color: "var(--ink)",
     boxSizing: "border-box",
     outline: "none",
-    transition: "border-color 0.15s",
+    transition: "border-color var(--transition-fast)",
   };
 
   if (submitted) {
@@ -97,7 +97,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
         <p
           style={{
             margin: 0,
-            color: "#555",
+            color: "var(--ink-muted)",
             fontSize: "0.9rem",
             maxWidth: 300,
             lineHeight: 1.6,
@@ -106,16 +106,17 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
           We'll be in touch as soon as a spot opens up for {requestedDate}.
         </p>
         <button
+          className="bk-cta"
           onClick={onDone}
           style={{
             marginTop: "0.5rem",
             padding: "0.75rem 2rem",
-            background: "#0a0a0a",
-            color: "#fff",
+            background: "var(--ink)",
+            color: "var(--surface)",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
-            fontSize: "0.9rem",
+            fontSize: "var(--text-base)",
             fontWeight: 500,
           }}
         >
@@ -132,7 +133,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
           margin: "0 0 0.35rem",
           fontSize: "1.15rem",
           fontWeight: 600,
-          color: "#0a0a0a",
+          color: "var(--ink)",
         }}
       >
         Join the waitlist
@@ -141,7 +142,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
         style={{
           margin: "0 0 1.5rem",
           fontSize: "0.9rem",
-          color: "#555",
+          color: "var(--ink-muted)",
           lineHeight: 1.6,
         }}
       >
@@ -205,18 +206,19 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
         </div>
 
         <button
+          className="bk-cta"
           onClick={handleSubmit}
           disabled={submitting}
           style={{
             width: "100%",
             padding: "0.95rem",
-            background: submitting ? "#ccc" : "#0a0a0a",
-            color: submitting ? "#888" : "#fff",
+            background: submitting ? "var(--border-strong)" : "var(--ink)",
+            color: submitting ? "var(--grey-muted)" : "var(--surface)",
             border: "none",
             borderRadius: "8px",
             cursor: submitting ? "not-allowed" : "pointer",
             fontWeight: 500,
-            fontSize: "0.95rem",
+            fontSize: "var(--text-base)",
             letterSpacing: "0.02em",
           }}
         >
@@ -224,14 +226,16 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
         </button>
 
         <button
+          className="bk-ghost"
           onClick={onDone}
           style={{
             background: "none",
             border: "none",
-            color: "#888",
+            color: "var(--grey-muted)",
             cursor: "pointer",
-            fontSize: "0.85rem",
+            fontSize: "var(--text-sm)",
             padding: "0.25rem",
+            borderRadius: "6px",
           }}
         >
           Choose a different date instead

@@ -53,7 +53,7 @@ const CheckCircle = ({ selected }: { selected: boolean }) => (
       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
         <path
           d="M1.5 5.5l2.75 2.75 4.75-4.75"
-          stroke="#ffffff"
+          stroke="var(--surface)"
           strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -111,7 +111,13 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
         >
           Select Services
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "var(--grey-muted)", margin: 0 }}>
+        <p
+          style={{
+            fontSize: "var(--text-sm)",
+            color: "var(--grey-muted)",
+            margin: 0,
+          }}
+        >
           Choose as many services as you'd like
         </p>
       </div>
@@ -126,6 +132,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
             <div key={cat}>
               {/* Category header */}
               <button
+                className="bk-row"
                 onClick={() => toggleCategory(cat)}
                 aria-expanded={isOpen}
                 style={{
@@ -143,7 +150,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
               >
                 <span
                   style={{
-                    fontSize: "0.72rem",
+                    fontSize: "var(--text-xs)",
                     fontWeight: 700,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
@@ -154,7 +161,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                 </span>
                 <span
                   style={{
-                    fontSize: "0.8rem",
+                    fontSize: "var(--text-sm)",
                     color: "var(--grey-muted)",
                     transform: isOpen ? "rotate(180deg)" : "none",
                     transition: "transform 0.22s ease",
@@ -178,6 +185,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                   return (
                     <button
                       key={service.id}
+                      className="bk-row"
                       onClick={() => onToggle(service.id)}
                       aria-pressed={isSelected}
                       style={{
@@ -198,10 +206,9 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                         <p
                           style={{
                             margin: 0,
-                            fontSize: "0.875rem",
+                            fontSize: "var(--text-base)",
                             fontWeight: isSelected ? 600 : 400,
                             color: "var(--ink)",
-                            transition: "font-weight 0.1s",
                           }}
                         >
                           {service.name}
@@ -209,7 +216,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                         <p
                           style={{
                             margin: "2px 0 0",
-                            fontSize: "0.75rem",
+                            fontSize: "var(--text-xs)",
                             color: "var(--grey-muted)",
                           }}
                         >
@@ -223,7 +230,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                       {/* Price */}
                       <span
                         style={{
-                          fontSize: "0.82rem",
+                          fontSize: "var(--text-sm)",
                           fontWeight: 500,
                           color: "var(--ink)",
                           flexShrink: 0,
@@ -262,12 +269,16 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
             animation: "bkFadeIn 0.2s ease both",
           }}
         >
-          <span style={{ fontSize: "0.82rem", color: "var(--grey-muted)" }}>
+          <span style={{ fontSize: "var(--text-sm)", color: "var(--grey-muted)" }}>
             {selectedIds.length} service{selectedIds.length !== 1 ? "s" : ""}{" "}
             selected
           </span>
           <span
-            style={{ fontSize: "0.875rem", fontWeight: 600, color: "#ffffff" }}
+            style={{
+              fontSize: "var(--text-base)",
+              fontWeight: 600,
+              color: "var(--surface)",
+            }}
           >
             {totalTime} min total
           </span>

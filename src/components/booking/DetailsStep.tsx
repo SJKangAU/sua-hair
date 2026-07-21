@@ -55,12 +55,12 @@ const INPUT_BASE: React.CSSProperties = {
   border: `1.5px solid var(--border)`,
   borderRadius: "8px",
   fontSize: "1rem", // 16px minimum — below this iOS Safari auto-zooms on focus
-  background: "#ffffff",
+  background: "var(--surface)",
   color: "var(--ink)",
   outline: "none",
   boxSizing: "border-box",
   fontFamily: "var(--font-body)",
-  transition: "border-color 0.15s ease",
+  transition: "border-color var(--transition-fast)",
 };
 
 const DetailsStep = ({
@@ -103,7 +103,13 @@ const DetailsStep = ({
         >
           Your Details
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#999999", margin: 0 }}>
+        <p
+          style={{
+            fontSize: "var(--text-sm)",
+            color: "var(--grey-muted)",
+            margin: 0,
+          }}
+        >
           Almost there — just a few details
         </p>
       </div>
@@ -119,7 +125,7 @@ const DetailsStep = ({
       >
         <p
           style={{
-            fontSize: "0.65rem",
+            fontSize: "var(--text-2xs)",
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
@@ -140,11 +146,15 @@ const DetailsStep = ({
               marginBottom: "0.375rem",
             }}
           >
-            <span style={{ fontSize: "0.82rem", color: "#0a0a0a" }}>
+            <span style={{ fontSize: "var(--text-sm)", color: "var(--ink)" }}>
               {s.name}
             </span>
             <span
-              style={{ fontSize: "0.82rem", fontWeight: 600, color: "#0a0a0a" }}
+              style={{
+                fontSize: "var(--text-sm)",
+                fontWeight: 600,
+                color: "var(--ink)",
+              }}
             >
               {s.priceDisplay}
             </span>
@@ -160,11 +170,21 @@ const DetailsStep = ({
           }}
         >
           <p
-            style={{ margin: "0 0 2px", fontSize: "0.78rem", color: "#555555" }}
+            style={{
+              margin: "0 0 2px",
+              fontSize: "var(--text-xs)",
+              color: "var(--ink-muted)",
+            }}
           >
             {stylistName}
           </p>
-          <p style={{ margin: 0, fontSize: "0.78rem", color: "#555555" }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "var(--text-xs)",
+              color: "var(--ink-muted)",
+            }}
+          >
             {formattedDate}
             {time ? ` · ${time}` : ""}
             {totalTime ? ` · ${totalTime} min` : ""}
@@ -183,11 +203,21 @@ const DetailsStep = ({
           }}
         >
           <span
-            style={{ fontSize: "0.78rem", fontWeight: 600, color: "#0a0a0a" }}
+            style={{
+              fontSize: "var(--text-xs)",
+              fontWeight: 600,
+              color: "var(--ink)",
+            }}
           >
             Estimated Total
           </span>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0a0a0a" }}>
+          <span
+            style={{
+              fontSize: "var(--text-md)",
+              fontWeight: 700,
+              color: "var(--ink)",
+            }}
+          >
             {estimatedTotalDisplay}
           </span>
         </div>

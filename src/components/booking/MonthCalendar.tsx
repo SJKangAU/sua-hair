@@ -74,6 +74,7 @@ const MonthCalendar = ({
         }}
       >
         <button
+          className="bk-ghost"
           onClick={onPrevMonth}
           aria-label="Previous month"
           style={{
@@ -81,7 +82,7 @@ const MonthCalendar = ({
             border: "none",
             cursor: "pointer",
             color: "var(--ink-soft)",
-            fontSize: "1rem",
+            fontSize: "var(--text-md)",
             padding: "0.25rem 0.5rem",
             borderRadius: "6px",
             lineHeight: 1,
@@ -93,7 +94,7 @@ const MonthCalendar = ({
           aria-live="polite"
           style={{
             fontWeight: 600,
-            fontSize: "0.82rem",
+            fontSize: "var(--text-sm)",
             color: "var(--ink)",
             letterSpacing: "0.02em",
           }}
@@ -101,6 +102,7 @@ const MonthCalendar = ({
           {monthName}
         </span>
         <button
+          className="bk-ghost"
           onClick={onNextMonth}
           aria-label="Next month"
           style={{
@@ -108,7 +110,7 @@ const MonthCalendar = ({
             border: "none",
             cursor: "pointer",
             color: "var(--ink-soft)",
-            fontSize: "1rem",
+            fontSize: "var(--text-md)",
             padding: "0.25rem 0.5rem",
             borderRadius: "6px",
             lineHeight: 1,
@@ -172,6 +174,7 @@ const MonthCalendar = ({
           return (
             <button
               key={day}
+              className="bk-day"
               onClick={() => !isDisabled && onDateSelect(day)}
               disabled={isDisabled}
               aria-label={`${fullDate}${
@@ -189,16 +192,16 @@ const MonthCalendar = ({
                 border:
                   isToday && !isSelected
                     ? `1.5px solid var(--ink)`
-                    : "none",
+                    : "1.5px solid transparent",
                 borderRadius: "50%",
                 background: isSelected ? "var(--ink)" : "transparent",
                 color: isSelected
-                  ? "#ffffff"
+                  ? "var(--surface)"
                   : isDisabled
                   ? "var(--border-strong)"
                   : "var(--ink)",
                 cursor: isDisabled ? "default" : "pointer",
-                fontSize: "0.8rem",
+                fontSize: "var(--text-sm)",
                 fontWeight: isSelected ? 600 : isToday ? 700 : 400,
                 fontFamily: "var(--font-body)",
                 display: "flex",
@@ -207,7 +210,6 @@ const MonthCalendar = ({
                 justifyContent: "center",
                 gap: "2px",
                 padding: "2px",
-                transition: "background 0.1s ease, color 0.1s ease",
               }}
             >
               {dayNum}
