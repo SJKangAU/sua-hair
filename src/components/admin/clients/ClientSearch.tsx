@@ -175,7 +175,7 @@ const ClientSearch = ({ onResults, onLoading, onReset }: Props) => {
         style={{
           width: "100%",
           padding: "0.75rem 0.75rem 0.75rem 2.5rem",
-          border: "1px solid #ddd",
+          border: "1px solid var(--border-strong)",
           borderRadius: "8px",
           fontSize: "1rem",
           boxSizing: "border-box" as const,
@@ -197,7 +197,7 @@ const ClientSearch = ({ onResults, onLoading, onReset }: Props) => {
             border: "none",
             fontSize: "1rem",
             cursor: "pointer",
-            color: "#aaa",
+            color: "var(--grey-muted)",
             padding: 0,
           }}
         >

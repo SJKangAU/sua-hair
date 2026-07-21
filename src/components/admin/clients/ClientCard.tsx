@@ -38,11 +38,11 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "12px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
         overflow: "hidden",
-        border: "1px solid #f0f0f0",
+        border: "1px solid var(--border)",
       }}
     >
       {/* Client header */}
@@ -135,7 +135,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             >
               {client.visitCount}
             </p>
-            <p style={{ fontSize: "0.72rem", color: "#6b6b6b", margin: 0 }}>
+            <p style={{ fontSize: "0.72rem", color: "var(--ink-muted)", margin: 0 }}>
               visits
             </p>
           </div>
@@ -144,13 +144,13 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
               style={{
                 fontSize: "1.4rem",
                 fontWeight: 700,
-                color: "#1a1a1a",
+                color: "var(--ink)",
                 margin: 0,
               }}
             >
               ${client.totalSpend}
             </p>
-            <p style={{ fontSize: "0.72rem", color: "#6b6b6b", margin: 0 }}>
+            <p style={{ fontSize: "0.72rem", color: "var(--ink-muted)", margin: 0 }}>
               total spend
             </p>
           </div>
@@ -159,14 +159,14 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
               style={{
                 fontSize: "0.82rem",
                 fontWeight: 600,
-                color: "#1a1a1a",
+                color: "var(--ink)",
                 margin: 0,
                 whiteSpace: "nowrap",
               }}
             >
               {client.favouriteStylist.split(" ")[0]}
             </p>
-            <p style={{ fontSize: "0.72rem", color: "#6b6b6b", margin: 0 }}>
+            <p style={{ fontSize: "0.72rem", color: "var(--ink-muted)", margin: 0 }}>
               fav stylist
             </p>
           </div>
@@ -180,9 +180,9 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0.6rem 1.5rem",
-          background: "#fafafa",
-          borderTop: "1px solid #f0f0f0",
-          borderBottom: expanded ? "1px solid #f0f0f0" : "none",
+          background: "var(--paper)",
+          borderTop: "1px solid var(--border)",
+          borderBottom: expanded ? "1px solid var(--border)" : "none",
         }}
       >
         <div
@@ -190,7 +190,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             display: "flex",
             gap: "1.5rem",
             fontSize: "0.8rem",
-            color: "#6b6b6b",
+            color: "var(--ink-muted)",
           }}
         >
           <span>
@@ -221,11 +221,11 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             style={{
               padding: "0.35rem 0.85rem",
               background: "none",
-              border: "1px solid #ddd",
+              border: "1px solid var(--border-strong)",
               borderRadius: "6px",
               fontSize: "0.78rem",
               cursor: "pointer",
-              color: "#6b6b6b",
+              color: "var(--ink-muted)",
             }}
           >
             {expanded ? "Hide history" : "View history"}
@@ -240,7 +240,7 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
             style={{
               fontSize: "0.78rem",
               fontWeight: 600,
-              color: "#6b6b6b",
+              color: "var(--ink-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               marginBottom: "0.75rem",
@@ -258,14 +258,14 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
                 className="admin-history-row"
                 style={{
                   padding: "0.6rem 0.75rem",
-                  background: "#fafafa",
+                  background: "var(--paper)",
                   borderRadius: "6px",
                   fontSize: "0.82rem",
                 }}
               >
-                <span style={{ color: "#6b6b6b" }}>{booking.date}</span>
+                <span style={{ color: "var(--ink-muted)" }}>{booking.date}</span>
                 <span style={{ fontWeight: 500 }}>{booking.serviceName}</span>
-                <span style={{ color: "#6b6b6b" }}>
+                <span style={{ color: "var(--ink-muted)" }}>
                   {booking.stylistName.split(" ")[0]}
                 </span>
                 <span style={{ fontWeight: 600 }}>${booking.servicePrice}</span>

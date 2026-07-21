@@ -30,7 +30,7 @@ const ManagePage = () => {
         onError={(msg) => addToast(msg, "error")}
       />
 
-      <hr style={{ border: "none", borderTop: "1px solid #f0f0f0", margin: 0 }} />
+      <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }} />
 
       <OpeningHoursEditor
         onSuccess={(msg) => addToast(msg, "success")}

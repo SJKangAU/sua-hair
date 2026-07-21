@@ -94,10 +94,10 @@ const BookingCard = ({
         className="admin-booking-card"
         style={{
           background: selected
-            ? "#fdf6ec"
+            ? "var(--surface-raised)"
             : booking.flagged
             ? "#fff5f4"
-            : "white",
+            : "var(--surface)",
           borderRadius: "10px",
           padding: "1rem 1.25rem",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -123,7 +123,7 @@ const BookingCard = ({
             {booking.customerName}
           </p>
           {booking.customerPhone && (
-            <p style={{ color: "#6b6b6b", fontSize: "0.78rem", margin: 0 }}>
+            <p style={{ color: "var(--ink-muted)", fontSize: "0.78rem", margin: 0 }}>
               {booking.customerPhone}
             </p>
           )}
@@ -163,11 +163,11 @@ const BookingCard = ({
           <p style={{ fontSize: "0.875rem", fontWeight: 500, margin: 0 }}>
             {booking.serviceName}
           </p>
-          <p style={{ color: "#6b6b6b", fontSize: "0.78rem", margin: 0 }}>
+          <p style={{ color: "var(--ink-muted)", fontSize: "0.78rem", margin: 0 }}>
             with {booking.stylistName}
           </p>
           {booking.restTime > 0 && (
-            <p style={{ color: "#aaa", fontSize: "0.72rem", margin: 0 }}>
+            <p style={{ color: "var(--grey-muted)", fontSize: "0.72rem", margin: 0 }}>
               {booking.activeTime}min + {booking.restTime}min setting
               {booking.returnTime && ` · returns ${booking.returnTime}`}
             </p>
@@ -179,10 +179,10 @@ const BookingCard = ({
           <p style={{ fontSize: "0.875rem", fontWeight: 500, margin: 0 }}>
             {booking.date}
           </p>
-          <p style={{ color: "#6b6b6b", fontSize: "0.78rem", margin: 0 }}>
+          <p style={{ color: "var(--ink-muted)", fontSize: "0.78rem", margin: 0 }}>
             {booking.time}
           </p>
-          <p style={{ color: "#6b6b6b", fontSize: "0.72rem", margin: 0 }}>
+          <p style={{ color: "var(--ink-muted)", fontSize: "0.72rem", margin: 0 }}>
             ${booking.servicePrice}
           </p>
         </div>
@@ -262,8 +262,8 @@ const BookingCard = ({
                 onClick={clearFlag}
                 style={{
                   padding: "0.25rem 0.6rem",
-                  background: "#f0f0f0",
-                  color: "#4a4a4a",
+                  background: "var(--surface-raised)",
+                  color: "var(--ink-soft)",
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "0.75rem",
@@ -278,8 +278,8 @@ const BookingCard = ({
                 onClick={openFlagPrompt}
                 style={{
                   padding: "0.25rem 0.6rem",
-                  background: "#f0f0f0",
-                  color: "#4a4a4a",
+                  background: "var(--surface-raised)",
+                  color: "var(--ink-soft)",
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "0.75rem",
@@ -309,7 +309,7 @@ const BookingCard = ({
                 placeholder="Reason (e.g. walk-in mismatch)"
                 style={{
                   padding: "0.35rem 0.5rem",
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-strong)",
                   borderRadius: "4px",
                   fontSize: "0.75rem",
                   outline: "none",
@@ -336,8 +336,8 @@ const BookingCard = ({
                   style={{
                     padding: "0.2rem 0.55rem",
                     background: "none",
-                    color: "#6b6b6b",
-                    border: "1px solid #ccc",
+                    color: "var(--ink-muted)",
+                    border: "1px solid var(--border-strong)",
                     borderRadius: "4px",
                     fontSize: "0.72rem",
                     cursor: "pointer",
@@ -354,7 +354,7 @@ const BookingCard = ({
               className="admin-booking-card-notes"
               style={{
                 fontSize: "0.7rem",
-                color: "#6b6b6b",
+                color: "var(--ink-muted)",
                 margin: 0,
               }}
             >

@@ -71,7 +71,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
 
   if (stylistsLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "3rem", color: "#6b6b6b" }}>
+      <div style={{ textAlign: "center", padding: "3rem", color: "var(--ink-muted)" }}>
         Loading timeline...
       </div>
     );

@@ -75,8 +75,8 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
     padding: "0.35rem 0.85rem",
     borderRadius: "999px",
     border: "none",
-    background: active ? "#1a1a1a" : "#f0f0f0",
-    color: active ? "#fff" : "#555",
+    background: active ? "var(--accent)" : "var(--surface-raised)",
+    color: active ? "var(--surface)" : "var(--ink-muted)",
     cursor: "pointer",
     fontSize: "0.8rem",
     fontWeight: active ? 600 : 400,
@@ -100,7 +100,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                 style={{
                   marginLeft: "0.5rem",
                   background: "var(--ink)",
-                  color: "#fff",
+                  color: "var(--surface)",
                   borderRadius: "999px",
                   padding: "0.1rem 0.5rem",
                   fontSize: "0.72rem",
@@ -113,7 +113,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
             )}
           </h3>
           <p
-            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+            style={{ fontSize: "0.8rem", color: "var(--grey-muted)", margin: "0.2rem 0 0" }}
           >
             Clients waiting for an opening — oldest requests first.
           </p>
@@ -141,18 +141,18 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
       </div>
 
       {loading ? (
-        <div style={{ color: "#bbb", fontSize: "0.85rem", padding: "1rem 0" }}>
+        <div style={{ color: "var(--grey-muted)", fontSize: "0.85rem", padding: "1rem 0" }}>
           Loading waitlist…
         </div>
       ) : visible.length === 0 ? (
         <div
           style={{
-            background: "#fafafa",
-            border: "1px solid #f0f0f0",
+            background: "var(--paper)",
+            border: "1px solid var(--border)",
             borderRadius: "10px",
             padding: "2.5rem",
             textAlign: "center",
-            color: "#bbb",
+            color: "var(--grey-muted)",
             fontSize: "0.88rem",
           }}
         >
@@ -169,8 +169,8 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
               <div
                 key={entry.id}
                 style={{
-                  background: "#fff",
-                  border: "1px solid #f0f0f0",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
                   borderRadius: "10px",
                   padding: "0.9rem 1.1rem",
                   display: "grid",
@@ -203,7 +203,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                       {STATUS_LABELS[entry.status]}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "#777" }}>
+                  <div style={{ fontSize: "0.82rem", color: "var(--ink-muted)" }}>
                     {entry.customerPhone}
                     <span style={{ marginLeft: "0.75rem" }}>
                       Requested: {entry.requestedDate}
@@ -212,7 +212,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                   <div
                     style={{
                       fontSize: "0.75rem",
-                      color: "#bbb",
+                      color: "var(--grey-muted)",
                       marginTop: "0.2rem",
                     }}
                   >
@@ -230,8 +230,8 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
                       disabled={isUpdating}
                       style={{
                         padding: "0.4rem 0.85rem",
-                        background: isUpdating ? "#ddd" : "#1a1a1a",
-                        color: isUpdating ? "#999" : "#fff",
+                        background: isUpdating ? "var(--border-strong)" : "var(--accent)",
+                        color: isUpdating ? "var(--grey-muted)" : "var(--surface)",
                         border: "none",
                         borderRadius: "6px",
                         cursor: isUpdating ? "not-allowed" : "pointer",

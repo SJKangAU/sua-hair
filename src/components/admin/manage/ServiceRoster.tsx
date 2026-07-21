@@ -250,7 +250,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "12px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
         overflow: "hidden",
@@ -489,7 +489,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 background: submitting
                   ? "var(--admin-input-border)"
                   : "var(--admin-bg)",
-                color: submitting ? "#999" : "white",
+                color: submitting ? "var(--grey-muted)" : "var(--surface)",
                 border: "none",
                 borderRadius: "6px",
                 fontSize: "0.875rem",
@@ -585,7 +585,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                             style={{
                               marginLeft: "0.4rem",
                               fontSize: "0.68rem",
-                              color: "#aaa",
+                              color: "var(--grey-muted)",
                             }}
                           >
                             Inactive
@@ -614,7 +614,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                       <p
                         style={{
                           margin: 0,
-                          color: "#aaa",
+                          color: "var(--grey-muted)",
                           fontSize: "0.68rem",
                         }}
                       >
@@ -641,7 +641,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           borderRadius: "4px",
                           fontSize: "0.7rem",
                           cursor: isFirst ? "default" : "pointer",
-                          color: isFirst ? "#ccc" : "var(--admin-muted)",
+                          color: isFirst ? "var(--border-strong)" : "var(--admin-muted)",
                           lineHeight: 1,
                         }}
                       >
@@ -658,7 +658,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           borderRadius: "4px",
                           fontSize: "0.7rem",
                           cursor: isLast ? "default" : "pointer",
-                          color: isLast ? "#ccc" : "var(--admin-muted)",
+                          color: isLast ? "var(--border-strong)" : "var(--admin-muted)",
                           lineHeight: 1,
                         }}
                       >

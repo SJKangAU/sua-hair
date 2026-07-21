@@ -39,7 +39,7 @@ const CurrentTimeBar = () => {
         left: 0,
         right: 0,
         height: "1.5px",
-        background: "#ffffff",
+        background: "var(--surface)",
         zIndex: 10,
         pointerEvents: "none", // don't block clicks on blocks behind it
       }}
@@ -50,7 +50,7 @@ const CurrentTimeBar = () => {
           position: "absolute",
           left: "-52px",
           top: "-9px",
-          background: "#ffffff",
+          background: "var(--surface)",
           color: "var(--ink)",
           fontSize: "0.7rem",
           fontWeight: 600,
@@ -75,7 +75,7 @@ const CurrentTimeBar = () => {
           width: "9px",
           height: "9px",
           borderRadius: "50%",
-          background: "#ffffff",
+          background: "var(--surface)",
         }}
       />
     </div>

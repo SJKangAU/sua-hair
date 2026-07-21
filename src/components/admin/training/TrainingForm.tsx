@@ -20,9 +20,9 @@ interface Props {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.65rem",
-  border: "1px solid #ddd",
+  border: "1px solid var(--admin-input-border)",
   borderRadius: "6px",
-  fontSize: "0.9rem",
+  fontSize: "var(--text-base)",
   boxSizing: "border-box",
   marginTop: "0.25rem",
 };
@@ -31,8 +31,8 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   marginBottom: "1rem",
   fontWeight: 500,
-  fontSize: "0.875rem",
-  color: "#1a1a1a",
+  fontSize: "var(--text-base)",
+  color: "var(--ink)",
 };
 
 // Common training topics for quick selection
@@ -172,11 +172,11 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "12px",
         padding: "1.5rem",
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        border: "1px solid #f0f0f0",
+        border: "1px solid var(--border)",
       }}
     >
       <h3 style={{ margin: "0 0 1.25rem", fontSize: "1rem", fontWeight: 600 }}>
@@ -336,8 +336,8 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
         style={{
           width: "100%",
           padding: "0.75rem",
-          background: submitting ? "#ddd" : "#1a1a1a",
-          color: submitting ? "#999" : "white",
+          background: submitting ? "var(--border-strong)" : "var(--accent)",
+          color: submitting ? "var(--grey-muted)" : "var(--surface)",
           border: "none",
           borderRadius: "6px",
           cursor: submitting ? "not-allowed" : "pointer",

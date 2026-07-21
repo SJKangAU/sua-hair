@@ -103,7 +103,7 @@ const BookingsPage = ({ onUpdateStatus, onSetFlag, isOwner }: Props) => {
       <hr
         style={{
           border: "none",
-          borderTop: "1px solid #f0f0f0",
+          borderTop: "1px solid var(--border)",
           margin: "0.5rem 0",
         }}
       />

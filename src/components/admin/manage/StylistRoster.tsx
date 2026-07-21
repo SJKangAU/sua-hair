@@ -146,7 +146,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "12px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
         overflow: "hidden",
@@ -299,7 +299,7 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                 background: submitting
                   ? "var(--admin-input-border)"
                   : "var(--admin-bg)",
-                color: submitting ? "#999" : "white",
+                color: submitting ? "var(--grey-muted)" : "var(--surface)",
                 border: "none",
                 borderRadius: "6px",
                 fontSize: "0.875rem",

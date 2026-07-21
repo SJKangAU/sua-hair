@@ -52,7 +52,7 @@ const NotificationBell = () => {
           cursor: "pointer",
           padding: "0.4rem",
           borderRadius: "6px",
-          color: "#555",
+          color: "var(--ink-muted)",
           lineHeight: 1,
           fontSize: "1.2rem",
           display: "flex",
@@ -70,7 +70,7 @@ const NotificationBell = () => {
               position: "absolute",
               top: 2,
               right: 2,
-              background: "#ffffff",
+              background: "var(--surface)",
               color: "var(--ink)",
               borderRadius: "50%",
               width: 16,
@@ -97,8 +97,8 @@ const NotificationBell = () => {
             right: 0,
             top: "calc(100% + 6px)",
             width: 340,
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
             borderRadius: "10px",
             boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
             zIndex: 1000,
@@ -112,10 +112,12 @@ const NotificationBell = () => {
               justifyContent: "space-between",
               alignItems: "center",
               padding: "0.75rem 1rem",
-              borderBottom: "1px solid #f0f0f0",
+              borderBottom: "1px solid var(--border)",
             }}
           >
-            <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>Notifications</span>
+            <span style={{ fontWeight: 600, fontSize: "var(--text-base)" }}>
+              Notifications
+            </span>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
@@ -141,8 +143,8 @@ const NotificationBell = () => {
                 style={{
                   padding: "2rem 1rem",
                   textAlign: "center",
-                  color: "#bbb",
-                  fontSize: "0.85rem",
+                  color: "var(--grey-muted)",
+                  fontSize: "var(--text-sm)",
                 }}
               >
                 No notifications yet
@@ -154,7 +156,7 @@ const NotificationBell = () => {
                   onClick={() => handleNotificationClick(n.id, n.read)}
                   style={{
                     padding: "0.75rem 1rem",
-                    borderBottom: "1px solid #f8f8f8",
+                    borderBottom: "1px solid var(--border)",
                     cursor: n.read ? "default" : "pointer",
                     background: n.read ? "var(--surface)" : "var(--paper)",
                     display: "flex",
@@ -174,10 +176,22 @@ const NotificationBell = () => {
                     }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "0.85rem", color: "#1a1a1a", lineHeight: 1.4 }}>
+                    <div
+                      style={{
+                        fontSize: "var(--text-sm)",
+                        color: "var(--ink)",
+                        lineHeight: 1.4,
+                      }}
+                    >
                       {n.message}
                     </div>
-                    <div style={{ fontSize: "0.75rem", color: "#bbb", marginTop: "0.25rem" }}>
+                    <div
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--grey-muted)",
+                        marginTop: "0.25rem",
+                      }}
+                    >
                       {formatTime(n.createdAt)}
                     </div>
                   </div>

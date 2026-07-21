@@ -61,9 +61,9 @@ const generateTimeSlots = (
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.65rem",
-  border: "1px solid #ddd",
+  border: "1px solid var(--admin-input-border)",
   borderRadius: "6px",
-  fontSize: "0.9rem",
+  fontSize: "var(--text-base)",
   boxSizing: "border-box",
   marginTop: "0.25rem",
 };
@@ -72,8 +72,8 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   marginBottom: "1rem",
   fontWeight: 500,
-  fontSize: "0.875rem",
-  color: "#1a1a1a",
+  fontSize: "var(--text-base)",
+  color: "var(--ink)",
 };
 
 const CreateBookingModal = ({
@@ -292,7 +292,7 @@ const CreateBookingModal = ({
       <div
         style={{
           display: "flex",
-          borderBottom: "2px solid #f0f0f0",
+          borderBottom: "2px solid var(--border)",
           marginBottom: "1.5rem",
           gap: "0.25rem",
         }}
@@ -453,7 +453,7 @@ const CreateBookingModal = ({
               width: "100%",
               padding: "0.75rem",
               background: submitting ? "var(--border-strong)" : "var(--accent)",
-              color: submitting ? "#999" : "white",
+              color: submitting ? "var(--grey-muted)" : "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: submitting ? "not-allowed" : "pointer",
@@ -566,8 +566,8 @@ const CreateBookingModal = ({
             style={{
               width: "100%",
               padding: "0.75rem",
-              background: submitting ? "#ddd" : "#1a1a1a",
-              color: submitting ? "#999" : "white",
+              background: submitting ? "var(--border-strong)" : "var(--accent)",
+              color: submitting ? "var(--grey-muted)" : "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: submitting ? "not-allowed" : "pointer",

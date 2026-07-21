@@ -40,7 +40,7 @@ const StylistLoginPage = () => {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "0.75rem",
-    border: "1px solid #ddd",
+    border: "1px solid var(--admin-input-border)",
     borderRadius: "6px",
     fontSize: "1rem",
     boxSizing: "border-box",
@@ -58,7 +58,7 @@ const StylistLoginPage = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "#1a1a1a",
+        background: "var(--admin-bg)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -67,7 +67,7 @@ const StylistLoginPage = () => {
     >
       <div
         style={{
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "12px",
           padding: "2.5rem",
           width: "100%",
@@ -89,7 +89,7 @@ const StylistLoginPage = () => {
           </h1>
           <p
             style={{
-              color: "#6b6b6b",
+              color: "var(--ink-muted)",
               fontSize: "0.85rem",
               marginTop: "0.25rem",
             }}
@@ -145,7 +145,7 @@ const StylistLoginPage = () => {
               width: "100%",
               padding: "0.85rem",
               background: loading ? "var(--border-strong)" : "var(--accent)",
-              color: loading ? "#999" : "white",
+              color: loading ? "var(--grey-muted)" : "var(--surface)",
               border: "none",
               borderRadius: "6px",
               fontSize: "1rem",

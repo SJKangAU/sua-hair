@@ -73,9 +73,9 @@ const ApprovalsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
           style={{
             textAlign: "center",
             padding: "3rem",
-            background: "white",
+            background: "var(--surface)",
             borderRadius: "10px",
-            color: "#6b6b6b",
+            color: "var(--ink-muted)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >

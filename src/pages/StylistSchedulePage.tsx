@@ -20,7 +20,7 @@ import { useEffect } from "react";
 
 // Monochrome status treatment on dark cards — shade encodes state, not colour
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: "#ffffff",
+  confirmed: "var(--surface)",
   pending: "var(--admin-faint)",
   cancelled: "var(--admin-dim)",
 };
@@ -73,20 +73,20 @@ const ScheduleInner = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "#111",
+        background: "var(--admin-bg-darker)",
         fontFamily: "Georgia, serif",
-        color: "#fff",
+        color: "var(--surface)",
       }}
     >
       {/* Header */}
       <header
         style={{
-          background: "#1a1a1a",
+          background: "var(--admin-panel)",
           padding: "1rem 1.5rem",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid #2a2a2a",
+          borderBottom: "1px solid var(--admin-border)",
         }}
       >
         <div>
@@ -95,13 +95,13 @@ const ScheduleInner = () => {
               fontFamily: "var(--font-display)",
               fontSize: "1.3rem",
               fontWeight: 400,
-              color: "#ffffff",
+              color: "var(--surface)",
               margin: 0,
             }}
           >
             Sua Hair Studio
           </h1>
-          <p style={{ fontSize: "0.75rem", color: "#777", margin: 0 }}>
+          <p style={{ fontSize: "0.75rem", color: "var(--admin-dimmer)", margin: 0 }}>
             {stylist ? stylist.name : "Stylist Portal"}
           </p>
         </div>
@@ -111,8 +111,8 @@ const ScheduleInner = () => {
             onClick={handleSignOut}
             style={{
               background: "none",
-              border: "1px solid #444",
-              color: "#999",
+              border: "1px solid var(--admin-dim)",
+              color: "var(--admin-dimmer)",
               padding: "0.4rem 0.9rem",
               borderRadius: "4px",
               cursor: "pointer",
@@ -138,8 +138,8 @@ const ScheduleInner = () => {
             onClick={() => setSelectedDate((d) => addDays(d, -1))}
             style={{
               padding: "0.4rem 0.75rem",
-              background: "#2a2a2a",
-              color: "#fff",
+              background: "var(--admin-border)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
@@ -151,7 +151,7 @@ const ScheduleInner = () => {
             style={{
               fontWeight: 500,
               fontSize: "1rem",
-              color: "#fff",
+              color: "var(--surface)",
               minWidth: 180,
               textAlign: "center",
             }}
@@ -162,8 +162,8 @@ const ScheduleInner = () => {
             onClick={() => setSelectedDate((d) => addDays(d, 1))}
             style={{
               padding: "0.4rem 0.75rem",
-              background: "#2a2a2a",
-              color: "#fff",
+              background: "var(--admin-border)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
@@ -177,7 +177,7 @@ const ScheduleInner = () => {
               style={{
                 padding: "0.4rem 0.75rem",
                 background: "var(--ink-soft)",
-                color: "#fff",
+                color: "var(--surface)",
                 border: "none",
                 borderRadius: "6px",
                 cursor: "pointer",
@@ -191,17 +191,17 @@ const ScheduleInner = () => {
 
         {/* Booking list */}
         {loading ? (
-          <div style={{ color: "#555", textAlign: "center", padding: "3rem" }}>
+          <div style={{ color: "var(--admin-dim)", textAlign: "center", padding: "3rem" }}>
             Loading schedule…
           </div>
         ) : activeBookings.length === 0 ? (
           <div
             style={{
-              background: "#1a1a1a",
+              background: "var(--admin-panel)",
               borderRadius: "10px",
               padding: "3rem",
               textAlign: "center",
-              color: "#555",
+              color: "var(--admin-dim)",
               fontSize: "0.9rem",
             }}
           >
@@ -215,8 +215,8 @@ const ScheduleInner = () => {
               <div
                 key={b.id}
                 style={{
-                  background: "#1a1a1a",
-                  border: "1px solid #2a2a2a",
+                  background: "var(--admin-panel)",
+                  border: "1px solid var(--admin-border)",
                   borderRadius: "10px",
                   padding: "1rem 1.25rem",
                   display: "grid",
@@ -230,7 +230,7 @@ const ScheduleInner = () => {
                     style={{
                       fontSize: "1rem",
                       fontWeight: 600,
-                      color: "#ffffff",
+                      color: "var(--surface)",
                     }}
                   >
                     {b.time}
@@ -238,7 +238,7 @@ const ScheduleInner = () => {
                   <div
                     style={{
                       fontSize: "0.75rem",
-                      color: "#555",
+                      color: "var(--admin-dim)",
                       marginTop: "0.15rem",
                     }}
                   >
@@ -252,7 +252,7 @@ const ScheduleInner = () => {
                   <div
                     style={{
                       fontSize: "0.8rem",
-                      color: "#888",
+                      color: "var(--admin-dimmer)",
                       marginTop: "0.2rem",
                     }}
                   >
@@ -262,7 +262,7 @@ const ScheduleInner = () => {
                     <div
                       style={{
                         fontSize: "0.78rem",
-                        color: "#555",
+                        color: "var(--admin-dim)",
                         marginTop: "0.2rem",
                         fontStyle: "italic",
                       }}
@@ -275,7 +275,7 @@ const ScheduleInner = () => {
                   style={{
                     fontSize: "0.75rem",
                     fontWeight: 500,
-                    color: STATUS_COLORS[b.status] ?? "#888",
+                    color: STATUS_COLORS[b.status] ?? "var(--admin-dimmer)",
                     textTransform: "capitalize",
                   }}
                 >
@@ -292,10 +292,10 @@ const ScheduleInner = () => {
             style={{
               marginTop: "1.25rem",
               padding: "0.75rem 1rem",
-              background: "#1a1a1a",
+              background: "var(--admin-panel)",
               borderRadius: "8px",
               fontSize: "0.82rem",
-              color: "#666",
+              color: "var(--admin-dim)",
               display: "flex",
               gap: "1.5rem",
             }}

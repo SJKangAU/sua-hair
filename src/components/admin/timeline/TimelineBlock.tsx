@@ -206,7 +206,7 @@ const TimelineBlock = ({
               margin: 0,
               fontSize: "0.7rem",
               fontWeight: 700,
-              color: "#ffffff",
+              color: "var(--surface)",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -288,7 +288,7 @@ const TimelineBlock = ({
               fontSize: "0.6rem",
               color:
                 restSecondsLeft !== null && restSecondsLeft <= 300
-                  ? "#ffffff"
+                  ? "var(--surface)"
                   : "var(--admin-faint)",
               fontWeight:
                 restSecondsLeft !== null && restSecondsLeft <= 300 ? 700 : 600,

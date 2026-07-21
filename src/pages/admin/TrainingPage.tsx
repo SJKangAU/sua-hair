@@ -16,7 +16,7 @@ const TrainingPage = () => {
         >
           Training Sessions
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#6b6b6b", margin: 0 }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)", margin: 0 }}>
           After-hours sessions between Steve and the team. Scheduled outside
           trading hours.
         </p>

@@ -111,18 +111,18 @@ const BookingDetailModal = ({
     justifyContent: "space-between",
     alignItems: "flex-start",
     padding: "0.6rem 0",
-    borderBottom: "1px solid #f0f0f0",
+    borderBottom: "1px solid var(--border)",
     fontSize: "0.9rem",
   };
 
   const labelStyle: React.CSSProperties = {
-    color: "#6b6b6b",
+    color: "var(--ink-muted)",
     fontWeight: 500,
     minWidth: "120px",
   };
 
   const valueStyle: React.CSSProperties = {
-    color: "#1a1a1a",
+    color: "var(--ink)",
     textAlign: "right",
   };
 
@@ -196,7 +196,7 @@ const BookingDetailModal = ({
               <span style={valueStyle}>
                 {booking.totalTime} min
                 {booking.restTime > 0 && (
-                  <span style={{ color: "#6b6b6b", fontSize: "0.82rem" }}>
+                  <span style={{ color: "var(--ink-muted)", fontSize: "0.82rem" }}>
                     {" "}
                     ({booking.activeTime} active + {booking.restTime} setting)
                     {booking.returnTime && ` · back ${booking.returnTime}`}
@@ -212,7 +212,7 @@ const BookingDetailModal = ({
                       background: "none",
                       border: "none",
                       cursor: "pointer",
-                      color: "#6b6b6b",
+                      color: "var(--ink-muted)",
                       verticalAlign: "middle",
                     }}
                   >
@@ -228,7 +228,7 @@ const BookingDetailModal = ({
               style={{
                 marginTop: "0.5rem",
                 padding: "0.75rem",
-                background: "#f7f5f0",
+                background: "var(--surface-raised)",
                 borderRadius: "8px",
               }}
             >
@@ -236,7 +236,7 @@ const BookingDetailModal = ({
                 style={{
                   margin: "0 0 0.6rem",
                   fontSize: "0.75rem",
-                  color: "#6b6b6b",
+                  color: "var(--ink-muted)",
                 }}
               >
                 Overrides this booking only — the service template in Manage →
@@ -248,7 +248,7 @@ const BookingDetailModal = ({
                 <label
                   style={{
                     fontSize: "0.78rem",
-                    color: "#4a4a4a",
+                    color: "var(--ink-soft)",
                     flex: 1,
                     minWidth: "110px",
                   }}
@@ -265,7 +265,7 @@ const BookingDetailModal = ({
                       width: "100%",
                       marginTop: "0.25rem",
                       padding: "0.4rem 0.5rem",
-                      border: "1px solid #ccc",
+                      border: "1px solid var(--border-strong)",
                       borderRadius: "5px",
                       fontSize: "0.85rem",
                     }}
@@ -274,7 +274,7 @@ const BookingDetailModal = ({
                 <label
                   style={{
                     fontSize: "0.78rem",
-                    color: "#4a4a4a",
+                    color: "var(--ink-soft)",
                     flex: 1,
                     minWidth: "110px",
                   }}
@@ -291,7 +291,7 @@ const BookingDetailModal = ({
                       width: "100%",
                       marginTop: "0.25rem",
                       padding: "0.4rem 0.5rem",
-                      border: "1px solid #ccc",
+                      border: "1px solid var(--border-strong)",
                       borderRadius: "5px",
                       fontSize: "0.85rem",
                     }}
@@ -334,8 +334,8 @@ const BookingDetailModal = ({
                   style={{
                     padding: "0.4rem 0.9rem",
                     background: "none",
-                    color: "#6b6b6b",
-                    border: "1px solid #ccc",
+                    color: "var(--ink-muted)",
+                    border: "1px solid var(--border-strong)",
                     borderRadius: "5px",
                     fontSize: "0.8rem",
                     cursor: "pointer",
@@ -424,8 +424,8 @@ const BookingDetailModal = ({
           onClick={onClose}
           style={{
             padding: "0.6rem 1.25rem",
-            background: "#f5f0e8",
-            color: "#6b6b6b",
+            background: "var(--surface-raised)",
+            color: "var(--ink-muted)",
             border: "none",
             borderRadius: "6px",
             cursor: "pointer",

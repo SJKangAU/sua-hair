@@ -5,9 +5,17 @@
 import useAnalytics from "../../../hooks/useAnalytics";
 import type { Booking } from "../../../types";
 
-// Monochrome — grey scale differentiates stylists, darkest = first
-const BAR_COLOR = "#3a3a38";
-const STYLIST_COLORS = ["#161615", "#3a3a38", "#5a5a58", "#8a8884", "#b0aea9"];
+// Monochrome — grey scale differentiates stylists, darkest = first.
+// These mirror the core palette tokens (index.css); kept as CSS var refs so
+// the chart tracks any future palette change.
+const BAR_COLOR = "var(--ink-soft)";
+const STYLIST_COLORS = [
+  "var(--ink)",
+  "var(--ink-soft)",
+  "var(--admin-dim)",
+  "var(--grey-muted)",
+  "var(--admin-faint)",
+];
 
 const EMPTY_MSG = (
   <p
@@ -39,7 +47,7 @@ const RevenueChart = ({ bookings }: Props) => {
       {/* Monthly revenue bar chart */}
       <div
         style={{
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "12px",
           padding: "1.5rem",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -125,7 +133,7 @@ const RevenueChart = ({ bookings }: Props) => {
       {/* Stylist revenue breakdown */}
       <div
         style={{
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "12px",
           padding: "1.5rem",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",

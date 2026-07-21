@@ -37,11 +37,11 @@ const formatHour = (h: number) => {
 
 const inputStyle: React.CSSProperties = {
   padding: "0.45rem 0.6rem",
-  border: "1px solid #e8e8e8",
+  border: "1px solid var(--border)",
   borderRadius: "6px",
   fontSize: "0.85rem",
-  background: "#fff",
-  color: "#1a1a1a",
+  background: "var(--surface)",
+  color: "var(--ink)",
 };
 
 const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
@@ -121,13 +121,13 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
   const sectionTitle: React.CSSProperties = {
     fontSize: "0.95rem",
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "var(--ink)",
     margin: "0 0 0.75rem",
   };
 
   const card: React.CSSProperties = {
-    background: "#fff",
-    border: "1px solid #e8e8e8",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
     borderRadius: "10px",
     padding: "1.25rem",
     marginBottom: "1rem",
@@ -148,7 +148,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
             Opening Hours
           </h3>
           <p
-            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+            style={{ fontSize: "0.8rem", color: "var(--grey-muted)", margin: "0.2rem 0 0" }}
           >
             Set recurring weekly hours and one-off date overrides.
           </p>
@@ -159,7 +159,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
           style={{
             padding: "0.55rem 1.25rem",
             background: saving ? "var(--border-strong)" : "var(--accent)",
-            color: saving ? "#999" : "#fff",
+            color: saving ? "var(--grey-muted)" : "var(--surface)",
             border: "none",
             borderRadius: "6px",
             cursor: saving ? "not-allowed" : "pointer",
@@ -188,7 +188,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                   alignItems: "center",
                   gap: "0.75rem",
                   padding: "0.5rem 0",
-                  borderBottom: "1px solid #f4f4f4",
+                  borderBottom: "1px solid var(--border)",
                 }}
               >
                 <label
@@ -209,7 +209,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     style={{
                       fontSize: "0.875rem",
                       fontWeight: day.isOpen ? 500 : 400,
-                      color: day.isOpen ? "#1a1a1a" : "#aaa",
+                      color: day.isOpen ? "var(--ink)" : "var(--grey-muted)",
                     }}
                   >
                     {label}
@@ -237,7 +237,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                         </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: "0.8rem", color: "#999" }}>
+                    <span style={{ fontSize: "0.8rem", color: "var(--grey-muted)" }}>
                       to
                     </span>
                     <select
@@ -258,7 +258,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                   <span
                     style={{
                       fontSize: "0.8rem",
-                      color: "#bbb",
+                      color: "var(--grey-muted)",
                       fontStyle: "italic",
                     }}
                   >
@@ -277,7 +277,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
         <p
           style={{
             fontSize: "0.8rem",
-            color: "#999",
+            color: "var(--grey-muted)",
             marginTop: "-0.5rem",
             marginBottom: "0.75rem",
           }}
@@ -306,7 +306,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     justifyContent: "space-between",
                     alignItems: "center",
                     padding: "0.5rem 0.75rem",
-                    background: "#f9f9f9",
+                    background: "var(--paper)",
                     borderRadius: "6px",
                     fontSize: "0.85rem",
                   }}
@@ -331,7 +331,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#bbb",
+                      color: "var(--grey-muted)",
                       cursor: "pointer",
                       fontSize: "1rem",
                       padding: "0 0.25rem",
@@ -358,7 +358,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
             <div
               style={{
                 fontSize: "0.75rem",
-                color: "#666",
+                color: "var(--ink-muted)",
                 marginBottom: "0.2rem",
               }}
             >
@@ -376,7 +376,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
             <div
               style={{
                 fontSize: "0.75rem",
-                color: "#666",
+                color: "var(--ink-muted)",
                 marginBottom: "0.2rem",
               }}
             >
@@ -400,7 +400,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                 <div
                   style={{
                     fontSize: "0.75rem",
-                    color: "#666",
+                    color: "var(--ink-muted)",
                     marginBottom: "0.2rem",
                   }}
                 >
@@ -422,7 +422,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                 <div
                   style={{
                     fontSize: "0.75rem",
-                    color: "#666",
+                    color: "var(--ink-muted)",
                     marginBottom: "0.2rem",
                   }}
                 >
@@ -447,8 +447,8 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
             onClick={addOverride}
             style={{
               padding: "0.45rem 1rem",
-              background: "#1a1a1a",
-              color: "#fff",
+              background: "var(--ink)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",

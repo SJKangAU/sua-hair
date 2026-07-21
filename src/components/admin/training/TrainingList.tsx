@@ -32,7 +32,7 @@ const SectionLabel = ({ text, count }: { text: string; count: number }) => (
     style={{
       fontSize: "0.78rem",
       fontWeight: 600,
-      color: "#6b6b6b",
+      color: "var(--ink-muted)",
       textTransform: "uppercase",
       letterSpacing: "0.05em",
       margin: "0 0 0.75rem",
@@ -63,7 +63,7 @@ const TrainingList = () => {
 
   if (loading) {
     return (
-      <p style={{ textAlign: "center", color: "#6b6b6b", padding: "1.5rem" }}>
+      <p style={{ textAlign: "center", color: "var(--ink-muted)", padding: "1.5rem" }}>
         Loading sessions...
       </p>
     );
@@ -75,9 +75,9 @@ const TrainingList = () => {
         style={{
           textAlign: "center",
           padding: "2.5rem",
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "12px",
-          color: "#6b6b6b",
+          color: "var(--ink-muted)",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         }}
       >
@@ -94,17 +94,17 @@ const TrainingList = () => {
       className="admin-training-row"
       style={{
         padding: "0.875rem 1.25rem",
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "8px",
         boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-        border: "1px solid #f0f0f0",
+        border: "1px solid var(--border)",
         fontSize: "0.85rem",
       }}
     >
       {/* Date */}
       <div>
         <p style={{ fontWeight: 600, margin: 0 }}>{session.date}</p>
-        <p style={{ color: "#6b6b6b", margin: 0, fontSize: "0.78rem" }}>
+        <p style={{ color: "var(--ink-muted)", margin: 0, fontSize: "0.78rem" }}>
           {session.time}
         </p>
       </div>
@@ -114,14 +114,14 @@ const TrainingList = () => {
         <p style={{ fontWeight: 600, margin: 0 }}>
           {session.trainingTopic || session.serviceName}
         </p>
-        <p style={{ color: "#6b6b6b", margin: 0, fontSize: "0.78rem" }}>
+        <p style={{ color: "var(--ink-muted)", margin: 0, fontSize: "0.78rem" }}>
           {session.totalTime} min
         </p>
       </div>
 
       {/* Trainer */}
       <div>
-        <p style={{ margin: 0, color: "#6b6b6b", fontSize: "0.72rem" }}>
+        <p style={{ margin: 0, color: "var(--ink-muted)", fontSize: "0.72rem" }}>
           Trainer
         </p>
         <p style={{ margin: 0, fontWeight: 500 }}>{session.stylistName}</p>
@@ -129,7 +129,7 @@ const TrainingList = () => {
 
       {/* Trainee */}
       <div>
-        <p style={{ margin: 0, color: "#6b6b6b", fontSize: "0.72rem" }}>
+        <p style={{ margin: 0, color: "var(--ink-muted)", fontSize: "0.72rem" }}>
           Trainee
         </p>
         <p style={{ margin: 0, fontWeight: 500 }}>

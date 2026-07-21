@@ -56,11 +56,11 @@ const formatHour = (h: number) => {
 
 const inputStyle: React.CSSProperties = {
   padding: "0.35rem 0.5rem",
-  border: "1px solid #e8e8e8",
+  border: "1px solid var(--border)",
   borderRadius: "5px",
   fontSize: "0.8rem",
-  background: "#fff",
-  color: "#1a1a1a",
+  background: "var(--surface)",
+  color: "var(--ink)",
 };
 
 const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
@@ -130,7 +130,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
             Stylist Hours
           </h3>
           <p
-            style={{ fontSize: "0.8rem", color: "#999", margin: "0.2rem 0 0" }}
+            style={{ fontSize: "0.8rem", color: "var(--grey-muted)", margin: "0.2rem 0 0" }}
           >
             Per-stylist working hours within salon bounds.
           </p>
@@ -141,7 +141,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
           style={{
             padding: "0.55rem 1.25rem",
             background: saving || !selectedId ? "var(--border-strong)" : "var(--accent)",
-            color: saving || !selectedId ? "#999" : "#fff",
+            color: saving || !selectedId ? "var(--grey-muted)" : "var(--surface)",
             border: "none",
             borderRadius: "6px",
             cursor: saving || !selectedId ? "not-allowed" : "pointer",
@@ -176,8 +176,8 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
       {/* Per-day schedule */}
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #e8e8e8",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
           borderRadius: "10px",
           padding: "1.25rem",
         }}
@@ -205,7 +205,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                   alignItems: "center",
                   gap: "0.75rem",
                   padding: "0.45rem 0",
-                  borderBottom: "1px solid #f4f4f4",
+                  borderBottom: "1px solid var(--border)",
                 }}
               >
                 <label
@@ -232,7 +232,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                       fontWeight:
                         dayHours.isWorking && !salonClosed ? 500 : 400,
                       color:
-                        dayHours.isWorking && !salonClosed ? "#1a1a1a" : "#aaa",
+                        dayHours.isWorking && !salonClosed ? "var(--ink)" : "var(--grey-muted)",
                     }}
                   >
                     {label}
@@ -243,7 +243,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                   <span
                     style={{
                       fontSize: "0.78rem",
-                      color: "#ccc",
+                      color: "var(--border-strong)",
                       fontStyle: "italic",
                     }}
                   >
@@ -270,7 +270,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                         </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: "0.75rem", color: "#bbb" }}>
+                    <span style={{ fontSize: "0.75rem", color: "var(--grey-muted)" }}>
                       –
                     </span>
                     <select
@@ -293,7 +293,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
                   <span
                     style={{
                       fontSize: "0.78rem",
-                      color: "#bbb",
+                      color: "var(--grey-muted)",
                       fontStyle: "italic",
                     }}
                   >

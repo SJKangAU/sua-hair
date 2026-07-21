@@ -44,7 +44,7 @@ const ClientsPage = () => {
         >
           Client History
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "#6b6b6b", margin: 0 }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)", margin: 0 }}>
           Search by name or mobile number to view visit history and spending.
         </p>
       </div>
@@ -57,7 +57,7 @@ const ClientsPage = () => {
 
       {loading && (
         <p
-          style={{ textAlign: "center", color: "#6b6b6b", fontSize: "0.9rem" }}
+          style={{ textAlign: "center", color: "var(--ink-muted)", fontSize: "0.9rem" }}
         >
           Searching...
         </p>
@@ -68,9 +68,9 @@ const ClientsPage = () => {
           style={{
             textAlign: "center",
             padding: "3rem",
-            background: "white",
+            background: "var(--surface)",
             borderRadius: "12px",
-            color: "#6b6b6b",
+            color: "var(--ink-muted)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
@@ -86,9 +86,9 @@ const ClientsPage = () => {
           style={{
             textAlign: "center",
             padding: "3rem",
-            background: "white",
+            background: "var(--surface)",
             borderRadius: "12px",
-            color: "#6b6b6b",
+            color: "var(--ink-muted)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
@@ -100,7 +100,7 @@ const ClientsPage = () => {
       )}
 
       {!loading && clients.length > 0 && (
-        <p style={{ fontSize: "0.82rem", color: "#6b6b6b", margin: 0 }}>
+        <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: 0 }}>
           {clients.length} client{clients.length > 1 ? "s" : ""} found
         </p>
       )}
