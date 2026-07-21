@@ -25,14 +25,15 @@ import TrainingPage from "./admin/TrainingPage";
 import AnalyticsPage from "./admin/AnalyticsPage";
 import ManagePage from "./admin/ManagePage";
 
+// Tab icons are lucide glyphs resolved by id inside <Tabs> — see Tabs.tsx.
 const ALL_TABS = [
-  { id: "today", label: "Today", icon: "📅" },
-  { id: "approvals", label: "Approvals", icon: "✅" },
-  { id: "bookings", label: "Bookings", icon: "📋" },
-  { id: "clients", label: "Clients", icon: "👥" },
-  { id: "training", label: "Training", icon: "🎓" },
-  { id: "analytics", label: "Analytics", icon: "📊" },
-  { id: "manage", label: "Manage", icon: "⚙️" },
+  { id: "today", label: "Today" },
+  { id: "approvals", label: "Approvals" },
+  { id: "bookings", label: "Bookings" },
+  { id: "clients", label: "Clients" },
+  { id: "training", label: "Training" },
+  { id: "analytics", label: "Analytics" },
+  { id: "manage", label: "Manage" },
 ];
 
 // Tabs that require the owner role — hidden entirely for stylists.

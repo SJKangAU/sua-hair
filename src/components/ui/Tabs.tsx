@@ -26,7 +26,6 @@ const TAB_ICONS: Record<string, LucideIcon> = {
 interface Tab {
   id: string;
   label: string;
-  icon?: string; // kept for backward compat — ignored in favour of lucide lookup
   badgeCount?: number; // e.g. pending-approval count — rendered as a small pill
 }
 
@@ -72,13 +71,13 @@ const Tabs = ({ tabs, activeTab, onChange }: Props) => {
                 marginBottom: "-1px",
                 color: active ? "var(--surface)" : "var(--admin-dimmer)",
                 cursor: "pointer",
-                fontSize: "0.8rem",
+                fontSize: "var(--text-sm)",
                 fontWeight: active ? 600 : 400,
                 fontFamily: "var(--font-body)",
                 display: "flex",
                 alignItems: "center",
                 gap: "0.4rem",
-                transition: "color 0.15s",
+                transition: "color var(--transition-fast)",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
               }}
@@ -105,7 +104,7 @@ const Tabs = ({ tabs, activeTab, onChange }: Props) => {
                       ? "var(--surface)"
                       : "var(--admin-dimmer)",
                     color: "var(--ink)",
-                    fontSize: "0.65rem",
+                    fontSize: "var(--text-2xs)",
                     fontWeight: 700,
                     lineHeight: 1,
                   }}
