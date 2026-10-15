@@ -49,6 +49,7 @@ export function validPublicBooking(overrides: Record<string, unknown> = {}) {
     time: "10:00 AM",
     notes: "Prefers quiet chair by the window",
     bookingRef: "BK-20260801-stylist-1-1000",
+    consentGivenAt: "2026-07-01T00:00:00.000Z",
     createdAt: "2026-07-01T00:00:00.000Z",
     ...overrides,
   };
