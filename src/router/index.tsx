@@ -5,6 +5,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import BookingPage from "../pages/BookingPage";
 import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
+import TermsPage from "../pages/TermsPage";
 import AdminLoginPage from "../pages/AdminLoginPage";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
 import StylistLoginPage from "../pages/StylistLoginPage";
@@ -21,6 +22,11 @@ const router = createBrowserRouter([
     // Privacy policy — public
     path: "/privacy",
     element: <PrivacyPolicyPage />,
+  },
+  {
+    // Terms of service — public
+    path: "/terms",
+    element: <TermsPage />,
   },
   {
     // Admin login — public
