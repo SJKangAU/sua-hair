@@ -5,13 +5,20 @@
 // "Book again" button pre-fills the create booking modal
 
 import { useState } from "react";
+import { httpsCallable } from "firebase/functions";
 import Badge from "../../ui/Badge";
+import Modal from "../../ui/Modal";
+import { functions } from "../../../lib/firebase";
+import { useToastContext } from "../../../context/ToastContext";
 import type { ClientProfile } from "./ClientSearch";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
 
 interface Props {
   client: ClientProfile;
   onBookAgain: (phone: string, name: string) => void;
+  // Called after this client's data has been deleted, so the parent can drop
+  // the card from the current results.
+  onDeleted: (phone: string) => void;
 }
 
 // Inline styles can't express media queries, so the booking-history row's
@@ -32,8 +39,36 @@ const HISTORY_ROW_CSS = `
   }
 `;
 
-const ClientCard = ({ client, onBookAgain }: Props) => {
+const ClientCard = ({ client, onBookAgain, onDeleted }: Props) => {
+  const { addToast } = useToastContext();
   const [expanded, setExpanded] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Irreversibly anonymise this customer's booking history (name/phone/notes
+  // stripped, booking records themselves kept) via the owner-only
+  // deleteCustomerData callable. See functions/src/index.ts.
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const deleteCustomerData = httpsCallable<
+        { phone: string },
+        { anonymisedCount: number }
+      >(functions, "deleteCustomerData");
+      const { data } = await deleteCustomerData({ phone: client.phone });
+      const n = data.anonymisedCount;
+      addToast(
+        `Customer data deleted — ${n} booking${n === 1 ? "" : "s"} anonymised.`,
+        "success",
+      );
+      setConfirming(false);
+      onDeleted(client.phone);
+    } catch (err) {
+      console.error("deleteCustomerData failed:", err);
+      addToast("Could not delete customer data. Please try again.", "error");
+      setDeleting(false);
+    }
+  };
 
   return (
     <div
@@ -230,8 +265,92 @@ const ClientCard = ({ client, onBookAgain }: Props) => {
           >
             {expanded ? "Hide history" : "View history"}
           </button>
+          <button
+            onClick={() => setConfirming(true)}
+            style={{
+              padding: "0.35rem 0.85rem",
+              background: "none",
+              border: "1px solid var(--error)",
+              borderRadius: "6px",
+              fontSize: "0.78rem",
+              cursor: "pointer",
+              color: "var(--error)",
+            }}
+          >
+            Delete data
+          </button>
         </div>
       </div>
+
+      {/* Irreversible-deletion confirmation */}
+      {confirming && (
+        <Modal
+          title="Delete customer data?"
+          onClose={() => !deleting && setConfirming(false)}
+          width="440px"
+        >
+          <p style={{ margin: "0 0 1rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            This permanently removes <strong>{client.name}</strong>'s personal
+            information — name, phone number and notes — from{" "}
+            <strong>all {client.bookings.length}</strong> of their booking
+            records, and deletes their saved contact record.
+          </p>
+          <p
+            style={{
+              margin: "0 0 1.5rem",
+              fontSize: "0.85rem",
+              lineHeight: 1.6,
+              color: "var(--ink-muted)",
+            }}
+          >
+            The bookings themselves (service, price, date) are kept for business
+            records, but they can no longer be linked back to this person.{" "}
+            <strong style={{ color: "var(--error)" }}>
+              This cannot be undone.
+            </strong>
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={deleting}
+              style={{
+                padding: "0.55rem 1.1rem",
+                background: "none",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "6px",
+                fontSize: "0.85rem",
+                cursor: deleting ? "not-allowed" : "pointer",
+                color: "var(--ink-muted)",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{
+                padding: "0.55rem 1.1rem",
+                background: "var(--error)",
+                border: "1px solid var(--error)",
+                borderRadius: "6px",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                cursor: deleting ? "not-allowed" : "pointer",
+                color: "var(--surface)",
+                opacity: deleting ? 0.7 : 1,
+              }}
+            >
+              {deleting ? "Deleting..." : "Delete permanently"}
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* Booking history — expandable */}
       {expanded && (

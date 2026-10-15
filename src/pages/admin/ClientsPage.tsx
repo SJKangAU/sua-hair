@@ -111,6 +111,9 @@ const ClientsPage = () => {
             key={client.phone || client.name}
             client={client}
             onBookAgain={(phone, name) => setBookAgainClient({ phone, name })}
+            onDeleted={(phone) =>
+              setClients((prev) => prev.filter((c) => c.phone !== phone))
+            }
           />
         ))}
 
