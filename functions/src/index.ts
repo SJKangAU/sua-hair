@@ -8,15 +8,18 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
 import {
   buildConfirmationEmail,
+  buildReminderEmail,
   type BookingEmailData,
 } from "./email/templates";
 import { SALON } from "./salon";
+import { bookingInstant, localDateString } from "./time";
 
 initializeApp();
 const db = getFirestore();
@@ -201,5 +204,93 @@ export const onBookingCreated = onDocumentCreated(
         );
       }
     }
+  },
+);
+
+// ── Reminder emails ─────────────────────────────────────────────────────────
+const HOUR_MS = 60 * 60 * 1000;
+
+/**
+ * sendBookingReminders — runs at the top of every hour.
+ *
+ * Emails customers whose appointment starts 24–25 hours from now. Bookings
+ * store date + time as salon-local strings, so the query narrows by date (and
+ * status) in Firestore and the exact 24–25h window is then applied in memory
+ * after converting each booking to a real instant in Australia/Melbourne.
+ *
+ * `reminderSentAt` is checked in memory rather than as `== null` in the
+ * query: existing bookings don't have the field at all, and Firestore's
+ * `== null` only matches documents where it is explicitly stored as null.
+ *
+ * The (status, date) composite index this query needs is declared in
+ * firestore.indexes.json.
+ */
+export const sendBookingReminders = onSchedule(
+  {
+    schedule: "0 * * * *",
+    timeZone: SALON.timeZone,
+    region: "australia-southeast1",
+    secrets: [RESEND_API_KEY],
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const now = Date.now();
+    const windowStart = now + 24 * HOUR_MS;
+    const windowEnd = now + 25 * HOUR_MS;
+
+    // The window can straddle midnight, so query both calendar dates.
+    const fromDate = localDateString(windowStart, SALON.timeZone);
+    const toDate = localDateString(windowEnd, SALON.timeZone);
+
+    let snap;
+    try {
+      snap = await db
+        .collection("bookings")
+        .where("status", "in", ["pending", "confirmed"])
+        .where("date", ">=", fromDate)
+        .where("date", "<=", toDate)
+        .get();
+    } catch (err) {
+      console.error("Reminder query failed:", err);
+      return;
+    }
+
+    let sent = 0;
+    for (const docSnap of snap.docs) {
+      const booking = docSnap.data() as BookingDoc;
+      if (booking.bookingType === "break" || booking.bookingType === "training") {
+        continue;
+      }
+      if (booking.reminderSentAt) continue;
+      if (!isValidEmail(booking.customerEmail)) continue;
+
+      const startsAt = bookingInstant(
+        booking.date ?? "",
+        booking.time ?? "",
+        SALON.timeZone,
+      );
+      if (startsAt === null || startsAt < windowStart || startsAt >= windowEnd) {
+        continue;
+      }
+
+      try {
+        const email = buildReminderEmail(toEmailData(booking));
+        await sendEmail(RESEND_API_KEY.value(), {
+          from: EMAIL_FROM.value(),
+          to: booking.customerEmail,
+          replyTo: SALON.replyTo,
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+          idempotencyKey: `reminder-${docSnap.id}`,
+        });
+        await docSnap.ref.update({ reminderSentAt: new Date().toISOString() });
+        sent += 1;
+      } catch (err) {
+        console.error(`Reminder email failed for booking ${docSnap.id}:`, err);
+      }
+    }
+
+    console.log(`Reminder run: ${sent} sent of ${snap.size} candidate bookings.`);
   },
 );
