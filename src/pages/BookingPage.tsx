@@ -9,6 +9,7 @@
 // the illusion that the form "floats" out of the dark section.
 
 import BookingForm from "../components/booking/BookingForm";
+import SiteFooter from "../components/legal/SiteFooter";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 
 const BookingPage = () => {
@@ -129,29 +130,8 @@ const BookingPage = () => {
           </div>
         </main>
 
-        {/* Footer */}
-        <footer
-          style={{
-            borderTop: "1px solid var(--border)",
-            padding: "2rem",
-            textAlign: "center",
-            color: "var(--grey-muted)",
-            fontSize: "var(--text-xs)",
-            letterSpacing: "0.02em",
-          }}
-        >
-          <p>Sua Hair Studio © 2025 · (03) 9569 0840 · Glen Waverley, VIC</p>
-          <p style={{ marginTop: "0.25rem" }}>
-            <a
-              href="https://suahair.com.au"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--ink-muted)", textDecoration: "none" }}
-            >
-              suahair.com.au
-            </a>
-          </p>
-        </footer>
+        {/* Footer — shared across public pages; carries Privacy & Terms links */}
+        <SiteFooter />
       </div>
     </SalonDataProvider>
   );

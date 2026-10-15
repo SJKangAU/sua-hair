@@ -4,6 +4,7 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import BookingPage from "../pages/BookingPage";
+import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
 import AdminLoginPage from "../pages/AdminLoginPage";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
 import StylistLoginPage from "../pages/StylistLoginPage";
@@ -15,6 +16,11 @@ const router = createBrowserRouter([
     // Customer-facing booking page — public
     path: "/",
     element: <BookingPage />,
+  },
+  {
+    // Privacy policy — public
+    path: "/privacy",
+    element: <PrivacyPolicyPage />,
   },
   {
     // Admin login — public
