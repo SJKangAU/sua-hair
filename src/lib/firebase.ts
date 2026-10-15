@@ -8,6 +8,7 @@ import {
   persistentMultipleTabManager,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 // When the project hasn't been wired up with real Firebase credentials yet
 // (no .env / VITE_FIREBASE_* vars configured), fall back to a syntactically
@@ -83,3 +84,7 @@ const firestoreSettings: FirestoreDevSettings = {
 export const db = initializeFirestore(app, firestoreSettings);
 
 export const auth = getAuth(app);
+
+// Callable Cloud Functions. Region must match the functions' deployed region
+// (see functions/src/index.ts — australia-southeast1, Sydney).
+export const functions = getFunctions(app, "australia-southeast1");
