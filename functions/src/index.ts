@@ -7,11 +7,68 @@
 // southeast1")).
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { sendEmail } from "./email/resend";
+import {
+  buildConfirmationEmail,
+  type BookingEmailData,
+} from "./email/templates";
+import { SALON } from "./salon";
 
 initializeApp();
 const db = getFirestore();
+
+// ── Email configuration ─────────────────────────────────────────────────────
+// RESEND_API_KEY is a Secret Manager secret:
+//   firebase functions:secrets:set RESEND_API_KEY
+// EMAIL_FROM is a plain param (prompted on deploy, or set in functions/.env),
+// e.g. "Sua Hair Studio <bookings@your-verified-domain.com.au>". The domain
+// must be verified in Resend before mail to real customers will send.
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+const EMAIL_FROM = defineString("EMAIL_FROM");
+
+// Firestore triggers must run in the same location as the database. This
+// project's (default) database is in australia-southeast2 (Melbourne), unlike
+// the callable above which has no such constraint.
+const FIRESTORE_REGION = "australia-southeast2";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const isValidEmail = (value: unknown): value is string =>
+  typeof value === "string" && value.length <= 254 && EMAIL_PATTERN.test(value);
+
+/** The subset of a bookings/{id} document the email code reads. */
+interface BookingDoc {
+  bookingType?: "customer" | "walkin" | "break" | "training";
+  status?: "pending" | "confirmed" | "cancelled";
+  bookingRef?: string;
+  customerName?: string;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  stylistId?: string;
+  stylistName?: string;
+  services?: { name: string; price?: number }[];
+  serviceName?: string;
+  servicePrice?: number;
+  date?: string;
+  time?: string;
+  notes?: string | null;
+  reminderSentAt?: string | null;
+}
+
+const toEmailData = (b: BookingDoc): BookingEmailData => ({
+  customerName: b.customerName ?? "",
+  stylistId: b.stylistId,
+  stylistName: b.stylistName ?? "",
+  serviceName: b.serviceName ?? "",
+  services: b.services,
+  servicePrice: b.servicePrice,
+  date: b.date ?? "",
+  time: b.time ?? "",
+  bookingRef: b.bookingRef,
+});
 
 // Firestore writes are capped at 500 operations per batch.
 const BATCH_LIMIT = 500;
@@ -97,5 +154,52 @@ export const deleteCustomerData = onCall(
       });
 
     return { anonymisedCount: snap.size };
+  },
+);
+
+/**
+ * onBookingCreated — Firestore trigger on bookings/{bookingId}.
+ *
+ * Sends the customer a confirmation email when the booking carries a
+ * customerEmail. Breaks and training blocks are staff calendar entries, not
+ * customer bookings, so they are skipped.
+ *
+ * Email is strictly best-effort: the booking is already committed by the time
+ * this runs, and every failure is caught and logged — it never throws.
+ */
+export const onBookingCreated = onDocumentCreated(
+  {
+    document: "bookings/{bookingId}",
+    region: FIRESTORE_REGION,
+    secrets: [RESEND_API_KEY],
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const booking = snap.data() as BookingDoc;
+    if (booking.bookingType === "break" || booking.bookingType === "training") {
+      return;
+    }
+    const bookingId = event.params.bookingId;
+
+    if (isValidEmail(booking.customerEmail)) {
+      try {
+        const email = buildConfirmationEmail(toEmailData(booking));
+        await sendEmail(RESEND_API_KEY.value(), {
+          from: EMAIL_FROM.value(),
+          to: booking.customerEmail,
+          replyTo: SALON.replyTo,
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+          idempotencyKey: `confirmation-${bookingId}`,
+        });
+      } catch (err) {
+        console.error(
+          `Confirmation email failed for booking ${bookingId}:`,
+          err,
+        );
+      }
+    }
   },
 );
