@@ -96,6 +96,8 @@ const BookingForm = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [notes, setNotes] = useState("");
+  // Privacy consent — must be checked before the booking can be submitted.
+  const [consent, setConsent] = useState(false);
 
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
 
@@ -212,6 +214,9 @@ const BookingForm = () => {
       setErrors(newErrors);
       return;
     }
+    // Belt-and-braces: the Confirm button is already disabled until consent
+    // is given, but guard here too so consentGivenAt is never omitted.
+    if (!consent) return;
 
     const bookedServices: BookedService[] = selectedServices.map((s) => ({
       id: s.id,
@@ -275,6 +280,8 @@ const BookingForm = () => {
         time,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
         ...(returnTime ? { returnTime } : {}),
+        // Records that the customer agreed to the privacy terms, and when.
+        consentGivenAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       };
 
@@ -339,6 +346,7 @@ const BookingForm = () => {
     setCustomerName("");
     setCustomerPhone("");
     setNotes("");
+    setConsent(false);
     setErrors({});
   };
 
@@ -351,7 +359,10 @@ const BookingForm = () => {
 
   // ── Step 3 submit button state ────────────────────────────────────────────
   const canSubmit =
-    validatePhone(customerPhone) && validateName(customerName) && !submitting;
+    validatePhone(customerPhone) &&
+    validateName(customerName) &&
+    consent &&
+    !submitting;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -409,6 +420,7 @@ const BookingForm = () => {
               customerName={customerName}
               customerPhone={customerPhone}
               notes={notes}
+              consent={consent}
               errors={errors}
               onPhoneChange={handlePhoneChange}
               onNameChange={(v) => {
@@ -416,6 +428,7 @@ const BookingForm = () => {
                 setErrors((p) => ({ ...p, name: undefined }));
               }}
               onNotesChange={setNotes}
+              onConsentChange={setConsent}
             />
           )}
         </div>

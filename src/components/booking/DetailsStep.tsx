@@ -33,10 +33,12 @@ interface Props {
   customerName: string;
   customerPhone: string;
   notes: string;
+  consent: boolean;
   errors: { name?: string; phone?: string };
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onNotesChange: (value: string) => void;
+  onConsentChange: (value: boolean) => void;
 }
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -73,10 +75,12 @@ const DetailsStep = ({
   customerName,
   customerPhone,
   notes,
+  consent,
   errors,
   onPhoneChange,
   onNameChange,
   onNotesChange,
+  onConsentChange,
 }: Props) => {
   const formattedDate = date
     ? parseLocalDate(date).toLocaleDateString("en-AU", {
@@ -321,6 +325,50 @@ const DetailsStep = ({
             }}
           />
         </div>
+
+        {/* Privacy consent — required before the booking can be submitted.
+            The timestamp of consent is recorded on the booking document by
+            BookingForm.handleSubmit (consentGivenAt). */}
+        <label
+          htmlFor="booking-consent"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.625rem",
+            cursor: "pointer",
+            fontSize: "var(--text-sm)",
+            color: "var(--ink-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          <input
+            id="booking-consent"
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => onConsentChange(e.target.checked)}
+            required
+            style={{
+              width: "18px",
+              height: "18px",
+              marginTop: "1px",
+              flexShrink: 0,
+              accentColor: "var(--ink)",
+              cursor: "pointer",
+            }}
+          />
+          <span>
+            I agree to my details being stored to manage my booking. See our{" "}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--ink)", textDecoration: "underline" }}
+            >
+              Privacy Policy
+            </a>
+            .
+          </span>
+        </label>
       </div>
     </div>
   );

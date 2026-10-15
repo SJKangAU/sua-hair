@@ -49,7 +49,10 @@ service cloud.firestore {
           && b.time is string
           && b.activeTime is number
           && b.totalTime is number
-          && b.restTime is number;
+          && b.restTime is number
+          // Privacy consent must be recorded — the public form can't submit
+          // without the consent box ticked (see BookingForm / DetailsStep).
+          && b.consentGivenAt is string;
       }
     }
 

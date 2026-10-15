@@ -126,6 +126,10 @@ export interface Booking {
   traineeId?: string;
   traineeName?: string;
   trainingTopic?: string;
+  // ISO timestamp recorded when a customer ticks the privacy-consent box in
+  // the public booking flow (see BookingForm / DetailsStep). Optional because
+  // admin-created bookings (walk-in, break, training) don't collect consent.
+  consentGivenAt?: string;
   createdAt: string;
 }
 

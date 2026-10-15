@@ -142,6 +142,13 @@ describe("bookings — anonymous access is denied", () => {
     await assertFails(anon.doc("bookings/bk-new").set(missingPhone));
   });
 
+  it("cannot create a booking without recorded privacy consent", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    const noConsent = validPublicBooking();
+    delete (noConsent as Record<string, unknown>).consentGivenAt;
+    await assertFails(anon.doc("bookings/bk-new").set(noConsent));
+  });
+
   it("cannot read back the booking it just created", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
     await anon.doc("bookings/bk-new").set(validPublicBooking());
