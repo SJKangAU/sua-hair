@@ -15,6 +15,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
 import {
   buildConfirmationEmail,
+  buildOwnerNotification,
   buildReminderEmail,
   type BookingEmailData,
 } from "./email/templates";
@@ -167,6 +168,10 @@ export const deleteCustomerData = onCall(
  * customerEmail. Breaks and training blocks are staff calendar entries, not
  * customer bookings, so they are skipped.
  *
+ * When the owner has switched on notifyOwnerByEmail (privateSettings/
+ * notifications) it also sends them a plain-text heads-up about each new
+ * online booking, whether or not the customer supplied an email.
+ *
  * Email is strictly best-effort: the booking is already committed by the time
  * this runs, and every failure is caught and logged — it never throws.
  */
@@ -200,6 +205,39 @@ export const onBookingCreated = onDocumentCreated(
       } catch (err) {
         console.error(
           `Confirmation email failed for booking ${bookingId}:`,
+          err,
+        );
+      }
+    }
+
+    // Owner heads-up: online bookings only (walk-ins are entered by staff who
+    // already know about them). Independent of the customer email above.
+    if (booking.bookingType === "customer") {
+      try {
+        const settings = (
+          await db.doc("privateSettings/notifications").get()
+        ).data();
+        if (
+          settings?.notifyOwnerByEmail === true &&
+          isValidEmail(settings.ownerEmail)
+        ) {
+          const note = buildOwnerNotification({
+            ...toEmailData(booking),
+            customerPhone: booking.customerPhone,
+            customerEmail: booking.customerEmail,
+            notes: booking.notes,
+          });
+          await sendEmail(RESEND_API_KEY.value(), {
+            from: EMAIL_FROM.value(),
+            to: settings.ownerEmail,
+            subject: note.subject,
+            text: note.text,
+            idempotencyKey: `owner-${bookingId}`,
+          });
+        }
+      } catch (err) {
+        console.error(
+          `Owner notification email failed for booking ${bookingId}:`,
           err,
         );
       }

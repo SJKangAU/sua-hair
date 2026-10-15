@@ -296,6 +296,57 @@ describe("reference data — public read, staff write", () => {
   });
 });
 
+describe("privateSettings — owner-only", () => {
+  const settings = { notifyOwnerByEmail: true, ownerEmail: "owner@example.com" };
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("users/owner-uid").set({ role: "owner" });
+      await ctx.firestore().doc("users/stylist-uid").set({ role: "stylist" });
+      await ctx.firestore().doc("privateSettings/notifications").set(settings);
+    });
+  });
+
+  it("the owner can read and write", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertSucceeds(owner.doc("privateSettings/notifications").get());
+    await assertSucceeds(
+      owner.doc("privateSettings/notifications").set({
+        notifyOwnerByEmail: false,
+        ownerEmail: "new@example.com",
+      }),
+    );
+  });
+
+  it("a stylist account cannot read or write", async () => {
+    const stylist = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertFails(stylist.doc("privateSettings/notifications").get());
+    await assertFails(
+      stylist.doc("privateSettings/notifications").set(settings),
+    );
+  });
+
+  it("an anonymous visitor cannot read or write", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anon.doc("privateSettings/notifications").get());
+    await assertFails(anon.doc("privateSettings/notifications").set(settings));
+  });
+
+  it("the owner cannot write unexpected or mistyped fields", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertFails(
+      owner
+        .doc("privateSettings/notifications")
+        .set({ ...settings, extra: "nope" }),
+    );
+    await assertFails(
+      owner
+        .doc("privateSettings/notifications")
+        .set({ notifyOwnerByEmail: "yes", ownerEmail: "owner@example.com" }),
+    );
+  });
+});
+
 describe("users — role documents", () => {
   it("a signed-in user can read only their own role document", async () => {
     await testEnv.withSecurityRulesDisabled(async (ctx) => {

@@ -26,6 +26,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // The owner is distinguished by the role on their users/{uid} document,
+    // which is provisioned out-of-band (see `users` below).
+    function isOwner() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+    }
+
     // ── bookings ────────────────────────────────────────────────────────
     // Full booking records, including customer PII (name, phone, notes).
     // Reads/list/updates/deletes require a staff account. Anonymous
@@ -105,6 +112,20 @@ service cloud.firestore {
     match /salonSettings/{settingsId} {
       allow read: if true;
       allow write: if isStaff();
+    }
+
+    // ── privateSettings ─────────────────────────────────────────────────
+    // Owner-only configuration that must not be world-readable the way
+    // salonSettings is — currently the owner's notification email address
+    // (privateSettings/notifications). Cloud Functions read it with the
+    // Admin SDK, which bypasses these rules.
+    match /privateSettings/{docId} {
+      allow read: if isOwner();
+      allow write: if isOwner()
+        && request.resource.data.keys().hasOnly(['notifyOwnerByEmail', 'ownerEmail'])
+        && request.resource.data.notifyOwnerByEmail is bool
+        && request.resource.data.ownerEmail is string
+        && request.resource.data.ownerEmail.size() <= 254;
     }
 
     // ── notifications ───────────────────────────────────────────────────

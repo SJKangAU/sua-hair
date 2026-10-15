@@ -1,13 +1,19 @@
 // ManagePage.tsx
-// Manage tab — stylists, services, opening hours, per-stylist hours
+// Manage tab — stylists, services, opening hours, per-stylist hours,
+// owner email notifications
 
 import { useToastContext } from "../../context/ToastContext";
 import StylistRoster from "../../components/admin/manage/StylistRoster";
 import ServiceRoster from "../../components/admin/manage/ServiceRoster";
 import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor";
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
+import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
 
-const ManagePage = () => {
+interface Props {
+  isOwner: boolean;
+}
+
+const ManagePage = ({ isOwner }: Props) => {
   const { addToast } = useToastContext();
 
   return (
@@ -41,6 +47,20 @@ const ManagePage = () => {
         onSuccess={(msg) => addToast(msg, "success")}
         onError={(msg) => addToast(msg, "error")}
       />
+
+      {/* Owner's own email preferences — hidden from stylist accounts, and
+          the underlying document is owner-only in firestore.rules. */}
+      {isOwner && (
+        <>
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          <OwnerNotificationsEditor
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -241,7 +241,7 @@ const DashboardInner = () => {
         {effectiveTab === "clients" && <ClientsPage />}
         {effectiveTab === "training" && <TrainingPage />}
         {effectiveTab === "analytics" && isOwner && <AnalyticsPage />}
-        {effectiveTab === "manage" && <ManagePage />}
+        {effectiveTab === "manage" && <ManagePage isOwner={isOwner} />}
       </main>
     </div>
   );

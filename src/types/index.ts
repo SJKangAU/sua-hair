@@ -42,6 +42,14 @@ export interface SalonSettings {
   dateOverrides: DateOverrides;
 }
 
+// Owner-only notification preferences. Lives in privateSettings/notifications
+// (owner-read/write, see firestore.rules) rather than the world-readable
+// salonSettings document, because it holds the owner's email address.
+export interface OwnerNotificationSettings {
+  notifyOwnerByEmail: boolean;
+  ownerEmail: string;
+}
+
 // Per-stylist working hours for a single day
 export interface StylistDayHours {
   isWorking: boolean;
