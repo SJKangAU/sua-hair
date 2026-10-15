@@ -149,6 +149,29 @@ describe("bookings — anonymous access is denied", () => {
     await assertFails(anon.doc("bookings/bk-new").set(noConsent));
   });
 
+  it("can create a booking with an optional email address", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(
+      anon
+        .doc("bookings/bk-new")
+        .set(validPublicBooking({ customerEmail: "jane@example.com" })),
+    );
+  });
+
+  it("cannot create a booking with a non-string or oversized email", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(
+      anon
+        .doc("bookings/bk-a")
+        .set(validPublicBooking({ customerEmail: 12345 })),
+    );
+    await assertFails(
+      anon
+        .doc("bookings/bk-b")
+        .set(validPublicBooking({ customerEmail: "a".repeat(250) + "@x.co" })),
+    );
+  });
+
   it("cannot read back the booking it just created", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
     await anon.doc("bookings/bk-new").set(validPublicBooking());

@@ -10,7 +10,7 @@
 // anonymous visitor learn another customer's name and visit count just
 // by knowing/guessing their number. See BookingForm.handlePhoneChange.
 //
-// Validation errors (phone / name) are set by BookingForm on submit and
+// Validation errors (phone / name / email) are set by BookingForm on submit and
 // cleared here on each keystroke so feedback disappears as soon as the user
 // starts correcting.
 
@@ -32,11 +32,13 @@ interface Props {
   estimatedTotalDisplay: string; // "$120" or "$120 – $180"
   customerName: string;
   customerPhone: string;
+  customerEmail: string;
   notes: string;
   consent: boolean;
-  errors: { name?: string; phone?: string };
+  errors: { name?: string; phone?: string; email?: string };
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
   onNotesChange: (value: string) => void;
   onConsentChange: (value: boolean) => void;
 }
@@ -74,11 +76,13 @@ const DetailsStep = ({
   estimatedTotalDisplay,
   customerName,
   customerPhone,
+  customerEmail,
   notes,
   consent,
   errors,
   onPhoneChange,
   onNameChange,
+  onEmailChange,
   onNotesChange,
   onConsentChange,
 }: Props) => {
@@ -293,6 +297,51 @@ const DetailsStep = ({
               }}
             >
               {errors.name}
+            </p>
+          )}
+        </div>
+
+        {/* Email — optional; phone stays the primary identifier */}
+        <div>
+          <label htmlFor="booking-email" style={LABEL_STYLE}>
+            Email{" "}
+            <span
+              style={{
+                fontWeight: 400,
+                textTransform: "none",
+                letterSpacing: 0,
+                color: "var(--grey-muted)",
+              }}
+            >
+              — for your booking confirmation (optional)
+            </span>
+          </label>
+          <input
+            id="booking-email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={customerEmail}
+            onChange={(e) => onEmailChange(e.target.value)}
+            placeholder="you@example.com"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "booking-email-error" : undefined}
+            style={{
+              ...INPUT_BASE,
+              borderColor: errors.email ? "var(--error)" : "var(--border)",
+            }}
+          />
+          {errors.email && (
+            <p
+              id="booking-email-error"
+              role="alert"
+              style={{
+                color: "var(--error)",
+                fontSize: "0.75rem",
+                marginTop: "0.375rem",
+              }}
+            >
+              {errors.email}
             </p>
           )}
         </div>

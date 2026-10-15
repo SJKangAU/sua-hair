@@ -22,7 +22,7 @@ const BATCH_LIMIT = 500;
  * Right-to-erasure capability. Given a customer phone number, it anonymises
  * every booking belonging to that customer: the name is replaced with
  * "Deleted Customer", the lowercase search field is removed, and the phone
- * number and notes are nulled out. The booking records themselves are kept —
+ * number, email address and notes are nulled out. The booking records themselves are kept —
  * their service, price, date and status remain — so the salon's business and
  * financial history stays intact while the personal information is gone.
  *
@@ -79,6 +79,7 @@ export const deleteCustomerData = onCall(
           customerName: "Deleted Customer",
           customerNameLower: FieldValue.delete(),
           customerPhone: null,
+          customerEmail: null,
           notes: null,
           anonymisedAt,
         });

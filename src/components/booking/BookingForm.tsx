@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Step 1  ServiceStep      — multi-select services
 // Step 2  StylistDateStep  — choose stylist, date and time (merged)
-// Step 3  DetailsStep      — customer phone, name, notes
+// Step 3  DetailsStep      — customer phone, name, optional email, notes
 // Sheet   BookingSummarySheet — slide-up review before going to step 3
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -12,7 +12,12 @@ import { useState } from "react";
 import { collection, doc, writeBatch, increment } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { queueSlotBlockCreate } from "../../lib/slotBlocks";
-import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
+import {
+  cleanPhone,
+  validatePhone,
+  validateName,
+  validateEmail,
+} from "../../lib/validation";
 import { writeBookingNotifications } from "../../lib/notifications";
 import { computeReturnTime } from "../../lib/scheduling";
 import { useSalonData } from "../../context/SalonDataContext";
@@ -95,11 +100,16 @@ const BookingForm = () => {
   // ── Customer details ───────────────────────────────────────────────────────
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [notes, setNotes] = useState("");
   // Privacy consent — must be checked before the booking can be submitted.
   const [consent, setConsent] = useState(false);
 
-  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    phone?: string;
+    email?: string;
+  }>({});
 
   // ── Submit state ───────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -205,11 +215,13 @@ const BookingForm = () => {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    const newErrors: { name?: string; phone?: string } = {};
+    const newErrors: { name?: string; phone?: string; email?: string } = {};
     if (!validatePhone(customerPhone))
       newErrors.phone = "Please enter a valid Australian mobile number";
     if (!validateName(customerName))
       newErrors.name = "Please enter your full name";
+    if (!validateEmail(customerEmail))
+      newErrors.email = "Please enter a valid email address, or leave it blank";
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -264,6 +276,10 @@ const BookingForm = () => {
         customerName: customerName.trim(),
         customerNameLower: customerName.trim().toLowerCase(),
         customerPhone: cleanPhone(customerPhone),
+        // Optional — only stored when provided (lowercased for consistency)
+        ...(customerEmail.trim()
+          ? { customerEmail: customerEmail.trim().toLowerCase() }
+          : {}),
         stylistId,
         stylistName: finalStylistName,
         stylistLevel: finalStylistLevel,
@@ -345,6 +361,7 @@ const BookingForm = () => {
     setTime("");
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerEmail("");
     setNotes("");
     setConsent(false);
     setErrors({});
@@ -361,6 +378,7 @@ const BookingForm = () => {
   const canSubmit =
     validatePhone(customerPhone) &&
     validateName(customerName) &&
+    validateEmail(customerEmail) &&
     consent &&
     !submitting;
 
@@ -419,6 +437,7 @@ const BookingForm = () => {
               estimatedTotalDisplay={estimatedTotalDisplay}
               customerName={customerName}
               customerPhone={customerPhone}
+              customerEmail={customerEmail}
               notes={notes}
               consent={consent}
               errors={errors}
@@ -426,6 +445,10 @@ const BookingForm = () => {
               onNameChange={(v) => {
                 setCustomerName(v);
                 setErrors((p) => ({ ...p, name: undefined }));
+              }}
+              onEmailChange={(v) => {
+                setCustomerEmail(v);
+                setErrors((p) => ({ ...p, email: undefined }));
               }}
               onNotesChange={setNotes}
               onConsentChange={setConsent}

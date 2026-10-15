@@ -32,6 +32,10 @@ const PrivacyPolicyPage = () => {
         <li>Your name</li>
         <li>Your mobile phone number</li>
         <li>
+          Your email address, if you choose to provide one (used only to send
+          your booking confirmation and appointment reminder)
+        </li>
+        <li>
           Your booking details and history (the services, stylist, date and
           time you book)
         </li>
@@ -77,7 +81,7 @@ const PrivacyPolicyPage = () => {
         We keep your information for as long as you are an active client, so
         your visit history stays available to us and to you. If you ask us to
         delete your personal information, we will remove your name, phone
-        number and notes from our records. We may keep de-identified booking
+        number, email address and notes from our records. We may keep de-identified booking
         records (with your name and contact details removed) for our own
         business and financial history, where we're permitted or required to.
       </p>

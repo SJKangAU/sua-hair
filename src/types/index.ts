@@ -95,6 +95,9 @@ export interface Booking {
   // prefix search in the admin Clients tab (Firestore has no ilike)
   customerNameLower?: string;
   customerPhone: string;
+  // Optional — collected in the booking flow for confirmation/reminder emails
+  // (see functions/src/index.ts). Phone remains the primary identifier.
+  customerEmail?: string;
   stylistId: string;
   stylistName: string;
   stylistLevel: "director" | "senior" | "junior";
@@ -130,6 +133,9 @@ export interface Booking {
   // the public booking flow (see BookingForm / DetailsStep). Optional because
   // admin-created bookings (walk-in, break, training) don't collect consent.
   consentGivenAt?: string;
+  // ISO timestamp set by the scheduled reminder function once the 24-hour
+  // reminder email has been sent — guards against double-sending.
+  reminderSentAt?: string | null;
   createdAt: string;
 }
 
