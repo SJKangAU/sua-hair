@@ -68,7 +68,7 @@ class ErrorBoundary extends Component<Props, State> {
             padding: "0.65rem 1.5rem",
             border: "1px solid var(--ink, #111)",
             background: "var(--ink, #111)",
-            color: "#fff",
+            color: "var(--surface, #fff)",
             borderRadius: "6px",
             fontSize: "0.9rem",
             cursor: "pointer",

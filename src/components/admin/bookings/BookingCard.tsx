@@ -7,6 +7,7 @@
 // follow-up — visually distinct border/tint plus a small flag chip.
 
 import { useState } from "react";
+import { Flag, StickyNote } from "lucide-react";
 import Badge from "../../ui/Badge";
 import StatusActionButtons from "./StatusActionButtons";
 import type { Booking, BookingStatus } from "../../../types";
@@ -21,6 +22,21 @@ const CARD_CSS = `
     grid-template-columns: auto 1fr 1fr 1fr auto;
     align-items: center;
     gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  }
+  .admin-booking-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+  .admin-booking-card.is-flagged { border: 1.5px dashed var(--ink); }
+  .admin-booking-card.is-selected {
+    background: var(--surface-raised);
+    border: 1.5px solid var(--ink);
   }
   .admin-booking-card-status {
     align-items: flex-end;
@@ -92,23 +108,9 @@ const BookingCard = ({
     <>
       <style>{CARD_CSS}</style>
       <div
-        className="admin-booking-card"
-        style={{
-          background: selected
-            ? "var(--surface-raised)"
-            : booking.flagged
-            ? "#fff5f4"
-            : "var(--surface)",
-          borderRadius: "10px",
-          padding: "1rem 1.25rem",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          border: selected
-            ? "1.5px solid var(--ink)"
-            : booking.flagged
-            ? "1.5px solid #d9534f"
-            : "1px solid transparent",
-          transition: "all 0.1s",
-        }}
+        className={`admin-booking-card${selected ? " is-selected" : ""}${
+          booking.flagged ? " is-flagged" : ""
+        }`}
       >
         {/* Selection checkbox */}
         <input
@@ -149,11 +151,12 @@ const BookingCard = ({
                   borderRadius: "20px",
                   fontSize: "11px",
                   fontWeight: 600,
-                  background: "#fcebeb",
-                  color: "#a32d2d",
+                  border: "1px solid var(--ink)",
+                  color: "var(--ink)",
                 }}
               >
-                🚩 Flagged
+                <Flag size={11} strokeWidth={2.25} aria-hidden="true" />
+                Flagged
               </span>
             )}
           </div>
@@ -242,7 +245,7 @@ const BookingCard = ({
                   fontWeight: 500,
                 }}
               >
-                🚩 Flag
+                Flag
               </button>
             )}
           </div>
@@ -275,8 +278,8 @@ const BookingCard = ({
                   onClick={confirmFlag}
                   style={{
                     padding: "0.2rem 0.55rem",
-                    background: "#a32d2d",
-                    color: "white",
+                    background: "var(--accent)",
+                    color: "var(--surface)",
                     border: "none",
                     borderRadius: "4px",
                     fontSize: "0.72rem",
@@ -313,7 +316,13 @@ const BookingCard = ({
                 margin: 0,
               }}
             >
-              📝 {booking.notes}
+              <StickyNote
+                size={11}
+                strokeWidth={2}
+                aria-hidden="true"
+                style={{ marginRight: "0.25rem", verticalAlign: "-1px" }}
+              />
+              {booking.notes}
             </p>
           )}
         </div>

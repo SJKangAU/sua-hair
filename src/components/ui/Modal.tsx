@@ -4,6 +4,7 @@
 // Closes on backdrop click and Escape key press.
 
 import { useEffect, useId, useRef } from "react";
+import { X } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -99,9 +100,12 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
             {title}
           </h2>
           <button
+            className="bk-ghost"
             onClick={onClose}
             aria-label="Close dialog"
             style={{
+              display: "flex",
+              borderRadius: "6px",
               background: "none",
               border: "none",
               fontSize: "1.25rem",
@@ -111,7 +115,7 @@ const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
               padding: "0.25rem",
             }}
           >
-            ✕
+            <X size={20} strokeWidth={1.75} />
           </button>
         </div>
 

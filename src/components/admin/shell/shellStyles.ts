@@ -71,6 +71,19 @@ export const SHELL_CSS = `
   }
   .adm-footer-btn:hover { background: var(--admin-panel); color: var(--surface); }
 
+  /* Hover for every admin button that has no bk-* class of its own: a slight
+     darken reads on both outlined and filled buttons */
+  .adm-shell button:not([class]) { transition: filter var(--transition-fast); }
+  .adm-shell button:not([class]):not(:disabled):hover { filter: brightness(0.93); }
+  .adm-bulk-primary:not(:disabled):hover { background: var(--surface-raised) !important; }
+  .adm-bulk-secondary:not(:disabled):hover {
+    background: var(--admin-panel) !important;
+    color: var(--surface) !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .adm-shell button:not([class]) { transition: none; }
+  }
+
   /* Bottom tab bar items */
   .adm-tab {
     position: relative;

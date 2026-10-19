@@ -5,6 +5,7 @@
 // Writes to Firestore "salonSettings/main" on every save.
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
@@ -327,8 +328,12 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                         )}`}
                   </span>
                   <button
+                    className="bk-ghost"
+                    aria-label="Remove override"
                     onClick={() => removeOverride(date)}
                     style={{
+                      display: "flex",
+                      borderRadius: "4px",
                       background: "none",
                       border: "none",
                       color: "var(--grey-muted)",
@@ -338,7 +343,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     }}
                     title="Remove override"
                   >
-                    ×
+                    <X size={15} strokeWidth={2} />
                   </button>
                 </div>
               ))}

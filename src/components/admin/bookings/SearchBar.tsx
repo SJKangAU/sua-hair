@@ -4,6 +4,7 @@
 // 300ms debounce prevents excessive re-renders while typing
 
 import { useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
 
 interface Props {
   onSearch: (query: string) => void;
@@ -36,7 +37,7 @@ const SearchBar = ({
           pointerEvents: "none",
         }}
       >
-        🔍
+        <Search size={15} strokeWidth={2} aria-hidden="true" />
       </span>
       <input
         type="text"
@@ -58,8 +59,11 @@ const SearchBar = ({
       {/* Clear button */}
       {value && (
         <button
+          className="bk-ghost"
+          aria-label="Clear search"
           onClick={() => setValue("")}
           style={{
+            display: "flex",
             position: "absolute",
             right: "0.75rem",
             top: "50%",
@@ -69,10 +73,11 @@ const SearchBar = ({
             color: "var(--grey-muted)",
             cursor: "pointer",
             fontSize: "0.9rem",
-            padding: 0,
+            padding: "0.2rem",
+            borderRadius: "4px",
           }}
         >
-          ✕
+          <X size={15} strokeWidth={2} />
         </button>
       )}
     </div>

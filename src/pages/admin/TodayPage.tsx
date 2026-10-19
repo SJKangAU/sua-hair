@@ -15,6 +15,7 @@ import { useBookingContext } from "../../context/BookingContext";
 import { useSalonData } from "../../context/SalonDataContext";
 import { useToastContext } from "../../context/ToastContext";
 import Timeline from "../../components/admin/timeline/Timeline";
+import MobileAgenda from "../../components/admin/today/MobileAgenda";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
 import DayGlance from "../../components/admin/today/DayGlance";
 import TodaySearch from "../../components/admin/today/TodaySearch";
@@ -30,6 +31,9 @@ import type { ClientHit } from "../../lib/clientHits";
 import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
 import useBookingDrawerParam from "../../hooks/useBookingDrawerParam";
 import useNowMinutes from "../../hooks/useNowMinutes";
+import useMediaQuery from "../../hooks/useMediaQuery";
+import useTodayShortcuts from "../../hooks/useTodayShortcuts";
+import { ADMIN_NAV_BREAKPOINT } from "../../lib/breakpoints";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -72,6 +76,8 @@ const TodayPage = ({ isOwner }: Props) => {
   const drawer = useBookingDrawerParam();
   const [params, setParams] = useSearchParams();
   const nowMinutes = useNowMinutes();
+  // Under 900px the timeline grid becomes a day list (MobileAgenda)
+  const isNarrow = useMediaQuery(`(max-width: ${ADMIN_NAV_BREAKPOINT - 1}px)`);
 
   const [createModal, setCreateModal] = useState<{
     stylistId: string;
@@ -96,6 +102,14 @@ const TodayPage = ({ isOwner }: Props) => {
       },
       { replace: true },
     );
+
+  // N new booking · ← → change day · T today (Ctrl K is the search box's own)
+  useTodayShortcuts({
+    onNew: () => setCreateModal({ stylistId: "", time: "" }),
+    onPrev: () => setDate(addDays(selectedDate, -1)),
+    onNext: () => setDate(addDays(selectedDate, 1)),
+    onToday: () => setDate(today),
+  });
 
   // ── What the glance strip and rail show ────────────────────────────────────
   const dayBookings = useMemo(
@@ -205,6 +219,7 @@ const TodayPage = ({ isOwner }: Props) => {
                 className="bk-ghost"
                 onClick={() => setDate(addDays(selectedDate, -1))}
                 aria-label="Previous day"
+                title="Previous day (←)"
                 style={navButton}
               >
                 <ChevronLeft size={18} strokeWidth={2} />
@@ -213,6 +228,7 @@ const TodayPage = ({ isOwner }: Props) => {
                 className="bk-ghost"
                 onClick={() => setDate(addDays(selectedDate, 1))}
                 aria-label="Next day"
+                title="Next day (→)"
                 style={navButton}
               >
                 <ChevronRight size={18} strokeWidth={2} />
@@ -221,6 +237,7 @@ const TodayPage = ({ isOwner }: Props) => {
                 <button
                   className="bk-ghost"
                   onClick={() => setDate(today)}
+                  title="Back to today (T)"
                   style={{
                     padding: "0.45rem 0.9rem",
                     background: "var(--surface)",
@@ -289,6 +306,7 @@ const TodayPage = ({ isOwner }: Props) => {
           <button
             className="bk-cta"
             onClick={() => setCreateModal({ stylistId: "", time: "" })}
+            title="New booking (N)"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -325,20 +343,28 @@ const TodayPage = ({ isOwner }: Props) => {
 
       {/* Timeline + right rail */}
       <div className="today-grid">
-        <Timeline
-          selectedDate={selectedDate}
-          onBlockClick={(booking) => drawer.open(booking.id)}
-          onEmptySlotClick={(stylistId, time) =>
-            setCreateModal({ stylistId, time })
-          }
-          onGapClick={(stylistId, window) =>
-            setCreateModal({
-              stylistId,
-              time: minutesToTimeString(window.start),
-              gap: window,
-            })
-          }
-        />
+        {isNarrow ? (
+          <MobileAgenda
+            selectedDate={selectedDate}
+            onOpenBooking={(id) => drawer.open(id)}
+            onBook={(stylistId, time) => setCreateModal({ stylistId, time })}
+          />
+        ) : (
+          <Timeline
+            selectedDate={selectedDate}
+            onBlockClick={(booking) => drawer.open(booking.id)}
+            onEmptySlotClick={(stylistId, time) =>
+              setCreateModal({ stylistId, time })
+            }
+            onGapClick={(stylistId, window) =>
+              setCreateModal({
+                stylistId,
+                time: minutesToTimeString(window.start),
+                gap: window,
+              })
+            }
+          />
+        )}
 
         <aside
           aria-label="Needs attention"

@@ -7,9 +7,13 @@
 // - Sorted by date and time ascending
 
 import { useState, useCallback } from "react";
+import { Download, History } from "lucide-react";
 import BookingCard from "./BookingCard";
 import useBookingActions from "../../../hooks/useBookingActions";
 import { isOpenStatus } from "../../../lib/bookingStatus";
+import { groupBookingsByDate } from "../../../lib/bookingGroups";
+import { timeStringToMinutes } from "../../../lib/scheduling";
+import { todayString } from "../../../lib/dates";
 import SearchBar from "./SearchBar";
 import BulkActions from "./BulkActions";
 import type { Booking, BookingStatus } from "../../../types";
@@ -73,15 +77,29 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
   const { changeStatuses } = useBookingActions();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showPast, setShowPast] = useState(false);
 
   // Filters + search share the exact predicate BookingsPage uses for its count
   const searched = filterBookings(bookings, filters, searchQuery);
 
-  // Sort by date then time ascending
-  const sorted = [...searched].sort((a, b) => {
+  // Everything that matches, soonest first — what Export CSV writes
+  const allSorted = [...searched].sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return a.time.localeCompare(b.time);
+    return timeStringToMinutes(a.time) - timeStringToMinutes(b.time);
   });
+
+  // The list itself: upcoming days first, grouped (Today, Tomorrow, then
+  // dates). Past days stay hidden until asked for — but a search, or a date
+  // range the owner chose, is a deliberate look at the past, so it shows them.
+  const forcePast =
+    searchQuery !== "" || !!filters.dateFrom || !!filters.dateTo;
+  const includePast = showPast || forcePast;
+  const { groups, pastCount } = groupBookingsByDate(
+    searched,
+    todayString(),
+    includePast,
+  );
+  const visible = groups.flatMap((g) => g.bookings);
 
   // ── Selection handlers ──────────────────────────────────────────────────────
 
@@ -98,10 +116,10 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.size === sorted.length) {
+    if (selectedIds.size === visible.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(sorted.map((b) => b.id)));
+      setSelectedIds(new Set(visible.map((b) => b.id)));
     }
   };
 
@@ -110,7 +128,7 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
   // ── Bulk actions ────────────────────────────────────────────────────────────
 
   const handleBulkConfirm = async () => {
-    const pending = sorted.filter(
+    const pending = visible.filter(
       (b) => selectedIds.has(b.id) && b.status === "pending",
     );
     // One summary toast ("3 bookings confirmed"), not one per booking
@@ -124,7 +142,7 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
   const handleBulkCancel = async () => {
     // Only bookings still to be served can be cancelled — not completed,
     // no-show or already-cancelled ones. One summary toast with a single Undo.
-    const cancellable = sorted.filter(
+    const cancellable = visible.filter(
       (b) => selectedIds.has(b.id) && isOpenStatus(b.status),
     );
     await changeStatuses(
@@ -140,27 +158,38 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
     setSelectedIds(new Set()); // clear selection on new search
   }, []);
 
-  const allSelected = sorted.length > 0 && selectedIds.size === sorted.length;
+  const allSelected = visible.length > 0 && selectedIds.size === visible.length;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-      {/* Search and export row */}
-      <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+      {/* Search, past toggle and export row */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.75rem",
+          alignItems: "center",
+        }}
+      >
         <SearchBar onSearch={handleSearch} />
+        {pastCount > 0 && !forcePast && (
+          <button
+            className="bk-ghost"
+            onClick={() => setShowPast((v) => !v)}
+            aria-pressed={showPast}
+            style={toolbarButton}
+          >
+            <History size={15} strokeWidth={2} aria-hidden="true" />
+            {showPast ? "Hide" : "Show"} past bookings ({pastCount})
+          </button>
+        )}
         <button
-          onClick={() => exportToCSV(sorted)}
-          style={{
-            padding: "0.6rem 1rem",
-            background: "var(--surface)",
-            color: "var(--ink)",
-            border: "1px solid var(--border-strong)",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "0.82rem",
-            whiteSpace: "nowrap",
-          }}
+          className="bk-ghost"
+          onClick={() => exportToCSV(allSorted)}
+          style={toolbarButton}
         >
-          ↓ Export CSV
+          <Download size={15} strokeWidth={2} aria-hidden="true" />
+          Export CSV
         </button>
       </div>
 
@@ -173,7 +202,7 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
       />
 
       {/* Select all row */}
-      {sorted.length > 0 && (
+      {visible.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -193,13 +222,13 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
           <span>
             {allSelected
               ? "Deselect all"
-              : `Select all ${sorted.length} bookings`}
+              : `Select all ${visible.length} bookings`}
           </span>
         </div>
       )}
 
       {/* Empty state */}
-      {sorted.length === 0 && (
+      {visible.length === 0 && (
         <div
           style={{
             textAlign: "center",
@@ -212,29 +241,85 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
           }}
         >
           <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>
-            No bookings found
+            {pastCount > 0 && !includePast
+              ? "No upcoming bookings"
+              : "No bookings found"}
           </p>
           <p style={{ fontSize: "0.85rem" }}>
             {searchQuery
               ? `No results for "${searchQuery}"`
+              : pastCount > 0 && !includePast
+              ? `There ${
+                  pastCount === 1
+                    ? "is 1 past booking"
+                    : `are ${pastCount} past bookings`
+                } — use "Show past bookings" above.`
               : "Try adjusting your filters"}
           </p>
         </div>
       )}
 
-      {/* Booking cards */}
-      {sorted.map((booking) => (
-        <BookingCard
-          key={booking.id}
-          booking={booking}
-          selected={selectedIds.has(booking.id)}
-          onSelect={handleSelect}
-          onUpdate={onUpdate}
-          onSetFlag={onSetFlag}
-        />
+      {/* Booking cards, grouped by day */}
+      {groups.map((group) => (
+        <section
+          key={group.date}
+          aria-label={group.label}
+          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+        >
+          <h3
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: "0.5rem",
+              margin: "0.75rem 0 0",
+              padding: "0 0.25rem 0.4rem",
+              borderBottom: "1px solid var(--border)",
+              fontSize: "var(--text-base)",
+              fontWeight: 700,
+              color: group.isPast ? "var(--ink-muted)" : "var(--ink)",
+            }}
+          >
+            {group.label}
+            <span
+              style={{
+                fontSize: "var(--text-sm)",
+                fontWeight: 400,
+                color: "var(--ink-muted)",
+              }}
+            >
+              {group.bookings.length} booking
+              {group.bookings.length === 1 ? "" : "s"}
+            </span>
+          </h3>
+          {group.bookings.map((booking) => (
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              selected={selectedIds.has(booking.id)}
+              onSelect={handleSelect}
+              onUpdate={onUpdate}
+              onSetFlag={onSetFlag}
+            />
+          ))}
+        </section>
       ))}
     </div>
   );
+};
+
+const toolbarButton: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.4rem",
+  padding: "0.6rem 1rem",
+  background: "var(--surface)",
+  color: "var(--ink)",
+  border: "1px solid var(--border-strong)",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontSize: "var(--text-sm)",
+  fontFamily: "var(--font-body)",
+  whiteSpace: "nowrap",
 };
 
 export default BookingTable;

@@ -5,6 +5,7 @@
 // Inactive stylists are shown greyed out and can be reactivated
 
 import { useState } from "react";
+import { Users } from "lucide-react";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import useStylists from "../../../hooks/useStylists";
@@ -163,8 +164,18 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
           borderBottom: "1px solid var(--admin-card-border)",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
-          💇 Stylists
+        <h3
+          style={{
+            margin: 0,
+            fontSize: "1rem",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <Users size={18} strokeWidth={1.75} aria-hidden="true" />
+          Stylists
         </h3>
         {!showForm && (
           <button
@@ -365,8 +376,9 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                       style={{
                         marginLeft: "0.5rem",
                         fontSize: "0.68rem",
-                        background: "#eaf3de",
-                        color: "#27500a",
+                        background: "var(--surface-raised)",
+                        color: "var(--ink)",
+                        border: "1px solid var(--border-strong)",
                         padding: "1px 6px",
                         borderRadius: "10px",
                         fontWeight: 500,
@@ -404,16 +416,18 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                   Edit
                 </button>
                 <button
+                  className={stylist.status === "active" ? "bk-ghost" : "bk-cta"}
                   onClick={() => handleToggleStatus(stylist)}
                   style={{
                     padding: "0.3rem 0.7rem",
                     background:
-                      stylist.status === "active" ? "#fcebeb" : "#e1f5ee",
-                    border: "none",
+                      stylist.status === "active" ? "transparent" : "var(--accent)",
+                    border: "1px solid var(--border-strong)",
                     borderRadius: "5px",
                     fontSize: "0.75rem",
                     cursor: "pointer",
-                    color: stylist.status === "active" ? "#a32d2d" : "#085041",
+                    color:
+                      stylist.status === "active" ? "var(--ink)" : "var(--surface)",
                     fontWeight: 500,
                   }}
                 >

@@ -4,6 +4,7 @@
 // Book again pre-fills customer name and phone in CreateBookingModal
 
 import { useState, useCallback } from "react";
+import { Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useToastContext } from "../../context/ToastContext";
 import ClientSearch from "../../components/admin/clients/ClientSearch";
@@ -78,7 +79,12 @@ const ClientsPage = () => {
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>👥</p>
+          <Users
+            size={32}
+            strokeWidth={1.5}
+            aria-hidden="true"
+            style={{ marginBottom: "0.5rem" }}
+          />
           <p style={{ fontSize: "0.9rem" }}>
             Type at least 2 characters to search clients
           </p>

@@ -6,6 +6,7 @@
 // ↑↓ controls set the order clients see services in the booking flow
 
 import { useState } from "react";
+import { Scissors, Info, ChevronUp, ChevronDown } from "lucide-react";
 import {
   collection,
   addDoc,
@@ -268,8 +269,18 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
         }}
       >
         <div>
-          <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
-            ✂️ Services
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "1rem",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <Scissors size={18} strokeWidth={1.75} aria-hidden="true" />
+            Services
           </h3>
           <p
             style={{
@@ -278,7 +289,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               color: "var(--admin-muted)",
             }}
           >
-            Use ↑ ↓ to set the order clients see services in the booking flow.
+            Use the arrow buttons to set the order clients see services in the
+            booking flow.
           </p>
         </div>
         {!showForm && (
@@ -468,15 +480,21 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               style={{
                 fontSize: "0.78rem",
                 color: "var(--admin-muted)",
-                background: "#f0f7ff",
-                border: "1px solid #b5d4f4",
+                background: "var(--surface-raised)",
+                border: "1px solid var(--border-strong)",
                 borderRadius: "6px",
                 padding: "0.5rem 0.75rem",
                 marginBottom: "1rem",
               }}
             >
-              💡 Price changes are automatically logged to the service history
-              for accurate analytics.
+              <Info
+                size={13}
+                strokeWidth={2}
+                aria-hidden="true"
+                style={{ marginRight: "0.35rem", verticalAlign: "-2px" }}
+              />
+              Price changes are automatically logged to the service history for
+              accurate analytics.
             </p>
           )}
 
@@ -634,7 +652,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                         onClick={() => handleMoveUp(service)}
                         disabled={isFirst}
                         title="Move up in booking flow"
+                        aria-label="Move up in booking flow"
+                        className="bk-ghost"
                         style={{
+                          display: "flex",
                           padding: "0.15rem 0.4rem",
                           background: "none",
                           border: "1px solid var(--admin-input-border)",
@@ -645,13 +666,16 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           lineHeight: 1,
                         }}
                       >
-                        ↑
+                        <ChevronUp size={14} strokeWidth={2} />
                       </button>
                       <button
                         onClick={() => handleMoveDown(service)}
                         disabled={isLast}
                         title="Move down in booking flow"
+                        aria-label="Move down in booking flow"
+                        className="bk-ghost"
                         style={{
+                          display: "flex",
                           padding: "0.15rem 0.4rem",
                           background: "none",
                           border: "1px solid var(--admin-input-border)",
@@ -662,12 +686,13 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           lineHeight: 1,
                         }}
                       >
-                        ↓
+                        <ChevronDown size={14} strokeWidth={2} />
                       </button>
                     </div>
 
                     {/* Edit */}
                     <button
+                      className="bk-ghost"
                       onClick={() => handleEdit(service)}
                       style={{
                         padding: "0.3rem 0.7rem",
@@ -684,17 +709,18 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
 
                     {/* Activate / Deactivate */}
                     <button
+                      className={service.status === "active" ? "bk-ghost" : "bk-cta"}
                       onClick={() => handleToggleStatus(service)}
                       style={{
                         padding: "0.3rem 0.7rem",
                         background:
-                          service.status === "active" ? "#fcebeb" : "#e1f5ee",
-                        border: "none",
+                          service.status === "active" ? "transparent" : "var(--accent)",
+                        border: "1px solid var(--border-strong)",
                         borderRadius: "5px",
                         fontSize: "0.75rem",
                         cursor: "pointer",
                         color:
-                          service.status === "active" ? "#a32d2d" : "#085041",
+                          service.status === "active" ? "var(--ink)" : "var(--surface)",
                         fontWeight: 500,
                       }}
                     >

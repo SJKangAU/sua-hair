@@ -5,6 +5,7 @@
 // Shows trainer, trainee, topic, date, time, duration
 
 import { useMemo } from "react";
+import { GraduationCap } from "lucide-react";
 import { useBookingContext } from "../../../context/BookingContext";
 import Badge from "../../ui/Badge";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
@@ -81,7 +82,12 @@ const TrainingList = () => {
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         }}
       >
-        <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎓</p>
+        <GraduationCap
+          size={28}
+          strokeWidth={1.5}
+          aria-hidden="true"
+          style={{ marginBottom: "0.5rem" }}
+        />
         <p style={{ fontSize: "0.9rem" }}>
           No training sessions yet. Create one above.
         </p>
@@ -140,8 +146,9 @@ const TrainingList = () => {
       {/* Duration badge */}
       <div
         style={{
-          background: "#eaf3de",
-          color: "#27500a",
+          background: "var(--surface-raised)",
+          color: "var(--ink)",
+          border: "1px solid var(--border-strong)",
           fontSize: "0.72rem",
           fontWeight: 600,
           padding: "3px 8px",

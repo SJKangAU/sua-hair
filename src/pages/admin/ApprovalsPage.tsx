@@ -10,6 +10,7 @@
 // no FilterBar (there's nothing else to filter by in a single-status queue).
 
 import { useBookingContext } from "../../context/BookingContext";
+import { CircleCheck } from "lucide-react";
 import type { BookingStatus } from "../../types";
 import BookingTable from "../../components/admin/bookings/BookingTable";
 import { BookingCardSkeleton } from "../../components/ui/Skeleton";
@@ -77,8 +78,18 @@ const ApprovalsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>
-            ✅ All caught up
+          <p
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              fontSize: "1.1rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <CircleCheck size={20} strokeWidth={1.75} aria-hidden="true" />
+            All caught up
           </p>
           <p style={{ fontSize: "0.85rem" }}>
             No bookings are waiting on your review right now.

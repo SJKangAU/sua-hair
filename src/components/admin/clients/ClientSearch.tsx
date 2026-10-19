@@ -13,6 +13,7 @@
 // before this field existed are findable by phone but not by name.
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Search, X } from "lucide-react";
 import { fetchBookingsForClientQuery } from "../../../lib/clientSearch";
 import { countsAsRevenue } from "../../../lib/bookingStatus";
 import type { Booking } from "../../../types";
@@ -136,7 +137,7 @@ const ClientSearch = ({
           pointerEvents: "none",
         }}
       >
-        🔍
+        <Search size={17} strokeWidth={2} aria-hidden="true" />
       </span>
       <input
         type="text"
@@ -155,11 +156,14 @@ const ClientSearch = ({
       />
       {queryStr && (
         <button
+          className="bk-ghost"
+          aria-label="Clear search"
           onClick={() => {
             setQueryStr("");
             onReset();
           }}
           style={{
+            display: "flex",
             position: "absolute",
             right: "0.875rem",
             top: "50%",
@@ -169,10 +173,11 @@ const ClientSearch = ({
             fontSize: "1rem",
             cursor: "pointer",
             color: "var(--grey-muted)",
-            padding: 0,
+            padding: "0.2rem",
+            borderRadius: "4px",
           }}
         >
-          ✕
+          <X size={16} strokeWidth={2} />
         </button>
       )}
     </div>

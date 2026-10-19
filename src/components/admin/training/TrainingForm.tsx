@@ -6,6 +6,7 @@
 // Saved outside trading hours — no slot conflict checking needed
 
 import { useState } from "react";
+import { GraduationCap } from "lucide-react";
 import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
@@ -179,8 +180,18 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
         border: "1px solid var(--border)",
       }}
     >
-      <h3 style={{ margin: "0 0 1.25rem", fontSize: "1rem", fontWeight: 600 }}>
-        🎓 New Training Session
+      <h3
+        style={{
+          margin: "0 0 1.25rem",
+          fontSize: "1rem",
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+        }}
+      >
+        <GraduationCap size={18} strokeWidth={1.75} aria-hidden="true" />
+        New Training Session
       </h3>
 
       <div

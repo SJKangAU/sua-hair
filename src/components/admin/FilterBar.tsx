@@ -3,6 +3,7 @@
 // Consumes stylists from SalonDataContext (Firestore) instead of hardcoded data.ts
 
 import { useSalonData } from "../../context/SalonDataContext";
+import { Flag } from "lucide-react";
 import {
   hasActiveFilters as computeHasActiveFilters,
   type Filters,
@@ -128,7 +129,8 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
           }
           style={{ cursor: "pointer", width: "15px", height: "15px" }}
         />
-        🚩 Flagged only
+        <Flag size={14} strokeWidth={2} aria-hidden="true" />
+        Flagged only
       </label>
 
       {hasActiveFilters && (

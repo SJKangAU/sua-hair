@@ -1,6 +1,8 @@
 // CreateBookingModal.tsx
 // Admin-created booking modal with two tabs: Walk-in and Break
-// Walk-in: name (required), phone (optional), service, stylist, date, time, notes
+// Walk-in: name (required), phone (optional — a returning client is looked up
+// from customerLookups and their name filled in), one or more services,
+// stylist, date, time, notes
 // Break: stylist, start time, duration, reason
 // Pre-fills stylistId and time if clicked from an empty timeline slot
 // Saves to Firestore with appropriate bookingType.
@@ -12,13 +14,25 @@
 // customer flow's overlap rules, and a clash blocks the save with an inline
 // message instead.
 
-import { useState } from "react";
-import { collection, doc, writeBatch, increment } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import {
+  collection,
+  doc,
+  getDoc,
+  writeBatch,
+  increment,
+} from "firebase/firestore";
+import { UserCheck } from "lucide-react";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
 import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
-import { cleanPhone } from "../../../lib/validation";
+import { cleanPhone, validatePhone } from "../../../lib/validation";
+import { combineServices, fitsGap } from "../../../lib/walkinServices";
+import {
+  nextAutofillName,
+  returningClientLabel,
+} from "../../../lib/customerLookup";
 import { fetchBookingConflict } from "../../../lib/bookingConflicts";
 import {
   minutesToTimeString,
@@ -127,7 +141,7 @@ const CreateBookingModal = ({
     customerName: prefillCustomerName,
     customerPhone: prefillCustomerPhone,
     stylistId: prefillStylistId,
-    serviceId: "",
+    serviceIds: [] as string[],
     date: prefillDate || new Date().toISOString().split("T")[0],
     time: prefillTime,
     notes: "",
@@ -145,7 +159,7 @@ const CreateBookingModal = ({
   const walkinHours = getSalonHoursForDate(walkin.date, salonSettings);
   const breakHours = getSalonHoursForDate(breakForm.date, salonSettings);
 
-  const walkinKey = `walkin|${walkin.stylistId}|${walkin.serviceId}|${walkin.date}|${walkin.time}`;
+  const walkinKey = `walkin|${walkin.stylistId}|${walkin.serviceIds.join(",")}|${walkin.date}|${walkin.time}`;
   const breakKey = `break|${breakForm.stylistId}|${breakForm.date}|${breakForm.time}|${breakForm.duration}`;
   const activeKey = activeTab === "walkin" ? walkinKey : breakKey;
   const conflictMessage =
@@ -153,8 +167,75 @@ const CreateBookingModal = ({
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  const getSelectedService = () =>
-    services.find((s) => s.id === walkin.serviceId);
+  const selectedServices = services.filter((s) =>
+    walkin.serviceIds.includes(s.id),
+  );
+
+  // ── Phone lookup ──────────────────────────────────────────────────────────
+  // A complete mobile number is looked up in customerLookups (staff-only
+  // reads); a returning client's name is filled in unless the owner has
+  // already typed one.
+  const [lookup, setLookup] = useState<
+    | { status: "loading" }
+    | { status: "new" }
+    | { status: "found"; visits: number; lastVisit?: string }
+    | null
+  >(null);
+  const lookupId = useRef(0);
+  const lastAutofill = useRef("");
+  const walkinRef = useRef(walkin);
+  useEffect(() => {
+    walkinRef.current = walkin;
+  });
+
+  const handlePhoneChange = (value: string) => {
+    setWalkin((prev) => ({ ...prev, customerPhone: value }));
+    const id = ++lookupId.current; // also cancels any lookup still in flight
+    if (!validatePhone(value)) {
+      setLookup(null);
+      return;
+    }
+    setLookup({ status: "loading" });
+    getDoc(doc(db, "customerLookups", cleanPhone(value)))
+      .then((snap) => {
+        if (id !== lookupId.current) return;
+        if (!snap.exists()) {
+          setLookup({ status: "new" });
+          return;
+        }
+        const data = snap.data() as {
+          name?: string;
+          lastVisit?: string;
+          visitCount?: number;
+        };
+        setLookup({
+          status: "found",
+          visits: data.visitCount ?? 0,
+          lastVisit: data.lastVisit,
+        });
+        const current = walkinRef.current.customerName;
+        const next = nextAutofillName(
+          current,
+          lastAutofill.current,
+          data.name,
+        );
+        if (next !== current) {
+          lastAutofill.current = next;
+          setWalkin((prev) => ({ ...prev, customerName: next }));
+        }
+      })
+      .catch(() => {
+        if (id === lookupId.current) setLookup(null);
+      });
+  };
+
+  const toggleService = (serviceId: string) =>
+    setWalkin((prev) => ({
+      ...prev,
+      serviceIds: prev.serviceIds.includes(serviceId)
+        ? prev.serviceIds.filter((x) => x !== serviceId)
+        : [...prev.serviceIds, serviceId],
+    }));
 
   const getSelectedStylist = (id: string) => stylists.find((s) => s.id === id);
 
@@ -166,7 +247,7 @@ const CreateBookingModal = ({
     }
     if (
       !walkin.stylistId ||
-      !walkin.serviceId ||
+      walkin.serviceIds.length === 0 ||
       !walkin.date ||
       !walkin.time
     ) {
@@ -174,14 +255,15 @@ const CreateBookingModal = ({
       return;
     }
 
-    const service = getSelectedService();
     const stylist = getSelectedStylist(walkin.stylistId);
-    if (!service || !stylist) return;
+    const totals = stylist
+      ? combineServices(selectedServices, stylist.level)
+      : null;
+    if (!stylist || !totals) return;
 
-    const resolvedPrice = service.price[stylist.level];
     const returnTime =
-      service.restTime > 0
-        ? computeReturnTime(walkin.time, service.totalTime)
+      totals.restTime > 0
+        ? computeReturnTime(walkin.time, totals.totalTime)
         : undefined;
 
     setSubmitting(true);
@@ -190,8 +272,8 @@ const CreateBookingModal = ({
         stylistId: stylist.id,
         date: walkin.date,
         time: walkin.time,
-        totalTime: service.totalTime,
-        activeTime: service.activeTime,
+        totalTime: totals.totalTime,
+        activeTime: totals.activeTime,
       });
       if (clash) {
         setConflict({
@@ -213,12 +295,13 @@ const CreateBookingModal = ({
         stylistId: stylist.id,
         stylistName: stylist.name,
         stylistLevel: stylist.level,
-        serviceId: service.id,
-        serviceName: service.name,
-        servicePrice: resolvedPrice,
-        activeTime: service.activeTime,
-        restTime: service.restTime,
-        totalTime: service.totalTime,
+        services: totals.services,
+        serviceId: totals.serviceId,
+        serviceName: totals.serviceName,
+        servicePrice: totals.servicePrice,
+        activeTime: totals.activeTime,
+        restTime: totals.restTime,
+        totalTime: totals.totalTime,
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
@@ -254,7 +337,7 @@ const CreateBookingModal = ({
         stylistName: stylist.name,
         date: walkin.date,
         time: walkin.time,
-        serviceName: service.name,
+        serviceName: totals.serviceName,
       }).catch(console.error);
 
       onSuccess(`Walk-in booking created for ${walkin.customerName}`);
@@ -425,13 +508,31 @@ const CreateBookingModal = ({
               type="tel"
               placeholder="e.g. 0412 345 678"
               value={walkin.customerPhone}
-              onChange={(e) =>
-                setWalkin((prev) => ({
-                  ...prev,
-                  customerPhone: e.target.value,
-                }))
-              }
+              onChange={(e) => handlePhoneChange(e.target.value)}
             />
+            {lookup && (
+              <span
+                role="status"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  marginTop: "0.35rem",
+                  fontSize: "var(--text-sm)",
+                  fontWeight: 400,
+                  color: "var(--ink-muted)",
+                }}
+              >
+                {lookup.status === "found" && (
+                  <UserCheck size={14} strokeWidth={2} aria-hidden="true" />
+                )}
+                {lookup.status === "loading"
+                  ? "Looking up…"
+                  : lookup.status === "new"
+                  ? "New client"
+                  : returningClientLabel(lookup.visits, lookup.lastVisit)}
+              </span>
+            )}
           </label>
 
           <label style={labelStyle}>
@@ -453,32 +554,111 @@ const CreateBookingModal = ({
             </select>
           </label>
 
-          <label style={labelStyle}>
-            Service *
-            <select
-              style={inputStyle}
-              value={walkin.serviceId}
-              onChange={(e) =>
-                setWalkin((prev) => ({ ...prev, serviceId: e.target.value }))
-              }
-              disabled={!walkin.stylistId}
+          <fieldset
+            style={{ border: "none", margin: "0 0 1rem", padding: 0, minWidth: 0 }}
+          >
+            <legend
+              style={{
+                padding: 0,
+                marginBottom: "0.25rem",
+                fontWeight: 500,
+                fontSize: "var(--text-base)",
+                color: "var(--ink)",
+              }}
             >
-              <option value="">Select service...</option>
-              {services
-                .filter(
-                  (s) => !gap || s.activeTime <= gap.end - gap.start,
-                )
-                .map((s) => {
-                const stylist = getSelectedStylist(walkin.stylistId);
-                const price = stylist ? s.price[stylist.level] : s.price.junior;
-                return (
-                  <option key={s.id} value={s.id}>
-                    {s.name} — ${price} ({s.totalTime} min)
-                  </option>
-                );
-              })}
-            </select>
-          </label>
+              Services *
+            </legend>
+            {!walkin.stylistId ? (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "var(--text-sm)",
+                  color: "var(--ink-muted)",
+                }}
+              >
+                Choose a stylist first to see their prices.
+              </p>
+            ) : (
+              <div
+                style={{
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  border: "1px solid var(--admin-input-border)",
+                  borderRadius: "6px",
+                }}
+              >
+                {services
+                  .filter((s) => !gap || s.activeTime <= gap.end - gap.start)
+                  .map((s) => {
+                    const stylist = getSelectedStylist(walkin.stylistId);
+                    const price = stylist
+                      ? s.price[stylist.level]
+                      : s.price.junior;
+                    const checked = walkin.serviceIds.includes(s.id);
+                    // In a gap, the hands-on time of everything chosen must fit
+                    const blocked =
+                      !!gap &&
+                      !checked &&
+                      !fitsGap(selectedServices, s, gap.end - gap.start);
+                    return (
+                      <label
+                        key={s.id}
+                        className="bk-row"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.6rem",
+                          padding: "0.5rem 0.65rem",
+                          borderBottom: "1px solid var(--admin-row-border)",
+                          cursor: blocked ? "not-allowed" : "pointer",
+                          opacity: blocked ? 0.5 : 1,
+                          fontSize: "var(--text-base)",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={blocked}
+                          onChange={() => toggleService(s.id)}
+                          style={{ accentColor: "var(--ink)" }}
+                        />
+                        <span style={{ flex: 1 }}>{s.name}</span>
+                        <span
+                          style={{
+                            color: "var(--ink-muted)",
+                            fontSize: "var(--text-sm)",
+                          }}
+                        >
+                          {s.totalTime} min
+                        </span>
+                        <span style={{ fontWeight: 600 }}>${price}</span>
+                      </label>
+                    );
+                  })}
+              </div>
+            )}
+            {selectedServices.length > 0 && walkin.stylistId && (
+              <p
+                style={{
+                  margin: "0.4rem 0 0",
+                  fontSize: "var(--text-sm)",
+                  color: "var(--ink-soft)",
+                }}
+              >
+                {(() => {
+                  const stylist = getSelectedStylist(walkin.stylistId);
+                  const t = stylist
+                    ? combineServices(selectedServices, stylist.level)
+                    : null;
+                  return t
+                    ? `${selectedServices.length} service${
+                        selectedServices.length === 1 ? "" : "s"
+                      } · ${t.totalTime} min · $${t.servicePrice}`
+                    : null;
+                })()}
+              </p>
+            )}
+          </fieldset>
 
           <div
             className="admin-form-grid-2"
