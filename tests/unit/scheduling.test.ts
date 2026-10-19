@@ -17,7 +17,11 @@ import {
   buildTimeBlocks,
   isSlotAvailable,
   generateSlots,
+  findBookingConflict,
+  describeConflict,
+  buildBookingRef,
 } from "../../src/lib/scheduling";
+import { SALON_CONFIG } from "../../src/lib/config";
 import type {
   Booking,
   SalonSettings,
@@ -343,5 +347,132 @@ describe("canResizeBooking", () => {
     const next = block({ id: "bk-2", time: "10:30 AM" });
     expect(canResizeBooking(booking, 60, 60, [block(), next])).toBe(false);
     expect(canResizeBooking(booking, 30, 30, [block(), next])).toBe(true);
+  });
+});
+
+// ── findBookingConflict / describeConflict / buildBookingRef ─────────────
+// Guards admin-created walk-ins and breaks against double-booking, using the
+// same overlap rules as the customer flow.
+
+describe("findBookingConflict", () => {
+  const probe = {
+    stylistId: "stylist-1",
+    date: "2026-08-05",
+    time: "10:00 AM",
+    totalTime: 30,
+    activeTime: 30,
+  };
+
+  it("returns null when the stylist has no bookings", () => {
+    expect(findBookingConflict(probe, [])).toBeNull();
+  });
+
+  it("returns the booking that overlaps the probe", () => {
+    const existing = block({ id: "bk-9", time: "10:15 AM" });
+    expect(findBookingConflict(probe, [existing])).toBe(existing);
+  });
+
+  it("allows back-to-back bookings", () => {
+    const before = block({ id: "a", time: "9:30 AM" });
+    const after = block({ id: "b", time: "10:30 AM" });
+    expect(findBookingConflict(probe, [before, after])).toBeNull();
+  });
+
+  it("ignores cancelled bookings, other stylists and other dates", () => {
+    expect(
+      findBookingConflict(probe, [
+        block({ id: "a", status: "cancelled" }),
+        block({ id: "b", stylistId: "stylist-2" }),
+        block({ id: "c", date: "2026-08-06" }),
+      ]),
+    ).toBeNull();
+  });
+
+  it("treats pending bookings as blocking", () => {
+    const pending = block({ id: "p", status: "pending" });
+    expect(findBookingConflict(probe, [pending])).toBe(pending);
+  });
+
+  it("skips the booking named by excludeId", () => {
+    const own = block({ id: "bk-1" });
+    expect(findBookingConflict({ ...probe, excludeId: "bk-1" }, [own])).toBeNull();
+  });
+
+  describe("rest periods (allowBookingsDuringRestPeriod)", () => {
+    // 10:00 booking: 30 min active, 90 min processing -> free 10:30-12:00.
+    const colour = block({ id: "col", activeTime: 30, restTime: 90, totalTime: 120 });
+
+    it("allows a probe that fits entirely inside the rest window", () => {
+      expect(
+        findBookingConflict({ ...probe, time: "10:30 AM" }, [colour]),
+      ).toBeNull();
+    });
+
+    it("blocks a probe that starts before the active period ends", () => {
+      expect(findBookingConflict({ ...probe, time: "10:15 AM" }, [colour])).toBe(
+        colour,
+      );
+    });
+
+    it("blocks a probe whose active time overruns the rest window", () => {
+      expect(
+        findBookingConflict(
+          { ...probe, time: "11:30 AM", totalTime: 60, activeTime: 60 },
+          [colour],
+        ),
+      ).toBe(colour);
+    });
+
+    it("blocks everything inside the window when the setting is off", () => {
+      const original = SALON_CONFIG.allowBookingsDuringRestPeriod;
+      SALON_CONFIG.allowBookingsDuringRestPeriod = false;
+      try {
+        expect(
+          findBookingConflict({ ...probe, time: "10:30 AM" }, [colour]),
+        ).toBe(colour);
+      } finally {
+        SALON_CONFIG.allowBookingsDuringRestPeriod = original;
+      }
+    });
+  });
+});
+
+describe("describeConflict", () => {
+  const base = {
+    ...block(),
+    customerName: "Jane Smith",
+    serviceName: "Cut + Colour",
+    bookingType: "customer",
+    time: "10:00 AM",
+    totalTime: 90,
+  } as Booking;
+
+  it("names the client, service and time range", () => {
+    expect(describeConflict(base)).toBe(
+      "Jane Smith (Cut + Colour), 10:00 AM – 11:30 AM",
+    );
+  });
+
+  it("describes breaks and training blocks without a client name", () => {
+    expect(
+      describeConflict({ ...base, bookingType: "break", blockReason: "Lunch" }),
+    ).toBe("a break (Lunch), 10:00 AM – 11:30 AM");
+    expect(describeConflict({ ...base, bookingType: "training" })).toBe(
+      "a training session, 10:00 AM – 11:30 AM",
+    );
+  });
+});
+
+describe("buildBookingRef", () => {
+  it("builds the readable reference from date, stylist and 24h time", () => {
+    expect(buildBookingRef("WI", "2026-08-05", "stylist-1", "10:30 AM")).toBe(
+      "WI-20260805-stylist-1-1030",
+    );
+    expect(buildBookingRef("BR", "2026-08-05", "stylist-1", "2:00 PM")).toBe(
+      "BR-20260805-stylist-1-1400",
+    );
+    expect(buildBookingRef("BR", "2026-08-05", "stylist-1", "12:00 AM")).toBe(
+      "BR-20260805-stylist-1-0000",
+    );
   });
 });

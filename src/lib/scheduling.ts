@@ -181,6 +181,71 @@ export const buildTimeBlocks = (
     });
 };
 
+// ── Conflict detection for admin-created bookings ─────────────────────────────
+
+// The proposed booking being checked. `excludeId` lets a booking being moved
+// or resized ignore its own existing record.
+export interface ConflictProbe {
+  stylistId: string;
+  date: string;
+  time: string;
+  totalTime: number;
+  activeTime: number;
+  excludeId?: string;
+}
+
+// Returns the first existing booking that blocks the probe, or null if the
+// slot is free. Uses exactly the customer flow's rules (isSlotAvailable over
+// buildTimeBlocks): cancelled bookings never block, and when
+// allowBookingsDuringRestPeriod is on, a probe that fits entirely inside an
+// existing booking's rest window is allowed. Breaks and training blocks are
+// ordinary bookings with no rest time, so they block like any other.
+export const findBookingConflict = <T extends SlotBlock>(
+  probe: ConflictProbe,
+  existing: T[],
+): T | null => {
+  const start = timeStringToMinutes(probe.time);
+  for (const b of existing) {
+    if (b.id === probe.excludeId) continue;
+    const blocks = buildTimeBlocks([b], probe.stylistId, probe.date);
+    if (!isSlotAvailable(start, probe.totalTime, probe.activeTime, blocks)) {
+      return b;
+    }
+  }
+  return null;
+};
+
+// Plain-language description of a blocking booking for an inline message,
+// e.g. "Jane Smith (Cut + Colour), 10:00 AM – 11:30 AM".
+export const describeConflict = (b: Booking): string => {
+  const what =
+    b.bookingType === "break"
+      ? `a break${b.blockReason ? ` (${b.blockReason})` : ""}`
+      : b.bookingType === "training"
+      ? `a training session${b.trainingTopic ? ` (${b.trainingTopic})` : ""}`
+      : `${b.customerName || "a client"}${
+          b.serviceName ? ` (${b.serviceName})` : ""
+        }`;
+  const end = minutesToTimeString(timeStringToMinutes(b.time) + b.totalTime);
+  return `${what}, ${b.time} – ${end}`;
+};
+
+// Human-readable booking reference stored in Booking.bookingRef, e.g.
+// WI-20260805-stylist-1-1030. It is a label only — document IDs are always
+// auto-generated so two bookings can never overwrite each other.
+export const buildBookingRef = (
+  prefix: string,
+  date: string,
+  stylistId: string,
+  time: string,
+): string => {
+  const minutes = timeStringToMinutes(time);
+  const hhmm = `${String(Math.floor(minutes / 60)).padStart(2, "0")}${String(
+    minutes % 60,
+  ).padStart(2, "0")}`;
+  return `${prefix}-${date.replace(/-/g, "")}-${stylistId}-${hhmm}`;
+};
+
 // ── Core Availability Check ───────────────────────────────────────────────────
 
 // Check if a stylist can take a new booking at a given start time

@@ -3,19 +3,30 @@
 // Walk-in: name (required), phone (optional), service, stylist, date, time, notes
 // Break: stylist, start time, duration, reason
 // Pre-fills stylistId and time if clicked from an empty timeline slot
-// Saves to Firestore with appropriate bookingType
+// Saves to Firestore with appropriate bookingType.
+//
+// Document IDs are always auto-generated (a deterministic ID would let a
+// second booking for the same stylist/time silently overwrite the first); the
+// readable reference lives in `bookingRef`. Before writing, the slot is
+// checked against the stylist's existing non-cancelled bookings using the
+// customer flow's overlap rules, and a clash blocks the save with an inline
+// message instead.
 
 import { useState } from "react";
 import { collection, doc, writeBatch, increment } from "firebase/firestore";
+import { TriangleAlert } from "lucide-react";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
 import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
 import { cleanPhone } from "../../../lib/validation";
+import { fetchBookingConflict } from "../../../lib/bookingConflicts";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
   computeReturnTime,
+  describeConflict,
+  buildBookingRef,
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
 import type { Booking } from "../../../types";
@@ -76,6 +87,34 @@ const labelStyle: React.CSSProperties = {
   color: "var(--ink)",
 };
 
+// Inline clash message — monochrome (ink outline on paper), icon not colour,
+// announced to screen readers as it appears.
+const ConflictNotice = ({ message }: { message: string }) => (
+  <div
+    role="alert"
+    style={{
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "0.6rem",
+      padding: "0.75rem 0.9rem",
+      marginBottom: "0.75rem",
+      border: "1px solid var(--ink)",
+      borderRadius: "6px",
+      background: "var(--paper)",
+      color: "var(--ink)",
+      fontSize: "var(--text-sm)",
+      lineHeight: 1.5,
+    }}
+  >
+    <TriangleAlert
+      size={16}
+      aria-hidden="true"
+      style={{ flexShrink: 0, marginTop: "2px" }}
+    />
+    <span>{message}</span>
+  </div>
+);
+
 const CreateBookingModal = ({
   prefillStylistId = "",
   prefillTime = "",
@@ -89,6 +128,12 @@ const CreateBookingModal = ({
   const { stylists, services, salonSettings } = useSalonData();
   const [activeTab, setActiveTab] = useState<ModalTab>("walkin");
   const [submitting, setSubmitting] = useState(false);
+  // A clash message is tied to the exact stylist/date/time/length it was
+  // raised for (`key`), so it disappears the moment any of those change.
+  const [conflict, setConflict] = useState<{
+    key: string;
+    message: string;
+  } | null>(null);
 
   // ── Walk-in form state ────────────────────────────────────────────────────
   const [walkin, setWalkin] = useState({
@@ -112,6 +157,12 @@ const CreateBookingModal = ({
   // Derive time slots from the salon's configured hours for the selected date
   const walkinHours = getSalonHoursForDate(walkin.date, salonSettings);
   const breakHours = getSalonHoursForDate(breakForm.date, salonSettings);
+
+  const walkinKey = `walkin|${walkin.stylistId}|${walkin.serviceId}|${walkin.date}|${walkin.time}`;
+  const breakKey = `break|${breakForm.stylistId}|${breakForm.date}|${breakForm.time}|${breakForm.duration}`;
+  const activeKey = activeTab === "walkin" ? walkinKey : breakKey;
+  const conflictMessage =
+    conflict && conflict.key === activeKey ? conflict.message : null;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -148,6 +199,24 @@ const CreateBookingModal = ({
 
     setSubmitting(true);
     try {
+      const clash = await fetchBookingConflict({
+        stylistId: stylist.id,
+        date: walkin.date,
+        time: walkin.time,
+        totalTime: service.totalTime,
+        activeTime: service.activeTime,
+      });
+      if (clash) {
+        setConflict({
+          key: walkinKey,
+          message: `${stylist.name} is already booked at that time: ${describeConflict(
+            clash,
+          )}. Choose another time or stylist.`,
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const booking: Omit<Booking, "id"> = {
         bookingType: "walkin",
         status: "confirmed", // walk-ins are auto-confirmed
@@ -166,26 +235,14 @@ const CreateBookingModal = ({
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
+        bookingRef: buildBookingRef("WI", walkin.date, stylist.id, walkin.time),
         ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 
-      const safeDate = walkin.date.replace(/-/g, "");
-      const [tp, period] = walkin.time.split(" ");
-      const [h, m] = tp.split(":").map(Number);
-      const hour24 =
-        period === "PM" && h !== 12
-          ? h + 12
-          : period === "AM" && h === 12
-          ? 0
-          : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
-        2,
-        "0",
-      )}`;
-      const docId = `WI-${safeDate}-${stylist.id}-${hhmm}`;
+      const docId = doc(collection(db, "bookings")).id;
       const batch = writeBatch(db);
-      batch.set(doc(collection(db, "bookings"), docId), booking);
+      batch.set(doc(db, "bookings", docId), booking);
       queueSlotBlockCreate(batch, docId, booking);
       if (booking.customerPhone.trim()) {
         // Keep the customer visit-history record in sync for walk-ins too.
@@ -234,6 +291,24 @@ const CreateBookingModal = ({
 
     setSubmitting(true);
     try {
+      const clash = await fetchBookingConflict({
+        stylistId: stylist.id,
+        date: breakForm.date,
+        time: breakForm.time,
+        totalTime: breakForm.duration,
+        activeTime: breakForm.duration,
+      });
+      if (clash) {
+        setConflict({
+          key: breakKey,
+          message: `${stylist.name} is already booked at that time: ${describeConflict(
+            clash,
+          )}. Choose another time or move that booking first.`,
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const booking: Omit<Booking, "id"> = {
         bookingType: "break",
         status: "confirmed",
@@ -252,25 +327,18 @@ const CreateBookingModal = ({
         time: breakForm.time,
         notes: breakForm.reason,
         blockReason: breakForm.reason,
+        bookingRef: buildBookingRef(
+          "BR",
+          breakForm.date,
+          stylist.id,
+          breakForm.time,
+        ),
         createdAt: new Date().toISOString(),
       };
 
-      const safeDate = breakForm.date.replace(/-/g, "");
-      const [tp, period] = breakForm.time.split(" ");
-      const [h, m] = tp.split(":").map(Number);
-      const hour24 =
-        period === "PM" && h !== 12
-          ? h + 12
-          : period === "AM" && h === 12
-          ? 0
-          : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
-        2,
-        "0",
-      )}`;
-      const docId = `BR-${safeDate}-${stylist.id}-${hhmm}`;
+      const docId = doc(collection(db, "bookings")).id;
       const batch = writeBatch(db);
-      batch.set(doc(collection(db, "bookings"), docId), booking);
+      batch.set(doc(db, "bookings", docId), booking);
       queueSlotBlockCreate(batch, docId, booking);
       await batch.commit();
 
@@ -446,6 +514,8 @@ const CreateBookingModal = ({
             />
           </label>
 
+          {conflictMessage && <ConflictNotice message={conflictMessage} />}
+
           <button
             onClick={handleWalkinSubmit}
             disabled={submitting}
@@ -559,6 +629,8 @@ const CreateBookingModal = ({
               }
             />
           </label>
+
+          {conflictMessage && <ConflictNotice message={conflictMessage} />}
 
           <button
             onClick={handleBreakSubmit}
