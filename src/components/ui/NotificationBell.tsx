@@ -6,8 +6,18 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { useNotificationContext } from "../../context/NotificationContext";
+import type { Notification } from "../../types";
 
-const NotificationBell = () => {
+interface Props {
+  // Called when a notification is clicked (after it is marked read) — the
+  // admin shell uses it to open the booking the notification is about
+  onSelect?: (notification: Notification) => void;
+  // Which side of the bell the dropdown hangs from: "right" aligns its right
+  // edge with the bell (header on the right), "left" its left edge (sidebar)
+  align?: "left" | "right";
+}
+
+const NotificationBell = ({ onSelect, align = "right" }: Props) => {
   const { notifications, unreadCount, markRead, markAllRead } =
     useNotificationContext();
   const [open, setOpen] = useState(false);
@@ -25,8 +35,12 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleNotificationClick = (id: string, read: boolean) => {
-    if (!read) markRead(id);
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.read) markRead(n.id);
+    if (onSelect) {
+      setOpen(false);
+      onSelect(n);
+    }
   };
 
   const formatTime = (iso: string) => {
@@ -94,8 +108,9 @@ const NotificationBell = () => {
         <div
           style={{
             position: "absolute",
-            right: 0,
+            ...(align === "left" ? { left: 0 } : { right: 0 }),
             top: "calc(100% + 6px)",
+            maxWidth: "calc(100vw - 2rem)",
             width: 340,
             background: "var(--surface)",
             border: "1px solid var(--border)",
@@ -153,11 +168,11 @@ const NotificationBell = () => {
               notifications.slice(0, 30).map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => handleNotificationClick(n.id, n.read)}
+                  onClick={() => handleNotificationClick(n)}
                   style={{
                     padding: "0.75rem 1rem",
                     borderBottom: "1px solid var(--border)",
-                    cursor: n.read ? "default" : "pointer",
+                    cursor: n.read && !onSelect ? "default" : "pointer",
                     background: n.read ? "var(--surface)" : "var(--paper)",
                     display: "flex",
                     gap: "0.6rem",

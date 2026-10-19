@@ -47,13 +47,15 @@ const MONTHS = [
   "Dec",
 ];
 
-// "Mon 19 Oct, 10:30 AM"
-export const formatWhen = (date: string, time: string): string => {
+// "Mon 19 Oct"
+export const formatDayShort = (date: string): string => {
   const d = parseLocalDate(date);
-  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${
-    MONTHS[d.getMonth()]
-  }, ${time}`;
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
 };
+
+// "Mon 19 Oct, 10:30 AM"
+export const formatWhen = (date: string, time: string): string =>
+  `${formatDayShort(date)}, ${time}`;
 
 export const statusHistoryEntry = (
   from: BookingStatus,

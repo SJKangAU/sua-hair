@@ -25,16 +25,14 @@ import {
   timeStringToMinutes,
 } from "../../../lib/scheduling";
 import {
-  MIN_OPEN_SLOT_MINUTES,
   PX_PER_MIN,
   SNAP_MINUTES,
   clampStart,
-  findFreeIntervals,
+  computeOpenSlots,
   findGapWindow,
   formatClockShort,
   formatRangeShort,
   minutesToPx,
-  tileFreeIntervals,
   type DayRange,
   type Interval,
 } from "../../../lib/timelineLayout";
@@ -153,28 +151,23 @@ const TimelineColumn = ({
   );
 
   // ── Open slots: free stretches of 45+ minutes inside working hours ───────
-  const openSlots = useMemo(() => {
-    if (!hours || range.closed || date < todayString()) return [];
-    let start = Math.max(range.start, hours.open * 60);
-    const end = Math.min(range.end, hours.close * 60);
-    // Today: nothing before now (rounded up to the next step) is bookable
-    if (isToday) {
-      start = Math.max(
-        start,
-        Math.ceil(nowMinutes / SNAP_MINUTES) * SNAP_MINUTES,
-      );
-    }
-    if (end - start < MIN_OPEN_SLOT_MINUTES) return [];
-    // Ghost blocks stay on the grid while shown, so they hold their space —
-    // an "Open slot" button never sits on top of a visible ghost
-    const occupied = (showReleased ? mine : blocking).map((b) => {
-      const s = timeStringToMinutes(b.time);
-      return { start: s, end: s + b.totalTime };
-    });
-    return tileFreeIntervals(
-      findFreeIntervals(occupied, { start, end }, MIN_OPEN_SLOT_MINUTES),
-    );
-  }, [hours, range, date, isToday, nowMinutes, blocking, mine, showReleased]);
+  const openSlots = useMemo(
+    () =>
+      computeOpenSlots({
+        hours,
+        range,
+        isPast: date < todayString(),
+        isToday,
+        nowMinutes,
+        // Ghost blocks stay on the grid while shown, so they hold their space
+        // — an "Open slot" button never sits on top of a visible ghost
+        occupied: (showReleased ? mine : blocking).map((b) => {
+          const s = timeStringToMinutes(b.time);
+          return { start: s, end: s + b.totalTime };
+        }),
+      }),
+    [hours, range, date, isToday, nowMinutes, blocking, mine, showReleased],
+  );
 
   // ── Hours shading ─────────────────────────────────────────────────────────
   const shades: { top: number; height: number; label: string }[] = [];

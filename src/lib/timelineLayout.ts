@@ -121,6 +121,39 @@ export const tileFreeIntervals = (
   return tiles;
 };
 
+// The "Open slot" buttons for one stylist on one day: free stretches of 45+
+// minutes inside their working hours, tiled. Nothing on a closed day, an off
+// day or a past date; today nothing before now (rounded up a step). `occupied`
+// is whatever should count as taken — the timeline passes the visible ghosts
+// too so a button never sits on top of one. Shared by the timeline columns and
+// the Today page's "next opening".
+export const computeOpenSlots = ({
+  hours,
+  range,
+  isPast,
+  isToday,
+  nowMinutes,
+  occupied,
+}: {
+  hours: { open: number; close: number } | null;
+  range: DayRange;
+  isPast: boolean;
+  isToday: boolean;
+  nowMinutes: number;
+  occupied: Interval[];
+}): Interval[] => {
+  if (!hours || range.closed || isPast) return [];
+  let start = Math.max(range.start, hours.open * 60);
+  const end = Math.min(range.end, hours.close * 60);
+  if (isToday) {
+    start = Math.max(start, Math.ceil(nowMinutes / SNAP_MINUTES) * SNAP_MINUTES);
+  }
+  if (end - start < MIN_OPEN_SLOT_MINUTES) return [];
+  return tileFreeIntervals(
+    findFreeIntervals(occupied, { start, end }, MIN_OPEN_SLOT_MINUTES),
+  );
+};
+
 // The part of a booking's processing window another client could use: the
 // stretch between the end of its apply phase and the stylist's return, minus
 // anything else booked in that stretch. Returns the first free piece of at

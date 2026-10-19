@@ -13,15 +13,7 @@
 // before this field existed are findable by phone but not by name.
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  limit,
-} from "firebase/firestore";
-import { db } from "../../../lib/firebase";
-import { cleanPhone } from "../../../lib/validation";
+import { fetchBookingsForClientQuery } from "../../../lib/clientSearch";
 import { countsAsRevenue } from "../../../lib/bookingStatus";
 import type { Booking } from "../../../types";
 
@@ -42,6 +34,8 @@ interface Props {
   // Called for short (<2 char) or cleared input — restores the prompt state
   // instead of showing "no clients found" for a search that never ran
   onReset: () => void;
+  // Search term to start with (e.g. arriving from the Today page's search)
+  initialQuery?: string;
 }
 
 // Build a ClientProfile from a group of bookings for the same phone number
@@ -71,8 +65,13 @@ const buildProfile = (bookings: Booking[]): ClientProfile => {
   };
 };
 
-const ClientSearch = ({ onResults, onLoading, onReset }: Props) => {
-  const [queryStr, setQueryStr] = useState("");
+const ClientSearch = ({
+  onResults,
+  onLoading,
+  onReset,
+  initialQuery = "",
+}: Props) => {
+  const [queryStr, setQueryStr] = useState(initialQuery);
 
   // Monotonic id — a stale (slower) search must never overwrite a newer one
   const requestId = useRef(0);
@@ -90,40 +89,10 @@ const ClientSearch = ({ onResults, onLoading, onReset }: Props) => {
       onLoading(true);
 
       try {
-        const bookingsRef = collection(db, "bookings");
-        const lower = q.toLowerCase();
-        const digits = cleanPhone(q);
-        const looksLikePhone = /^\d{4,}$/.test(digits);
-
-        const queries = [
-          // Name prefix — case-insensitive via customerNameLower
-          getDocs(
-            query(
-              bookingsRef,
-              where("customerNameLower", ">=", lower),
-              where("customerNameLower", "<", lower + ""),
-              limit(50),
-            ),
-          ),
-        ];
-
-        // Exact phone match across all time — primary path for phone input
-        if (looksLikePhone) {
-          queries.push(
-            getDocs(query(bookingsRef, where("customerPhone", "==", digits))),
-          );
-        }
-
-        const snaps = await Promise.all(queries);
+        const found = await fetchBookingsForClientQuery(q);
         if (id !== requestId.current) return; // superseded by a newer search
 
-        // Merge and dedupe by document id
-        const byId = new Map<string, Booking>();
-        snaps.forEach((snap) =>
-          snap.docs.forEach((d) =>
-            byId.set(d.id, { id: d.id, ...d.data() } as Booking),
-          ),
-        );
+        const byId = new Map<string, Booking>(found.map((b) => [b.id, b]));
 
         // Group by phone number (fall back to name if no phone)
         const grouped: Record<string, Booking[]> = {};

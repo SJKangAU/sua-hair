@@ -9,6 +9,7 @@ import {
   parseLocalDate,
 } from "../../lib/dates";
 import { blocksSlot, countsAsRevenue } from "../../lib/bookingStatus";
+import { sumRevenue } from "../../lib/revenue";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -52,19 +53,6 @@ const StatCard = ({ label, value, color }: StatCardProps) => (
     </p>
   </div>
 );
-
-// Revenue counts the same way useAnalytics.ts does: confirmed bookings and
-// everything they progress to (arrived, in service, completed) — not pending,
-// no-show or cancelled — excluding breaks and unpaid training sessions.
-const sumRevenue = (list: Booking[]): number =>
-  list
-    .filter(
-      (b) =>
-        countsAsRevenue(b.status) &&
-        b.bookingType !== "break" &&
-        b.bookingType !== "training",
-    )
-    .reduce((sum, b) => sum + (b.servicePrice ?? 0), 0);
 
 const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
   const today = selectedDate ?? todayString();

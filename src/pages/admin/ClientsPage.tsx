@@ -4,6 +4,7 @@
 // Book again pre-fills customer name and phone in CreateBookingModal
 
 import { useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useToastContext } from "../../context/ToastContext";
 import ClientSearch from "../../components/admin/clients/ClientSearch";
 import ClientCard from "../../components/admin/clients/ClientCard";
@@ -12,6 +13,8 @@ import type { ClientProfile } from "../../components/admin/clients/ClientSearch"
 
 const ClientsPage = () => {
   const { addToast } = useToastContext();
+  // /admin/clients?q=... starts the search (used by the Today page's search)
+  const [searchParams] = useSearchParams();
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -50,6 +53,7 @@ const ClientsPage = () => {
       </div>
 
       <ClientSearch
+        initialQuery={searchParams.get("q") ?? ""}
         onResults={handleResults}
         onLoading={handleLoading}
         onReset={handleReset}

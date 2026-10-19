@@ -4,10 +4,11 @@
 // (tracked via a ref so it doesn't re-fire on re-renders or when the hook re-runs).
 // Must be called from inside NotificationProvider.
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { writeBookingNotifications } from "../lib/notifications";
 import { getCurrentMinutes, timeStringToMinutes } from "../lib/scheduling";
 import { isOpenStatus } from "../lib/bookingStatus";
+import { todayString } from "../lib/dates";
 import type { Booking } from "../types";
 
 interface ActiveRest {
@@ -21,6 +22,7 @@ interface ActiveRest {
   restStartMinutes: number; // = activeEndMinutes
   restEndMinutes: number; // = totalEndMinutes
   remainingSeconds: number; // seconds until rest ends (may be negative = overdue)
+  progress: number; // 0..1 — how far through the processing window we are
 }
 
 interface Result {
@@ -33,10 +35,14 @@ const useMultiPhaseCountdown = (
 ): Result => {
   // Track which bookings have already received a 5-min warning this session
   const warned = useRef<Set<string>>(new Set());
+  // Bumped by the interval below so the countdowns re-render as time passes
+  const [, setTick] = useState(0);
 
   const getActiveRests = useCallback((): ActiveRest[] => {
     const nowMinutes = getCurrentMinutes();
-    const today = new Date().toISOString().slice(0, 10);
+    // Local calendar date — toISOString() is UTC, which is still "yesterday"
+    // in Melbourne until 11am, so nothing would show on a morning shift
+    const today = todayString();
 
     // Only compute countdowns for today's date
     if (selectedDate !== today) return [];
@@ -62,6 +68,15 @@ const useMultiPhaseCountdown = (
           restStartMinutes,
           restEndMinutes,
           remainingSeconds,
+          progress: Math.min(
+            1,
+            Math.max(
+              0,
+              1 -
+                remainingSeconds /
+                  Math.max(1, (restEndMinutes - restStartMinutes) * 60),
+            ),
+          ),
         };
       })
       .filter(
@@ -98,7 +113,10 @@ const useMultiPhaseCountdown = (
     };
 
     check(); // immediate check
-    const interval = setInterval(check, 30_000);
+    const interval = setInterval(() => {
+      check();
+      setTick((t) => t + 1);
+    }, 30_000);
     return () => clearInterval(interval);
   }, [getActiveRests]);
 
