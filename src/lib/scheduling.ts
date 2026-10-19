@@ -99,6 +99,27 @@ export const getSalonHoursForDate = (
   return { open: day.open, close: day.close };
 };
 
+// The hours a stylist can be booked on a date: the salon's hours for that
+// date (override-aware) narrowed to the stylist's own working hours. Returns
+// null when the salon is closed, the stylist is off that day, or their hours
+// don't overlap the salon's. Without `workingHours` a stylist keeps the full
+// salon hours.
+export const getStylistHoursForDate = (
+  dateString: string,
+  settings?: SalonSettings,
+  workingHours?: StylistWeeklyHours,
+): { open: number; close: number } | null => {
+  const salonHours = getSalonHoursForDate(dateString, settings);
+  if (!salonHours) return null;
+  if (!workingHours) return salonHours;
+
+  const day = workingHours[DAY_KEYS[parseLocalDate(dateString).getDay()]];
+  if (!day?.isWorking) return null;
+  const open = Math.max(salonHours.open, day.start);
+  const close = Math.min(salonHours.close, day.end);
+  return open < close ? { open, close } : null;
+};
+
 // Check if same-day booking cutoff has passed
 // Uses minutes-based comparison for precision and consistency
 export const isPastSameDayCutoff = (dateString: string): boolean => {
@@ -300,20 +321,11 @@ export const generateSlots = (
 ): { time: string; available: boolean; reason?: string }[] => {
   const slots: { time: string; available: boolean; reason?: string }[] = [];
 
-  // Resolve effective hours: date override → weekly schedule → SALON_CONFIG
-  const salonHours = getSalonHoursForDate(date, settings);
-  if (!salonHours) return []; // salon is closed this day
-
-  // Constrain to stylist's working hours if provided
-  let { open, close } = salonHours;
-  if (stylistHours) {
-    const dayKey = DAY_KEYS[parseLocalDate(date).getDay()];
-    const stylistDay = stylistHours[dayKey];
-    if (!stylistDay.isWorking) return [];
-    open = Math.max(open, stylistDay.start);
-    close = Math.min(close, stylistDay.end);
-    if (open >= close) return [];
-  }
+  // Effective hours: date override → weekly schedule → SALON_CONFIG, then
+  // narrowed to the stylist's own working hours if provided
+  const hours = getStylistHoursForDate(date, settings, stylistHours);
+  if (!hours) return []; // salon closed, or the stylist is off, this day
+  const { open, close } = hours;
 
   const interval = SALON_CONFIG.slotIntervalMinutes;
   const openMinutes = open * 60;

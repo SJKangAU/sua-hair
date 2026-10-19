@@ -1,329 +1,563 @@
 // Timeline.tsx
-// Main timeline grid container for the admin dashboard Today tab
-// Renders a column per active stylist with time rows at 30min intervals
-// Shows current time indicator and handles day navigation
-// Clicking a block opens the quick-action popover; its "View details" opens the booking drawer
-// Clicking an empty slot opens CreateBookingModal pre-filled with stylist and time
+// The Today tab's day grid — a light card with one column per stylist.
+//
+//   Hours   The grid spans the day's real opening hours from salonSettings
+//           (including date overrides); each column is shaded outside that
+//           stylist's own working hours, and a stylist who is off that day
+//           gets no column — a note above the grid names who is off. Bookings
+//           outside opening hours stretch the grid so nothing is hidden.
+//   Now     A "now" line with the current time on today's grid.
+//   Drag    Drag a booking to another time or stylist (snaps to 15 minutes;
+//           ghost at the origin, tooltip "Move to 2:30 – 4:00 pm"). Drag its
+//           bottom edge to change its length. Mouse only — on touch use the
+//           booking drawer's Reschedule. Both writes are conflict-checked; a
+//           clash reverts with an error toast and a success offers Undo.
+//   Gaps    A booking's processing window opens "Add booking to gap"; free
+//           stretches of 45+ minutes offer an "Open slot" button.
+// Clicking a booking opens the quick-action popover; its "View details" opens
+// the booking drawer. Clicking empty space opens the create-booking modal.
 
-import { useRef, useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CalendarOff, Eye, EyeOff, Info } from "lucide-react";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
-import { SALON_CONFIG } from "../../../lib/config";
+import { useToastContext } from "../../../context/ToastContext";
+import useTimelineDrag from "../../../hooks/useTimelineDrag";
 import {
-  minutesToTimeString,
   getCurrentMinutes,
+  getSalonHoursForDate,
+  getStylistHoursForDate,
+  minutesToTimeString,
 } from "../../../lib/scheduling";
+import { isSlotFreeing, UNDO_TOAST_MS } from "../../../lib/bookingStatus";
+import { formatWhen } from "../../../lib/bookingHistory";
+import { BookingConflictError } from "../../../lib/bookingConflicts";
+import {
+  computeDayRange,
+  minutesToPx,
+  rangeHeightPx,
+  type Interval,
+} from "../../../lib/timelineLayout";
 import { todayString } from "../../../lib/dates";
-import { isSlotFreeing } from "../../../lib/bookingStatus";
-import TimelineColumn from "./TimelineColumn";
-import CurrentTimeBar from "./CurrentTimeBar";
+import type { Phases } from "../../../lib/phases";
+import TimelineColumn, { type ColumnStylist } from "./TimelineColumn";
+import NowLine from "./NowLine";
 import type { Booking } from "../../../types";
 
 interface Props {
   onBlockClick: (booking: Booking) => void;
   onEmptySlotClick: (stylistId: string, time: string) => void;
+  // "Add booking to gap": the stylist and the free stretch inside a
+  // booking's processing window
+  onGapClick: (stylistId: string, window: Interval) => void;
   selectedDate: string;
 }
 
-// Generate time row labels at 30-minute intervals
-const generateTimeLabels = (): string[] => {
-  const { open, close } = SALON_CONFIG.tradingHours;
-  const labels: string[] = [];
-  for (let minutes = open * 60; minutes <= close * 60; minutes += 30) {
-    labels.push(minutesToTimeString(minutes));
-  }
-  return labels;
+// Width of the sticky time-label gutter
+const GUTTER_WIDTH = 64;
+// Minimum column width — below it blocks become unreadable slivers, so the
+// grid scrolls horizontally instead
+const COLUMN_MIN_WIDTH = 140;
+// Height of the sticky stylist header (also the auto-scroll inset)
+const HEADER_HEIGHT = 68;
+
+const UNASSIGNED: ColumnStylist = {
+  id: "any",
+  name: "Unassigned",
+  role: "Any stylist",
 };
 
-const TIME_LABELS = generateTimeLabels();
+const TIMELINE_CSS = `
+  .tl-handle { opacity: 0; transition: opacity var(--transition-fast); }
+  .tl-block:hover .tl-handle { opacity: 1; }
+  .tl-gap:hover { outline: 1.5px solid var(--ink); outline-offset: -1.5px; }
+  .tl-open-slot:hover { border-color: var(--ink) !important; color: var(--ink) !important; }
+  /* Touch never drags, so the resize handle would only be in the way */
+  @media (pointer: coarse) { .tl-handle { display: none; } }
+`;
 
-// Height of each 30-minute row in pixels
-const ROW_HEIGHT = 60;
-const GRID_HEIGHT = (TIME_LABELS.length - 1) * ROW_HEIGHT;
+const errorMessage = (err: unknown, fallback: string): string =>
+  err instanceof BookingConflictError ? err.message : fallback;
 
-// Minimum width of a stylist column — below this, booking blocks become
-// unreadable slivers, so columns hold this floor and the timeline scrolls
-// horizontally instead of squishing further. Must match TimelineColumn.tsx.
-const COLUMN_MIN_WIDTH = 140;
-// Width of the sticky time-label gutter (kept in sync with both header and grid rows)
-const GUTTER_WIDTH = 60;
+const Timeline = ({
+  onBlockClick,
+  onEmptySlotClick,
+  onGapClick,
+  selectedDate,
+}: Props) => {
+  const { stylists, stylistsLoading, salonSettings } = useSalonData();
+  const { bookings, rescheduleBooking, updateTimes } = useBookingContext();
+  const { addToast } = useToastContext();
 
-const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
-  const { stylists, stylistsLoading } = useSalonData();
-  const { bookings } = useBookingContext();
-  const gridRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const columnRefs = useRef(new Map<string, HTMLElement>());
   // Cancelled / no-show bookings show as faint ghost blocks; this hides them
   const [showReleased, setShowReleased] = useState(true);
+  // Re-render every 30 s so the now line and "open slot" start times move
+  const [nowMinutes, setNowMinutes] = useState(getCurrentMinutes);
+  useEffect(() => {
+    const id = setInterval(() => setNowMinutes(getCurrentMinutes()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
-  // Filter bookings to selected date only
-  const dayBookings = bookings.filter((b) => b.date === selectedDate);
+  const isToday = selectedDate === todayString();
+
+  // ── The day: hours, range and who is working ─────────────────────────────
+  const dayBookings = useMemo(
+    () => bookings.filter((b) => b.date === selectedDate),
+    [bookings, selectedDate],
+  );
+  const salonHours = getSalonHoursForDate(selectedDate, salonSettings);
+  const range = useMemo(
+    () => computeDayRange(salonHours, dayBookings),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [salonHours?.open, salonHours?.close, dayBookings],
+  );
+
+  const columns = useMemo(() => {
+    const all = stylists.map((s) => ({
+      stylist: s as ColumnStylist,
+      hours: getStylistHoursForDate(selectedDate, salonSettings, s.workingHours),
+    }));
+    // An off stylist keeps a column only if they somehow have bookings that
+    // day, so nothing is ever hidden; on a closed day every column stays
+    const shown = all.filter(
+      (c) =>
+        c.hours !== null ||
+        range.closed ||
+        dayBookings.some((b) => b.stylistId === c.stylist.id),
+    );
+    const hidden = all.filter((c) => !shown.includes(c));
+    // Bookings with no stylist (first-available) get a synthetic column
+    const unassigned = dayBookings.some(
+      (b) => !stylists.some((s) => s.id === b.stylistId),
+    );
+    if (unassigned) {
+      shown.push({ stylist: UNASSIGNED, hours: salonHours });
+    }
+    return { shown, hiddenNames: hidden.map((c) => c.stylist.name.split(" ")[0]) };
+  }, [stylists, selectedDate, salonSettings, range.closed, dayBookings, salonHours]);
+
   const releasedCount = dayBookings.filter((b) =>
     isSlotFreeing(b.status),
   ).length;
 
-  // Scroll to current time on mount
-  useEffect(() => {
-    const { open, close } = SALON_CONFIG.tradingHours;
-    const currentMinutes = getCurrentMinutes();
-    const openMinutes = open * 60;
-    const closeMinutes = close * 60;
-
-    if (currentMinutes >= openMinutes && currentMinutes <= closeMinutes) {
-      const percent = (currentMinutes - openMinutes) / ((close - open) * 60);
-      const scrollTarget = percent * GRID_HEIGHT - 100;
-      gridRef.current?.scrollTo({ top: scrollTarget, behavior: "smooth" });
+  // ── Drag: moving and resizing, both conflict-checked ─────────────────────
+  const handleMove = async (
+    booking: Booking,
+    target: { stylistId: string; start: number },
+  ) => {
+    const next = {
+      date: booking.date,
+      time: minutesToTimeString(target.start),
+      stylistId: target.stylistId,
+    };
+    const previous = {
+      date: booking.date,
+      time: booking.time,
+      stylistId: booking.stylistId,
+    };
+    try {
+      await rescheduleBooking(booking.id, next);
+      const who =
+        next.stylistId !== previous.stylistId
+          ? ` with ${
+              stylists.find((s) => s.id === next.stylistId)?.name ?? "stylist"
+            }`
+          : "";
+      addToast(`Moved to ${formatWhen(next.date, next.time)}${who}`, "success", {
+        durationMs: UNDO_TOAST_MS,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            rescheduleBooking(booking.id, previous).catch((err) =>
+              addToast(errorMessage(err, "Couldn't undo that move."), "error"),
+            );
+          },
+        },
+      });
+    } catch (err) {
+      // The check runs before anything is written, so the block simply stays
+      // where it was
+      addToast(
+        errorMessage(err, "Couldn't move this booking. Please try again."),
+        "error",
+      );
     }
-  }, []);
+  };
+
+  const handleResize = async (booking: Booking, phases: Phases) => {
+    const previous = {
+      activeTime: booking.activeTime,
+      restTime: booking.restTime,
+    };
+    try {
+      await updateTimes(booking.id, phases.activeTime, phases.restTime);
+      addToast(
+        `Length set to ${phases.activeTime + phases.restTime} min`,
+        "success",
+        {
+          durationMs: UNDO_TOAST_MS,
+          action: {
+            label: "Undo",
+            onClick: () => {
+              updateTimes(
+                booking.id,
+                previous.activeTime,
+                previous.restTime,
+              ).catch(() =>
+                addToast("Couldn't undo that change.", "error"),
+              );
+            },
+          },
+        },
+      );
+    } catch {
+      addToast("Couldn't change the length. Please try again.", "error");
+    }
+  };
+
+  const { drag, begin, wasDragging } = useTimelineDrag({
+    date: selectedDate,
+    range,
+    bookings,
+    columnRefs,
+    scrollRef,
+    headerHeight: HEADER_HEIGHT,
+    onMove: handleMove,
+    onResize: handleResize,
+    onResizeRejected: (message) =>
+      addToast(`Can't change the length: ${message}`, "error"),
+  });
+
+  const registerColumn = (id: string, el: HTMLElement | null) => {
+    if (el) columnRefs.current.set(id, el);
+    else columnRefs.current.delete(id);
+  };
+
+  // Today: bring the now line into view. Other days: start at the top.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const now = getCurrentMinutes();
+    const top =
+      isToday && now >= range.start && now <= range.end
+        ? Math.max(0, minutesToPx(now, range) - 120)
+        : 0;
+    el.scrollTo({ top });
+    // Only when the day changes (or the grid first appears), not on every
+    // booking update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, stylistsLoading]);
 
   if (stylistsLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "3rem", color: "var(--ink-muted)" }}>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "3rem",
+          color: "var(--ink-muted)",
+        }}
+      >
         Loading timeline...
       </div>
     );
   }
 
+  const gridHeight = rangeHeightPx(range);
+  const hourMarks: number[] = [];
+  for (let m = range.start; m <= range.end; m += 30) hourMarks.push(m);
+  const contentMinWidth =
+    GUTTER_WIDTH + columns.shown.length * COLUMN_MIN_WIDTH;
+
+  const hasNotes = range.closed || columns.hiddenNames.length > 0;
+
   return (
     <div
       style={{
-        background: "var(--admin-bg)",
-        borderRadius: "10px",
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "12px",
         overflow: "hidden",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+        boxShadow: "var(--shadow-sm)",
       }}
     >
-      {/*
-        Shared horizontal scroll container — the header row and the grid
-        below it scroll together since they're both inside it, so stylist
-        columns never need to squish narrower than COLUMN_MIN_WIDTH.
-      */}
-      {releasedCount > 0 && (
+      <style>{TIMELINE_CSS}</style>
+
+      {/* Notes (closed day, who is off) and the ghost toggle */}
+      {(hasNotes || releasedCount > 0) && (
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
-            padding: "0.4rem 0.75rem",
-            borderBottom: "1px solid var(--admin-border)",
-            background: "var(--admin-bg-darker)",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+            padding: "0.5rem 0.875rem",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--paper)",
+            fontSize: "var(--text-sm)",
+            color: "var(--ink-soft)",
           }}
         >
-          <button
-            onClick={() => setShowReleased((v) => !v)}
-            aria-pressed={showReleased}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              padding: "0.25rem 0.65rem",
-              background: "transparent",
-              color: "var(--admin-faint)",
-              border: "1px solid var(--admin-dim)",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "var(--text-xs)",
-              fontFamily: "var(--font-body)",
-            }}
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}
           >
-            {showReleased ? (
-              <Eye size={13} strokeWidth={2} aria-hidden="true" />
-            ) : (
-              <EyeOff size={13} strokeWidth={2} aria-hidden="true" />
+            {range.closed && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                <CalendarOff size={14} strokeWidth={2} aria-hidden="true" />
+                The salon is closed on this day.
+              </span>
             )}
-            {showReleased ? "Hide" : "Show"} cancelled &amp; no-shows (
-            {releasedCount})
-          </button>
+            {columns.hiddenNames.length > 0 && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                <Info size={14} strokeWidth={2} aria-hidden="true" />
+                Not working today: {columns.hiddenNames.join(", ")}
+              </span>
+            )}
+          </div>
+          {releasedCount > 0 && (
+            <button
+              className="bk-ghost"
+              onClick={() => setShowReleased((v) => !v)}
+              aria-pressed={showReleased}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                padding: "0.3rem 0.7rem",
+                background: "transparent",
+                color: "var(--ink-soft)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "var(--text-xs)",
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              {showReleased ? (
+                <Eye size={14} strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <EyeOff size={14} strokeWidth={2} aria-hidden="true" />
+              )}
+              {showReleased ? "Hide" : "Show"} cancelled &amp; no-shows (
+              {releasedCount})
+            </button>
+          )}
         </div>
       )}
-      <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        {/* Stylist header row */}
-        <div
-          style={{
-            display: "flex",
-            borderBottom: `1px solid var(--admin-border)`,
-            background: "var(--admin-bg-darker)",
-          }}
-        >
-          {/* Time label column header — sticky so it stays visible while the row scrolls */}
-          <div
-            style={{
-              width: `${GUTTER_WIDTH}px`,
-              flexShrink: 0,
-              position: "sticky",
-              left: 0,
-              zIndex: 2,
-              background: "var(--admin-bg-darker)",
-            }}
-          />
 
-          {/* Stylist name headers */}
-          {stylists.map((stylist) => (
-            <div
-              key={stylist.id}
-              style={{
-                flex: `1 1 ${COLUMN_MIN_WIDTH}px`,
-                minWidth: `${COLUMN_MIN_WIDTH}px`,
-                padding: "0.75rem 0.5rem",
-                textAlign: "center",
-                borderLeft: "1px solid var(--admin-border)",
-              }}
-            >
-            {/* Headshot */}
-            {stylist.photoUrl ? (
-              <img
-                src={stylist.photoUrl}
-                alt={stylist.name}
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  margin: "0 auto 0.35rem",
-                  display: "block",
-                  border: "2px solid var(--admin-dim)",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "var(--ink-soft)",
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                  margin: "0 auto 0.35rem",
-                }}
-              >
-                {stylist.name.charAt(0)}
-              </div>
-            )}
-            <p
-              style={{
-                margin: 0,
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "white",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {stylist.name.split(" ")[0]}
-            </p>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "0.65rem",
-                color: "var(--admin-dimmer)",
-              }}
-            >
-              {stylist.role.split(" ")[0]}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Scrollable grid area */}
+      {/* One scroll container for both axes: the stylist header sticks to the
+          top and the time gutter to the left */}
       <div
-        ref={gridRef}
+        ref={scrollRef}
         style={{
-          overflowY: "auto",
-          maxHeight: "600px",
+          overflow: "auto",
+          maxHeight: "min(72vh, 780px)",
           position: "relative",
+          WebkitOverflowScrolling: "touch",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            height: `${GRID_HEIGHT}px`,
-            position: "relative",
-          }}
-        >
-          {/* Time labels column — sticky so it stays visible while the grid scrolls horizontally */}
+        <div style={{ minWidth: contentMinWidth }}>
+          {/* Stylist header */}
           <div
             style={{
-              width: `${GUTTER_WIDTH}px`,
-              flexShrink: 0,
+              display: "flex",
               position: "sticky",
-              left: 0,
-              zIndex: 2,
-              background: "var(--admin-bg)",
+              top: 0,
+              zIndex: 12,
+              height: HEADER_HEIGHT,
+              boxSizing: "border-box",
+              background: "var(--surface)",
+              borderBottom: "1px solid var(--border)",
             }}
           >
-            {TIME_LABELS.map((label, i) => (
+            <div
+              style={{
+                width: GUTTER_WIDTH,
+                flexShrink: 0,
+                position: "sticky",
+                left: 0,
+                zIndex: 13,
+                background: "var(--surface)",
+              }}
+            />
+            {columns.shown.map(({ stylist }) => (
               <div
-                key={label}
+                key={stylist.id}
                 style={{
-                  position: "absolute",
-                  top: `${i * ROW_HEIGHT}px`,
-                  right: "8px",
-                  fontSize: "0.65rem",
-                  color: "var(--admin-dim)",
-                  whiteSpace: "nowrap",
-                  transform: "translateY(-50%)",
+                  flex: `1 1 ${COLUMN_MIN_WIDTH}px`,
+                  minWidth: COLUMN_MIN_WIDTH,
+                  padding: "0.5rem",
+                  textAlign: "center",
+                  borderLeft: "1px solid var(--border)",
+                  boxSizing: "border-box",
                 }}
               >
-                {label}
+                {stylist.photoUrl ? (
+                  <img
+                    src={stylist.photoUrl}
+                    alt=""
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      margin: "0 auto 0.2rem",
+                      display: "block",
+                      border: "1px solid var(--border-strong)",
+                    }}
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      background: "var(--ink)",
+                      color: "var(--surface)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 600,
+                      fontSize: "var(--text-sm)",
+                      margin: "0 auto 0.2rem",
+                    }}
+                  >
+                    {stylist.name.charAt(0)}
+                  </div>
+                )}
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "var(--text-sm)",
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {stylist.name.split(" ")[0]}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--ink-muted)",
+                      fontSize: "var(--text-xs)",
+                    }}
+                  >
+                    {" · "}
+                    {stylist.role.split(" ")[0]}
+                  </span>
+                </p>
               </div>
             ))}
           </div>
 
-          {/* Grid lines and stylist columns */}
+          {/* Grid body */}
           <div
             style={{
-              flex: 1,
-              position: "relative",
               display: "flex",
+              position: "relative",
+              height: gridHeight,
             }}
           >
-            {/* Horizontal grid lines */}
+            {/* Time labels */}
             <div
               style={{
-                position: "absolute",
-                inset: 0,
-                pointerEvents: "none",
-                zIndex: 1,
+                width: GUTTER_WIDTH,
+                flexShrink: 0,
+                position: "sticky",
+                left: 0,
+                zIndex: 11,
+                background: "var(--surface)",
               }}
             >
-              {TIME_LABELS.map((label, i) => (
-                <div
-                  key={label}
-                  style={{
-                    position: "absolute",
-                    top: `${i * ROW_HEIGHT}px`,
-                    left: 0,
-                    right: 0,
-                    height: "1px",
-                    background: i % 2 === 0 ? "var(--admin-border)" : "#222222",
-                  }}
+              {hourMarks
+                .filter((m) => m % 60 === 0)
+                .map((m, i) => (
+                  <div
+                    key={m}
+                    style={{
+                      position: "absolute",
+                      top: i === 0 ? 6 : minutesToPx(m, range),
+                      right: 8,
+                      fontSize: "var(--text-xs)",
+                      color: "var(--ink-muted)",
+                      whiteSpace: "nowrap",
+                      transform: i === 0 ? "none" : "translateY(-50%)",
+                    }}
+                  >
+                    {minutesToTimeString(m)}
+                  </div>
+                ))}
+            </div>
+
+            {/* Lines + columns */}
+            <div style={{ flex: 1, position: "relative", display: "flex" }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  zIndex: 1,
+                }}
+              >
+                {hourMarks.map((m) => (
+                  <div
+                    key={m}
+                    style={{
+                      position: "absolute",
+                      top: minutesToPx(m, range),
+                      left: 0,
+                      right: 0,
+                      height: "1px",
+                      background:
+                        m % 60 === 0
+                          ? "var(--border)"
+                          : "var(--admin-row-border)",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {columns.shown.map(({ stylist, hours }) => (
+                <TimelineColumn
+                  key={stylist.id}
+                  stylist={stylist}
+                  date={selectedDate}
+                  range={range}
+                  hours={hours}
+                  dayBookings={dayBookings}
+                  showReleased={showReleased}
+                  isToday={isToday}
+                  nowMinutes={nowMinutes}
+                  drag={drag}
+                  allowCreate={stylist.id !== UNASSIGNED.id}
+                  registerColumn={registerColumn}
+                  onBlockClick={onBlockClick}
+                  onEmptySlotClick={onEmptySlotClick}
+                  onGapClick={(booking, window) =>
+                    onGapClick(booking.stylistId, window)
+                  }
+                  onDragStart={begin}
+                  wasDragging={wasDragging}
                 />
               ))}
             </div>
 
-            {/* Current time indicator */}
-            <CurrentTimeBar />
-
-            {/* Stylist columns */}
-            {stylists.map((stylist) => (
-              <TimelineColumn
-                key={stylist.id}
-                stylist={stylist}
-                bookings={dayBookings}
-                onBlockClick={onBlockClick}
-                onEmptySlotClick={onEmptySlotClick}
-                isToday={selectedDate === todayString()}
-                showReleased={showReleased}
+            {isToday && (
+              <NowLine
+                range={range}
+                nowMinutes={nowMinutes}
+                gutterWidth={GUTTER_WIDTH}
               />
-            ))}
+            )}
           </div>
         </div>
-      </div>
-      {/* closes the shared horizontal scroll wrapper */}
       </div>
     </div>
   );

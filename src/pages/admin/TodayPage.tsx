@@ -12,6 +12,7 @@ import CreateBookingModal from "../../components/admin/modals/CreateBookingModal
 import DashboardStatStrip from "../../components/admin/DashboardStatStrip";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
 import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
+import { minutesToTimeString } from "../../lib/scheduling";
 import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
 
 interface Props {
@@ -39,6 +40,8 @@ const TodayPage = ({ isOwner }: Props) => {
   const [createModal, setCreateModal] = useState<{
     stylistId: string;
     time: string;
+    // Set when opened from a booking's processing window
+    gap?: { start: number; end: number };
   } | null>(null);
 
   const isToday = selectedDate === todayString();
@@ -300,6 +303,13 @@ const TodayPage = ({ isOwner }: Props) => {
         onEmptySlotClick={(stylistId, time) =>
           setCreateModal({ stylistId, time })
         }
+        onGapClick={(stylistId, window) =>
+          setCreateModal({
+            stylistId,
+            time: minutesToTimeString(window.start),
+            gap: window,
+          })
+        }
       />
 
       {/* Booking drawer */}
@@ -316,6 +326,7 @@ const TodayPage = ({ isOwner }: Props) => {
           prefillStylistId={createModal.stylistId}
           prefillTime={createModal.time}
           prefillDate={selectedDate}
+          gap={createModal.gap}
           onClose={() => setCreateModal(null)}
           onSuccess={(msg) => addToast(msg, "success")}
           onError={(msg) => addToast(msg, "error")}

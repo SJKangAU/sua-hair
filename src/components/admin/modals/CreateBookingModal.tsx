@@ -29,6 +29,7 @@ import {
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
 import ConflictNotice from "../ConflictNotice";
+import { formatRangeShort } from "../../../lib/timelineLayout";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -37,6 +38,10 @@ interface Props {
   prefillDate?: string;
   prefillCustomerName?: string; // add this
   prefillCustomerPhone?: string; // add this
+  // "Add booking to gap": the free stretch (minutes from midnight) inside
+  // another booking's processing window. Fixes the stylist and date, offers
+  // only start times inside the stretch and services whose hands-on time fits.
+  gap?: { start: number; end: number };
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
@@ -62,8 +67,17 @@ const generateTimeSlots = (
   for (
     let minutes = hours.open * 60;
     minutes < hours.close * 60;
-    minutes += 30
+    minutes += 15
   ) {
+    slots.push(minutesToTimeString(minutes));
+  }
+  return slots;
+};
+
+// 15-minute start times inside a free gap (the last one leaves room to work)
+const generateGapSlots = (gap: { start: number; end: number }): string[] => {
+  const slots: string[] = [];
+  for (let minutes = gap.start; minutes < gap.end; minutes += 15) {
     slots.push(minutesToTimeString(minutes));
   }
   return slots;
@@ -93,6 +107,7 @@ const CreateBookingModal = ({
   prefillDate = "",
   prefillCustomerName = "", // add this
   prefillCustomerPhone = "", // add this
+  gap,
   onClose,
   onSuccess,
   onError,
@@ -327,8 +342,13 @@ const CreateBookingModal = ({
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <Modal title="New Booking" onClose={onClose} width="520px">
-      {/* Tab switcher */}
+    <Modal
+      title={gap ? "Add booking to gap" : "New Booking"}
+      onClose={onClose}
+      width="520px"
+    >
+      {/* Tab switcher — a gap is for a client, so there is no block-time tab */}
+      {!gap && (
       <div
         style={{
           display: "flex",
@@ -361,6 +381,26 @@ const CreateBookingModal = ({
           </button>
         ))}
       </div>
+      )}
+
+      {gap && (
+        <p
+          style={{
+            margin: "0 0 1.25rem",
+            padding: "0.6rem 0.8rem",
+            background: "var(--surface-raised)",
+            borderRadius: "6px",
+            fontSize: "var(--text-sm)",
+            color: "var(--ink-soft)",
+            lineHeight: 1.5,
+          }}
+        >
+          Free while the other client&apos;s treatment processes:{" "}
+          <strong>{formatRangeShort(gap.start, gap.end)}</strong> (
+          {gap.end - gap.start} min). Only services whose hands-on time fits are
+          listed.
+        </p>
+      )}
 
       {/* ── Walk-in form ── */}
       {activeTab === "walkin" && (
@@ -399,6 +439,7 @@ const CreateBookingModal = ({
             <select
               style={inputStyle}
               value={walkin.stylistId}
+              disabled={Boolean(gap)}
               onChange={(e) =>
                 setWalkin((prev) => ({ ...prev, stylistId: e.target.value }))
               }
@@ -423,7 +464,11 @@ const CreateBookingModal = ({
               disabled={!walkin.stylistId}
             >
               <option value="">Select service...</option>
-              {services.map((s) => {
+              {services
+                .filter(
+                  (s) => !gap || s.activeTime <= gap.end - gap.start,
+                )
+                .map((s) => {
                 const stylist = getSelectedStylist(walkin.stylistId);
                 const price = stylist ? s.price[stylist.level] : s.price.junior;
                 return (
@@ -447,6 +492,7 @@ const CreateBookingModal = ({
                 style={inputStyle}
                 type="date"
                 value={walkin.date}
+                disabled={Boolean(gap)}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) =>
                   setWalkin((prev) => ({ ...prev, date: e.target.value }))
@@ -463,7 +509,10 @@ const CreateBookingModal = ({
                 }
               >
                 <option value="">Select time...</option>
-                {generateTimeSlots(walkin.date, walkinHours ?? undefined).map(
+                {(gap
+                  ? generateGapSlots(gap)
+                  : generateTimeSlots(walkin.date, walkinHours ?? undefined)
+                ).map(
                   (slot) => (
                     <option key={slot} value={slot}>
                       {slot}
