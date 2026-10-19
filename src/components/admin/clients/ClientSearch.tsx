@@ -22,6 +22,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { cleanPhone } from "../../../lib/validation";
+import { countsAsRevenue } from "../../../lib/bookingStatus";
 import type { Booking } from "../../../types";
 
 export interface ClientProfile {
@@ -46,8 +47,9 @@ interface Props {
 // Build a ClientProfile from a group of bookings for the same phone number
 const buildProfile = (bookings: Booking[]): ClientProfile => {
   const sorted = [...bookings].sort((a, b) => a.date.localeCompare(b.date));
-  // Confirmed only — pending bookings must not inflate visit count or spend
-  const confirmed = bookings.filter((b) => b.status === "confirmed");
+  // Confirmed and beyond only — pending, no-show and cancelled bookings must
+  // not inflate visit count or spend
+  const confirmed = bookings.filter((b) => countsAsRevenue(b.status));
 
   // Count visits per stylist to find the favourite
   const stylistCounts: Record<string, number> = {};

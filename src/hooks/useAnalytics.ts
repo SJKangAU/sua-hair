@@ -6,6 +6,7 @@
 // Extracted so AnalyticsStats and RevenueChart share one computation.
 
 import { useMemo } from "react";
+import { countsAsRevenue } from "../lib/bookingStatus";
 import type { Booking } from "../types";
 
 export interface MonthlyRevenue {
@@ -37,10 +38,11 @@ export interface AnalyticsData {
 
 const useAnalytics = (bookings: Booking[]): AnalyticsData => {
   return useMemo(() => {
-    // Only confirmed customer/walkin bookings count toward revenue
+    // Only confirmed customer/walkin bookings (and ones that have since
+    // progressed to arrived / in service / completed) count toward revenue
     const confirmed = bookings.filter(
       (b) =>
-        b.status === "confirmed" &&
+        countsAsRevenue(b.status) &&
         b.bookingType !== "break" &&
         b.bookingType !== "training",
     );

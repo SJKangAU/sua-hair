@@ -20,16 +20,14 @@ import { db } from "../lib/firebase";
 import { todayString, addDays } from "../lib/dates";
 import { bookingConverter } from "../lib/converters";
 import { computeReturnTime } from "../lib/scheduling";
-import type { Booking } from "../types";
+import { isSlotFreeing } from "../lib/bookingStatus";
+import type { Booking, BookingStatus } from "../types";
 
 interface UseBookings {
   bookings: Booking[];
   loading: boolean;
   error: string | null;
-  updateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => Promise<void>;
+  updateStatus: (id: string, status: BookingStatus) => Promise<void>;
   setFlag: (id: string, flagged: boolean, reason?: string) => Promise<void>;
   // Per-session override of a single booking's active/rest time split —
   // distinct from editing the Service template in Manage → Services, which
@@ -91,23 +89,52 @@ const useBookings = (): UseBookings => {
   // On failure, rolls back and throws so the caller can show an error
   // Uses bookingsRef instead of bookings to keep this callback stable
   const updateStatus = useCallback(
-    async (id: string, status: "pending" | "confirmed" | "cancelled") => {
+    async (id: string, status: BookingStatus) => {
       // Read latest bookings from ref — avoids stale closure
       const previous = bookingsRef.current.find((b) => b.id === id);
       if (!previous) return;
 
+      // Fields that travel with the status, written to Firestore (`patch`)
+      // and mirrored into local state (`local`) in the same step:
+      //  - arrivedAt: stamped on arrival, cleared if moved back to
+      //    pending/confirmed (e.g. undoing a mis-tap)
+      //  - restoreStatus: remembers what a cancelled / no-show booking was,
+      //    so Restore returns it there instead of always to pending
+      const patch: Record<string, unknown> = { status };
+      const local: Partial<Booking> = { status };
+
+      if (status === "arrived") {
+        const arrivedAt = new Date().toISOString();
+        patch.arrivedAt = arrivedAt;
+        local.arrivedAt = arrivedAt;
+      } else if (status === "pending" || status === "confirmed") {
+        patch.arrivedAt = deleteField();
+        local.arrivedAt = undefined;
+      }
+
+      const releasing = isSlotFreeing(status);
+      const wasReleased = isSlotFreeing(previous.status);
+      if (releasing && !wasReleased) {
+        patch.restoreStatus = previous.status;
+        local.restoreStatus = previous.status;
+      } else if (!releasing && wasReleased) {
+        patch.restoreStatus = deleteField();
+        local.restoreStatus = undefined;
+      }
+
       // Optimistic update — update UI immediately
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status } : b)),
+        prev.map((b) => (b.id === id ? { ...b, ...local } : b)),
       );
 
       try {
         // slotBlocks/{id} is the PII-free projection the public
         // availability calendar reads from — keep its status in sync so a
-        // cancelled/confirmed booking's slot correctly frees up or stays
-        // blocked. Batched so both writes succeed or fail together.
+        // cancelled / no-show booking's slot correctly frees up and every
+        // other status keeps it blocked. Batched so both writes succeed or
+        // fail together.
         const batch = writeBatch(db);
-        batch.update(doc(db, "bookings", id), { status });
+        batch.update(doc(db, "bookings", id), patch);
         batch.update(doc(db, "slotBlocks", id), { status });
         await batch.commit();
       } catch (err) {
@@ -116,7 +143,14 @@ const useBookings = (): UseBookings => {
         // Rollback on failure — restore previous state
         setBookings((prev) =>
           prev.map((b) =>
-            b.id === id ? { ...b, status: previous.status } : b,
+            b.id === id
+              ? {
+                  ...b,
+                  status: previous.status,
+                  arrivedAt: previous.arrivedAt,
+                  restoreStatus: previous.restoreStatus,
+                }
+              : b,
           ),
         );
 

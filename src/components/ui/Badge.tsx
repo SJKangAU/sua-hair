@@ -1,15 +1,18 @@
 // Badge.tsx
 // Reusable status and type badge — monochrome, no colour fills.
 // Two semantic axes with deliberately different visual weight:
-//   status (pending/confirmed/cancelled) — primary signal, border treatment
-//     encodes certainty: solid = confirmed, dashed = tentative, none = inactive
+//   status (pending ... cancelled) — primary signal, border treatment
+//     encodes progress: dashed = tentative, solid = confirmed, bold solid =
+//     arrived, filled ink = in service, grey = completed, dotted/none = the
+//     client is not coming (no-show / cancelled)
 //   type (customer/walkin/break/training) — secondary metadata: smaller,
 //     --grey-muted, so the eye lands on status first when both appear together
 
+import { STATUS_LABELS } from "../../lib/bookingStatus";
+import type { BookingStatus } from "../../types";
+
 export type BadgeVariant =
-  | "pending"
-  | "confirmed"
-  | "cancelled"
+  | BookingStatus
   | "customer"
   | "walkin"
   | "break"
@@ -20,7 +23,7 @@ interface Props {
   label?: string; // optional override — defaults to capitalised variant
 }
 
-const STATUS_VARIANTS = new Set(["pending", "confirmed", "cancelled"]);
+const STATUS_VARIANTS = new Set<BadgeVariant>(Object.keys(STATUS_LABELS) as BookingStatus[]);
 
 const BADGE_STYLES: Record<BadgeVariant, React.CSSProperties> = {
   // Status — border treatment encodes certainty
@@ -32,6 +35,27 @@ const BADGE_STYLES: Record<BadgeVariant, React.CSSProperties> = {
   pending: {
     border: "1.5px dashed var(--border-strong)",
     color: "var(--ink-soft)",
+    fontWeight: 500,
+  },
+  arrived: {
+    border: "1.5px solid var(--ink)",
+    color: "var(--ink)",
+    fontWeight: 700,
+  },
+  in_service: {
+    border: "1.5px solid var(--ink)",
+    background: "var(--ink)",
+    color: "var(--surface)",
+    fontWeight: 600,
+  },
+  completed: {
+    border: "1.5px solid var(--border-strong)",
+    color: "var(--ink-muted)",
+    fontWeight: 500,
+  },
+  no_show: {
+    border: "1.5px dotted var(--border-strong)",
+    color: "var(--grey-muted)",
     fontWeight: 500,
   },
   cancelled: {
@@ -64,9 +88,7 @@ const BADGE_STYLES: Record<BadgeVariant, React.CSSProperties> = {
 };
 
 const BADGE_LABELS: Record<BadgeVariant, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  cancelled: "Cancelled",
+  ...STATUS_LABELS,
   customer: "Customer",
   walkin: "Walk-in",
   break: "Break",

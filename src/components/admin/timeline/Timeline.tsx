@@ -5,7 +5,8 @@
 // Clicking a block opens BookingDetailModal
 // Clicking an empty slot opens CreateBookingModal pre-filled with stylist and time
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { SALON_CONFIG } from "../../../lib/config";
@@ -14,6 +15,7 @@ import {
   getCurrentMinutes,
 } from "../../../lib/scheduling";
 import { todayString } from "../../../lib/dates";
+import { isSlotFreeing } from "../../../lib/bookingStatus";
 import TimelineColumn from "./TimelineColumn";
 import CurrentTimeBar from "./CurrentTimeBar";
 import type { Booking } from "../../../types";
@@ -51,9 +53,14 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
   const { stylists, stylistsLoading } = useSalonData();
   const { bookings } = useBookingContext();
   const gridRef = useRef<HTMLDivElement>(null);
+  // Cancelled / no-show bookings show as faint ghost blocks; this hides them
+  const [showReleased, setShowReleased] = useState(true);
 
   // Filter bookings to selected date only
   const dayBookings = bookings.filter((b) => b.date === selectedDate);
+  const releasedCount = dayBookings.filter((b) =>
+    isSlotFreeing(b.status),
+  ).length;
 
   // Scroll to current time on mount
   useEffect(() => {
@@ -91,6 +98,43 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
         below it scroll together since they're both inside it, so stylist
         columns never need to squish narrower than COLUMN_MIN_WIDTH.
       */}
+      {releasedCount > 0 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            padding: "0.4rem 0.75rem",
+            borderBottom: "1px solid var(--admin-border)",
+            background: "var(--admin-bg-darker)",
+          }}
+        >
+          <button
+            onClick={() => setShowReleased((v) => !v)}
+            aria-pressed={showReleased}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.25rem 0.65rem",
+              background: "transparent",
+              color: "var(--admin-faint)",
+              border: "1px solid var(--admin-dim)",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "var(--text-xs)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            {showReleased ? (
+              <Eye size={13} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <EyeOff size={13} strokeWidth={2} aria-hidden="true" />
+            )}
+            {showReleased ? "Hide" : "Show"} cancelled &amp; no-shows (
+            {releasedCount})
+          </button>
+        </div>
+      )}
       <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         {/* Stylist header row */}
         <div
@@ -273,6 +317,7 @@ const Timeline = ({ onBlockClick, onEmptySlotClick, selectedDate }: Props) => {
                 onBlockClick={onBlockClick}
                 onEmptySlotClick={onEmptySlotClick}
                 isToday={selectedDate === todayString()}
+                showReleased={showReleased}
               />
             ))}
           </div>

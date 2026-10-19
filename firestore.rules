@@ -33,6 +33,17 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
     }
 
+    // Booking lifecycle statuses (src/lib/bookingStatus.ts). Staff writes to
+    // bookings and slotBlocks must use one of these so a typo can't strand a
+    // booking in a state the app doesn't understand. Public creates are
+    // separately pinned to 'pending'. A document without a status field
+    // (hand-edited / pre-migration) is left alone.
+    function hasValidStatus(d) {
+      return !('status' in d)
+        || d.status in ['pending', 'confirmed', 'arrived', 'in_service',
+                        'completed', 'no_show', 'cancelled'];
+    }
+
     // ── bookings ────────────────────────────────────────────────────────
     // Full booking records, including customer PII (name, phone, notes).
     // Reads/list/updates/deletes require a staff account. Anonymous
@@ -41,9 +52,12 @@ service cloud.firestore {
     // shape is validated so a public write can't masquerade as an
     // admin-only booking type or arrive pre-confirmed.
     match /bookings/{bookingId} {
-      allow read, list, update, delete: if isStaff();
+      allow read, list, delete: if isStaff();
 
-      allow create: if isStaff() || isValidPublicBooking();
+      allow update: if isStaff() && hasValidStatus(request.resource.data);
+
+      allow create: if (isStaff() && hasValidStatus(request.resource.data))
+        || isValidPublicBooking();
 
       function isValidPublicBooking() {
         let b = request.resource.data;
@@ -77,9 +91,12 @@ service cloud.firestore {
     // `bookings` write (see src/lib/slotBlocks.ts).
     match /slotBlocks/{bookingId} {
       allow read, list: if true;
-      allow update, delete: if isStaff();
+      allow delete: if isStaff();
 
-      allow create: if isStaff() || isValidPublicSlotBlock();
+      allow update: if isStaff() && hasValidStatus(request.resource.data);
+
+      allow create: if (isStaff() && hasValidStatus(request.resource.data))
+        || isValidPublicSlotBlock();
 
       function isValidPublicSlotBlock() {
         let s = request.resource.data;

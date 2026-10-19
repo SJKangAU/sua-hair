@@ -13,13 +13,10 @@ import DashboardStatStrip from "../../components/admin/DashboardStatStrip";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
 import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
 import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
-import type { Booking } from "../../types";
+import type { Booking, BookingStatus } from "../../types";
 
 interface Props {
-  onUpdateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => void;
+  onUpdateStatus: (id: string, status: BookingStatus) => void;
   // Gates the revenue subtotal in the stat strip — owner only.
   isOwner?: boolean;
 }

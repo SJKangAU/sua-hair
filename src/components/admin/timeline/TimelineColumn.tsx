@@ -9,6 +9,7 @@ import TimelineBlock from "./TimelineBlock";
 import QuickActionPopover from "./QuickActionPopover";
 import { SALON_CONFIG } from "../../../lib/config";
 import { timeStringToMinutes } from "../../../lib/scheduling";
+import { blocksSlot } from "../../../lib/bookingStatus";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
 import type { Booking } from "../../../types";
 
@@ -18,6 +19,8 @@ interface Props {
   onBlockClick: (booking: Booking) => void;
   onEmptySlotClick: (stylistId: string, time: string) => void;
   isToday?: boolean;
+  // Show cancelled / no-show bookings as faint ghost blocks
+  showReleased?: boolean;
 }
 
 // Total trading minutes in the day
@@ -40,6 +43,7 @@ const TimelineColumn = ({
   onBlockClick,
   onEmptySlotClick,
   isToday = false,
+  showReleased = true,
 }: Props) => {
   // Quick action popover state — anchored at the click position
   const [popover, setPopover] = useState<{
@@ -48,13 +52,15 @@ const TimelineColumn = ({
     y: number;
   } | null>(null);
 
-  // Filter bookings for this stylist only
+  // This stylist's bookings. Cancelled / no-show ones stay in the list as
+  // ghosts unless the timeline's toggle hides them.
   const stylistBookings = useMemo(
     () =>
       bookings.filter(
-        (b) => b.stylistId === stylist.id && b.status !== "cancelled",
+        (b) =>
+          b.stylistId === stylist.id && (showReleased || blocksSlot(b.status)),
       ),
-    [bookings, stylist.id],
+    [bookings, stylist.id, showReleased],
   );
 
   const handleBlockClick = (booking: Booking, e: React.MouseEvent) => {

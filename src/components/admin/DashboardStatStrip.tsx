@@ -4,6 +4,7 @@
 // No colour — typographic weight only draws the eye.
 
 import { todayString, getWeekRange } from "../../lib/dates";
+import { blocksSlot, countsAsRevenue } from "../../lib/bookingStatus";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -59,13 +60,14 @@ const StatCard = ({ label, value, emphasis }: StatProps) => (
   </div>
 );
 
-// Revenue counts the same way useAnalytics.ts does: confirmed bookings only,
-// excluding internal blockers (breaks) and unpaid training sessions.
+// Revenue counts the same way useAnalytics.ts does: confirmed bookings and
+// everything they progress to (arrived, in service, completed) — not pending,
+// no-show or cancelled — excluding breaks and unpaid training sessions.
 const sumRevenue = (list: Booking[]): number =>
   list
     .filter(
       (b) =>
-        b.status === "confirmed" &&
+        countsAsRevenue(b.status) &&
         b.bookingType !== "break" &&
         b.bookingType !== "training",
     )
@@ -78,9 +80,9 @@ const DashboardStatStrip = ({ bookings, selectedDate, isOwner }: Props) => {
   const dayBookings = bookings.filter((b) => b.date === selectedDate);
   const weekBookings = bookings.filter((b) => b.date >= start && b.date <= end);
 
-  const confirmed = dayBookings.filter((b) => b.status === "confirmed").length;
+  const confirmed = dayBookings.filter((b) => countsAsRevenue(b.status)).length;
   const pending = dayBookings.filter((b) => b.status === "pending").length;
-  const weekTotal = weekBookings.filter((b) => b.status !== "cancelled").length;
+  const weekTotal = weekBookings.filter((b) => blocksSlot(b.status)).length;
 
   const dayRevenue = sumRevenue(dayBookings);
   const weekRevenue = sumRevenue(weekBookings);
@@ -97,7 +99,7 @@ const DashboardStatStrip = ({ bookings, selectedDate, isOwner }: Props) => {
     >
       <StatCard
         label={isViewingToday ? "Today" : "This day"}
-        value={dayBookings.filter((b) => b.status !== "cancelled").length}
+        value={dayBookings.filter((b) => blocksSlot(b.status)).length}
         emphasis
       />
       <StatCard label="Confirmed" value={confirmed} />

@@ -8,7 +8,8 @@
 
 import { useState } from "react";
 import Badge from "../../ui/Badge";
-import type { Booking } from "../../../types";
+import StatusActionButtons from "./StatusActionButtons";
+import type { Booking, BookingStatus } from "../../../types";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
 
 // Inline styles can't express media queries, so the grid layout lives in a
@@ -54,7 +55,7 @@ interface Props {
   booking: Booking;
   selected: boolean;
   onSelect: (id: string, selected: boolean) => void;
-  onUpdate: (id: string, status: "pending" | "confirmed" | "cancelled") => void;
+  onUpdate: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }
 
@@ -68,7 +69,7 @@ const BookingCard = ({
   const [flaggingOpen, setFlaggingOpen] = useState(false);
   const [flagReasonInput, setFlagReasonInput] = useState("");
 
-  const updateStatus = (status: "confirmed" | "cancelled" | "pending") => {
+  const updateStatus = (status: BookingStatus) => {
     onUpdate(booking.id, status);
   };
 
@@ -206,57 +207,11 @@ const BookingCard = ({
               flexWrap: "wrap",
             }}
           >
-            {booking.status === "pending" && (
-              <button
-                onClick={() => updateStatus("confirmed")}
-                style={{
-                  padding: "0.25rem 0.6rem",
-                  background: "#e1f5ee",
-                  color: "#085041",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                Confirm
-              </button>
-            )}
-            {booking.status !== "cancelled" && (
-              <button
-                onClick={() => updateStatus("cancelled")}
-                style={{
-                  padding: "0.25rem 0.6rem",
-                  background: "#fcebeb",
-                  color: "#a32d2d",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                Cancel
-              </button>
-            )}
-            {booking.status === "cancelled" && (
-              <button
-                onClick={() => updateStatus("pending")}
-                style={{
-                  padding: "0.25rem 0.6rem",
-                  background: "#faeeda",
-                  color: "#854f0b",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                Restore
-              </button>
-            )}
+            <StatusActionButtons
+              booking={booking}
+              compact
+              onChange={updateStatus}
+            />
             {booking.flagged ? (
               <button
                 onClick={clearFlag}

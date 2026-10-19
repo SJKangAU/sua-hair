@@ -4,11 +4,19 @@
 // Usage: const { addToast, toasts, dismissToast } = useToast()
 
 import { useState, useCallback } from "react";
-import type { ToastMessage, ToastType } from "../components/ui/Toast";
+import type {
+  ToastMessage,
+  ToastOptions,
+  ToastType,
+} from "../components/ui/Toast";
 
 interface UseToast {
   toasts: ToastMessage[];
-  addToast: (message: string, type?: ToastType) => void;
+  addToast: (
+    message: string,
+    type?: ToastType,
+    options?: ToastOptions,
+  ) => void;
   dismissToast: (id: string) => void;
 }
 
@@ -17,9 +25,9 @@ const useToast = (): UseToast => {
 
   // Add a new toast — generates a unique ID
   const addToast = useCallback(
-    (message: string, type: ToastType = "success") => {
+    (message: string, type: ToastType = "success", options?: ToastOptions) => {
       const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      setToasts((prev) => [...prev, { id, message, type }]);
+      setToasts((prev) => [...prev, { id, message, type, ...options }]);
     },
     [],
   );

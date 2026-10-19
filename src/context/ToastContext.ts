@@ -5,10 +5,14 @@
 // react-refresh/only-export-components.
 
 import { createContext, useContext } from "react";
-import type { ToastType } from "../components/ui/Toast";
+import type { ToastOptions, ToastType } from "../components/ui/Toast";
 
 interface ToastContextValue {
-  addToast: (message: string, type?: ToastType) => void;
+  addToast: (
+    message: string,
+    type?: ToastType,
+    options?: ToastOptions,
+  ) => void;
 }
 
 // camelCase — this is a context object, not a component; a PascalCase export

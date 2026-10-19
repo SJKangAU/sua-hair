@@ -172,6 +172,42 @@ describe("computeReturnTime", () => {
 
 // ── buildTimeBlocks ──────────────────────────────────────────────────────
 
+describe("buildTimeBlocks — lifecycle statuses", () => {
+  const stylist = "stylist-1";
+  const date = "2026-08-05";
+
+  it("frees the slot only for cancelled and no_show", () => {
+    const freed = ["cancelled", "no_show"] as const;
+    const kept = [
+      "pending",
+      "confirmed",
+      "arrived",
+      "in_service",
+      "completed",
+    ] as const;
+    for (const status of freed) {
+      expect(buildTimeBlocks([block({ status })], stylist, date)).toEqual([]);
+    }
+    for (const status of kept) {
+      expect(buildTimeBlocks([block({ status })], stylist, date)).toHaveLength(1);
+    }
+  });
+
+  it("a no-show slot can be booked again, a completed one cannot", () => {
+    const probe = {
+      stylistId: stylist,
+      date,
+      time: "10:00 AM",
+      totalTime: 30,
+      activeTime: 30,
+    };
+    expect(
+      findBookingConflict(probe, [block({ status: "no_show" })]),
+    ).toBeNull();
+    expect(findBookingConflict(probe, [block({ status: "completed" })])).not.toBeNull();
+  });
+});
+
 describe("buildTimeBlocks", () => {
   it("filters to the stylist and date, excluding cancelled bookings", () => {
     const bookings = [

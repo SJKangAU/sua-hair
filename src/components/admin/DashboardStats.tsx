@@ -1,6 +1,6 @@
 // DashboardStats.tsx
 // Displays today's and this week's booking metrics at the top of the admin dashboard
-// Stats: total, confirmed, pending, cancelled — for both today and the current week
+// Stats: total, confirmed, pending, no-show, cancelled — for both today and the current week
 
 import {
   todayString,
@@ -8,6 +8,7 @@ import {
   getWeekRange,
   parseLocalDate,
 } from "../../lib/dates";
+import { blocksSlot, countsAsRevenue } from "../../lib/bookingStatus";
 import type { Booking } from "../../types";
 
 interface Props {
@@ -52,13 +53,14 @@ const StatCard = ({ label, value, color }: StatCardProps) => (
   </div>
 );
 
-// Revenue counts the same way useAnalytics.ts does: confirmed bookings only,
-// excluding internal blockers (breaks) and unpaid training sessions.
+// Revenue counts the same way useAnalytics.ts does: confirmed bookings and
+// everything they progress to (arrived, in service, completed) — not pending,
+// no-show or cancelled — excluding breaks and unpaid training sessions.
 const sumRevenue = (list: Booking[]): number =>
   list
     .filter(
       (b) =>
-        b.status === "confirmed" &&
+        countsAsRevenue(b.status) &&
         b.bookingType !== "break" &&
         b.bookingType !== "training",
     )
@@ -72,9 +74,12 @@ const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
   const weekBookings = bookings.filter((b) => b.date >= start && b.date <= end);
 
   const countByStatus = (list: Booking[]) => ({
-    total: list.length,
-    confirmed: list.filter((b) => b.status === "confirmed").length,
+    // Total is bookings actually occupying the book — cancelled and no-show
+    // are counted separately below.
+    total: list.filter((b) => blocksSlot(b.status)).length,
+    confirmed: list.filter((b) => countsAsRevenue(b.status)).length,
     pending: list.filter((b) => b.status === "pending").length,
+    noShow: list.filter((b) => b.status === "no_show").length,
     cancelled: list.filter((b) => b.status === "cancelled").length,
   });
 
@@ -128,6 +133,11 @@ const DashboardStats = ({ bookings, selectedDate, isOwner }: Props) => {
       <StatCard label="Total" value={stats.total} color="var(--ink)" />
       <StatCard label="Confirmed" value={stats.confirmed} color="var(--ink)" />
       <StatCard label="Pending" value={stats.pending} color="var(--ink-soft)" />
+      <StatCard
+        label="No-show"
+        value={stats.noShow}
+        color="var(--grey-muted)"
+      />
       <StatCard
         label="Cancelled"
         value={stats.cancelled}

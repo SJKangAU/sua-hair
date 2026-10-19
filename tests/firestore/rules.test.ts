@@ -194,6 +194,75 @@ describe("bookings — staff access works", () => {
   });
 });
 
+describe("booking lifecycle statuses", () => {
+  const STATUSES = [
+    "pending",
+    "confirmed",
+    "arrived",
+    "in_service",
+    "completed",
+    "no_show",
+    "cancelled",
+  ];
+
+  it("staff can move a booking and its slot block through every status", async () => {
+    await seedBooking("bk-1");
+    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    for (const status of STATUSES) {
+      await assertSucceeds(staff.doc("bookings/bk-1").update({ status }));
+      await assertSucceeds(staff.doc("slotBlocks/bk-1").update({ status }));
+    }
+  });
+
+  it("staff can record arrival and restore metadata alongside the status", async () => {
+    await seedBooking("bk-1");
+    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertSucceeds(
+      staff.doc("bookings/bk-1").update({
+        status: "arrived",
+        arrivedAt: "2026-08-01T00:12:00.000Z",
+      }),
+    );
+    await assertSucceeds(
+      staff.doc("bookings/bk-1").update({
+        status: "cancelled",
+        restoreStatus: "arrived",
+      }),
+    );
+  });
+
+  it("staff cannot write an unknown status to a booking or slot block", async () => {
+    await seedBooking("bk-1");
+    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertFails(staff.doc("bookings/bk-1").update({ status: "banana" }));
+    await assertFails(
+      staff.doc("slotBlocks/bk-1").update({ status: "banana" }),
+    );
+    await assertFails(
+      staff
+        .doc("bookings/bk-new")
+        .set(validPublicBooking({ status: "banana" })),
+    );
+  });
+
+  it("unrelated field edits still work on a booking that already has a valid status", async () => {
+    await seedBooking("bk-1", { status: "completed" });
+    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertSucceeds(
+      staff.doc("bookings/bk-1").update({ notes: "Left a tip" }),
+    );
+  });
+
+  it("an anonymous customer still cannot create a booking in any status but pending", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    for (const status of STATUSES.filter((s) => s !== "pending")) {
+      await assertFails(
+        anon.doc(`bookings/bk-${status}`).set(validPublicBooking({ status })),
+      );
+    }
+  });
+});
+
 describe("slotBlocks — public availability projection", () => {
   it("anonymous can list and get slot blocks", async () => {
     await seedBooking("bk-1");

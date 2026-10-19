@@ -93,6 +93,17 @@ export interface BookedService {
   totalTime: number;
 }
 
+// Booking lifecycle — see src/lib/bookingStatus.ts for what each status
+// means for availability (only cancelled and no_show free the slot).
+export type BookingStatus =
+  | "pending"
+  | "confirmed"
+  | "arrived"
+  | "in_service"
+  | "completed"
+  | "no_show"
+  | "cancelled";
+
 export interface Booking {
   id: string;
   // Human-readable reference (e.g. BK-20260702-hwang-steve-1030) stored as a
@@ -121,7 +132,14 @@ export interface Booking {
   date: string;
   time: string;
   notes?: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: BookingStatus;
+  // ISO timestamp recorded when the booking was marked arrived — shown as an
+  // arrival-time pill on the timeline. Cleared if the booking is moved back
+  // to pending / confirmed.
+  arrivedAt?: string;
+  // The status a cancelled / no-show booking returns to on Restore. Written
+  // when the booking is released, removed when it is brought back.
+  restoreStatus?: BookingStatus;
   // Owner-facing review flag — marks a booking (typically a walk-in or a
   // data discrepancy) for follow-up. Independent of `status`.
   flagged?: boolean;

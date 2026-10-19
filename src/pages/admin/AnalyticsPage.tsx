@@ -1,6 +1,6 @@
 // AnalyticsPage.tsx
 // Analytics tab — revenue overview and stylist breakdown.
-// Fetches the FULL confirmed booking history with a one-time getDocs query,
+// Fetches the FULL revenue-bearing booking history (confirmed through completed) with a one-time getDocs query,
 // independent of the shared BookingContext (which is scoped to a rolling
 // 90-day window for cost reasons and would truncate all-time totals).
 // No onSnapshot — analytics doesn't need real-time updates.
@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import useAppUser from "../../hooks/useAppUser";
+import { REVENUE_STATUSES } from "../../lib/bookingStatus";
 import AnalyticsStats from "../../components/admin/analytics/AnalyticsStats";
 import RevenueChart from "../../components/admin/analytics/RevenueChart";
 import type { Booking } from "../../types";
@@ -30,7 +31,10 @@ const AnalyticsPage = () => {
     (async () => {
       try {
         const snap = await getDocs(
-          query(collection(db, "bookings"), where("status", "==", "confirmed")),
+          query(
+            collection(db, "bookings"),
+            where("status", "in", [...REVENUE_STATUSES]),
+          ),
         );
         if (cancelled) return;
         setBookings(

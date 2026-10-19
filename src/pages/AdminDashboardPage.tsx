@@ -10,6 +10,8 @@ import { auth } from "../lib/firebase";
 import useAuth from "../hooks/useAuth";
 import useAppUser from "../hooks/useAppUser";
 import { useBookingContext } from "../context/BookingContext";
+import useBookingActions from "../hooks/useBookingActions";
+import type { BookingStatus } from "../types";
 import { BookingProvider } from "../context/BookingProvider";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 import { useToastContext } from "../context/ToastContext";
@@ -44,7 +46,8 @@ const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { appUser } = useAppUser();
-  const { bookings, updateStatus, setFlag } = useBookingContext();
+  const { bookings, setFlag } = useBookingContext();
+  const { changeStatus } = useBookingActions();
   const { addToast } = useToastContext();
   const [activeTab, setActiveTab] = useState("today");
 
@@ -71,26 +74,10 @@ const DashboardInner = () => {
     navigate("/admin/login", { replace: true });
   };
 
-  // Centralised status update with toast feedback
-  const handleUpdateStatus = async (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => {
-    try {
-      await updateStatus(id, status);
-      const messages = {
-        confirmed: "Booking confirmed ✓",
-        cancelled: "Booking cancelled",
-        pending: "Booking restored to pending",
-      };
-      addToast(
-        messages[status],
-        status === "cancelled" ? "warning" : "success",
-      );
-    } catch {
-      addToast("Failed to update booking. Please try again.", "error");
-    }
-  };
+  // Centralised status update — toasts, undo for cancel / no-show, and the
+  // restore-time slot check all live in useBookingActions.
+  const handleUpdateStatus = (id: string, status: BookingStatus) =>
+    changeStatus(id, status);
 
   // Centralised flag/unflag with toast feedback — mirrors handleUpdateStatus
   const handleSetFlag = async (

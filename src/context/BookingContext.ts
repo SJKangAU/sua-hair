@@ -4,16 +4,13 @@
 // react-refresh/only-export-components.
 
 import { createContext, useContext } from "react";
-import type { Booking } from "../types";
+import type { Booking, BookingStatus } from "../types";
 
 interface BookingContextValue {
   bookings: Booking[];
   loading: boolean;
   error: string | null;
-  updateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => Promise<void>;
+  updateStatus: (id: string, status: BookingStatus) => Promise<void>;
   setFlag: (id: string, flagged: boolean, reason?: string) => Promise<void>;
   updateTimes: (
     id: string,

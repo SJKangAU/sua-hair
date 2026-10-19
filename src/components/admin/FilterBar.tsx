@@ -102,6 +102,10 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         <option value="">All statuses</option>
         <option value="pending">Pending</option>
         <option value="confirmed">Confirmed</option>
+        <option value="arrived">Arrived</option>
+        <option value="in_service">In service</option>
+        <option value="completed">Completed</option>
+        <option value="no_show">No-show</option>
         <option value="cancelled">Cancelled</option>
       </select>
 

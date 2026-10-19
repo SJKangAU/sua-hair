@@ -13,15 +13,20 @@ import { SalonDataProvider } from "../context/SalonDataProvider";
 import { NotificationProvider } from "../context/NotificationProvider";
 import NotificationBell from "../components/ui/NotificationBell";
 import { todayString, addDays, formatDisplayDate } from "../lib/dates";
-import type { Booking } from "../types";
+import { blocksSlot, STATUS_LABELS } from "../lib/bookingStatus";
+import type { Booking, BookingStatus } from "../types";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useEffect } from "react";
 
 // Monochrome status treatment on dark cards — shade encodes state, not colour
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<BookingStatus, string> = {
   confirmed: "var(--surface)",
+  arrived: "var(--surface)",
+  in_service: "var(--surface)",
+  completed: "var(--admin-dimmer)",
   pending: "var(--admin-faint)",
+  no_show: "var(--admin-dim)",
   cancelled: "var(--admin-dim)",
 };
 
@@ -61,7 +66,7 @@ const ScheduleInner = () => {
   }, [stylistId, selectedDate]);
 
   const activeBookings = bookings
-    .filter((b) => b.status !== "cancelled" && b.bookingType !== "break")
+    .filter((b) => blocksSlot(b.status) && b.bookingType !== "break")
     .sort((a, b) => a.time.localeCompare(b.time));
 
   const handleSignOut = async () => {
@@ -276,10 +281,9 @@ const ScheduleInner = () => {
                     fontSize: "0.75rem",
                     fontWeight: 500,
                     color: STATUS_COLORS[b.status] ?? "var(--admin-dimmer)",
-                    textTransform: "capitalize",
                   }}
                 >
-                  {b.status}
+                  {STATUS_LABELS[b.status] ?? b.status}
                 </span>
               </div>
             ))}

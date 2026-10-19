@@ -8,15 +8,17 @@
 
 import { useState, useCallback } from "react";
 import BookingCard from "./BookingCard";
+import useBookingActions from "../../../hooks/useBookingActions";
+import { isOpenStatus } from "../../../lib/bookingStatus";
 import SearchBar from "./SearchBar";
 import BulkActions from "./BulkActions";
-import type { Booking } from "../../../types";
+import type { Booking, BookingStatus } from "../../../types";
 import { filterBookings, type Filters } from "../../../lib/bookingFilters";
 
 interface Props {
   bookings: Booking[];
   filters: Filters;
-  onUpdate: (id: string, status: "pending" | "confirmed" | "cancelled") => void;
+  onUpdate: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }
 
@@ -68,6 +70,7 @@ const exportToCSV = (bookings: Booking[]) => {
 };
 
 const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
+  const { changeStatuses } = useBookingActions();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -110,15 +113,24 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
     const pending = sorted.filter(
       (b) => selectedIds.has(b.id) && b.status === "pending",
     );
-    await Promise.all(pending.map((b) => onUpdate(b.id, "confirmed")));
+    // One summary toast ("3 bookings confirmed"), not one per booking
+    await changeStatuses(
+      pending.map((b) => b.id),
+      "confirmed",
+    );
     setSelectedIds(new Set());
   };
 
   const handleBulkCancel = async () => {
+    // Only bookings still to be served can be cancelled — not completed,
+    // no-show or already-cancelled ones. One summary toast with a single Undo.
     const cancellable = sorted.filter(
-      (b) => selectedIds.has(b.id) && b.status !== "cancelled",
+      (b) => selectedIds.has(b.id) && isOpenStatus(b.status),
     );
-    await Promise.all(cancellable.map((b) => onUpdate(b.id, "cancelled")));
+    await changeStatuses(
+      cancellable.map((b) => b.id),
+      "cancelled",
+    );
     setSelectedIds(new Set());
   };
 

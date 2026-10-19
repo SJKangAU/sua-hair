@@ -7,8 +7,9 @@ import { useState } from "react";
 import { Pencil } from "lucide-react";
 import Modal from "../../ui/Modal";
 import Badge from "../../ui/Badge";
+import StatusActionButtons from "../bookings/StatusActionButtons";
 import { canResizeBooking } from "../../../lib/scheduling";
-import type { Booking } from "../../../types";
+import type { Booking, BookingStatus } from "../../../types";
 
 // Only service bookings (not breaks/training blocks) have a meaningful
 // active-time/rest-time split an owner would want to override per session.
@@ -18,10 +19,7 @@ const MAX_MINUTES = 480; // 8 hours — sane upper bound for a single session
 interface Props {
   booking: Booking;
   onClose: () => void;
-  onUpdateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => void;
+  onUpdateStatus: (id: string, status: BookingStatus) => void;
   // Full booking list for the same-stylist/date conflict check, and the
   // per-session time override mutation. Optional so this modal keeps working
   // if a future call site doesn't need the edit feature.
@@ -101,7 +99,7 @@ const BookingDetailModal = ({
     }
   };
 
-  const handleAction = (status: "pending" | "confirmed" | "cancelled") => {
+  const handleAction = (status: BookingStatus) => {
     onUpdateStatus(booking.id, status);
     onClose();
   };
@@ -367,59 +365,14 @@ const BookingDetailModal = ({
 
       {/* Action buttons */}
       <div
-        style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.75rem",
+          justifyContent: "flex-end",
+        }}
       >
-        {booking.status === "pending" && (
-          <button
-            onClick={() => handleAction("confirmed")}
-            style={{
-              padding: "0.6rem 1.25rem",
-              background: "#e1f5ee",
-              color: "#085041",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-            }}
-          >
-            Confirm
-          </button>
-        )}
-        {booking.status !== "cancelled" && (
-          <button
-            onClick={() => handleAction("cancelled")}
-            style={{
-              padding: "0.6rem 1.25rem",
-              background: "#fcebeb",
-              color: "#a32d2d",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-            }}
-          >
-            Cancel
-          </button>
-        )}
-        {booking.status === "cancelled" && (
-          <button
-            onClick={() => handleAction("pending")}
-            style={{
-              padding: "0.6rem 1.25rem",
-              background: "#faeeda",
-              color: "#854f0b",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-            }}
-          >
-            Restore
-          </button>
-        )}
+        <StatusActionButtons booking={booking} onChange={handleAction} />
         <button
           onClick={onClose}
           style={{

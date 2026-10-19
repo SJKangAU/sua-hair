@@ -7,6 +7,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { writeBookingNotifications } from "../lib/notifications";
 import { getCurrentMinutes, timeStringToMinutes } from "../lib/scheduling";
+import { isOpenStatus } from "../lib/bookingStatus";
 import type { Booking } from "../types";
 
 interface ActiveRest {
@@ -43,7 +44,7 @@ const useMultiPhaseCountdown = (
     return bookings
       .filter(
         (b) =>
-          b.date === selectedDate && b.restTime > 0 && b.status !== "cancelled",
+          b.date === selectedDate && b.restTime > 0 && isOpenStatus(b.status),
       )
       .map((b) => {
         const startMinutes = timeStringToMinutes(b.time);

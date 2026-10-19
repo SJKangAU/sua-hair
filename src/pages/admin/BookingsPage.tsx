@@ -3,6 +3,7 @@
 // Contains stats, filter bar, search, booking list, and waitlist panel
 
 import { useState } from "react";
+import type { BookingStatus } from "../../types";
 import { useBookingContext } from "../../context/BookingContext";
 import { useToastContext } from "../../context/ToastContext";
 import DashboardStats from "../../components/admin/DashboardStats";
@@ -21,10 +22,7 @@ import {
 } from "../../lib/bookingFilters";
 
 interface Props {
-  onUpdateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => void;
+  onUpdateStatus: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
   isOwner?: boolean;
 }

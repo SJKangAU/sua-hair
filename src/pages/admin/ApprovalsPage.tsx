@@ -10,15 +10,13 @@
 // no FilterBar (there's nothing else to filter by in a single-status queue).
 
 import { useBookingContext } from "../../context/BookingContext";
+import type { BookingStatus } from "../../types";
 import BookingTable from "../../components/admin/bookings/BookingTable";
 import { BookingCardSkeleton } from "../../components/ui/Skeleton";
 import { DEFAULT_FILTERS } from "../../lib/bookingFilters";
 
 interface Props {
-  onUpdateStatus: (
-    id: string,
-    status: "pending" | "confirmed" | "cancelled",
-  ) => void;
+  onUpdateStatus: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }
 

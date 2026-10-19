@@ -11,6 +11,7 @@
 
 import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
+import { blocksSlot } from "./bookingStatus";
 import type {
   Booking,
   SlotBlock,
@@ -166,7 +167,7 @@ export const buildTimeBlocks = (
       (b) =>
         b.stylistId === stylistId &&
         b.date === date &&
-        b.status !== "cancelled",
+        blocksSlot(b.status),
     )
     .map((b) => {
       const startMinutes = timeStringToMinutes(b.time);
@@ -196,7 +197,7 @@ export interface ConflictProbe {
 
 // Returns the first existing booking that blocks the probe, or null if the
 // slot is free. Uses exactly the customer flow's rules (isSlotAvailable over
-// buildTimeBlocks): cancelled bookings never block, and when
+// buildTimeBlocks): cancelled and no-show bookings never block, and when
 // allowBookingsDuringRestPeriod is on, a probe that fits entirely inside an
 // existing booking's rest window is allowed. Breaks and training blocks are
 // ordinary bookings with no rest time, so they block like any other.

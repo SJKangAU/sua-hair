@@ -1,19 +1,32 @@
 // Toast.tsx
 // Non-blocking notification system for the admin dashboard.
 // Monochrome: type is conveyed by lucide icon + border weight, not colour fills.
-// Toasts auto-dismiss after 3 seconds.
+// Toasts auto-dismiss after 3 seconds by default; a toast can carry one
+// outlined action button (e.g. "Undo") and its own, longer duration.
 
 import { useEffect } from "react";
-import { CircleCheck, CircleAlert, TriangleAlert } from "lucide-react";
+import { CircleCheck, CircleAlert, TriangleAlert, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type ToastType = "success" | "error" | "warning";
 
-export interface ToastMessage {
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+export interface ToastOptions {
+  action?: ToastAction;
+  durationMs?: number;
+}
+
+export interface ToastMessage extends ToastOptions {
   id: string;
   message: string;
   type: ToastType;
 }
+
+const DEFAULT_DURATION_MS = 3000;
 
 interface ToastItemProps {
   toast: ToastMessage;
@@ -27,14 +40,17 @@ const TOAST_ICONS: Record<ToastType, LucideIcon> = {
   warning: TriangleAlert,
 };
 
-// Individual toast item — auto-dismisses after 3 seconds
+// Individual toast item — auto-dismisses after its duration (3 s default)
 const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
   const Icon = TOAST_ICONS[toast.type];
 
   useEffect(() => {
-    const timer = setTimeout(() => onDismiss(toast.id), 3000);
+    const timer = setTimeout(
+      () => onDismiss(toast.id),
+      toast.durationMs ?? DEFAULT_DURATION_MS,
+    );
     return () => clearTimeout(timer);
-  }, [toast.id, onDismiss]);
+  }, [toast.id, toast.durationMs, onDismiss]);
 
   return (
     <div
@@ -63,19 +79,42 @@ const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
         style={{ flexShrink: 0 }}
       />
       <span style={{ flex: 1 }}>{toast.message}</span>
+      {toast.action && (
+        <button
+          className="bk-ghost"
+          onClick={() => {
+            toast.action?.onClick();
+            onDismiss(toast.id);
+          }}
+          style={{
+            padding: "0.3rem 0.75rem",
+            background: "transparent",
+            color: "var(--ink)",
+            border: "1px solid var(--ink)",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "var(--text-sm)",
+            fontWeight: 600,
+            fontFamily: "var(--font-body)",
+            flexShrink: 0,
+          }}
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button
         onClick={() => onDismiss(toast.id)}
+        aria-label="Dismiss"
         style={{
+          display: "flex",
           background: "none",
           border: "none",
           color: "var(--grey-muted)",
           cursor: "pointer",
-          fontSize: "1rem",
           padding: "0",
-          lineHeight: 1,
         }}
       >
-        ✕
+        <X size={16} strokeWidth={2} />
       </button>
     </div>
   );
