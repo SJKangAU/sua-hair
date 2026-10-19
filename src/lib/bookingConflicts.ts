@@ -13,8 +13,28 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import { bookingConverter } from "./converters";
-import { findBookingConflict, type ConflictProbe } from "./scheduling";
+import {
+  describeConflict,
+  findBookingConflict,
+  type ConflictProbe,
+} from "./scheduling";
 import type { Booking } from "../types";
+
+// Thrown when a write would double-book a stylist. The message names the
+// clashing booking so the UI can show it inline as-is.
+export class BookingConflictError extends Error {
+  readonly conflict: Booking;
+
+  constructor(conflict: Booking) {
+    super(
+      `${conflict.stylistName || "That stylist"} is already booked at that time: ${describeConflict(
+        conflict,
+      )}.`,
+    );
+    this.name = "BookingConflictError";
+    this.conflict = conflict;
+  }
+}
 
 export const fetchBookingConflict = async (
   probe: ConflictProbe,

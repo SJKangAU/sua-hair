@@ -14,7 +14,6 @@
 
 import { useState } from "react";
 import { collection, doc, writeBatch, increment } from "firebase/firestore";
-import { TriangleAlert } from "lucide-react";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
@@ -29,6 +28,7 @@ import {
   buildBookingRef,
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
+import ConflictNotice from "../ConflictNotice";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -86,34 +86,6 @@ const labelStyle: React.CSSProperties = {
   fontSize: "var(--text-base)",
   color: "var(--ink)",
 };
-
-// Inline clash message — monochrome (ink outline on paper), icon not colour,
-// announced to screen readers as it appears.
-const ConflictNotice = ({ message }: { message: string }) => (
-  <div
-    role="alert"
-    style={{
-      display: "flex",
-      alignItems: "flex-start",
-      gap: "0.6rem",
-      padding: "0.75rem 0.9rem",
-      marginBottom: "0.75rem",
-      border: "1px solid var(--ink)",
-      borderRadius: "6px",
-      background: "var(--paper)",
-      color: "var(--ink)",
-      fontSize: "var(--text-sm)",
-      lineHeight: 1.5,
-    }}
-  >
-    <TriangleAlert
-      size={16}
-      aria-hidden="true"
-      style={{ flexShrink: 0, marginTop: "2px" }}
-    />
-    <span>{message}</span>
-  </div>
-);
 
 const CreateBookingModal = ({
   prefillStylistId = "",

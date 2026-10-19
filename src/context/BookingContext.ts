@@ -5,6 +5,7 @@
 
 import { createContext, useContext } from "react";
 import type { Booking, BookingStatus } from "../types";
+import type { RescheduleTarget } from "../lib/reschedule";
 
 interface BookingContextValue {
   bookings: Booking[];
@@ -17,6 +18,12 @@ interface BookingContextValue {
     activeTime: number,
     restTime: number,
   ) => Promise<void>;
+  // Saves the booking's free-text notes
+  updateNotes: (id: string, notes: string) => Promise<void>;
+  // Moves a booking to a new date / time / stylist. Runs the same conflict
+  // check as walk-in creation (rejects with BookingConflictError naming the
+  // clashing booking), keeps slotBlocks in step and appends a history entry.
+  rescheduleBooking: (id: string, target: RescheduleTarget) => Promise<void>;
 }
 
 // camelCase — this is a context object, not a component; a PascalCase export

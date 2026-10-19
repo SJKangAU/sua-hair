@@ -1,7 +1,7 @@
 // TimelineColumn.tsx
 // Renders a single stylist column in the timeline grid.
 // Booking blocks open QuickActionPopover as the primary click target;
-// break/training blocks skip the popover and go straight to the detail modal.
+// break/training blocks skip the popover and go straight to the booking drawer.
 // Clicking an empty slot opens the create booking modal.
 
 import { useMemo, useState } from "react";
@@ -64,7 +64,7 @@ const TimelineColumn = ({
   );
 
   const handleBlockClick = (booking: Booking, e: React.MouseEvent) => {
-    // Breaks and training have no confirm/cancel workflow — open detail modal directly
+    // Breaks and training have no confirm/cancel workflow — open the booking drawer directly
     if (booking.bookingType === "break" || booking.bookingType === "training") {
       onBlockClick(booking);
       return;

@@ -6,16 +6,37 @@
 import type { ReactNode } from "react";
 import BookingContext from "./BookingContext";
 import useBookings from "../hooks/useBookings";
+import { useSalonData } from "./SalonDataContext";
 
 // Wrap around AdminDashboardPage so all admin tabs share one Firestore
 // bookings subscription.
 export const BookingProvider = ({ children }: { children: ReactNode }) => {
-  const { bookings, loading, error, updateStatus, setFlag, updateTimes } =
-    useBookings();
+  // Stylists and services let rescheduling resolve the new stylist's name,
+  // level and prices. SalonDataProvider wraps this provider.
+  const { stylists, services } = useSalonData();
+  const {
+    bookings,
+    loading,
+    error,
+    updateStatus,
+    setFlag,
+    updateTimes,
+    updateNotes,
+    rescheduleBooking,
+  } = useBookings({ stylists, services });
 
   return (
     <BookingContext.Provider
-      value={{ bookings, loading, error, updateStatus, setFlag, updateTimes }}
+      value={{
+        bookings,
+        loading,
+        error,
+        updateStatus,
+        setFlag,
+        updateTimes,
+        updateNotes,
+        rescheduleBooking,
+      }}
     >
       {children}
     </BookingContext.Provider>

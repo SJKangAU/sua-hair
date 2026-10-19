@@ -1,5 +1,5 @@
 // TodayPage.tsx
-// Today tab — day navigation, stats, timeline, and booking modals
+// Today tab — day navigation, stats, timeline, booking drawer and create modal
 // Phase 11: adds active multi-phase treatment summary panel and live countdown trigger
 
 import { useState } from "react";
@@ -7,16 +7,14 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useBookingContext } from "../../context/BookingContext";
 import { useToastContext } from "../../context/ToastContext";
 import Timeline from "../../components/admin/timeline/Timeline";
-import BookingDetailModal from "../../components/admin/modals/BookingDetailModal";
+import BookingDrawer from "../../components/admin/drawer/BookingDrawer";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
 import DashboardStatStrip from "../../components/admin/DashboardStatStrip";
 import { StatsSkeleton } from "../../components/ui/Skeleton";
 import { todayString, addDays, formatDisplayDate } from "../../lib/dates";
 import useMultiPhaseCountdown from "../../hooks/useMultiPhaseCountdown";
-import type { Booking, BookingStatus } from "../../types";
 
 interface Props {
-  onUpdateStatus: (id: string, status: BookingStatus) => void;
   // Gates the revenue subtotal in the stat strip — owner only.
   isOwner?: boolean;
 }
@@ -28,12 +26,16 @@ const formatMinutes = (totalSeconds: number): string => {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 };
 
-const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
-  const { bookings, loading, updateTimes } = useBookingContext();
+const TodayPage = ({ isOwner }: Props) => {
+  const { bookings, loading } = useBookingContext();
   const { addToast } = useToastContext();
 
   const [selectedDate, setSelectedDate] = useState(todayString);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  // The drawer looks the booking up live by ID, so status changes, moves and
+  // edits show immediately without re-selecting it
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null,
+  );
   const [createModal, setCreateModal] = useState<{
     stylistId: string;
     time: string;
@@ -294,23 +296,17 @@ const TodayPage = ({ onUpdateStatus, isOwner }: Props) => {
       {/* Timeline */}
       <Timeline
         selectedDate={selectedDate}
-        onBlockClick={setSelectedBooking}
+        onBlockClick={(booking) => setSelectedBookingId(booking.id)}
         onEmptySlotClick={(stylistId, time) =>
           setCreateModal({ stylistId, time })
         }
       />
 
-      {/* Booking detail modal */}
-      {selectedBooking && (
-        <BookingDetailModal
-          booking={selectedBooking}
-          onClose={() => setSelectedBooking(null)}
-          onUpdateStatus={async (id, status) => {
-            await onUpdateStatus(id, status);
-            setSelectedBooking(null);
-          }}
-          allBookings={bookings}
-          onUpdateTimes={updateTimes}
+      {/* Booking drawer */}
+      {selectedBookingId && (
+        <BookingDrawer
+          bookingId={selectedBookingId}
+          onClose={() => setSelectedBookingId(null)}
         />
       )}
 

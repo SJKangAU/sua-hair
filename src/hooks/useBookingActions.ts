@@ -9,7 +9,7 @@
 //   - several bookings at once produce ONE summary toast, not one each
 //
 // Every status button in the admin (timeline popover, booking list and
-// detail modal, bulk actions) goes through here so they all behave the same.
+// booking drawer, bulk actions) goes through here so they all behave the same.
 
 import { useCallback, useEffect, useRef } from "react";
 import { useBookingContext } from "../context/BookingContext";

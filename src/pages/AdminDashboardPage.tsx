@@ -210,7 +210,7 @@ const DashboardInner = () => {
         style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}
       >
         {effectiveTab === "today" && (
-          <TodayPage onUpdateStatus={handleUpdateStatus} isOwner={isOwner} />
+          <TodayPage isOwner={isOwner} />
         )}
         {effectiveTab === "approvals" && (
           <ApprovalsPage

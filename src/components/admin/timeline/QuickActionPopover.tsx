@@ -13,7 +13,7 @@
 //
 // Status actions go through useBookingActions, which shows the toast (with an
 // Undo for cancel / no-show) — the popover just closes and hands off.
-// "View details" hands off to the existing BookingDetailModal via onViewDetails.
+// "View details" hands off to the booking drawer via onViewDetails.
 
 import { useEffect } from "react";
 import { Eye, RotateCcw } from "lucide-react";

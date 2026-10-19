@@ -15,12 +15,28 @@ import {
   updateDoc,
   writeBatch,
   deleteField,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { todayString, addDays } from "../lib/dates";
 import { bookingConverter } from "../lib/converters";
 import { computeReturnTime } from "../lib/scheduling";
 import { isSlotFreeing } from "../lib/bookingStatus";
+import {
+  phasesHistoryEntry,
+  statusHistoryEntry,
+} from "../lib/bookingHistory";
+import {
+  BookingConflictError,
+  fetchBookingConflict,
+} from "../lib/bookingConflicts";
+import {
+  buildReschedule,
+  isSameSlot,
+  type PriceSource,
+  type RescheduleTarget,
+  type StylistInfo,
+} from "../lib/reschedule";
 import type { Booking, BookingStatus } from "../types";
 
 interface UseBookings {
@@ -38,9 +54,23 @@ interface UseBookings {
     activeTime: number,
     restTime: number,
   ) => Promise<void>;
+  updateNotes: (id: string, notes: string) => Promise<void>;
+  rescheduleBooking: (id: string, target: RescheduleTarget) => Promise<void>;
 }
 
-const useBookings = (): UseBookings => {
+// What rescheduling needs to know about the salon: who the target stylist is
+// (name, level) and what each service costs at each level.
+interface SalonLookup {
+  stylists: StylistInfo[];
+  services: PriceSource[];
+}
+
+const useBookings = (salon: SalonLookup): UseBookings => {
+  const salonRef = useRef(salon);
+  useEffect(() => {
+    salonRef.current = salon;
+  }, [salon]);
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +142,11 @@ const useBookings = (): UseBookings => {
         local.arrivedAt = undefined;
       }
 
+      // History log line: "Confirmed", "Arrived", "Restored to confirmed"...
+      const historyEntry = statusHistoryEntry(previous.status, status);
+      patch.history = arrayUnion(historyEntry);
+      local.history = [...(previous.history ?? []), historyEntry];
+
       const releasing = isSlotFreeing(status);
       const wasReleased = isSlotFreeing(previous.status);
       if (releasing && !wasReleased) {
@@ -149,6 +184,7 @@ const useBookings = (): UseBookings => {
                   status: previous.status,
                   arrivedAt: previous.arrivedAt,
                   restoreStatus: previous.restoreStatus,
+                  history: previous.history,
                 }
               : b,
           ),
@@ -209,10 +245,26 @@ const useBookings = (): UseBookings => {
       const returnTime =
         restTime > 0 ? computeReturnTime(previous.time, totalTime) : undefined;
 
+      // Log the change — but only when a phase length really moved
+      const changed =
+        previous.activeTime !== activeTime || previous.restTime !== restTime;
+      const historyEntry = changed
+        ? phasesHistoryEntry(previous, { activeTime, restTime })
+        : null;
+
       setBookings((prev) =>
         prev.map((b) =>
           b.id === id
-            ? { ...b, activeTime, restTime, totalTime, returnTime }
+            ? {
+                ...b,
+                activeTime,
+                restTime,
+                totalTime,
+                returnTime,
+                ...(historyEntry
+                  ? { history: [...(b.history ?? []), historyEntry] }
+                  : {}),
+              }
             : b,
         ),
       );
@@ -226,6 +278,7 @@ const useBookings = (): UseBookings => {
           restTime,
           totalTime,
           returnTime: returnTime ?? deleteField(),
+          ...(historyEntry ? { history: arrayUnion(historyEntry) } : {}),
         });
         batch.update(doc(db, "slotBlocks", id), {
           activeTime,
@@ -245,6 +298,7 @@ const useBookings = (): UseBookings => {
                   restTime: previous.restTime,
                   totalTime: previous.totalTime,
                   returnTime: previous.returnTime,
+                  history: previous.history,
                 }
               : b,
           ),
@@ -256,7 +310,125 @@ const useBookings = (): UseBookings => {
     [],
   );
 
-  return { bookings, loading, error, updateStatus, setFlag, updateTimes };
+  // Save a booking's free-text notes — optimistic with rollback, like the rest.
+  const updateNotes = useCallback(async (id: string, notes: string) => {
+    const previous = bookingsRef.current.find((b) => b.id === id);
+    if (!previous) return;
+
+    const trimmed = notes.trim();
+    setBookings((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, notes: trimmed } : b)),
+    );
+
+    try {
+      await updateDoc(doc(db, "bookings", id), { notes: trimmed });
+    } catch (err) {
+      console.error("Error updating booking notes:", err);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, notes: previous.notes } : b)),
+      );
+      throw err;
+    }
+  }, []);
+
+  // Move a booking to a new date / time / stylist.
+  //  1. Refuses cancelled / no-show bookings (restore them first)
+  //  2. Runs the walk-in conflict check against the target stylist's day,
+  //     excluding this booking itself — rejects with BookingConflictError
+  //  3. Writes the booking, its slotBlocks projection and a history entry in
+  //     one batch; prices follow the new stylist's level (see reschedule.ts)
+  const rescheduleBooking = useCallback(
+    async (id: string, target: RescheduleTarget) => {
+      const previous = bookingsRef.current.find((b) => b.id === id);
+      if (!previous) throw new Error("That booking could not be found.");
+      if (isSlotFreeing(previous.status)) {
+        throw new Error("Restore this booking before moving it.");
+      }
+      if (isSameSlot(previous, target)) return;
+
+      const stylist: StylistInfo | undefined =
+        target.stylistId === "any"
+          ? { id: "any", name: "Any available stylist", level: "junior" }
+          : salonRef.current.stylists.find((s) => s.id === target.stylistId);
+      if (!stylist) throw new Error("Choose a stylist to move this booking to.");
+
+      const clash = await fetchBookingConflict({
+        stylistId: target.stylistId,
+        date: target.date,
+        time: target.time,
+        totalTime: previous.totalTime,
+        activeTime: previous.activeTime,
+        excludeId: id,
+      });
+      if (clash) throw new BookingConflictError(clash);
+
+      const { fields, entry } = buildReschedule(
+        previous,
+        target,
+        stylist,
+        salonRef.current.services,
+      );
+
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === id
+            ? { ...b, ...fields, history: [...(b.history ?? []), entry] }
+            : b,
+        ),
+      );
+
+      try {
+        const { returnTime, ...rest } = fields;
+        const batch = writeBatch(db);
+        batch.update(doc(db, "bookings", id), {
+          ...rest,
+          returnTime: returnTime ?? deleteField(),
+          history: arrayUnion(entry),
+        });
+        // The PII-free availability projection follows the move, so the old
+        // slot frees up and the new one blocks on the public calendar.
+        batch.update(doc(db, "slotBlocks", id), {
+          stylistId: fields.stylistId,
+          date: fields.date,
+          time: fields.time,
+        });
+        await batch.commit();
+      } catch (err) {
+        console.error("Error rescheduling booking:", err);
+        setBookings((prev) =>
+          prev.map((b) =>
+            b.id === id
+              ? {
+                  ...b,
+                  date: previous.date,
+                  time: previous.time,
+                  stylistId: previous.stylistId,
+                  stylistName: previous.stylistName,
+                  stylistLevel: previous.stylistLevel,
+                  servicePrice: previous.servicePrice,
+                  services: previous.services,
+                  returnTime: previous.returnTime,
+                  history: previous.history,
+                }
+              : b,
+          ),
+        );
+        throw err;
+      }
+    },
+    [],
+  );
+
+  return {
+    bookings,
+    loading,
+    error,
+    updateStatus,
+    setFlag,
+    updateTimes,
+    updateNotes,
+    rescheduleBooking,
+  };
 };
 
 export default useBookings;

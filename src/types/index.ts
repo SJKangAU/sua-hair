@@ -104,6 +104,16 @@ export type BookingStatus =
   | "no_show"
   | "cancelled";
 
+// One line of a booking's history log (shown in the booking drawer). Written
+// whenever status, time/stylist or phase lengths change; the "Created" row is
+// derived from Booking.createdAt rather than stored.
+export interface BookingHistoryEntry {
+  at: string; // ISO timestamp
+  type: "status" | "moved" | "phases";
+  label: string;
+  status?: BookingStatus; // set on "status" entries, drives the icon
+}
+
 export interface Booking {
   id: string;
   // Human-readable reference (e.g. BK-20260702-hwang-steve-1030) stored as a
@@ -140,6 +150,8 @@ export interface Booking {
   // The status a cancelled / no-show booking returns to on Restore. Written
   // when the booking is released, removed when it is brought back.
   restoreStatus?: BookingStatus;
+  // Append-only log of changes made after creation, oldest first
+  history?: BookingHistoryEntry[];
   // Owner-facing review flag — marks a booking (typically a walk-in or a
   // data discrepancy) for follow-up. Independent of `status`.
   flagged?: boolean;

@@ -2,7 +2,7 @@
 // Main timeline grid container for the admin dashboard Today tab
 // Renders a column per active stylist with time rows at 30min intervals
 // Shows current time indicator and handles day navigation
-// Clicking a block opens BookingDetailModal
+// Clicking a block opens the quick-action popover; its "View details" opens the booking drawer
 // Clicking an empty slot opens CreateBookingModal pre-filled with stylist and time
 
 import { useRef, useEffect, useState } from "react";

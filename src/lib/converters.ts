@@ -55,6 +55,7 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       status: d.status ?? "pending",
       arrivedAt: d.arrivedAt,
       restoreStatus: d.restoreStatus,
+      history: Array.isArray(d.history) ? d.history : undefined,
       flagged: d.flagged ?? false,
       flagReason: d.flagReason ?? "",
       bookingType: d.bookingType ?? "customer",
