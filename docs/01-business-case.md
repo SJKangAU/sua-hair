@@ -18,15 +18,15 @@ The purpose of the platform is to take that booking admin off the staff so they 
 
 The existing manual process created the following business problems:
 
-| Problem                                                                              | Business Impact                                                                                                                                  |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Booking requests interrupt staff who are mid-service (calls and texts)               | Stylists' attention is split; calls go unanswered; clients in the chair are served less well                                                      |
-| Double bookings when two requests arrive close together                              | Client dissatisfaction, lost revenue, reputational damage                                                                                        |
-| No visibility across 5 stylists in real time                                         | Owner unable to manage the floor without being physically present                                                                                 |
-| No client history or loyalty tracking                                                | Missed retention and upsell opportunities                                                                                                        |
-| Bookings only possible while someone can answer the phone (business hours)           | Revenue lost outside the 10am–6pm window                                                                                                         |
-| Manual scheduling ignores service rest periods                                       | Stylist capacity underutilised — colour treatments block a stylist for the full duration when they could take another client during setting time |
-| Service prices managed informally                                                    | No audit trail when prices change; historical revenue data inaccurate                                                                            |
+| Problem                                                                    | Business Impact                                                                                                                                  |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Booking requests interrupt staff who are mid-service (calls and texts)     | Stylists' attention is split; calls go unanswered; clients in the chair are served less well                                                     |
+| Double bookings when two requests arrive close together                    | Client dissatisfaction, lost revenue, reputational damage                                                                                        |
+| No visibility across 5 stylists in real time                               | Owner unable to manage the floor without being physically present                                                                                |
+| No client history or loyalty tracking                                      | Missed retention and upsell opportunities                                                                                                        |
+| Bookings only possible while someone can answer the phone (business hours) | Revenue lost outside the 10am–6pm window                                                                                                         |
+| Manual scheduling ignores service rest periods                             | Stylist capacity underutilised — colour treatments block a stylist for the full duration when they could take another client during setting time |
+| Service prices managed informally                                          | No audit trail when prices change; historical revenue data inaccurate                                                                            |
 
 ## Goals
 

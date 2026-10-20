@@ -37,3 +37,8 @@ dist-ssr
 # Playwright
 test-results/
 playwright-report/
+
+# Customer data exports (contain personal information - never commit)
+exports/
+*.csv
+*.xlsx
