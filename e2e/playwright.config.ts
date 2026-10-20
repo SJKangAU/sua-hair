@@ -40,7 +40,7 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 60_000,
     env: {
-      VITE_FIREBASE_API_KEY: "AIzaSyDemoE2EKeyNotReal0000000000000000",
+      VITE_FIREBASE_API_KEY: "demo-e2e-fake-key",
       VITE_FIREBASE_AUTH_DOMAIN: "demo-sua-e2e.firebaseapp.com",
       VITE_FIREBASE_PROJECT_ID: "demo-sua-e2e",
       VITE_FIREBASE_STORAGE_BUCKET: "demo-sua-e2e.appspot.com",
