@@ -5,9 +5,7 @@
       "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\node_modules\\@playwright\\test\\cli.js",
       "test",
       "-c",
-      "e2e/playwright.config.ts",
-      "07-stylist",
-      "--timeout=45000"
+      "e2e/playwright.config.ts"
     ],
     "configFile": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\playwright.config.ts",
     "rootDir": "C:/Users/Jason/Desktop/Coding/projects/sua-hair/e2e",
@@ -39,7 +37,7 @@
         "testMatch": [
           "/.*\\.spec\\.ts/"
         ],
-        "timeout": 45000
+        "timeout": 90000
       }
     ],
     "filteredProjects": [
@@ -57,7 +55,7 @@
         "snapshotDir": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e",
         "testIgnore": [],
         "testMatch": {},
-        "timeout": 45000,
+        "timeout": 90000,
         "use": {
           "baseURL": "http://127.0.0.1:5174",
           "channel": "msedge",
@@ -113,6 +111,2966 @@
   },
   "suites": [
     {
+      "title": "01-customer.spec.ts",
+      "file": "01-customer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-001 new customer booking is saved as pending and shows the confirmation screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3733,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:02:59.507Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-2ba28c0fe18c42811cb2",
+          "file": "01-customer.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "TC-002 (revised) a returning phone number is NOT recognised and nothing is pre-filled",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4788,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:04.814Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-b64defc0fe9808ea7fc5",
+          "file": "01-customer.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "TC-003 Monday cannot be selected",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1620,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:09.616Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-6580f0441fa4ec0bee1d",
+          "file": "01-customer.spec.ts",
+          "line": 82,
+          "column": 1
+        },
+        {
+          "title": "TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earliest)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1506,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:11.250Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-5a1b755e5fdc1412d59f",
+          "file": "01-customer.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "TC-004b control: before the cutoff, today can still be chosen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1499,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:12.767Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-7d315d8026ac576db4a0",
+          "file": "01-customer.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "TC-005 price follows the stylist's tier",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3268,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:14.279Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-df22e218ff5383002753",
+          "file": "01-customer.spec.ts",
+          "line": 173,
+          "column": 1
+        },
+        {
+          "title": "TC-006 a slot inside another booking's rest window is available if the service fits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7506,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:17.558Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-15c2825b7394e79fed3d",
+          "file": "01-customer.spec.ts",
+          "line": 192,
+          "column": 1
+        },
+        {
+          "title": "TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4618,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:25.076Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fd5fc550daf1a52d8d3-dcfe5d89211eb8e8e516",
+          "file": "01-customer.spec.ts",
+          "line": 226,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "02-admin-today.spec.ts",
+      "file": "02-admin-today.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-009 timeline loads: every active stylist, today's bookings, current-time bar",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1390,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:29.725Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-b00e272ac6e936f87394",
+          "file": "02-admin-today.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "TC-010 Next moves the timeline to tomorrow and loads its bookings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 449,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:32.107Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-96005143f77050a9078b",
+          "file": "02-admin-today.spec.ts",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "TC-011 clicking a booking block opens its quick actions, and View details opens the full booking",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 900,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:32.567Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-ebda92361cb96fb81048",
+          "file": "02-admin-today.spec.ts",
+          "line": 98,
+          "column": 1
+        },
+        {
+          "title": "TC-012 clicking an empty slot opens the create form pre-filled with that stylist and time",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 478,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:33.477Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-a716ed28198f97e9e9ae",
+          "file": "02-admin-today.spec.ts",
+          "line": 115,
+          "column": 1
+        },
+        {
+          "title": "TC-013 create walk-in: appears immediately as confirmed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 733,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:33.964Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-afb1ef829f1293a20038",
+          "file": "02-admin-today.spec.ts",
+          "line": 130,
+          "column": 1
+        },
+        {
+          "title": "TC-014 create break: a break block appears on the timeline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 799,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:34.710Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-170ceb8d38b539fdf4d9",
+          "file": "02-admin-today.spec.ts",
+          "line": 153,
+          "column": 1
+        },
+        {
+          "title": "TC-015 confirming a pending booking turns it confirmed with a toast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:35.522Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-628acade1ec94459c98d",
+          "file": "02-admin-today.spec.ts",
+          "line": 165,
+          "column": 1
+        },
+        {
+          "title": "TC-033 an admin walk-in that overlaps an existing booking is blocked with a clear message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 642,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:36.256Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-cbc26324c45a2f4eaccc",
+          "file": "02-admin-today.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "TC-033b a walk-in inside another booking's rest window is allowed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 704,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:36.906Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-a4820505da07905248e8",
+          "file": "02-admin-today.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "TC-033c a break overlapping a booking is blocked",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 673,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:37.622Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-d4d257aabe84f7b52f12",
+          "file": "02-admin-today.spec.ts",
+          "line": 219,
+          "column": 1
+        },
+        {
+          "title": "D1 two admins saving the same slot at the same moment: exactly one booking is created",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2802,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:38.304Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-0147e5e0f733e6e6b314",
+          "file": "02-admin-today.spec.ts",
+          "line": 230,
+          "column": 1
+        },
+        {
+          "title": "D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2006,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:41.117Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-5ed3ea055b7dfc8aa5d6",
+          "file": "02-admin-today.spec.ts",
+          "line": 267,
+          "column": 1
+        },
+        {
+          "title": "D3 the timeline follows the opening hours configured for that date",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 741,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:43.134Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-cdd391323d5d91a6e6ea",
+          "file": "02-admin-today.spec.ts",
+          "line": 306,
+          "column": 1
+        },
+        {
+          "title": "no deprecated Firestore persistence warning is logged",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:43.884Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-1f961b22a2ad4981635d",
+          "file": "02-admin-today.spec.ts",
+          "line": 327,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "03-admin-pages.spec.ts",
+      "file": "03-admin-pages.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-016 search by name filters the list within 300ms",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 835,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TC-016 filter applied after 332ms\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:44.018Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-a2103df7b28d47e1e2c8",
+          "file": "03-admin-pages.spec.ts",
+          "line": 58,
+          "column": 1
+        },
+        {
+          "title": "TC-017 search by phone number",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 671,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:45.970Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-47dd5ced92789c2e7986",
+          "file": "03-admin-pages.spec.ts",
+          "line": 74,
+          "column": 1
+        },
+        {
+          "title": "TC-018 filter by stylist",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 339,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:46.649Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-f75259a905f7f3359654",
+          "file": "03-admin-pages.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "D4 the list is ordered upcoming-first (soonest day first)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 381,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:46.996Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-af6ced1fca1dc6201390",
+          "file": "03-admin-pages.spec.ts",
+          "line": 89,
+          "column": 1
+        },
+        {
+          "title": "TC-019 bulk confirm: all selected pending bookings become confirmed, with ONE summary toast (D4)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 858,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:47.385Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-1cae1855658c8b47ac99",
+          "file": "03-admin-pages.spec.ts",
+          "line": 106,
+          "column": 1
+        },
+        {
+          "title": "TC-020 Export CSV downloads a file with the visible bookings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 491,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TC-020 CSV header: \"Date\",\"Time\",\"Customer Name\",\"Phone\",\"Stylist\",\"Service\",\"Price\",\"Duration\",\"Status\",\"Type\",\"Notes\"\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:48.252Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-c72aaa3b4ab4b94a22c7",
+          "file": "03-admin-pages.spec.ts",
+          "line": 129,
+          "column": 1
+        },
+        {
+          "title": "TC-021 client search shows visit count and total spend",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1025,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:48.754Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-4d32ba8cd6c9b26cdd0a",
+          "file": "03-admin-pages.spec.ts",
+          "line": 150,
+          "column": 1
+        },
+        {
+          "title": "TC-022 View history expands the booking history, newest first",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:49.787Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-bf61598658efa02d28e7",
+          "file": "03-admin-pages.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "TC-023 Book again pre-fills the create form with the client's name and phone",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 65,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:49.825Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-a982e1223197192b3981",
+          "file": "03-admin-pages.spec.ts",
+          "line": 175,
+          "column": 1
+        },
+        {
+          "title": "TC-024 a cancelled booking is not counted in total spend",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1038,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:49.898Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-cf4efb4dbefabcf0cfd2",
+          "file": "03-admin-pages.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "TC-025 create a training session: appears under upcoming sessions with a toast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 593,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:50.945Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-2dab5a637f75ae1a8330",
+          "file": "03-admin-pages.spec.ts",
+          "line": 194,
+          "column": 1
+        },
+        {
+          "title": "TC-026 a training session does not appear on the main timeline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 246,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:51.549Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-78466cee62babe252407",
+          "file": "03-admin-pages.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "TC-027 a session dated yesterday appears under Past Sessions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 499,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:51.806Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-22cb57a746470dd203f8",
+          "file": "03-admin-pages.spec.ts",
+          "line": 225,
+          "column": 1
+        },
+        {
+          "title": "TC-028 a new stylist appears in the roster and the customer booking form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1609,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:52.317Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-6a5e9c65e16542cbeb29",
+          "file": "03-admin-pages.spec.ts",
+          "line": 264,
+          "column": 1
+        },
+        {
+          "title": "TC-029 deactivating a stylist hides them from customers; their bookings remain",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1433,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:53.935Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-7dc5eb4c7af594d38dd7",
+          "file": "03-admin-pages.spec.ts",
+          "line": 275,
+          "column": 1
+        },
+        {
+          "title": "TC-030 reactivating a stylist brings them back to the booking form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1306,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:55.378Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-7cf0a3e9b728248e8c58",
+          "file": "03-admin-pages.spec.ts",
+          "line": 293,
+          "column": 1
+        },
+        {
+          "title": "TC-031 editing a service price updates the booking form and logs the old price",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1558,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:56.693Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-216733c121d467369338",
+          "file": "03-admin-pages.spec.ts",
+          "line": 300,
+          "column": 1
+        },
+        {
+          "title": "TC-032 deactivating a service removes it from the booking form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1187,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:58.263Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-1d42d3e8b288fe7ff921",
+          "file": "03-admin-pages.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "D7 opening /admin/analytics directly (or refreshing it) stays on Analytics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3327,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:03:59.461Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\03-admin-pages.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "72233cec458b5920a2b1-5a1b76a41ca876317a7a",
+          "file": "03-admin-pages.spec.ts",
+          "line": 343,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "04-smoke.spec.ts",
+      "file": "04-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "SMOKE client books online -> owner approves -> overlapping admin walk-in is blocked",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5378,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:02.904Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "235ed4ac64ba489509e1-de61389c11f66532f7a4",
+          "file": "04-smoke.spec.ts",
+          "line": 11,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "05-features.spec.ts",
+      "file": "05-features.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-034 a client can join the waitlist for a full day and the owner sees them",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3568,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:08.312Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6607cc7cd1c5de84e4b1-c86867ef5b31e7e4fcd7",
+          "file": "05-features.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "TC-035 the owner is notified of a new online booking, and the notification opens it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4007,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:12.069Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6607cc7cd1c5de84e4b1-426e745e70f6a110fc3a",
+          "file": "05-features.spec.ts",
+          "line": 46,
+          "column": 1
+        },
+        {
+          "title": "TC-036 closing a date in Manage -> Opening hours makes it unbookable for customers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3384,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:16.086Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\05-features.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6607cc7cd1c5de84e4b1-afbdae76bd6a0f2a3884",
+          "file": "05-features.spec.ts",
+          "line": 66,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "06-hover-preview.spec.ts",
+      "file": "06-hover-preview.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "hovering an available start highlights the exact range the service would occupy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2120,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:19.504Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-fe2429db4c33993233f5",
+          "file": "06-hover-preview.spec.ts",
+          "line": 39,
+          "column": 1
+        },
+        {
+          "title": "the block's length follows the selected service, with hands-on and processing phases",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3896,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:22.140Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-6d6f058457ba7c2fb3bc",
+          "file": "06-hover-preview.spec.ts",
+          "line": 58,
+          "column": 1
+        },
+        {
+          "title": "the hover snaps to 15-minute rows, but only half-hour starts are bookable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2433,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:26.048Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-7cf61e545b621295a2ef",
+          "file": "06-hover-preview.spec.ts",
+          "line": 83,
+          "column": 1
+        },
+        {
+          "title": "unavailable areas show a muted state and no highlight",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2124,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:28.491Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-70a4f0aed118529846f0",
+          "file": "06-hover-preview.spec.ts",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "a block that fits inside another booking's processing window is highlighted; one that does not is not",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4001,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:30.628Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-a6f22ed323691c2eb9a7",
+          "file": "06-hover-preview.spec.ts",
+          "line": 118,
+          "column": 1
+        },
+        {
+          "title": "clicking selects the time and the existing flow continues to a pending booking",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3032,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:34.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-efeb62493d7227720047",
+          "file": "06-hover-preview.spec.ts",
+          "line": 133,
+          "column": 1
+        },
+        {
+          "title": "keyboard: arrows move in 15-minute steps, Enter chooses, :15 cannot be chosen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1898,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:37.682Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-744c93426e82da399764",
+          "file": "06-hover-preview.spec.ts",
+          "line": 155,
+          "column": 1
+        },
+        {
+          "title": "prefers-reduced-motion switches the block's animation off",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2082,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T08:04:39.594Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "996cf47b474ec7eb155e-4d6846a1a3a57516e585",
+          "file": "06-hover-preview.spec.ts",
+          "line": 180,
+          "column": 1
+        }
+      ],
+      "suites": [
+        {
+          "title": "touch device",
+          "file": "06-hover-preview.spec.ts",
+          "line": 193,
+          "column": 6,
+          "specs": [
+            {
+              "title": "tap a time to preview its block, then Select to choose it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1981,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-20T08:04:41.688Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "996cf47b474ec7eb155e-694423ff05e7496c086b",
+              "file": "06-hover-preview.spec.ts",
+              "line": 196,
+              "column": 3
+            },
+            {
+              "title": "tapping a :15 row previews the half-hour start before it (no hover to tell rows apart)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1647,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-20T08:04:43.680Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "996cf47b474ec7eb155e-eac4b910b1fe7c3bbe55",
+              "file": "06-hover-preview.spec.ts",
+              "line": 212,
+              "column": 3
+            },
+            {
+              "title": "tapping an unavailable time previews nothing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1703,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-20T08:04:45.338Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "996cf47b474ec7eb155e-93825a28f23cc9bf62cd",
+              "file": "06-hover-preview.spec.ts",
+              "line": 218,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "07-stylist-order.spec.ts",
       "file": "07-stylist-order.spec.ts",
       "column": 0,
@@ -124,7 +3082,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -143,12 +3101,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2009,
+                  "duration": 1967,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:41.981Z",
+                  "startTime": "2026-10-20T08:04:47.076Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -176,7 +3134,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -195,12 +3153,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 557,
+                  "duration": 481,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:46.842Z",
+                  "startTime": "2026-10-20T08:04:50.130Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -228,7 +3186,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -247,12 +3205,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2339,
+                  "duration": 2655,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:47.411Z",
+                  "startTime": "2026-10-20T08:04:50.620Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -280,7 +3238,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -299,12 +3257,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 690,
+                  "duration": 788,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:49.764Z",
+                  "startTime": "2026-10-20T08:04:53.353Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -332,7 +3290,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -351,12 +3309,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2269,
+                  "duration": 2659,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:50.464Z",
+                  "startTime": "2026-10-20T08:04:54.202Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -384,7 +3342,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -403,12 +3361,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1140,
+                  "duration": 1279,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:52.745Z",
+                  "startTime": "2026-10-20T08:04:56.875Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -436,7 +3394,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -455,12 +3413,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 592,
+                  "duration": 664,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:53.895Z",
+                  "startTime": "2026-10-20T08:04:58.167Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -488,7 +3446,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 45000,
+              "timeout": 90000,
               "annotations": [
                 {
                   "type": "serial",
@@ -507,12 +3465,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 856,
+                  "duration": 943,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-20T07:56:54.495Z",
+                  "startTime": "2026-10-20T08:04:58.850Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -539,9 +3497,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-20T07:56:38.738Z",
-    "duration": 17163.346,
-    "expected": 8,
+    "startTime": "2026-10-20T08:02:56.084Z",
+    "duration": 124390.88100000001,
+    "expected": 64,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
