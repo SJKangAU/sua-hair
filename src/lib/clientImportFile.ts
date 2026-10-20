@@ -51,7 +51,7 @@ export const parseClientFile = async (file: File): Promise<ParsedFile> => {
   if (name.endsWith(".csv")) {
     const { default: Papa } = await import("papaparse");
     const text = await file.text();
-    const result = Papa.parse<string[]>(text.replace(/^﻿/, ""), { skipEmptyLines: false });
+    const result = Papa.parse<string[]>(text.replace(/^\uFEFF/, ""), { skipEmptyLines: false });
     parsed = toObjects(result.data.map((r) => r.map(cellText)));
   } else if (name.endsWith(".xlsx")) {
     const { readSheet } = await import("read-excel-file/browser");

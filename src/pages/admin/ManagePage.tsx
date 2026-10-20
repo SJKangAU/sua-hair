@@ -1,6 +1,6 @@
 // ManagePage.tsx
 // Manage tab — stylists, services, opening hours, per-stylist hours,
-// owner email notifications
+// owner email notifications, and (owner only) the client import
 
 import { useToastContext } from "../../context/ToastContext";
 import StylistRoster from "../../components/admin/manage/StylistRoster";
@@ -8,6 +8,7 @@ import ServiceRoster from "../../components/admin/manage/ServiceRoster";
 import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor";
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
 import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
+import ClientImport from "../../components/admin/manage/ClientImport";
 
 interface Props {
   isOwner: boolean;
@@ -57,6 +58,15 @@ const ManagePage = ({ isOwner }: Props) => {
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
           />
           <OwnerNotificationsEditor
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* Import clients from a Fresha export — owner only; the ledger it
+              keeps is owner-only in firestore.rules (importBatches). */}
+          <ClientImport
             onSuccess={(msg) => addToast(msg, "success")}
             onError={(msg) => addToast(msg, "error")}
           />
