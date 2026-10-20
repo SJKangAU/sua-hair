@@ -1,0 +1,38 @@
+# D2b (found by the browser run): Undo after cancelling from the timeline popover did nothing
+# Run against the code BEFORE the fix: stale bookingsRef in the unmounted popover's useBookingActions instance
+# command: npx playwright test -c e2e/playwright.config.ts 02-admin -g D2
+i  Running script: npx playwright test -c e2e/playwright.config.ts 02-admin --timeout=30000 -g D2
+Running 1 test using 1 worker
+  x  1 e2e\02-admin-today.spec.ts:267:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore (11.3s)
+  1) e2e\02-admin-today.spec.ts:267:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore 
+    Error: expect(locator).toBeVisible() failed
+    Locator: getByText('Booking restored')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+    Call log:
+      - Expect "toBeVisible" getByText('Booking restored') with timeout 10000ms
+      - waiting for getByText('Booking restored')
+      282 |   // Undo from the toast puts it straight back
+      283 |   await page.getByRole("button", { name: "Undo" }).click();
+    > 284 |   await expect(page.getByText("Booking restored")).toBeVisible();
+          |                                                    ^
+      285 |   await expect.poll(status).toBe("confirmed");
+      286 |
+      287 |   // Cancel again, let someone else take the slot, then try to restore
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\02-admin-today.spec.ts:284:52
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\02-admin-today-D2-cancel-s-43b2c-aken-slot-refuses-a-restore\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results\02-admin-today-D2-cancel-s-43b2c-aken-slot-refuses-a-restore\error-context.md
+    Error Context: test-results\02-admin-today-D2-cancel-s-43b2c-aken-slot-refuses-a-restore\error-context.md
+  1 failed
+    e2e\02-admin-today.spec.ts:267:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore 
+!  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+Error: Script "npx playwright test -c e2e/playwright.config.ts 02-admin --timeout=30000 -g D2" exited with code 1

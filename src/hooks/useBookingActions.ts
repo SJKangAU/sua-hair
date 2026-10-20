@@ -11,7 +11,7 @@
 // Every status button in the admin (timeline popover, booking list and
 // booking drawer, bulk actions) goes through here so they all behave the same.
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useBookingContext } from "../context/BookingContext";
 import { useToastContext } from "../context/ToastContext";
 import { db } from "../lib/firebase";
@@ -38,14 +38,14 @@ interface UseBookingActions {
 }
 
 const useBookingActions = (): UseBookingActions => {
-  const { bookings, updateStatus } = useBookingContext();
+  const { getBooking, updateStatus } = useBookingContext();
   const { addToast } = useToastContext();
 
-  // Latest bookings without making the callbacks below change every snapshot
-  const bookingsRef = useRef(bookings);
-  useEffect(() => {
-    bookingsRef.current = bookings;
-  }, [bookings]);
+  // Bookings are read through the provider (getBooking), never through a copy
+  // held by this hook: the timeline's quick-action popover unmounts as soon as
+  // it is used, but the "Undo" toast it leaves behind must still see the
+  // booking's CURRENT status. A per-instance copy went stale there and Undo
+  // silently did nothing.
 
   const apply = useCallback(
     async function applyChanges(
@@ -58,7 +58,7 @@ const useBookingActions = (): UseBookingActions => {
       let failed = 0;
 
       for (const { id, status } of changes) {
-        const booking = bookingsRef.current.find((b) => b.id === id);
+        const booking = getBooking(id);
         if (!booking || booking.status === status) continue;
 
         try {
@@ -139,7 +139,7 @@ const useBookingActions = (): UseBookingActions => {
         addToast(message, released ? "warning" : "success");
       }
     },
-    [updateStatus, addToast],
+    [getBooking, updateStatus, addToast],
   );
 
   const changeStatuses = useCallback(

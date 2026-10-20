@@ -16,6 +16,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
   const { stylists, services } = useSalonData();
   const {
     bookings,
+    getBooking,
     loading,
     error,
     updateStatus,
@@ -29,6 +30,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
     <BookingContext.Provider
       value={{
         bookings,
+        getBooking,
         loading,
         error,
         updateStatus,

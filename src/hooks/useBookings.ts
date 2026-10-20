@@ -43,6 +43,10 @@ import type { Booking, BookingStatus } from "../types";
 
 interface UseBookings {
   bookings: Booking[];
+  // The latest copy of one booking, read from the provider-owned ref. Safe to
+  // call from a toast "Undo" after the component that started the action has
+  // unmounted (a per-component copy of `bookings` would be stale by then).
+  getBooking: (id: string) => Booking | undefined;
   loading: boolean;
   error: string | null;
   updateStatus: (id: string, status: BookingStatus) => Promise<void>;
@@ -394,8 +398,14 @@ const useBookings = (salon: SalonLookup): UseBookings => {
     [],
   );
 
+  const getBooking = useCallback(
+    (id: string) => bookingsRef.current.find((b) => b.id === id),
+    [],
+  );
+
   return {
     bookings,
+    getBooking,
     loading,
     error,
     updateStatus,

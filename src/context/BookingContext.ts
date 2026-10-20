@@ -9,6 +9,9 @@ import type { RescheduleTarget } from "../lib/reschedule";
 
 interface BookingContextValue {
   bookings: Booking[];
+  // Latest copy of a booking, valid even from a callback that outlives the
+  // component that created it (toast Undo) - see useBookings.getBooking
+  getBooking: (id: string) => Booking | undefined;
   loading: boolean;
   error: string | null;
   updateStatus: (id: string, status: BookingStatus) => Promise<void>;
