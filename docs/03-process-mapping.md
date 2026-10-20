@@ -88,16 +88,16 @@ End of day / week → Analytics shows revenue, busiest service and stylist
 
 ## Key Process Improvements
 
-| Scenario                          | As-Is                                                  | To-Be                                                                      |
-| --------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
-| Taking a booking request          | Phone/SMS, handled by hand while serving a client      | Customer books online; staff only review                                  |
-| After-hours booking               | Impossible                                             | Available 24/7                                                             |
-| Double booking risk               | High                                                   | Prevented by the scheduling engine and, for staff entries, by a conflict check |
-| Walk-in creation                  | Mental note                                            | A few seconds in the dashboard, clash-checked                              |
-| Customer confirmation / reminder  | None                                                   | On-screen confirmation, confirmation email, 24-hour reminder email         |
-| Owner visibility                  | Only in the salon                                      | Live from any device                                                       |
-| Client history lookup             | Memory                                                 | Instant search                                                             |
-| Price change management           | Informal                                               | Logged with timestamp automatically                                        |
-| Staff change                      | Rework by hand                                         | Deactivate in Manage                                                       |
-| Busy day (full)                   | Customer gives up                                      | Customer joins the waitlist; owner can offer a freed slot                  |
-| Late cancellation                 | Slot lost unless someone remembers                     | Cancel frees the slot immediately; restore re-checks it                    |
+| Scenario                          | As-Is                                                  | To-Be                                                                            |
+| --------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------   |
+| Taking a booking request          | Phone/SMS, handled by hand while serving a client      | Customer books online; staff only review                                         |
+| After-hours booking               | Impossible                                             | Available 24/7                                                                   |
+| Double booking risk               | High                                                   | Prevented by the scheduling engine and, for staff entries, by a conflict check   |
+| Walk-in creation                  | Mental note                                            | A few seconds in the dashboard, clash-checked                                    |
+| Customer confirmation / reminder  | None                                                   | On-screen confirmation, confirmation email, 24-hour reminder email               |
+| Owner visibility                  | Only in the salon                                      | Live from any device                                                             |
+| Client history lookup             | Memory                                                 | Instant search                                                                   |
+| Price change management           | Informal                                               | Logged with timestamp automatically                                              |
+| Staff change                      | Rework by hand                                         | Deactivate in Manage                                                             |
+| Busy day (full)                   | Customer gives up                                      | Customer joins the waitlist; owner can offer a freed slot                        |
+| Late cancellation                 | Slot lost unless someone remembers                     | Cancel frees the slot immediately; restore re-checks it                          |
