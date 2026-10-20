@@ -28,7 +28,7 @@ The existing manual process created the following business problems:
 ## Goals
 
 1. Allow customers to book appointments 24/7 without calling
-2. Give the owner real-time visibility across all 5 stylists on a single screen
+2. Give the owner real-time visibility across all stylists on a single screen
 3. Prevent double bookings automatically via scheduling engine
 4. Capture client history and enable loyalty recognition
 5. Enable the owner to manage stylists, services, and pricing without code changes

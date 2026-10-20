@@ -8,7 +8,7 @@ Customer calls during business hours
 ↓
 Steve or staff answers (if available)
 ↓
-Manually checks paper schedule or memory
+Manually checks scheduling engine
 ↓
 ↓ [If available] → Confirms verbally → Customer writes it down
 ↓ [If busy] → Customer calls back later or gives up
@@ -18,9 +18,8 @@ No record created beyond paper schedule
 
 **Pain points identified:**
 
-- No booking possible outside 10am–6pm
-- No record of client history
-- Relies entirely on staff memory for scheduling rules
+- No booking possible outside 10am–6pm (Business Operating Hours)
+- Relies entirely on staff memory and training for scheduling rules
 
 ---
 
