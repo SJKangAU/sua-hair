@@ -17,9 +17,9 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Day grid with hover preview (FR-001a):** the chosen date is shown as a calendar column (opening hours, 15-minute rows).
 
 - **Hover (mouse):** over an available start, the exact block the booking would occupy is highlighted — from the hovered start to start + the booking's total time — with a label such as "11:30 am – 1:15 pm". The block shows the hands-on time solid and the processing (rest) time hatched.
-- **Which positions are bookable:** the display snaps to 15 minutes, but a booking can only *start* where the scheduling engine offers a slot — the existing 30-minute grid (DEC-024). A :15 / :45 position shows "Starts on the hour or half hour" and no block. A start the engine rejects (clash, too soon, would finish after closing) is muted with "Not available" and no block. A start inside another booking's rest window **is** highlighted when the new service's hands-on time fits (existing rule, unchanged).
+- **Which positions are bookable:** the display snaps to 15 minutes and **a booking can start every 15 minutes** (`slotIntervalMinutes: 15`, DEC-024) — :00, :15, :30, :45. Every position is looked up in the scheduling engine's own slots, so a start the engine rejects (clash, too soon, would finish after closing) is muted with "Not available" and no block. A start inside another booking's rest window **is** highlighted when the new service's hands-on time fits (existing rule, unchanged). If the interval were ever set wider than 15, positions between starts would show "Bookings start every N minutes" and no block.
 - **Click** chooses the time; the flow continues exactly as before (pending booking, same validation).
-- **Touch:** there is no hover, so a tap previews the block with a **Select** button; Select chooses it. A tap on a :15 / :45 row previews the half-hour start just before it.
+- **Touch:** there is no hover, so a tap previews the block with a **Select** button; Select chooses it.
 - **Keyboard:** the grid is one listbox; Up / Down move 15 minutes, PageUp / PageDown an hour, Home / End the first / last row, Enter or Space chooses; the position under the cursor is announced.
 - Motion is switched off under `prefers-reduced-motion`; the grid has a visible focus ring; label and shading colours meet WCAG AA contrast.
 
@@ -36,7 +36,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] Slots inside another booking's rest period are available if the new service fits (TC-006)
 - [x] Booking cannot be submitted without consent (unit/rules: `consentGivenAt` required by the public create rule)
 - [x] Hover highlights the exact range (start to start + total time), with solid / hatched phases (TC-038; `unit` slotPreview)
-- [x] An unavailable area, a :15 / :45 position, or a block that does not fit shows no highlight (TC-039; `unit` slotPreview)
+- [x] An unavailable area, or a block that does not fit, shows no highlight and cannot be chosen (TC-039; `unit` slotPreview)
 - [x] A block inside another booking's rest window is highlighted if it fits, not if it does not (TC-040; `unit`)
 - [x] Clicking a hovered time chooses it and the booking is saved pending (TC-041)
 - [x] Keyboard, touch and reduced-motion behave as described (TC-042, TC-043, TC-044; `unit` previewContrast)
@@ -50,7 +50,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Rules:**
 
 - Opening hours for a date = a **date override** (closed, or custom open/close) if one exists, otherwise the **weekly schedule**, otherwise the `config.ts` default (10:00–18:00, closed Monday). A stylist's own **working hours** narrow that further.
-- Customer slots are generated every 30 minutes; a service must finish by closing time.
+- Customer slots are generated every 15 minutes (`slotIntervalMinutes`, DEC-024); a service must finish by closing time.
 - A slot is unavailable if the new booking's total time overlaps an existing booking's occupied window.
 - **Rest rule:** inside another booking's rest (setting) window the stylist is free, so a slot is available if the new booking's **active** time fits entirely within the remaining rest window.
 - Minimum notice of 2 hours; same-day bookings stop at 5pm.

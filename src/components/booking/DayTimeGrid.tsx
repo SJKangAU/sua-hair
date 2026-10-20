@@ -4,8 +4,9 @@
 // that start to start + the service's total time - with its range as a label,
 // and the hands-on (solid) and processing (hatched) phases drawn inside it.
 //
-// The display snaps to 15 minutes, but a booking can only START where the
-// scheduling engine offers a slot (the 30-minute grid) - see lib/slotPreview.ts.
+// The display snaps to 15 minutes, and a booking can start at any of those
+// positions the scheduling engine offers a slot for (slotIntervalMinutes, 15 -
+// DEC-024) - see lib/slotPreview.ts.
 // Availability is never decided here: every row is looked up in the engine's
 // own slots, so rest-window overlaps and all other rules behave as before.
 //
@@ -32,6 +33,7 @@ import {
   bookableStartAtOrBefore,
   describePreview,
   previewAt,
+  startRule,
   stepCursor,
   type SlotPreview,
 } from "../../lib/slotPreview";
@@ -69,7 +71,7 @@ const rowLabel = (p: SlotPreview): string => {
   const t = clockLabel(p.start);
   if (p.kind === "ok") return t;
   if (p.kind === "off-grid") {
-    return `${t}, unavailable — bookings start on the hour or half hour`;
+    return `${t}, unavailable — ${startRule().toLowerCase()}`;
   }
   if (p.kind === "outside") return `${t}, unavailable — outside bookable times`;
   return `${t}, unavailable — ${p.reason}`;
@@ -254,7 +256,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
           const state = stateAt(m);
           const slotRowAvailable =
             state.kind === "ok" ||
-            // a :15 / :45 row shares its half hour's availability for shading
+            // a row that is not a start shares the previous start's shading
             (state.kind === "off-grid" &&
               stateAt(bookableStartAtOrBefore(m)).kind === "ok");
           const onHour = m % 60 === 0;
@@ -284,7 +286,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
               onClick={() => {
                 if (pointerType.current === "touch") {
                   // No hover on touch: preview first, then the Select button.
-                  // A tap on a :15 / :45 row means the start just before it.
+                  // A tap on a row that is not a start means the start before it.
                   const target = bookableStartAtOrBefore(m);
                   const s = stateAt(target);
                   setPending(s.kind === "ok" ? target : null);
@@ -421,7 +423,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
             }}
           >
             {activeState.kind === "off-grid"
-              ? "Starts on the hour or half hour"
+              ? startRule()
               : "Not available"}
           </div>
         )}

@@ -80,28 +80,31 @@ test("the block's length follows the selected service, with hands-on and process
   await expect(blocks(page).locator("> div")).toHaveCount(1);
 });
 
-test("the hover snaps to 15-minute rows, but only half-hour starts are bookable", async ({ page }) => {
+test("the hover snaps to 15-minute rows, and every row is a bookable start (DEC-024)", async ({ page }) => {
   await chooseSlotOnline(page, { services: ["Ladies Cut"], stylist: "Yuto", date: DAY });
   // anywhere within the 10:30 row is the 10:30 block
   await slotButton(page, "10:30 AM").hover({ position: { x: 120, y: 3 } });
   await expect(label(page)).toHaveText("10:30 – 11:30 am");
   await slotButton(page, "10:30 AM").hover({ position: { x: 120, y: ROW_PX - 3 } });
   await expect(label(page)).toHaveText("10:30 – 11:30 am");
-  // the :15 and :45 rows are visible positions but not start times: no highlight
-  const quarter = page.getByRole("option", { name: /^10:45 AM/ });
-  await quarter.hover();
-  await expect(blocks(page)).toHaveCount(0);
-  await expect(unavailableTag(page)).toHaveText("Starts on the hour or half hour");
-  await expect(quarter).toHaveAttribute("aria-disabled", "true");
-  // and clicking one chooses nothing
-  await quarter.click({ force: true }); // aria-disabled rows are "not enabled" to Playwright
-  await expect(page.getByRole("option", { selected: true })).toHaveCount(0);
+  // the next row down is the next 15 minutes - a real start, not a hint
+  await slotButton(page, "10:45 AM").hover({ position: { x: 120, y: 3 } });
+  await expect(label(page)).toHaveText("10:45 – 11:45 am");
+  await expect(unavailableTag(page)).toHaveCount(0);
+  await expect(slotButton(page, "10:45 AM")).toHaveAttribute("aria-disabled", "false");
+  // and clicking it chooses it, saved at that quarter-hour
+  await slotButton(page, "10:45 AM").click();
+  await expect(slotButton(page, "10:45 AM")).toHaveAttribute("aria-selected", "true");
+  // the 90-minute example from the brief: 11:15 am - 12:45 pm
+  await chooseSlotOnline(page, { services: ["Colour (Regrowth)", "Fringe Trim"], stylist: "Yuto", date: DAY });
+  await slotButton(page, "11:15 AM").hover();
+  await expect(label(page)).toHaveText("11:15 am – 12:30 pm"); // Colour 60 + Fringe Trim 15 = 75 min
 });
 
 test("unavailable areas show a muted state and no highlight", async ({ page }) => {
-  // Steve is booked 12:00 - 1:00 for a Ladies Cut; a 60-min service can't start at 11:30 or 12:30
+  // Steve is booked 12:00 - 1:00 for a Ladies Cut; a 60-min service can't start from 11:15 to 12:45
   await chooseSlotOnline(page, { services: ["Ladies Cut"], stylist: "Steve", date: DAY });
-  for (const t of ["11:30 AM", "12:00 PM", "12:30 PM"]) {
+  for (const t of ["11:15 AM", "11:30 AM", "11:45 AM", "12:00 PM", "12:15 PM", "12:30 PM", "12:45 PM"]) {
     await slotButton(page, t).hover();
     await expect(unavailableTag(page)).toHaveText("Not available");
     await expect(blocks(page)).toHaveCount(0);
@@ -110,6 +113,8 @@ test("unavailable areas show a muted state and no highlight", async ({ page }) =
   // ending exactly when the next booking starts is fine
   await slotButton(page, "11:00 AM").hover();
   await expect(label(page)).toHaveText("11:00 am – 12:00 pm");
+  await slotButton(page, "1:00 PM").hover(); // free again as the booking ends
+  await expect(label(page)).toHaveText("1:00 – 2:00 pm");
   // clicking an unavailable start chooses nothing
   await slotButton(page, "12:00 PM").click({ force: true });
   await expect(page.getByRole("option", { selected: true })).toHaveCount(0);
@@ -122,6 +127,10 @@ test("a block that fits inside another booking's processing window is highlighte
   await expect(label(page)).toHaveText("10:30 – 10:50 am");
   await expect(blocks(page)).toHaveCount(1);
   await slotButton(page, "10:00 AM").hover(); // during the colour's hands-on time
+  await expect(blocks(page)).toHaveCount(0);
+  await slotButton(page, "10:15 AM").hover(); // still the colour's hands-on time
+  await expect(blocks(page)).toHaveCount(0);
+  await slotButton(page, "10:45 AM").hover(); // 10:45 - 11:05 would run past the 11:00 window end
   await expect(blocks(page)).toHaveCount(0);
 
   await chooseSlotOnline(page, { services: ["Men's Cut"], stylist: "Steve", date: DAY });
@@ -152,17 +161,14 @@ test("clicking selects the time and the existing flow continues to a pending boo
   expect(mine).toMatchObject({ status: "pending", stylistId: "yuto", date: DAY, time: "2:00 PM", totalTime: 60 });
 });
 
-test("keyboard: arrows move in 15-minute steps, Enter chooses, :15 cannot be chosen", async ({ page }) => {
+test("keyboard: arrows move in 15-minute steps and Enter chooses a quarter-hour start", async ({ page }) => {
   await chooseSlotOnline(page, { services: ["Men's Cut"], stylist: "Elly", date: DAY });
   const grid = page.getByRole("listbox", { name: "Appointment start times" });
   await grid.focus();
   // the cursor starts on the first available start, 10:00 AM, so one step down is 10:15
   await page.keyboard.press("ArrowDown");
   await expect(grid).toHaveAttribute("aria-activedescendant", "bk-row-615");
-  // 10:15 is not a start: Enter chooses nothing, and the preview shows none
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("option", { selected: true })).toHaveCount(0);
-  await expect(blocks(page)).toHaveCount(0);
+  await expect(label(page)).toHaveText("10:15 – 11:00 am");
   await page.keyboard.press("ArrowDown");
   await expect(grid).toHaveAttribute("aria-activedescendant", "bk-row-630");
   await expect(label(page)).toHaveText("10:30 – 11:15 am");
@@ -170,10 +176,25 @@ test("keyboard: arrows move in 15-minute steps, Enter chooses, :15 cannot be cho
   await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("ArrowUp");
   await expect(grid).toHaveAttribute("aria-activedescendant", "bk-row-615");
+  await page.keyboard.press("Enter"); // a quarter-hour start is choosable
+  await expect(slotButton(page, "10:15 AM")).toHaveAttribute("aria-selected", "true");
   // a visible focus indicator
   const outline = await grid.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).not.toBe("none");
   // what a screen reader is told
+  await expect(page.locator('[aria-live="polite"]').filter({ hasText: "10:15 – 11:00 am, available" })).toHaveCount(1);
+});
+
+test("keyboard: an unavailable position cannot be chosen", async ({ page }) => {
+  await chooseSlotOnline(page, { services: ["Ladies Cut"], stylist: "Steve", date: DAY });
+  const grid = page.getByRole("listbox", { name: "Appointment start times" });
+  await grid.focus();
+  // the cursor starts on Steve's first free 60-minute start, 11:00; 11:15 would run into the 12:00 booking
+  await page.keyboard.press("ArrowDown");
+  await expect(grid).toHaveAttribute("aria-activedescendant", "bk-row-675");
+  await expect(blocks(page)).toHaveCount(0);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("option", { selected: true })).toHaveCount(0);
   await expect(page.locator('[aria-live="polite"]').filter({ hasText: "not available" })).toHaveCount(1);
 });
 
@@ -209,10 +230,12 @@ test.describe("touch device", () => {
     await expect(page.getByRole("button", { name: "Review Booking" })).toBeEnabled();
   });
 
-  test("tapping a :15 row previews the half-hour start before it (no hover to tell rows apart)", async ({ page }) => {
+  test("tapping a quarter-hour row previews that start", async ({ page }) => {
     await chooseSlotOnline(page, { services: ["Ladies Cut"], stylist: "Yuto", date: DAY });
-    await page.getByRole("option", { name: /^1:15 PM/ }).tap({ force: true });
-    await expect(label(page)).toHaveText(/1:00 – 2:00 pm/);
+    await page.getByRole("option", { name: /^4:15 PM/ }).tap();
+    await expect(label(page)).toHaveText(/4:15 – 5:15 pm\s*Select/);
+    await page.getByRole("button", { name: "Select", exact: true }).tap();
+    await expect(slotButton(page, "4:15 PM")).toHaveAttribute("aria-selected", "true");
   });
 
   test("tapping an unavailable time previews nothing", async ({ page }) => {

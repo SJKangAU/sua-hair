@@ -21,8 +21,10 @@ export const SALON_CONFIG = {
   closedDays: [1],
 
   // ── Slot Interval ──────────────────────────────────────────────────────────
-  // How often time slots appear in minutes (e.g. 30 = slots at :00 and :30)
-  slotIntervalMinutes: 30,
+  // How often time slots appear in minutes (e.g. 15 = slots at :00 :15 :30 :45,
+  // 30 = slots at :00 and :30). Was 30; changed to 15 with the booking-page
+  // hover preview (DEC-024).
+  slotIntervalMinutes: 15,
 
   // ── Minimum Booking Notice ─────────────────────────────────────────────────
   // How many hours in advance a customer must book

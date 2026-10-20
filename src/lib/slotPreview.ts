@@ -3,15 +3,17 @@
 // pointer (or keyboard cursor) is on the day grid, what block would a booking
 // occupy, and can it actually be booked there?
 //
-// Two grids, on purpose:
+// Two grids:
 //   - the DISPLAY grid snaps to 15 minutes, so the preview moves smoothly;
-//   - valid START times are still the engine's 30-minute slots
-//     (SALON_CONFIG.slotIntervalMinutes, produced by generateSlots). This file
-//     never decides availability itself - it only looks a position up in the
-//     slots the engine already produced, so every rule (rest windows, closing
-//     time, 2h notice, same-day cutoff, stylist hours) stays in scheduling.ts.
-//   A 15-minute position that is not an engine slot (:15 / :45) is reported as
-//   "off-grid": shown as not available, never as a highlighted block.
+//   - valid START times are the engine's slots (SALON_CONFIG.slotIntervalMinutes,
+//     produced by generateSlots) - currently also every 15 minutes (DEC-024).
+//   This file never decides availability itself - it only looks a position up
+//   in the slots the engine already produced, so every rule (rest windows,
+//   closing time, 2h notice, same-day cutoff, stylist hours) stays in
+//   scheduling.ts.
+//   If the interval is ever set wider than the display grid (say 30), a display
+//   position that is not an engine slot is reported as "off-grid": shown as not
+//   available, never as a highlighted block.
 
 import { SALON_CONFIG } from "./config";
 import { formatRangeShort } from "./timelineLayout";
@@ -38,7 +40,8 @@ export type SlotPreview =
     }
   // On the grid, but the engine says no (clash, too soon, ...)
   | { kind: "unavailable"; start: number; reason: string }
-  // A 15-minute position that is not a bookable start (:15 / :45)
+  // A display position that is not a bookable start (only when the engine's
+  // interval is wider than the 15-minute display grid)
   | { kind: "off-grid"; start: number }
   // On the grid but the engine produced no slot (before opening, or the
   // service would finish after closing)
@@ -48,24 +51,30 @@ export type SlotPreview =
 export const snapToPreviewGrid = (minutes: number): number =>
   Math.floor(minutes / PREVIEW_SNAP_MINUTES) * PREVIEW_SNAP_MINUTES;
 
-export const isBookableStartPosition = (minutes: number): boolean =>
-  minutes % SALON_CONFIG.slotIntervalMinutes === 0;
+export const isBookableStartPosition = (
+  minutes: number,
+  interval: number = SALON_CONFIG.slotIntervalMinutes,
+): boolean => minutes % interval === 0;
 
 // The latest bookable start at or before a position - what a finger tap on a
-// :15 / :45 row resolves to, since a touch screen has no hover to tell the
-// rows apart.
-export const bookableStartAtOrBefore = (minutes: number): number =>
-  Math.floor(minutes / SALON_CONFIG.slotIntervalMinutes) *
-  SALON_CONFIG.slotIntervalMinutes;
+// row that is not a start resolves to, since a touch screen has no hover to
+// tell the rows apart. (With a 15-minute interval every row is a start.)
+export const bookableStartAtOrBefore = (
+  minutes: number,
+  interval: number = SALON_CONFIG.slotIntervalMinutes,
+): number => Math.floor(minutes / interval) * interval;
 
 export const previewAt = (
   position: number,
   slots: PreviewSlot[],
   totalTime: number,
   activeTime: number,
+  interval: number = SALON_CONFIG.slotIntervalMinutes,
 ): SlotPreview => {
   const start = snapToPreviewGrid(position);
-  if (!isBookableStartPosition(start)) return { kind: "off-grid", start };
+  if (!isBookableStartPosition(start, interval)) {
+    return { kind: "off-grid", start };
+  }
 
   const slot = slots.find((s) => timeStringToMinutes(s.time) === start);
   if (!slot) return { kind: "outside", start };
@@ -101,8 +110,16 @@ export const stepCursor = (
   return Math.max(min, Math.min(next, last));
 };
 
+// "Bookings start every 15 minutes" - shown when a position is not a start
+export const startRule = (
+  interval: number = SALON_CONFIG.slotIntervalMinutes,
+): string => `Bookings start every ${interval} minutes`;
+
 // What a screen reader hears for the position under the cursor
-export const describePreview = (p: SlotPreview): string => {
+export const describePreview = (
+  p: SlotPreview,
+  interval: number = SALON_CONFIG.slotIntervalMinutes,
+): string => {
   const at = minutesToTimeString(p.start);
   switch (p.kind) {
     case "ok":
@@ -110,7 +127,7 @@ export const describePreview = (p: SlotPreview): string => {
     case "unavailable":
       return `${at}, not available. ${p.reason}.`;
     case "off-grid":
-      return `${at}, not available. Bookings start on the hour or half hour.`;
+      return `${at}, not available. ${startRule(interval)}.`;
     case "outside":
       return `${at}, not available. Outside the times this service can be booked.`;
   }

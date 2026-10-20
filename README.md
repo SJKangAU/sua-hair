@@ -98,7 +98,7 @@ The customer-facing flow is orchestrated by `BookingForm.tsx`, which holds all f
 
 Located in `src/lib/scheduling.ts`. Handles:
 
-- Generating time slots at 30-minute intervals within trading hours
+- Generating time slots at 15-minute intervals within trading hours
 - Converting bookings into `TimeBlock` objects with `startMinutes`, `activeEndMinutes`, and `totalEndMinutes`
 - Allowing new bookings during a stylist's rest period if the new service's active time fits within the remaining rest window
 - Blocking past slots, closed days, and same-day cutoff
@@ -138,7 +138,7 @@ All configurable rules in `src/lib/config.ts`:
 SALON_CONFIG = {
   tradingHours: { open: 10, close: 18 },
   closedDays: [1], // Monday
-  slotIntervalMinutes: 30,
+  slotIntervalMinutes: 15,
   minimumNoticeHours: 2,
   sameDayCutoffHour: 17,
   allowBookingsDuringRestPeriod: true,
