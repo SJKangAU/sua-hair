@@ -23,6 +23,8 @@ import { writeBookingNotifications } from "../../../lib/notifications";
 import { cleanPhone, validatePhone } from "../../../lib/validation";
 import { combineServices, fitsGap } from "../../../lib/walkinServices";
 import { phaseWriteFields } from "../../../lib/phaseFields";
+import { validateBookingPhases } from "../../../lib/bookingPhases";
+import PhasesEditor from "../PhasesEditor";
 import {
   nextAutofillName,
   returningClientLabel,
@@ -31,13 +33,14 @@ import { BookingConflictError } from "../../../lib/bookingConflicts";
 import { createAdminBooking } from "../../../lib/adminBookingWrites";
 import {
   minutesToTimeString,
+  timeStringToMinutes,
   getSalonHoursForDate,
   buildBookingRef,
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
 import ConflictNotice from "../ConflictNotice";
 import { formatRangeShort } from "../../../lib/timelineLayout";
-import type { Booking } from "../../../types";
+import type { Booking, Phase } from "../../../types";
 
 interface Props {
   prefillStylistId?: string;
@@ -152,6 +155,13 @@ const CreateBookingModal = ({
   const walkinHours = getSalonHoursForDate(walkin.date, salonSettings);
   const breakHours = getSalonHoursForDate(breakForm.date, salonSettings);
 
+  // The owner can adjust this booking's phases before creating it. The
+  // adjustment belongs to one combination of services and stylist: choosing
+  // different ones starts again from the services' defaults.
+  const [phaseAdjust, setPhaseAdjust] = useState<{ key: string; phases: Phase[] } | null>(null);
+  const [showPhases, setShowPhases] = useState(false);
+  const phaseKey = `${walkin.stylistId}|${walkin.serviceIds.join(",")}`;
+
   const walkinKey = `walkin|${walkin.stylistId}|${walkin.serviceIds.join(",")}|${walkin.date}|${walkin.time}`;
   const breakKey = `break|${breakForm.stylistId}|${breakForm.date}|${breakForm.time}|${breakForm.duration}`;
   const activeKey = activeTab === "walkin" ? walkinKey : breakKey;
@@ -254,8 +264,21 @@ const CreateBookingModal = ({
       : null;
     if (!stylist || !totals) return;
 
+    // The services' default phases, unless the owner adjusted them for this booking
+    const chosenPhases =
+      phaseAdjust && phaseAdjust.key === phaseKey ? phaseAdjust.phases : totals.phases;
+    const phaseProblem = validateBookingPhases(
+      chosenPhases,
+      timeStringToMinutes(walkin.time),
+      walkinHours ? walkinHours.close * 60 : null,
+      totals.phases,
+    );
+    if (phaseProblem) {
+      onError(phaseProblem);
+      return;
+    }
     // phases, absolute segments, legacy totals and the return time, consistent
-    const timing = phaseWriteFields(walkin.time, totals.phases);
+    const timing = phaseWriteFields(walkin.time, chosenPhases);
 
     setSubmitting(true);
     try {
@@ -606,6 +629,69 @@ const CreateBookingModal = ({
               </p>
             )}
           </fieldset>
+
+          {selectedServices.length > 0 && walkin.stylistId && (() => {
+            const stylist = getSelectedStylist(walkin.stylistId);
+            const t = stylist ? combineServices(selectedServices, stylist.level) : null;
+            if (!t) return null;
+            const current =
+              phaseAdjust && phaseAdjust.key === phaseKey ? phaseAdjust.phases : t.phases;
+            const adjusted = JSON.stringify(current) !== JSON.stringify(t.phases);
+            const start = walkin.time ? timeStringToMinutes(walkin.time) : null;
+            const finite = current.every((p) => Number.isFinite(p.minutes));
+            const endLabel =
+              start !== null && finite
+                ? minutesToTimeString(
+                    start + current.reduce((n, p) => n + p.minutes, 0),
+                  )
+                : null;
+            return (
+              <div style={{ margin: "0 0 1rem" }}>
+                <button
+                  type="button"
+                  className="bk-ghost"
+                  onClick={() => setShowPhases((v) => !v)}
+                  aria-expanded={showPhases}
+                  style={{
+                    padding: "0.4rem 0.75rem",
+                    background: "transparent",
+                    border: "1px solid var(--border-strong)",
+                    borderRadius: 6,
+                    fontSize: "var(--text-sm)",
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPhases ? "Hide phases" : adjusted ? "Phases (adjusted)" : "Adjust phases"}
+                </button>
+                {showPhases && (
+                  <div style={{ marginTop: "0.6rem" }}>
+                    <p
+                      style={{
+                        margin: "0 0 0.5rem",
+                        fontSize: "var(--text-xs)",
+                        color: "var(--ink-muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      For this booking only - the services' defaults in Manage are
+                      unchanged.
+                    </p>
+                    <PhasesEditor
+                      phases={current}
+                      onChange={(phases) => setPhaseAdjust({ key: phaseKey, phases })}
+                    />
+                    {endLabel && (
+                      <p style={{ margin: "0.6rem 0 0", fontSize: "var(--text-sm)", fontWeight: 600 }}>
+                        {walkin.time} – {endLabel}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div
             className="admin-form-grid-2"
