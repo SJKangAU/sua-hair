@@ -16,7 +16,7 @@
 // Geometry arrives in pixels from TimelineColumn so a live resize preview is
 // just a different height.
 
-import { createElement, useState, useEffect } from "react";
+import { createElement, useState, useEffect, useRef } from "react";
 import {
   Scissors,
   Droplet,
@@ -35,24 +35,35 @@ import {
 } from "../../../lib/bookingStatus";
 import {
   getCurrentMinutes,
-  timeStringToMinutes,
+  minutesToTimeString,
 } from "../../../lib/scheduling";
 import type { Booking } from "../../../types";
+
+export interface RestBand {
+  topPx: number;
+  heightPx: number;
+  startMinutes: number;
+  endMinutes: number;
+  // the band has free time in it, so it is clickable ("Add a booking in this gap")
+  gapOpen: boolean;
+}
 
 interface Props {
   booking: Booking;
   topPx: number;
   heightPx: number;
-  restPx: number;
+  // One band per processing phase (a booking can have a gap in the middle, with
+  // hands-on time again after it). topPx is from the top of the block; the
+  // minutes are absolute, for the live countdown.
+  rests: RestBand[];
   isToday?: boolean;
   // Being dragged — the block stays behind as a faint outline at its origin
   isDragOrigin?: boolean;
   canMove: boolean;
   canResize: boolean;
-  // The processing window has free time in it, so it is clickable
-  gapOpen: boolean;
   onClick: (booking: Booking, e: React.MouseEvent) => void;
-  onGapClick: (booking: Booking) => void;
+  // A processing band with free time in it was clicked (index into `rests`)
+  onGapClick: (booking: Booking, bandIndex: number) => void;
   onDragStart: (
     kind: "move" | "resize",
     booking: Booking,
@@ -90,12 +101,11 @@ const TimelineBlock = ({
   booking,
   topPx,
   heightPx,
-  restPx,
+  rests,
   isToday = false,
   isDragOrigin = false,
   canMove,
   canResize,
-  gapOpen,
   onClick,
   onGapClick,
   onDragStart,
@@ -107,28 +117,32 @@ const TimelineBlock = ({
   const isArrived = booking.status === "arrived";
   const isInService = booking.status === "in_service";
   const isCompleted = booking.status === "completed";
-  const hasRestPeriod = booking.restTime > 0 && restPx > 0;
+  const hasRestPeriod = rests.length > 0;
   // A finished or released booking has no live processing window to show
   const showRest = hasRestPeriod && !isCompleted && !isReleased;
   const arrivalTime = isArrived ? formatClockTime(booking.arrivedAt) : null;
-  const activePx = showRest ? heightPx - restPx : heightPx;
+  // The body ends where a trailing processing band begins; a booking with hands-on
+  // time after its gap keeps the whole block as its body and the band sits on top
+  const trailing = rests.find((r) => r.topPx + r.heightPx >= heightPx - 1);
+  const activePx = showRest && trailing ? trailing.topPx : heightPx;
 
-  // Live countdown for the processing window — today's bookings only
+  // Live countdown for the processing window the clock is inside - today only
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
+  const restKey = rests.map((r) => `${r.startMinutes}-${r.endMinutes}`).join(",");
+  const restsRef = useRef(rests);
+  useEffect(() => {
+    restsRef.current = rests;
+  });
 
   useEffect(() => {
     if (!isToday || !hasRestPeriod) return;
 
     const compute = () => {
       const nowMin = getCurrentMinutes();
-      const startMin = timeStringToMinutes(booking.time);
-      const restStartMin = startMin + booking.activeTime;
-      const restEndMin = startMin + booking.totalTime;
-      if (nowMin >= restStartMin && nowMin < restEndMin) {
-        setRestSecondsLeft((restEndMin - nowMin) * 60);
-      } else {
-        setRestSecondsLeft(null);
-      }
+      const live = restsRef.current.find(
+        (r) => nowMin >= r.startMinutes && nowMin < r.endMinutes,
+      );
+      setRestSecondsLeft(live ? (live.endMinutes - nowMin) * 60 : null);
     };
 
     compute();
@@ -137,9 +151,7 @@ const TimelineBlock = ({
   }, [
     isToday,
     hasRestPeriod,
-    booking.time,
-    booking.activeTime,
-    booking.totalTime,
+    restKey,
   ]);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -435,72 +447,81 @@ const TimelineBlock = ({
         )}
       </div>
 
-      {/* Processing window — the stylist is free; clickable when time is free */}
-      {showRest && (
-        <div
-          className={gapOpen ? "tl-gap" : undefined}
-          onClick={
-            gapOpen
-              ? (e) => {
-                  e.stopPropagation();
-                  if (wasDragging()) return;
-                  onGapClick(booking);
-                }
-              : undefined
-          }
-          title={
-            gapOpen
-              ? "Add a booking in this gap"
-              : booking.returnTime
-              ? `Stylist returns at ${booking.returnTime}`
-              : undefined
-          }
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: restPx,
-            background: HATCH,
-            borderTop: "1px dotted var(--ink-muted)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            padding: "2px 6px",
-            cursor: gapOpen ? "copy" : "inherit",
-            boxSizing: "border-box",
-          }}
-        >
-          {gapOpen && restPx >= 26 && (
-            <Plus
-              size={13}
-              strokeWidth={2.25}
-              color="var(--ink)"
-              aria-hidden="true"
-              style={{ flexShrink: 0 }}
-            />
-          )}
-          <p
-            style={{
-              margin: 0,
-              fontSize: "var(--text-xs)",
-              color: "var(--ink)",
-              fontWeight:
-                restSecondsLeft !== null && restSecondsLeft <= 300 ? 700 : 500,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {restSecondsLeft !== null
-              ? formatCountdown(restSecondsLeft)
-              : booking.returnTime
-              ? `Back ${booking.returnTime}`
-              : "Return"}
-          </p>
-        </div>
-      )}
+      {/* Processing windows - the stylist is free; clickable when time is free */}
+      {showRest &&
+        rests.map((band, i) => {
+          const live =
+            restSecondsLeft !== null &&
+            getCurrentMinutes() >= band.startMinutes &&
+            getCurrentMinutes() < band.endMinutes;
+          return (
+            <div
+              key={`${band.startMinutes}-${i}`}
+              data-testid="processing-band"
+              className={band.gapOpen ? "tl-gap" : undefined}
+              onClick={
+                band.gapOpen
+                  ? (e) => {
+                      e.stopPropagation();
+                      if (wasDragging()) return;
+                      onGapClick(booking, i);
+                    }
+                  : undefined
+              }
+              title={
+                band.gapOpen
+                  ? "Add a booking in this gap"
+                  : `Stylist returns at ${minutesToTimeString(band.endMinutes)}`
+              }
+              style={{
+                position: "absolute",
+                top: band.topPx,
+                left: 0,
+                right: 0,
+                height: band.heightPx,
+                background: HATCH,
+                borderTop: "1px dotted var(--ink-muted)",
+                borderBottom:
+                  band.topPx + band.heightPx < heightPx - 1
+                    ? "1px dotted var(--ink-muted)"
+                    : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "4px",
+                padding: "2px 6px",
+                cursor: band.gapOpen ? "copy" : "inherit",
+                boxSizing: "border-box",
+              }}
+            >
+              {band.gapOpen && band.heightPx >= 26 && (
+                <Plus
+                  size={13}
+                  strokeWidth={2.25}
+                  color="var(--ink)"
+                  aria-hidden="true"
+                  style={{ flexShrink: 0 }}
+                />
+              )}
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "var(--text-xs)",
+                  color: "var(--ink)",
+                  fontWeight:
+                    live && (restSecondsLeft ?? 0) <= 300 ? 700 : 500,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {live && restSecondsLeft !== null
+                  ? formatCountdown(restSecondsLeft)
+                  : `Back ${minutesToTimeString(band.endMinutes)}`}
+              </p>
+            </div>
+          );
+        })}
 
       {resizeHandle}
     </div>

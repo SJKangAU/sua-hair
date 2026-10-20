@@ -5,7 +5,8 @@
 
 import { timeStringToMinutes } from "./scheduling";
 import { validatePhases, MIN_ACTIVE_MINUTES, type Phases } from "./phases";
-import type { Booking } from "../types";
+import { resolvePhases, segmentsFor } from "./bookingPhases";
+import type { Booking, Phase } from "../types";
 
 export const PX_PER_MIN = 2;
 export const SNAP_MINUTES = 15;
@@ -172,6 +173,32 @@ export const findGapWindow = (
     return { start: s, end: s + o.totalTime };
   });
   return findFreeIntervals(occupied, window, SNAP_MINUTES)[0] ?? null;
+};
+
+// One entry per processing phase of a booking (a booking can have more than
+// one): the part another client could use, as findGapWindow computes it.
+export interface RestGap {
+  segment: Interval; // the processing phase itself, minutes from midnight
+  gap: Interval | null; // its first free piece, if any
+}
+
+export const findRestGaps = (
+  booking: Pick<Booking, "time" | "activeTime" | "totalTime" | "restTime"> & {
+    phases?: Phase[];
+  },
+  others: Pick<Booking, "time" | "totalTime">[],
+): RestGap[] => {
+  const start = timeStringToMinutes(booking.time);
+  const occupied = others.map((o) => {
+    const t = timeStringToMinutes(o.time);
+    return { start: t, end: t + o.totalTime };
+  });
+  return segmentsFor(start, resolvePhases(booking))
+    .filter((seg) => seg.type === "rest")
+    .map((seg) => ({
+      segment: { start: seg.start, end: seg.end },
+      gap: findFreeIntervals(occupied, { start: seg.start, end: seg.end }, SNAP_MINUTES)[0] ?? null,
+    }));
 };
 
 // ── Resize ───────────────────────────────────────────────────────────────────

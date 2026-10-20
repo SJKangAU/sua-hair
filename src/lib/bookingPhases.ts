@@ -186,15 +186,21 @@ export const footprintsConflict = (a: Footprint, b: Footprint): boolean => {
 
 // ── Validating an owner's per-booking edit ───────────────────────────────────
 
+// `current` is what the booking has now: a phase left exactly as it is is never
+// re-judged, so older bookings whose lengths are not multiples of 15 (a 20-minute
+// beard trim) can still have one other phase edited.
 export const validateBookingPhases = (
   phases: readonly Phase[],
   startMinutes: number,
   closeMinutes: number | null,
+  current: readonly Phase[] = [],
 ): string | null => {
   if (!phases.some((p) => p.type === "active")) {
     return "A booking needs at least one hands-on phase.";
   }
-  for (const p of phases) {
+  for (const [i, p] of phases.entries()) {
+    const untouched = current[i]?.type === p.type && current[i]?.minutes === p.minutes;
+    if (untouched) continue;
     if (!Number.isFinite(p.minutes) || p.minutes % PHASE_STEP_MINUTES !== 0) {
       return `Phases change in ${PHASE_STEP_MINUTES}-minute steps.`;
     }
@@ -236,4 +242,17 @@ export const phaseLabels = (phases: readonly Phase[]): string[] => {
     handsOn += 1;
     return handsOn > 1 ? `Hands-on ${handsOn}` : "Hands-on";
   });
+};
+
+// "30 active + 30 setting" for today's two-phase services (wording unchanged);
+// "60 hands-on + 30 processing + 30 return" once a service has more phases.
+// Empty when there is nothing past the hands-on time to describe.
+export const describePhases = (phases: readonly Phase[]): string => {
+  const eff = effectivePhases(phases);
+  if (eff.length <= 1) return "";
+  if (eff.length === 2 && eff[0].type === "active" && eff[1].type === "rest") {
+    return `${eff[0].minutes} active + ${eff[1].minutes} setting`;
+  }
+  const names = phaseLabels(eff);
+  return eff.map((p, i) => `${p.minutes} ${names[i].toLowerCase()}`).join(" + ");
 };

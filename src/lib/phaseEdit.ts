@@ -57,6 +57,7 @@ export const nextFreeReturn = <T extends SlotBlock>(
   phases: readonly Phase[],
   existing: T[],
   closeMinutes: number | null,
+  current: readonly Phase[] = [],
 ): Phase[] | null => {
   const start = timeStringToMinutes(target.time);
   let best: Phase[] | null = null;
@@ -66,7 +67,7 @@ export const nextFreeReturn = <T extends SlotBlock>(
     for (let extra = PHASE_STEP_MINUTES; extra <= 480; extra += PHASE_STEP_MINUTES) {
       if (extra >= bestExtra) return;
       const next = phases.map((q, j) => (j === i ? { ...q, minutes: q.minutes + extra } : { ...q }));
-      if (validateBookingPhases(next, start, closeMinutes) !== null) return; // closing: longer only gets worse
+      if (validateBookingPhases(next, start, closeMinutes, current) !== null) return; // closing: longer only gets worse
       const t = phaseTotals(next);
       const clash = findBookingConflict(
         {
@@ -96,9 +97,11 @@ export const planPhaseEdit = <T extends SlotBlock>(
   existing: T[],
   closeMinutes: number | null,
   describe: (b: T) => string,
+  // the booking's phases as saved now (see validateBookingPhases)
+  current: readonly Phase[] = [],
 ): PhaseEditResult<T> => {
   const start = timeStringToMinutes(target.time);
-  const invalid = validateBookingPhases(newPhases, start, closeMinutes);
+  const invalid = validateBookingPhases(newPhases, start, closeMinutes, current);
   if (invalid) return { ok: false, reason: "invalid", message: invalid };
 
   const t = phaseTotals(newPhases);
@@ -120,7 +123,7 @@ export const planPhaseEdit = <T extends SlotBlock>(
       reason: "conflict",
       message: `That would collide with ${describe(clash)}.`,
       conflict: clash,
-      suggestion: nextFreeReturn(target, newPhases, existing, closeMinutes),
+      suggestion: nextFreeReturn(target, newPhases, existing, closeMinutes, current),
     };
   }
 

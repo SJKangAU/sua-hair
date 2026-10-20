@@ -13,6 +13,7 @@
 // the totalTime passed to useBookingAvailability changes, making previously
 // computed slots potentially invalid.
 
+import { describePhases, resolvePhases } from "../../lib/bookingPhases";
 import { useState } from "react";
 import type { FirestoreService } from "../../hooks/useServices";
 
@@ -221,9 +222,10 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                           }}
                         >
                           {service.totalTime} min
-                          {service.restTime > 0
-                            ? ` · ${service.activeTime} active + ${service.restTime} setting`
-                            : ""}
+                          {(() => {
+                            const detail = describePhases(resolvePhases(service));
+                            return detail ? ` · ${detail}` : "";
+                          })()}
                         </p>
                       </div>
 

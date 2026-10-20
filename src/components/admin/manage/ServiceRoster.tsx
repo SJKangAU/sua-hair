@@ -5,6 +5,14 @@
 // All three price tiers (director/senior/junior) are editable
 // ↑↓ controls set the order clients see services in the booking flow
 
+import PhasesEditor from "../PhasesEditor";
+import {
+  describePhases,
+  phaseTotals,
+  resolvePhases,
+  validateBookingPhases,
+} from "../../../lib/bookingPhases";
+import type { Phase } from "../../../types";
 import { useState } from "react";
 import { Scissors, Info, ChevronUp, ChevronDown } from "lucide-react";
 import {
@@ -44,8 +52,9 @@ const labelStyle: React.CSSProperties = {
 const EMPTY_FORM = {
   name: "",
   category: "",
-  activeTime: 30,
-  restTime: 0,
+  // The service's default phases (hands-on, processing, return...). Changing
+  // them affects NEW bookings only; every existing booking keeps its own.
+  phases: [{ type: "active", minutes: 30 }] as Phase[],
   priceDirector: 0,
   priceSenior: 0,
   priceJunior: 0,
@@ -71,15 +80,16 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
-  const totalTime = Number(form.activeTime) + Number(form.restTime);
+  const { activeTime: formActive, restTime: formRest, totalTime } = phaseTotals(
+    form.phases.filter((p) => Number.isFinite(p.minutes)),
+  );
 
   const handleEdit = (service: FirestoreService) => {
     setEditingId(service.id);
     setForm({
       name: service.name,
       category: service.category,
-      activeTime: service.activeTime,
-      restTime: service.restTime,
+      phases: resolvePhases(service),
       priceDirector: service.price.director,
       priceSenior: service.price.senior,
       priceJunior: service.price.junior,
@@ -96,6 +106,17 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.category) {
       onError("Name and category are required.");
+      return;
+    }
+
+    // Phases: at least one hands-on, 15-minute steps (a length left as it was
+    // is not re-judged, so older 20-minute services can still be saved)
+    const existingPhases = editingId
+      ? resolvePhases(services.find((s) => s.id === editingId) ?? { activeTime: 0, restTime: 0 })
+      : [];
+    const phaseProblem = validateBookingPhases(form.phases, 0, null, existingPhases);
+    if (phaseProblem) {
+      onError(phaseProblem);
       return;
     }
 
@@ -118,8 +139,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
         const updates: Record<string, unknown> = {
           name: form.name.trim(),
           category: form.category,
-          activeTime: Number(form.activeTime),
-          restTime: Number(form.restTime),
+          phases: form.phases,
+          activeTime: formActive,
+          restTime: formRest,
           totalTime,
           price: newPrice,
         };
@@ -148,8 +170,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
         await addDoc(collection(db, "services"), {
           name: form.name.trim(),
           category: form.category,
-          activeTime: Number(form.activeTime),
-          restTime: Number(form.restTime),
+          phases: form.phases,
+          activeTime: formActive,
+          restTime: formRest,
           totalTime,
           price: newPrice,
           status: "active",
@@ -368,46 +391,41 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               </select>
             </label>
 
-            <label style={labelStyle}>
-              Active Time (min) *
-              <input
-                style={inputStyle}
-                type="number"
-                min={5}
-                step={5}
-                value={form.activeTime}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    activeTime: Number(e.target.value),
-                  }))
-                }
-              />
-            </label>
-
-            <label style={labelStyle}>
-              Rest/Setting Time (min)
-              <input
-                style={inputStyle}
-                type="number"
-                min={0}
-                step={5}
-                value={form.restTime}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    restTime: Number(e.target.value),
-                  }))
-                }
-              />
-            </label>
           </div>
 
           <p
             style={{
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              margin: "0 0 0.5rem",
+            }}
+          >
+            Phases
+          </p>
+          <p
+            style={{
               fontSize: "0.8rem",
               color: "var(--admin-muted)",
-              margin: "-0.25rem 0 1rem",
+              margin: "0 0 0.75rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Hands-on time keeps the stylist busy; processing time frees them for
+            another client; a return phase after processing is hands-on again
+            and stays blocked. Changes apply to new bookings only.
+          </p>
+          <div style={{ marginBottom: "0.75rem" }}>
+            <PhasesEditor
+              phases={form.phases}
+              onChange={(phases) => setForm((prev) => ({ ...prev, phases }))}
+              structureEditable
+            />
+          </div>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--admin-muted)",
+              margin: "0 0 1rem",
             }}
           >
             Total appointment time: <strong>{totalTime} min</strong>
@@ -618,8 +636,10 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                         }}
                       >
                         {service.totalTime} min
-                        {service.restTime > 0 &&
-                          ` (${service.activeTime} active + ${service.restTime} setting)`}
+                        {(() => {
+                          const detail = describePhases(resolvePhases(service));
+                          return detail ? ` (${detail})` : "";
+                        })()}
                       </p>
                     </div>
 

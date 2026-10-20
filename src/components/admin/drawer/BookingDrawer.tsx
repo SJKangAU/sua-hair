@@ -23,16 +23,14 @@ import {
   CalendarClock,
   Check,
   MessageSquare,
-  Minus,
-  Plus,
   RotateCcw,
   Save,
-  SlidersHorizontal,
 } from "lucide-react";
 import Drawer from "../../ui/Drawer";
 import Badge from "../../ui/Badge";
 import StatusIcon from "../../ui/StatusIcon";
 import PhaseBar from "./PhaseBar";
+import PhasesEditor from "../PhasesEditor";
 import BookingHistory from "./BookingHistory";
 import RescheduleForm from "./RescheduleForm";
 import ConflictNotice from "../ConflictNotice";
@@ -40,8 +38,8 @@ import { useBookingContext } from "../../../context/BookingContext";
 import { useToastContext } from "../../../context/ToastContext";
 import useBookingActions from "../../../hooks/useBookingActions";
 import {
-  canResizeBooking,
-  computeReturnTime,
+  describeConflict,
+  getSalonHoursForDate,
   minutesToTimeString,
   timeStringToMinutes,
 } from "../../../lib/scheduling";
@@ -53,15 +51,12 @@ import {
   STATUS_LABELS,
 } from "../../../lib/bookingStatus";
 import { buildHistoryView } from "../../../lib/bookingHistory";
-import {
-  STEP_MINUTES,
-  stepPhases,
-  steppedPhase,
-  validatePhases,
-  type Phases,
-} from "../../../lib/phases";
+import { resolvePhases, segmentsFor } from "../../../lib/bookingPhases";
+import { planPhaseEdit } from "../../../lib/phaseEdit";
+import { BookingConflictError } from "../../../lib/bookingConflicts";
+import { useSalonData } from "../../../context/SalonDataContext";
 import { formatDisplayDate } from "../../../lib/dates";
-import type { Booking, BookingStatus } from "../../../types";
+import type { Booking, BookingStatus, Phase } from "../../../types";
 
 interface Props {
   bookingId: string;
@@ -188,14 +183,14 @@ const DrawerContent = ({
   booking: Booking;
   onClose: () => void;
 }) => {
-  const { bookings, updateTimes, updateNotes } = useBookingContext();
+  const { bookings, updatePhases, updateNotes } = useBookingContext();
+  const { salonSettings } = useSalonData();
   const { addToast } = useToastContext();
   const { changeStatus } = useBookingActions();
 
   // Drafts: null means "untouched — show what is saved"
   const [notesDraft, setNotesDraft] = useState<string | null>(null);
-  const [phasesDraft, setPhasesDraft] = useState<Phases | null>(null);
-  const [editingPhases, setEditingPhases] = useState(false);
+  const [phasesDraft, setPhasesDraft] = useState<Phase[] | null>(null);
   const [rescheduling, setRescheduling] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -212,45 +207,53 @@ const DrawerContent = ({
   const canEditPhases =
     isService && !released && booking.status !== "completed";
 
-  const savedPhases: Phases = {
-    activeTime: booking.activeTime,
-    restTime: booking.restTime,
-  };
+  // This booking's phases: its own, or derived from hands-on + processing for
+  // bookings made before phases existed
+  const savedPhases = resolvePhases(booking);
   const phases = phasesDraft ?? savedPhases;
   const notes = notesDraft ?? booking.notes ?? "";
 
   const phasesDirty =
     phasesDraft !== null &&
-    (phasesDraft.activeTime !== booking.activeTime ||
-      phasesDraft.restTime !== booking.restTime);
+    JSON.stringify(phasesDraft) !== JSON.stringify(savedPhases);
   const notesDirty =
     notesDraft !== null && notesDraft.trim() !== (booking.notes ?? "").trim();
   const dirty = phasesDirty || notesDirty;
 
-  const phaseError = phasesDirty ? validatePhases(phases) : null;
-  // Same overlap rule as the old edit-times flow: lengthening must not run
-  // into the stylist's next booking
-  const phaseClash =
-    phasesDirty &&
-    !phaseError &&
-    !canResizeBooking(
-      booking,
-      phases.activeTime,
-      phases.activeTime + phases.restTime,
-      bookings,
-    );
-
-  const totalTime = phases.activeTime + phases.restTime;
   const startMinutes = timeStringToMinutes(booking.time);
-  const endTime = minutesToTimeString(startMinutes + totalTime);
-  const returnTime =
-    phases.restTime > 0 ? computeReturnTime(booking.time, totalTime) : undefined;
-  const steppedKey = steppedPhase(phases);
+  const hours = getSalonHoursForDate(booking.date, salonSettings);
+  const closeMinutes = hours ? hours.close * 60 : null;
 
-  const nudge = (delta: number) => {
-    const next = stepPhases(phases, delta);
-    if (next) setPhasesDraft(next);
-  };
+  // Every change is checked against every busy block of every other booking for
+  // this stylist (the save repeats the check inside a transaction)
+  const plan = phasesDirty
+    ? planPhaseEdit(
+        {
+          id: booking.id,
+          stylistId: booking.stylistId,
+          date: booking.date,
+          time: booking.time,
+        },
+        phases,
+        bookings,
+        closeMinutes,
+        describeConflict,
+        savedPhases,
+      )
+    : null;
+  const phaseProblem = plan && !plan.ok ? plan : null;
+
+  // New end time, live as the numbers change
+  const lengths = phases.every((p) => Number.isFinite(p.minutes));
+  const shownPhases = lengths ? phases : savedPhases;
+  const shownSegments = segmentsFor(startMinutes, shownPhases);
+  const endTime = minutesToTimeString(
+    shownSegments.length > 0
+      ? shownSegments[shownSegments.length - 1].end
+      : startMinutes,
+  );
+  const firstRest = shownSegments.find((seg) => seg.type === "rest");
+  const returnTime = firstRest ? minutesToTimeString(firstRest.end) : undefined;
 
   const requestClose = () => {
     if (dirty) setConfirmDiscard(true);
@@ -261,15 +264,21 @@ const DrawerContent = ({
     setSaving(true);
     try {
       if (phasesDirty) {
-        await updateTimes(booking.id, phases.activeTime, phases.restTime);
+        await updatePhases(booking.id, phases);
       }
       if (notesDirty) await updateNotes(booking.id, notes);
       setPhasesDraft(null);
       setNotesDraft(null);
-      setEditingPhases(false);
       addToast("Changes saved", "success");
-    } catch {
-      addToast("Failed to save changes. Please try again.", "error");
+    } catch (err) {
+      // A collision found at save time (someone booked the time meanwhile):
+      // say who, and nothing was saved
+      addToast(
+        err instanceof BookingConflictError
+          ? err.message
+          : "Failed to save changes. Please try again.",
+        "error",
+      );
     }
     setSaving(false);
   };
@@ -281,7 +290,7 @@ const DrawerContent = ({
       ? booking.services.map((s) => ({ name: s.name, price: s.price }))
       : [{ name: booking.serviceName, price: booking.servicePrice }];
 
-  const canSave = dirty && !phaseError && !phaseClash && !saving;
+  const canSave = dirty && !phaseProblem && !saving;
 
   // ── Header ─────────────────────────────────────────────────────────────────
   const subtitle = (
@@ -567,22 +576,7 @@ const DrawerContent = ({
 
       {/* ── Service ── */}
       {isService ? (
-        <Section
-          title="Service"
-          action={
-            canEditPhases ? (
-              <button
-                className="bk-ghost"
-                onClick={() => setEditingPhases((v) => !v)}
-                aria-expanded={editingPhases}
-                style={outlinedButton}
-              >
-                <SlidersHorizontal size={15} strokeWidth={2} aria-hidden="true" />
-                Edit phases
-              </button>
-            ) : undefined
-          }
-        >
+        <Section title="Service">
           <div style={{ marginBottom: "1rem" }}>
             {services.map((s, i) => (
               <div
@@ -628,156 +622,60 @@ const DrawerContent = ({
             )}
           </div>
 
-          <PhaseBar
-            activeTime={phases.activeTime}
-            restTime={phases.restTime}
-            returnTime={returnTime}
-          />
+          <PhaseBar phases={shownPhases} returnTime={returnTime} />
 
           {canEditPhases && (
-            <>
-              <div
+            <div style={{ marginTop: "1rem" }}>
+              <p
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "0.75rem",
-                  marginTop: "1rem",
-                  padding: "0.5rem 0.75rem",
-                  background: "var(--surface-raised)",
-                  borderRadius: "8px",
+                  margin: "0 0 0.625rem",
+                  fontSize: "var(--text-xs)",
+                  color: "var(--ink-muted)",
+                  lineHeight: 1.5,
                 }}
               >
-                <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-soft)" }}>
-                  Adjust {steppedKey === "restTime" ? "processing" : "apply"} time
-                </span>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <button
-                    className="bk-ghost"
-                    onClick={() => nudge(-STEP_MINUTES)}
-                    disabled={!stepPhases(phases, -STEP_MINUTES)}
-                    aria-label={`Shorten ${
-                      steppedKey === "restTime" ? "processing" : "apply"
-                    } time by ${STEP_MINUTES} minutes`}
-                    style={{
-                      ...outlinedButton,
-                      padding: "0.35rem 0.5rem",
-                      background: "var(--surface)",
-                    }}
-                  >
-                    <Minus size={15} strokeWidth={2} aria-hidden="true" />
-                    {STEP_MINUTES}
-                  </button>
-                  <span
-                    style={{
-                      minWidth: "56px",
-                      textAlign: "center",
-                      fontSize: "var(--text-base)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {phases[steppedKey]} min
-                  </span>
-                  <button
-                    className="bk-ghost"
-                    onClick={() => nudge(STEP_MINUTES)}
-                    disabled={!stepPhases(phases, STEP_MINUTES)}
-                    aria-label={`Lengthen ${
-                      steppedKey === "restTime" ? "processing" : "apply"
-                    } time by ${STEP_MINUTES} minutes`}
-                    style={{
-                      ...outlinedButton,
-                      padding: "0.35rem 0.5rem",
-                      background: "var(--surface)",
-                    }}
-                  >
-                    <Plus size={15} strokeWidth={2} aria-hidden="true" />
-                    {STEP_MINUTES}
-                  </button>
-                </span>
-              </div>
+                Change this booking's phases in 15-minute steps. Everything after a
+                change moves with it. This booking only - the service in Manage →
+                Services is unchanged.
+              </p>
+              <PhasesEditor
+                phases={phases}
+                onChange={setPhasesDraft}
+                disabled={saving}
+              />
+              <p
+                data-testid="phase-end-time"
+                style={{
+                  margin: "0.75rem 0 0",
+                  fontSize: "var(--text-sm)",
+                  fontWeight: 600,
+                  color: "var(--ink)",
+                }}
+              >
+                {booking.time} – {endTime}
+                {returnTime ? ` · stylist back at ${returnTime}` : ""}
+              </p>
 
-              {editingPhases && (
-                <div
-                  style={{
-                    marginTop: "0.75rem",
-                    padding: "0.75rem",
-                    background: "var(--surface-raised)",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 0.625rem",
-                      fontSize: "var(--text-xs)",
-                      color: "var(--ink-muted)",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Overrides this booking only — the service template in
-                    Manage → Services is unchanged.
-                  </p>
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    {(
-                      [
-                        ["activeTime", "Apply (min)"],
-                        ["restTime", "Processing (min)"],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <label
-                        key={key}
-                        style={{
-                          flex: 1,
-                          fontSize: "var(--text-xs)",
-                          fontWeight: 600,
-                          color: "var(--ink-soft)",
-                        }}
-                      >
-                        {label}
-                        <input
-                          type="number"
-                          step={5}
-                          min={key === "activeTime" ? 5 : 0}
-                          value={Number.isFinite(phases[key]) ? phases[key] : ""}
-                          onChange={(e) =>
-                            setPhasesDraft({
-                              ...phases,
-                              [key]:
-                                e.target.value === ""
-                                  ? Number.NaN
-                                  : Number(e.target.value),
-                            })
-                          }
-                          style={{
-                            display: "block",
-                            width: "100%",
-                            marginTop: "0.25rem",
-                            padding: "0.45rem 0.55rem",
-                            border: "1px solid var(--border-strong)",
-                            borderRadius: "6px",
-                            fontSize: "var(--text-base)",
-                            background: "var(--surface)",
-                            color: "var(--ink)",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(phaseError || phaseClash) && (
+              {phaseProblem && (
                 <div style={{ marginTop: "0.75rem" }}>
-                  <ConflictNotice
-                    message={
-                      phaseError ??
-                      `That overlaps another booking for ${booking.stylistName}. Choose shorter times or move the other booking first.`
-                    }
-                  />
+                  <ConflictNotice message={phaseProblem.message} />
+                  {phaseProblem.reason === "conflict" && phaseProblem.suggestion && (
+                    <button
+                      type="button"
+                      className="bk-cta"
+                      onClick={() => setPhasesDraft(phaseProblem.suggestion)}
+                      style={{
+                        ...outlinedButton,
+                        background: "var(--ink)",
+                        color: "var(--surface)",
+                      }}
+                    >
+                      Move the return to the next free time
+                    </button>
+                  )}
                 </div>
               )}
-            </>
+            </div>
           )}
         </Section>
       ) : (

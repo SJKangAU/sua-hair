@@ -17,7 +17,8 @@
 
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
-import TimelineBlock from "./TimelineBlock";
+import TimelineBlock, { type RestBand } from "./TimelineBlock";
+import { effectivePhases, resolvePhases } from "../../../lib/bookingPhases";
 import QuickActionPopover from "./QuickActionPopover";
 import { blocksSlot, isOpenStatus } from "../../../lib/bookingStatus";
 import {
@@ -29,7 +30,7 @@ import {
   SNAP_MINUTES,
   clampStart,
   computeOpenSlots,
-  findGapWindow,
+  findRestGaps,
   formatClockShort,
   formatRangeShort,
   minutesToPx,
@@ -347,16 +348,32 @@ const TimelineColumn = ({
         const total = resizing
           ? Math.max(SNAP_MINUTES, resizing.end - start)
           : booking.totalTime;
-        const rest = resizing?.phases?.restTime ?? booking.restTime;
-
         const isService = SERVICE_TYPES.has(booking.bookingType);
-        const gap =
-          isService && booking.restTime > 0 && isOpenStatus(booking.status)
-            ? findGapWindow(
-                booking,
-                blocking.filter((o) => o.id !== booking.id),
-              )
-            : null;
+
+        // The booking's processing phases as bands on its block. While its
+        // bottom edge is being dragged, the (legacy-shaped) booking previews
+        // its new hands-on / processing split.
+        const shape = resizing?.phases
+          ? { ...booking, phases: undefined, ...resizing.phases, totalTime: total }
+          : booking;
+        const gaps = isService
+          ? findRestGaps(
+              shape,
+              blocking.filter((o) => o.id !== booking.id),
+            )
+          : [];
+        const bands: RestBand[] = gaps.map((g) => ({
+          topPx: (g.segment.start - start) * PX_PER_MIN,
+          heightPx: (g.segment.end - g.segment.start) * PX_PER_MIN,
+          startMinutes: g.segment.start,
+          endMinutes: g.segment.end,
+          gapOpen: g.gap !== null && isOpenStatus(booking.status),
+        }));
+        // A booking with hands-on time after its gap is edited per phase in its
+        // panel; the single bottom-edge handle only suits hands-on + processing
+        const legacyShaped = !effectivePhases(resolvePhases(booking)).some(
+          (p, i, all) => p.type === "active" && i > 0 && all[i - 1].type === "rest",
+        );
 
         return (
           <TimelineBlock
@@ -364,7 +381,7 @@ const TimelineColumn = ({
             booking={booking}
             topPx={minutesToPx(start, range)}
             heightPx={total * PX_PER_MIN}
-            restPx={Math.min(rest, total) * PX_PER_MIN}
+            rests={bands}
             isToday={isToday}
             isDragOrigin={
               drag?.kind === "move" && drag.bookingId === booking.id
@@ -372,12 +389,15 @@ const TimelineColumn = ({
             canMove={MOVABLE.has(booking.status)}
             canResize={
               isService &&
+              legacyShaped &&
               RESIZABLE.has(booking.status) &&
               booking.stylistId !== "any"
             }
-            gapOpen={gap !== null}
             onClick={handleBlockClick}
-            onGapClick={(b) => gap && onGapClick(b, gap)}
+            onGapClick={(b, i) => {
+              const g = gaps[i]?.gap;
+              if (g) onGapClick(b, g);
+            }}
             onDragStart={onDragStart}
             wasDragging={wasDragging}
           />

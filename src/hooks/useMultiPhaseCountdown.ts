@@ -8,6 +8,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { writeBookingNotifications } from "../lib/notifications";
 import { getCurrentMinutes, timeStringToMinutes } from "../lib/scheduling";
 import { isOpenStatus } from "../lib/bookingStatus";
+import { resolvePhases, segmentsFor } from "../lib/bookingPhases";
 import { todayString } from "../lib/dates";
 import type { Booking } from "../types";
 
@@ -52,10 +53,15 @@ const useMultiPhaseCountdown = (
         (b) =>
           b.date === selectedDate && b.restTime > 0 && isOpenStatus(b.status),
       )
-      .map((b) => {
-        const startMinutes = timeStringToMinutes(b.time);
-        const restStartMinutes = startMinutes + b.activeTime;
-        const restEndMinutes = startMinutes + b.totalTime;
+      .flatMap((b) =>
+        // one entry per processing phase (a booking can have a return after it)
+        segmentsFor(timeStringToMinutes(b.time), resolvePhases(b))
+          .filter((seg) => seg.type === "rest")
+          .map((seg) => ({ b, seg })),
+      )
+      .map(({ b, seg }) => {
+        const restStartMinutes = seg.start;
+        const restEndMinutes = seg.end;
         const remainingSeconds = (restEndMinutes - nowMinutes) * 60;
         return {
           bookingId: b.id,

@@ -8,7 +8,6 @@ import {
   combinePhases,
   effectivePhases,
   footprintFor,
-  footprintsConflict,
   phaseTotals,
   phasesFromLegacy,
   resolvePhases,
@@ -398,5 +397,15 @@ describe("customising one booking's phases", () => {
     expect(phases).toEqual([A(30), R(60)]);
     const r = plan(withPhaseMinutes(phases, 1, 75), [legacyBooking]);
     expect(r.ok && r.endsAt).toBe(h(11, 45));
+  });
+});
+
+describe("older bookings whose lengths are not multiples of 15", () => {
+  it("a phase left as it is is not re-judged, so one other phase can still be edited", () => {
+    const beardAndSet: Phase[] = [A(20), R(30)]; // 20-minute hands-on from an older service
+    expect(validateBookingPhases([A(20), R(45)], h(10), h(18), beardAndSet)).toBeNull();
+    expect(validateBookingPhases([A(20), R(45)], h(10), h(18))).toMatch(/15-minute steps/);
+    // ...but a phase that IS changed must follow the 15-minute step
+    expect(validateBookingPhases([A(25), R(30)], h(10), h(18), beardAndSet)).toMatch(/15-minute steps/);
   });
 });
