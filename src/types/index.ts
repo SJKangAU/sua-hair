@@ -84,6 +84,23 @@ export interface Service {
   price: TieredPrice;
 }
 
+// ── Phases (DEC-026) ───────────────────────────────────────────────────────────
+// A booking / service is an ordered list of phases. "active" = the stylist is
+// hands-on (busy); "rest" = the client is processing and the stylist is free.
+export type PhaseType = "active" | "rest";
+
+export interface Phase {
+  type: PhaseType;
+  minutes: number;
+}
+
+// A phase placed on the day: absolute minutes from midnight
+export interface PlacedSegment {
+  type: PhaseType;
+  start: number;
+  end: number;
+}
+
 // A single service as stored within a multi-service booking record
 export interface BookedService {
   id: string;
@@ -92,6 +109,8 @@ export interface BookedService {
   activeTime: number;
   restTime: number;
   totalTime: number;
+  // The service's phases when it has more than hands-on + processing
+  phases?: Phase[];
 }
 
 // Booking lifecycle — see src/lib/bookingStatus.ts for what each status
@@ -137,9 +156,19 @@ export interface Booking {
   serviceId: string;
   serviceName: string;
   servicePrice: number;
+  // Legacy totals - always kept consistent with `phases` (sum of the active
+  // phases / the rest phases / both), so every older view keeps working
   activeTime: number;
   restTime: number;
   totalTime: number;
+  // This booking's own resolved phases, in order (DEC-012 style: copied from the
+  // service at booking time, then customisable per booking without touching the
+  // service). Absent on bookings made before phases existed: derived from
+  // activeTime / restTime.
+  phases?: Phase[];
+  // The same phases placed on the day (absolute minutes), recomputed whenever the
+  // start or a phase changes
+  segments?: PlacedSegment[];
   date: string;
   time: string;
   notes?: string;
@@ -196,7 +225,15 @@ export type SlotBlock = Pick<
   | "totalTime"
   | "restTime"
   | "status"
->;
+> & {
+  // The booking's phases, when the record carries them (full Booking objects do)
+  phases?: Phase[];
+  // PII-free phase footprint (absent on projections written before phases):
+  // the BUSY blocks only (absolute minutes) and the minute the stylist is due
+  // back if the booking ends in processing
+  busy?: { start: number; end: number }[];
+  returnAt?: number | null;
+};
 
 export interface TimeBlock {
   stylistId: string;

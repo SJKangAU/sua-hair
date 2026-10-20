@@ -4,16 +4,26 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Handles all time slot logic including:
 //   - Generating available time slots for a given date
-//   - Checking stylist availability accounting for rest periods
+//   - Checking stylist availability from each booking's BUSY blocks (DEC-026):
+//     only hands-on (active) phases block the stylist; processing (rest) phases
+//     are gaps other bookings may use, and a booking that ends in processing
+//     keeps its return moment free (see bookingPhases.ts)
 //   - Blocking slots that are too soon or outside trading hours
-//   - Allowing bookings during rest periods if the service fits
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
 import { blocksSlot } from "./bookingStatus";
+import {
+  footprintFor,
+  footprintsConflict,
+  phasesFromLegacy,
+  resolvePhases,
+  type Footprint,
+} from "./bookingPhases";
 import type {
   Booking,
+  Phase,
   SlotBlock,
   TimeBlock,
   SalonSettings,
@@ -27,6 +37,13 @@ export const getCurrentMinutes = (): number => {
   const now = new Date();
   return now.getHours() * 60 + now.getMinutes();
 };
+
+// With allowBookingsDuringRestPeriod off, processing time blocks the stylist
+// like hands-on time does
+const applyRestPolicy = (fp: Footprint): Footprint =>
+  SALON_CONFIG.allowBookingsDuringRestPeriod
+    ? fp
+    : { ...fp, busy: [{ start: fp.start, end: fp.end }], returnAt: null };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -154,6 +171,29 @@ export const computeReturnTime = (
 ): string =>
   minutesToTimeString(timeStringToMinutes(startTime) + totalTimeMinutes);
 
+// What an existing booking (or its public slotBlocks projection) occupies:
+// the projection's own busy blocks if it has them, else the booking's phases,
+// else its legacy active / rest time - so records made before phases existed
+// behave exactly as they always did.
+export const slotFootprint = (
+  b: Pick<SlotBlock, "time" | "activeTime" | "restTime" | "totalTime"> & {
+    phases?: Phase[];
+    busy?: { start: number; end: number }[];
+    returnAt?: number | null;
+  },
+): Footprint => {
+  const start = timeStringToMinutes(b.time);
+  if (b.busy) {
+    return applyRestPolicy({
+      busy: b.busy,
+      returnAt: b.returnAt ?? null,
+      start,
+      end: start + b.totalTime,
+    });
+  }
+  return applyRestPolicy(footprintFor(start, resolvePhases(b)));
+};
+
 // Check whether overriding a single existing booking's active/rest time
 // (a per-session quick-edit, distinct from editing the Service template in
 // Manage → Services) would overlap another booking for the same stylist on
@@ -165,14 +205,20 @@ export const canResizeBooking = (
   newTotalTime: number,
   allBookings: SlotBlock[],
 ): boolean => {
-  const startMinutes = timeStringToMinutes(booking.time);
-  const otherBookings = allBookings.filter((b) => b.id !== booking.id);
-  const timeBlocks = buildTimeBlocks(
-    otherBookings,
-    booking.stylistId,
-    booking.date,
+  const candidate = applyRestPolicy(
+    footprintFor(
+      timeStringToMinutes(booking.time),
+      phasesFromLegacy(newActiveTime, newTotalTime - newActiveTime, newTotalTime),
+    ),
   );
-  return isSlotAvailable(startMinutes, newTotalTime, newActiveTime, timeBlocks);
+  return !allBookings.some(
+    (b) =>
+      b.id !== booking.id &&
+      b.stylistId === booking.stylistId &&
+      b.date === booking.date &&
+      blocksSlot(b.status) &&
+      footprintsConflict(candidate, slotFootprint(b)),
+  );
 };
 
 // ── Time Block Builder ─────────────────────────────────────────────────────────
@@ -213,26 +259,38 @@ export interface ConflictProbe {
   time: string;
   totalTime: number;
   activeTime: number;
+  // The booking's phases when it has more than hands-on + processing; else they
+  // are derived from activeTime / totalTime
+  phases?: Phase[];
   excludeId?: string;
 }
 
 // Returns the first existing booking that blocks the probe, or null if the
-// slot is free. Uses exactly the customer flow's rules (isSlotAvailable over
-// buildTimeBlocks): cancelled and no-show bookings never block, and when
-// allowBookingsDuringRestPeriod is on, a probe that fits entirely inside an
-// existing booking's rest window is allowed. Breaks and training blocks are
-// ordinary bookings with no rest time, so they block like any other.
+// slot is free. Uses exactly the customer flow's rules (busy blocks only, plus
+// the return point - see bookingPhases.ts): cancelled and no-show bookings never
+// block, and a probe whose hands-on blocks all miss the other booking's hands-on
+// blocks may use its processing gaps. Breaks and training blocks are ordinary
+// bookings with no rest time, so they block like any other.
 export const findBookingConflict = <T extends SlotBlock>(
   probe: ConflictProbe,
   existing: T[],
 ): T | null => {
-  const start = timeStringToMinutes(probe.time);
+  const candidate = applyRestPolicy(
+    footprintFor(
+      timeStringToMinutes(probe.time),
+      resolvePhases({
+        phases: probe.phases,
+        activeTime: probe.activeTime,
+        restTime: probe.totalTime - probe.activeTime,
+        totalTime: probe.totalTime,
+      }),
+    ),
+  );
   for (const b of existing) {
     if (b.id === probe.excludeId) continue;
-    const blocks = buildTimeBlocks([b], probe.stylistId, probe.date);
-    if (!isSlotAvailable(start, probe.totalTime, probe.activeTime, blocks)) {
-      return b;
-    }
+    if (b.stylistId !== probe.stylistId || b.date !== probe.date) continue;
+    if (!blocksSlot(b.status)) continue;
+    if (footprintsConflict(candidate, slotFootprint(b))) return b;
   }
   return null;
 };
@@ -270,39 +328,37 @@ export const buildBookingRef = (
 
 // ── Core Availability Check ───────────────────────────────────────────────────
 
-// Check if a stylist can take a new booking at a given start time
-// Accounts for rest periods — stylist CAN take a new client during rest
-// if the new service's totalTime fits within the remaining rest window
+// Check if a stylist can take a new booking at a given start time.
+// Only hands-on time blocks the stylist: a new client may use another booking's
+// processing gap as long as none of the new hands-on time touches the other's
+// hands-on time or straddles the moment the stylist is due back.
 export const isSlotAvailable = (
   slotStartMinutes: number,
   newServiceTotalTime: number,
   newServiceActiveTime: number,
   timeBlocks: TimeBlock[],
 ): boolean => {
-  const slotEndMinutes = slotStartMinutes + newServiceTotalTime;
-
-  for (const block of timeBlocks) {
-    const overlaps =
-      slotStartMinutes < block.totalEndMinutes &&
-      slotEndMinutes > block.startMinutes;
-
-    if (!overlaps) continue;
-
-    if (SALON_CONFIG.allowBookingsDuringRestPeriod && block.isRestPeriod) {
-      const stylistFreeFrom = block.activeEndMinutes;
-      const stylistFreeUntil = block.totalEndMinutes;
-      const newActiveEnd = slotStartMinutes + newServiceActiveTime;
-
-      const fitsInRestPeriod =
-        slotStartMinutes >= stylistFreeFrom && newActiveEnd <= stylistFreeUntil;
-
-      if (fitsInRestPeriod) continue;
-    }
-
-    return false;
-  }
-
-  return true;
+  const candidate = applyRestPolicy(
+    footprintFor(
+      slotStartMinutes,
+      phasesFromLegacy(
+        newServiceActiveTime,
+        newServiceTotalTime - newServiceActiveTime,
+        newServiceTotalTime,
+      ),
+    ),
+  );
+  return !timeBlocks.some((block) =>
+    footprintsConflict(
+      candidate,
+      applyRestPolicy({
+        busy: [{ start: block.startMinutes, end: block.activeEndMinutes }],
+        returnAt: block.isRestPeriod ? block.totalEndMinutes : null,
+        start: block.startMinutes,
+        end: block.totalEndMinutes,
+      }),
+    ),
+  );
 };
 
 // ── Main Slot Generator ───────────────────────────────────────────────────────
@@ -318,6 +374,9 @@ export const generateSlots = (
   existingBookings: SlotBlock[],
   settings?: SalonSettings,
   stylistHours?: StylistWeeklyHours,
+  // The booking's phases when it has more than hands-on + processing
+  // (DEC-026); otherwise derived from the two totals above
+  phases?: Phase[],
 ): { time: string; available: boolean; reason?: string }[] => {
   const slots: { time: string; available: boolean; reason?: string }[] = [];
 
@@ -331,7 +390,17 @@ export const generateSlots = (
   const openMinutes = open * 60;
   const closeMinutes = close * 60;
 
-  const timeBlocks = buildTimeBlocks(existingBookings, stylistId, date);
+  const existing = existingBookings
+    .filter(
+      (b) => b.stylistId === stylistId && b.date === date && blocksSlot(b.status),
+    )
+    .map((b) => slotFootprint(b));
+  const candidatePhases = resolvePhases({
+    phases,
+    activeTime: serviceActiveTime,
+    restTime: serviceTotalTime - serviceActiveTime,
+    totalTime: serviceTotalTime,
+  });
 
   const currentMinutes = getCurrentMinutes();
   const isToday = date === todayString();
@@ -349,12 +418,8 @@ export const generateSlots = (
       continue;
     }
 
-    const available = isSlotAvailable(
-      start,
-      serviceTotalTime,
-      serviceActiveTime,
-      timeBlocks,
-    );
+    const candidate = applyRestPolicy(footprintFor(start, candidatePhases));
+    const available = !existing.some((e) => footprintsConflict(candidate, e));
     slots.push({
       time: timeString,
       available,
