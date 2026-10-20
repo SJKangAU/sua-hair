@@ -10,7 +10,7 @@ Firestore collections used by the app (rules in `firestore.rules`):
 | `slotBlocks`              | **public**                    | staff; public create of the paired pending doc  | PII-free projection of `bookings` used for public availability |
 | `stylistDayLocks`         | staff                         | staff (`version`, `updatedAt` only; no delete)  | Per-stylist-per-day lock that serialises admin slot-claiming writes |
 | `customerLookups`         | staff only                    | staff; public may write its own record          | Per-phone identity + visit history                           |
-| `stylists`                | public                        | staff                                           | Roster, tiers, working hours                                 |
+| `stylists`                | public                        | staff; **`order` owner only**                   | Roster, tiers, working hours, display order                  |
 | `services`                | public                        | staff                                           | Catalogue, tiered prices, price history                      |
 | `salonSettings`           | public                        | staff                                           | Weekly opening hours + per-date overrides (`salonSettings/main`) |
 | `privateSettings`         | owner only                    | owner only                                      | Owner email-notification preference (`privateSettings/notifications`) |
@@ -92,9 +92,10 @@ ID = cleaned phone number. `{ name, lastVisit, visitCount }`. Updated whenever a
 | `instagram`    | `string?`                            | Handle without @                                      |
 | `photoUrl`     | `string?`                            | Direct image URL                                      |
 | `workingHours` | `StylistWeeklyHours?`                | Per weekday `{ isWorking, start, end }`; absent = full salon hours |
+| `order`        | `number?`                            | Owner-chosen display position (0, 1, 2, ...). Used by the booking page, the timeline and Manage. **Missing = after the ordered stylists**, in the query's order (start date), so existing records keep working |
 | `createdAt`    | `string`                             | ISO timestamp                                         |
 
-**Design decision:** inactive flag instead of delete (DEC-002).
+**Design decision:** inactive flag instead of delete (DEC-002). Display order is a number on each stylist (DEC-025), not a separate ordering document: a roster of five is renumbered 0..n-1 in one batch, and the public booking page already reads these documents. **Rules:** anyone can read it; creating or changing `order` needs the owner role (`users/{uid}.role == 'owner'`) and a numeric value; all other staff writes to a stylist are unchanged.
 
 ## Collection: `services`
 

@@ -9,10 +9,19 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Steps:**
 
 1. **Services** — pick one or more services (grouped by category). Each shows its duration and a price ("from $X" until a stylist is chosen). Totals of active and rest time are summed.
-2. **Date & Stylist** — pick a stylist (or "Any Available Stylist"), a date from the month calendar and a time. The next available date/time is pre-selected, but a date the customer picks is never overwritten. Times are grouped Morning / Afternoon; unavailable times are shown greyed out. If the whole day is full, the customer is offered the waitlist (FR-010). **Review Booking** opens a summary sheet (services, stylist, date, time, duration, estimated total) → **Confirm & Continue**.
+2. **Date & Stylist** — pick a stylist (or "Any Available Stylist", listed in the order the owner set — FR-008), a date from the month calendar and a time. The next available date/time is pre-selected, but a date the customer picks is never overwritten. The time is chosen on a **day grid with a hover preview** (FR-001a). If the whole day is full, the customer is offered the waitlist (FR-010). **Review Booking** opens a summary sheet (services, stylist, date, time, duration, estimated total) → **Confirm & Continue**.
 3. **Your Details** — mobile number (Australian, `^04\d{8}$`), full name (letters and spaces, ≥ 2 characters), email (optional, for confirmation and reminder emails), notes (optional), and a **required privacy consent** tick.
 4. **Confirm Booking** → saved with `status: pending`, together with its PII-free `slotBlocks` projection and the customer's visit record, in one atomic write. A confirmation screen shows the summary with Add-to-Calendar links (Google, Apple/Outlook `.ics`).
 5. A confirmation email is sent if an email address was given (FR-012).
+
+**Day grid with hover preview (FR-001a):** the chosen date is shown as a calendar column (opening hours, 15-minute rows).
+
+- **Hover (mouse):** over an available start, the exact block the booking would occupy is highlighted — from the hovered start to start + the booking's total time — with a label such as "11:30 am – 1:15 pm". The block shows the hands-on time solid and the processing (rest) time hatched.
+- **Which positions are bookable:** the display snaps to 15 minutes, but a booking can only *start* where the scheduling engine offers a slot — the existing 30-minute grid (DEC-024). A :15 / :45 position shows "Starts on the hour or half hour" and no block. A start the engine rejects (clash, too soon, would finish after closing) is muted with "Not available" and no block. A start inside another booking's rest window **is** highlighted when the new service's hands-on time fits (existing rule, unchanged).
+- **Click** chooses the time; the flow continues exactly as before (pending booking, same validation).
+- **Touch:** there is no hover, so a tap previews the block with a **Select** button; Select chooses it. A tap on a :15 / :45 row previews the half-hour start just before it.
+- **Keyboard:** the grid is one listbox; Up / Down move 15 minutes, PageUp / PageDown an hour, Home / End the first / last row, Enter or Space chooses; the position under the cursor is announced.
+- Motion is switched off under `prefers-reduced-motion`; the grid has a visible focus ring; label and shading colours meet WCAG AA contrast.
 
 **Not in the flow:** the form does **not** look the customer up by phone number or greet returning customers. Customer identity is staff-readable only (DEC-014).
 
@@ -26,6 +35,11 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] A date the customer chooses is not replaced by the auto-suggested one (TC-001 — failed before fix D6)
 - [x] Slots inside another booking's rest period are available if the new service fits (TC-006)
 - [x] Booking cannot be submitted without consent (unit/rules: `consentGivenAt` required by the public create rule)
+- [x] Hover highlights the exact range (start to start + total time), with solid / hatched phases (TC-038; `unit` slotPreview)
+- [x] An unavailable area, a :15 / :45 position, or a block that does not fit shows no highlight (TC-039; `unit` slotPreview)
+- [x] A block inside another booking's rest window is highlighted if it fits, not if it does not (TC-040; `unit`)
+- [x] Clicking a hovered time chooses it and the booking is saved pending (TC-041)
+- [x] Keyboard, touch and reduced-motion behave as described (TC-042, TC-043, TC-044; `unit` previewContrast)
 
 ---
 
@@ -168,7 +182,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 **Description:** Add, edit, deactivate and reactivate stylists and services, and set hours, without code.
 
-**Stylists:** add (name, role, level, Instagram, trainer flag), edit, deactivate (hides from booking, keeps history; asks to confirm), reactivate.
+**Stylists:** add (name, role, level, Instagram, trainer flag), edit, deactivate (hides from booking, keeps history; asks to confirm), reactivate. **Reorder (owner only):** drag a row by its handle, or use Move up / Move down (for keyboard and phones), to set the order stylists appear in on the customer booking page and the admin timeline. The order is saved as `stylists/{id}.order`; only `order` is written; the change is optimistic and rolls back with an error toast if saving fails. A stylist with no saved `order` (existing data, or added later) follows the ordered ones in the previous order, so nothing breaks before the owner reorders. Only the owner's account can write `order` (Firestore rules).
 **Services:** add (name, category, active time, rest time, three-tier price), edit, deactivate / reactivate, reorder (arrows set the order customers see). A price change keeps the previous price in `priceHistory`.
 **Opening hours (owner):** weekly schedule per day, and date overrides (closed, or custom hours).
 **Stylist working hours:** per stylist per weekday.
@@ -181,6 +195,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] A price change is reflected in the booking form and the old price is logged with a timestamp (TC-031)
 - [x] A deactivated service leaves the booking form (TC-032)
 - [x] A closed date override makes the date unbookable (TC-036)
+- [x] Reordering stylists persists after reload and shows on the booking page and the timeline (TC-045); drag, buttons and keyboard all work (TC-046); a failed save is rolled back with an error toast (TC-047); missing `order` falls back (TC-048; `unit` stylistOrder); only the owner can write `order` (`rules`)
 
 ---
 

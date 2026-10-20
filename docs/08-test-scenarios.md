@@ -103,3 +103,33 @@ Conventions: "the salon" is open Tuesday–Sunday 10:00–18:00 and closed Monda
 | ID    | Scenario | Steps | Expected Result | Automated by |
 | ----- | -------- | ----- | --------------- | ------------ |
 | SMOKE | Client books → owner approves → overlapping walk-in blocked | A client books online. The owner approves it from Approvals. An admin tries a walk-in overlapping it | Booking pending → confirmed; the walk-in is refused with the clashing booking named; a walk-in straight after it ends is accepted | 04-smoke; also `test:smoke` against real rules |
+
+---
+
+## Booking page — hover preview (day grid)
+
+Steve has a Colour (30 hands-on + 30 processing) at 10:00 and a Ladies Cut 12:00–1:00; Yuto has no bookings. Specs: `e2e/06-hover-preview.spec.ts`.
+
+| ID     | Scenario                                   | Steps                                                                                                  | Expected Result                                                                                                                                                         | Automated by      |
+| ------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| TC-038 | Hover highlights the exact block           | Choose Ladies Cut (60 min) and Yuto, pick a date, hover 2:00 PM. Then Balayage (60 hands-on + 45 processing), hover 11:30 AM | Highlight runs 2:00 – 3:00 pm; for Balayage 11:30 am – 1:15 pm, 105 minutes tall, a solid 60-minute part then a hatched 45-minute part. A service with no processing time has no hatched part | 06-hover-preview  |
+| TC-039 | Unavailable / off-grid areas              | With Steve, hover 11:30, 12:00 and 12:30 for a 60-minute service; hover a :15 / :45 row                | Muted "Not available" (or "Starts on the hour or half hour" for :15 / :45), no highlight; clicking chooses nothing. Hovering anywhere inside a start's 15-minute row gives the same block | 06-hover-preview  |
+| TC-040 | Inside another booking's rest window       | Steve's colour is processing 10:30–11:00. Hover 10:30 for Beard Trim (20 min), then for Men's Cut (45 min) | Beard Trim: highlighted 10:30 – 10:50 am. Men's Cut: no highlight (its hands-on time does not fit). 10:00 stays unavailable                                              | 06-hover-preview  |
+| TC-041 | Click selects and the flow continues       | Hover and click 2:00 PM → Review Booking → Confirm & Continue → details → consent → Confirm Booking   | The time shows as chosen (block stays drawn); the booking is saved **pending** for 2:00 PM with the right duration                                                      | 06-hover-preview  |
+| TC-042 | Keyboard                                   | Focus the grid; Down once; Enter; Down; Enter                                                          | The cursor moves 15 minutes per press; Enter on a :15 position chooses nothing; Enter on 10:30 chooses it; a focus ring is visible; the position is announced           | 06-hover-preview  |
+| TC-043 | Touch                                      | On a phone-sized touch screen, tap 3:00 PM; tap Select. Tap a :15 row; tap an unavailable time         | The tap previews the block with a Select button and does not choose; Select chooses. A :15 tap previews the start before it. An unavailable tap previews nothing          | 06-hover-preview  |
+| TC-044 | Reduced motion                             | Turn on reduced motion; hover a start                                                                  | The block appears without a transition (transition-duration 0s); with motion allowed it animates                                                                         | 06-hover-preview  |
+
+---
+
+## Admin — Manage tab: stylist order
+
+Specs: `e2e/07-stylist-order.spec.ts`; rules in `tests/firestore/rules.test.ts`.
+
+| ID     | Scenario                         | Steps                                                                                                   | Expected Result                                                                                                                                  | Automated by      |
+| ------ | -------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| TC-045 | Reorder persists and shows everywhere | Manage → Move Steve up. Reload. Open the booking page and the Today timeline                       | New order saved (`order` 0..n-1; nothing else on any stylist changes), shown after reload, on the customer's stylist list and in the timeline columns | 07-stylist-order  |
+| TC-046 | Drag, buttons and keyboard       | Drag Yuto's handle to the top; Move Elly down; focus Harry's handle, Space, Up, Space                    | Each reorders and persists. The first and last rows' Move up / Move down are disabled                                                           | 07-stylist-order  |
+| TC-047 | Failed save rolls back           | Make the write fail, then Move Harry up                                                                  | Error toast "Couldn't save the new order"; the list returns to its previous order; nothing is written                                           | 07-stylist-order  |
+| TC-048 | Missing `order` falls back       | Start with stylists that have no `order`; add a stylist with an old start date                           | Existing order is unchanged until the owner reorders; a stylist with no `order` is listed after the ordered ones                                | 07-stylist-order, `unit` stylistOrder |
+| TC-049 | Only the owner can write order   | As a stylist account, as an anonymous visitor, as the owner: write `order`                              | Owner succeeds; stylist account and anonymous fail; anyone can read it; other staff edits to a stylist still work                                | `rules` suite     |
