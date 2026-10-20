@@ -10,13 +10,14 @@
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import { cleanPhone } from "./validation";
+import { namePrefixRange } from "./nameRange";
 import type { Booking } from "../types";
 
 export const fetchBookingsForClientQuery = async (
   q: string,
 ): Promise<Booking[]> => {
   const bookingsRef = collection(db, "bookings");
-  const lower = q.toLowerCase();
+  const { from: lower, to: nameEnd } = namePrefixRange(q);
   const digits = cleanPhone(q);
   const looksLikePhone = /^\d{4,}$/.test(digits);
 
@@ -26,7 +27,7 @@ export const fetchBookingsForClientQuery = async (
       query(
         bookingsRef,
         where("customerNameLower", ">=", lower),
-        where("customerNameLower", "<", lower + ""),
+        where("customerNameLower", "<", nameEnd),
         limit(50),
       ),
     ),

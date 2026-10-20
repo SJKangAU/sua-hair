@@ -1,0 +1,58 @@
+# D8 (found by the browser run): searching the Clients tab by NAME returned nothing
+# Cause: upper bound of the prefix range was 'lower + ""' - the invisible U+F8FF had been dropped when the query moved (dd4c2c4). Phone search still worked.
+# Run against the code BEFORE the fix (npx playwright test ... 03-admin-pages)
+i  Running script: npx playwright test -c e2e/playwright.config.ts 03-admin --timeout=40000
+Running 19 tests using 1 worker
+TC-016 filter applied after 351ms
+  ok  1 e2e\03-admin-pages.spec.ts:56:1 › TC-016 search by name filters the list within 300ms (814ms)
+  ok  2 e2e\03-admin-pages.spec.ts:72:1 › TC-017 search by phone number (663ms)
+  ok  3 e2e\03-admin-pages.spec.ts:79:1 › TC-018 filter by stylist (340ms)
+  ok  4 e2e\03-admin-pages.spec.ts:87:1 › D4 the list is ordered upcoming-first (soonest day first) (316ms)
+  ok  5 e2e\03-admin-pages.spec.ts:104:1 › TC-019 bulk confirm: all selected pending bookings become confirmed, with ONE summary toast (D4) (915ms)
+TC-020 CSV header: "Date","Time","Customer Name","Phone","Stylist","Service","Price","Duration","Status","Type","Notes"
+  ok  6 e2e\03-admin-pages.spec.ts:127:1 › TC-020 Export CSV downloads a file with the visible bookings (500ms)
+  x   7 e2e\03-admin-pages.spec.ts:148:1 › TC-021 client search shows visit count and total spend (10.3s)
+  -   8 e2e\03-admin-pages.spec.ts:161:1 › TC-022 View history expands the booking history, newest first
+  -   9 e2e\03-admin-pages.spec.ts:173:1 › TC-023 Book again pre-fills the create form with the client's name and phone
+  -  10 e2e\03-admin-pages.spec.ts:182:1 › TC-024 a cancelled booking is not counted in total spend
+  -  11 e2e\03-admin-pages.spec.ts:192:1 › TC-025 create a training session: appears under upcoming sessions with a toast
+  -  12 e2e\03-admin-pages.spec.ts:210:1 › TC-026 a training session does not appear on the main timeline
+  -  13 e2e\03-admin-pages.spec.ts:218:1 › TC-027 a session dated yesterday appears under Past Sessions
+  -  14 e2e\03-admin-pages.spec.ts:256:1 › TC-028 a new stylist appears in the roster and the customer booking form
+  -  15 e2e\03-admin-pages.spec.ts:267:1 › TC-029 deactivating a stylist hides them from customers; their bookings remain
+  -  16 e2e\03-admin-pages.spec.ts:285:1 › TC-030 reactivating a stylist brings them back to the booking form
+  -  17 e2e\03-admin-pages.spec.ts:292:1 › TC-031 editing a service price updates the booking form and logs the old price
+  -  18 e2e\03-admin-pages.spec.ts:323:1 › TC-032 deactivating a service removes it from the booking form
+  -  19 e2e\03-admin-pages.spec.ts:335:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics
+  1) e2e\03-admin-pages.spec.ts:148:1 › TC-021 client search shows visit count and total spend ─────
+    Error: expect(locator).toBeVisible() failed
+    Locator: getByText('Mia Multi')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+    Call log:
+      - Expect "toBeVisible" getByText('Mia Multi') with timeout 10000ms
+      - waiting for getByText('Mia Multi')
+      149 |   await page.goto("/admin/clients");
+      150 |   await page.getByPlaceholder("Search by name or mobile number...").fill("Mia");
+    > 151 |   await expect(page.getByText("Mia Multi")).toBeVisible();
+          |                                             ^
+      152 |   const card = page.locator("div", { has: page.getByText("Mia Multi", { exact: true }) }).last();
+      153 |   // 2 counted visits (completed + confirmed); the cancelled one does not count
+      154 |   await expect(page.getByText("visits")).toBeVisible();
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\03-admin-pages.spec.ts:151:45
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\03-admin-pages-TC-021-clie-757fb-visit-count-and-total-spend\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\03-admin-pages-TC-021-clie-757fb-visit-count-and-total-spend\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────
+    Error Context: test-results\03-admin-pages-TC-021-clie-757fb-visit-count-and-total-spend\error-context.md
+    Error Context: test-results\03-admin-pages-TC-021-clie-757fb-visit-count-and-total-spend\error-context.md
+  1 failed
+    e2e\03-admin-pages.spec.ts:148:1 › TC-021 client search shows visit count and total spend ──────
+  12 did not run
+  6 passed (21.9s)
+!  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator

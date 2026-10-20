@@ -21,6 +21,9 @@ import {
   getDoc,
   getDocs,
   increment,
+  limit,
+  query,
+  where,
   writeBatch,
   type Firestore,
 } from "firebase/firestore";
@@ -31,6 +34,7 @@ import {
 import { BookingConflictError } from "../../src/lib/bookingConflicts";
 import { buildStatusPatch } from "../../src/lib/statusPatch";
 import { toSlotBlock } from "../../src/lib/slotBlockData";
+import { namePrefixRange } from "../../src/lib/nameRange";
 import { generateSlots } from "../../src/lib/scheduling";
 import type { Booking, SlotBlock } from "../../src/types";
 import { createTestEnv, validPublicBooking } from "./testEnv";
@@ -165,5 +169,28 @@ describe("smoke: client books -> owner approves -> overlapping walk-in is blocke
     await assertFails(
       writeStatusChange(anonDb(testEnv), previous, "confirmed", patch),
     );
+  });
+});
+
+describe("staff can find a client by typing the start of their name", () => {
+  it("the same range query the Clients tab runs returns matching bookings", async () => {
+    await clientBooks(anonDb(testEnv)); // customerNameLower is "jane customer"
+    const owner = staffDb(testEnv, "owner-uid");
+    const search = async (typed: string) => {
+      const { from, to } = namePrefixRange(typed);
+      const snap = await getDocs(
+        query(
+          collection(owner, "bookings"),
+          where("customerNameLower", ">=", from),
+          where("customerNameLower", "<", to),
+          limit(50),
+        ),
+      );
+      return snap.size;
+    };
+    expect(await search("jan")).toBe(1);
+    expect(await search("Jane Cus")).toBe(1);
+    expect(await search("JANE")).toBe(1);
+    expect(await search("zzz")).toBe(0);
   });
 });
