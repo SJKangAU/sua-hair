@@ -1,0 +1,19 @@
+# D7 (found by the browser run): /admin/analytics bounced the owner to /admin/today on direct open / refresh
+# Run against the code BEFORE the fix (AdminRoutes.tsx at 951b008~1)
+i  Running script: npx playwright test -c e2e/playwright.config.ts 03-admin --timeout=30000 -g D7
+Running 1 test using 1 worker
+  x  1 e2e\03-admin-pages.spec.ts:343:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics (11.8s)
+  1) e2e\03-admin-pages.spec.ts:343:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics 
+    Error: expect(page).toHaveURL(expected) failed
+    Expected pattern: /\/admin\/analytics$/
+    Received string:  "http://127.0.0.1:5174/admin/today"
+    Timeout: 10000ms
+    Call log:
+      - Expect "toHaveURL" with timeout 10000ms
+        23 × locator resolved to <html lang="en">…</html>
+           - unexpected value "http://127.0.0.1:5174/admin/today"
+      344 |   await page.goto("/admin/analytics");
+      345 |   await page.waitForTimeout(1500);
+    > 346 |   await expect(page).toHaveURL(/\/admin\/analytics$/);
+          |                      ^
+      347 |   await page.reload();
