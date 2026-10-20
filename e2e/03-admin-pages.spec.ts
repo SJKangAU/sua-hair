@@ -302,10 +302,11 @@ test("TC-031 editing a service price updates the booking form and logs the old p
   const row = page.locator("div", { has: page.getByText("Men's Cut", { exact: true }) }).filter({ has: page.getByRole("button", { name: "Edit" }) }).last();
   await row.getByRole("button", { name: "Edit" }).first().click();
   const nums = page.locator('input[type="number"]');
-  // order: active, rest, director, senior, junior
-  await nums.nth(2).fill("80");
-  await nums.nth(3).fill("70");
-  await nums.nth(4).fill("60");
+  // The phase lengths come first (one per phase), then director, senior, junior
+  const count = await nums.count();
+  await nums.nth(count - 3).fill("80");
+  await nums.nth(count - 2).fill("70");
+  await nums.nth(count - 1).fill("60");
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect.poll(async () => {
     const env = await connectEnv();
