@@ -4,9 +4,10 @@
 // Uses getDocs (not onSnapshot) — stylist changes are infrequent
 // refetch() clears cache and re-fetches from Firestore
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { sortByOrder } from "../lib/stylistOrder";
 
 export interface FirestoreStylist {
   id: string;
@@ -18,6 +19,9 @@ export interface FirestoreStylist {
   photoUrl?: string;
   startDate: string;
   isTrainer: boolean;
+  // Owner-chosen display order (Manage -> Stylists). Missing on older records:
+  // those follow the ordered ones in their original (start date) order.
+  order?: number;
   createdAt: string;
   workingHours?: import("../types").StylistWeeklyHours;
 }
@@ -109,7 +113,11 @@ const useStylists = (activeOnly = true): UseStylists => {
     fetch();
   }, [activeOnly, trigger]);
 
-  return { stylists, loading, error, refetch };
+  // Everything that lists stylists (booking page, timeline, Manage) gets them
+  // in the owner's saved order
+  const ordered = useMemo(() => sortByOrder(stylists), [stylists]);
+
+  return { stylists: ordered, loading, error, refetch };
 };
 
 export default useStylists;

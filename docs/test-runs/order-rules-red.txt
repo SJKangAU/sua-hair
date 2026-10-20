@@ -1,0 +1,5 @@
+# stylists.order rules tests against the OLD rule (any staff may write stylists) - expected to fail
+ FAIL  tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > the owner cannot write a non-numeric order
+ FAIL  tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot add or change order
+ FAIL  tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot remove order by overwriting the document without it
+      Tests  3 failed | 46 passed (49)

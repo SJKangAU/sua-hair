@@ -132,9 +132,19 @@ service cloud.firestore {
     // ── Reference data used by the public booking flow ─────────────────
     // Publicly readable so the calendar can show stylists/services/hours;
     // writes are staff-only (Manage → Stylists/Services/Hours screens).
+    //
+    // `order` (the owner-chosen display order of stylists, set from Manage ->
+    // Stylists) is the one field only the owner may write: any other staff
+    // account can still edit a stylist but cannot add or change `order`.
     match /stylists/{stylistId} {
       allow read: if true;
-      allow write: if isStaff();
+      allow create: if isStaff()
+        && (!('order' in request.resource.data)
+            || (isOwner() && request.resource.data.order is number));
+      allow update: if isStaff()
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['order'])
+            || (isOwner() && request.resource.data.order is number));
+      allow delete: if isStaff();
     }
 
     match /services/{serviceId} {

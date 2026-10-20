@@ -70,6 +70,7 @@ export interface Stylist {
   instagram?: string;
   startDate: string;
   isTrainer: boolean;
+  order?: number; // owner-chosen display order; missing = after the ordered ones
   workingHours?: StylistWeeklyHours; // undefined = uses full salon hours
   createdAt: string;
 }

@@ -3,18 +3,170 @@
 // Writes directly to Firestore stylists collection
 // Uses useSalonData context — refetchStylists() after mutations
 // Inactive stylists are shown greyed out and can be reactivated
+//
+// Owner only: drag a row by its handle (or use Move up / Move down, for
+// keyboard and phone) to set the order stylists appear in on the booking page
+// and the timeline. The order is saved as stylists/{id}.order; the update is
+// optimistic and rolls back with an error toast if the write fails.
 
-import { useState } from "react";
-import { Users } from "lucide-react";
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { useState, type ReactNode } from "react";
+import { ArrowDown, ArrowUp, GripVertical, Users } from "lucide-react";
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  writeBatch,
+} from "firebase/firestore";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { db } from "../../../lib/firebase";
+import { useSalonData } from "../../../context/SalonDataContext";
 import useStylists from "../../../hooks/useStylists";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
+import { moveItem, orderUpdates } from "../../../lib/stylistOrder";
 
 interface Props {
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
+  isOwner?: boolean;
 }
+
+const moveButtonStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 30,
+  height: 30,
+  padding: 0,
+  background: "none",
+  border: "1px solid var(--admin-input-border)",
+  borderRadius: 5,
+  color: "var(--ink)",
+  cursor: "pointer",
+};
+
+interface RowProps {
+  stylist: FirestoreStylist;
+  index: number;
+  count: number;
+  canReorder: boolean;
+  onMove: (to: number) => void;
+  children: ReactNode;
+}
+
+// One roster row: drag handle, the row's own content, Move up / Move down.
+// Module scope (not inside StylistRoster) so its identity is stable and a drag
+// does not remount every row.
+const SortableRow = ({
+  stylist,
+  index,
+  count,
+  canReorder,
+  onMove,
+  children,
+}: RowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: stylist.id, disabled: !canReorder });
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-testid={`stylist-row-${stylist.id}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        padding: "0.875rem 1.5rem",
+        borderBottom: "1px solid var(--admin-row-border)",
+        opacity: stylist.status === "inactive" ? 0.5 : 1,
+        background: isDragging ? "var(--surface-raised)" : "var(--surface)",
+        boxShadow: isDragging ? "var(--shadow-md)" : "none",
+        position: "relative",
+        zIndex: isDragging ? 2 : 0,
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
+      {canReorder && (
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          aria-label={`Drag to reorder ${stylist.name}`}
+          style={{
+            ...moveButtonStyle,
+            border: "none",
+            color: "var(--ink-muted)",
+            cursor: isDragging ? "grabbing" : "grab",
+            touchAction: "none",
+          }}
+        >
+          <GripVertical size={18} aria-hidden="true" />
+        </button>
+      )}
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "0.75rem",
+        }}
+      >
+        {children}
+      </div>
+      {canReorder && (
+        <div style={{ display: "flex", gap: "0.25rem" }}>
+          <button
+            type="button"
+            onClick={() => onMove(index - 1)}
+            disabled={index === 0}
+            aria-label={`Move ${stylist.name} up`}
+            style={{ ...moveButtonStyle, opacity: index === 0 ? 0.35 : 1 }}
+          >
+            <ArrowUp size={15} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMove(index + 1)}
+            disabled={index === count - 1}
+            aria-label={`Move ${stylist.name} down`}
+            style={{
+              ...moveButtonStyle,
+              opacity: index === count - 1 ? 0.35 : 1,
+            }}
+          >
+            <ArrowDown size={15} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -43,7 +195,7 @@ const EMPTY_FORM = {
   isTrainer: false,
 };
 
-const StylistRoster = ({ onSuccess, onError }: Props) => {
+const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
   const {
     stylists,
     loading: stylistsLoading,
@@ -53,6 +205,62 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const { refetchStylists: refetchSalonStylists } = useSalonData();
+
+  // The order shown while a reorder is being saved. `base` is the stylist list
+  // it was made from: once the list is refetched it is a different array, the
+  // override is ignored, and the saved order is shown.
+  const [pendingOrder, setPendingOrder] = useState<{
+    base: FirestoreStylist[];
+    ids: string[];
+  } | null>(null);
+  const shown: FirestoreStylist[] =
+    pendingOrder && pendingOrder.base === stylists
+      ? pendingOrder.ids
+          .map((id) => stylists.find((s) => s.id === id))
+          .filter((s): s is FirestoreStylist => Boolean(s))
+      : stylists;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const saveOrder = async (nextIds: string[]) => {
+    const next = nextIds
+      .map((id) => stylists.find((s) => s.id === id))
+      .filter((s): s is FirestoreStylist => Boolean(s));
+    const updates = orderUpdates(next);
+    if (updates.length === 0) return;
+
+    setPendingOrder({ base: stylists, ids: nextIds }); // optimistic
+    try {
+      const batch = writeBatch(db);
+      for (const u of updates) {
+        // Only `order` is written - nothing else about a stylist changes
+        batch.update(doc(db, "stylists", u.id), { order: u.order });
+      }
+      await batch.commit();
+      refetchStylists();
+      refetchSalonStylists();
+    } catch (err) {
+      console.error("Error saving stylist order:", err);
+      setPendingOrder(null); // roll back to the saved order
+      onError("Couldn't save the new order. It has been put back.");
+    }
+  };
+
+  const moveStylist = (from: number, to: number) =>
+    saveOrder(moveItem(shown, from, to).map((s) => s.id));
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    if (!e.over || e.active.id === e.over.id) return;
+    const from = shown.findIndex((s) => s.id === e.active.id);
+    const to = shown.findIndex((s) => s.id === e.over?.id);
+    if (from >= 0 && to >= 0) void moveStylist(from, to);
+  };
 
   // Load existing stylist data into form for editing
   const handleEdit = (stylist: FirestoreStylist) => {
@@ -355,18 +563,24 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
           Loading stylists...
         </p>
       ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={shown.map((s) => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
         <div>
-          {stylists.map((stylist) => (
-            <div
+          {shown.map((stylist, index) => (
+            <SortableRow
               key={stylist.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "0.875rem 1.5rem",
-                borderBottom: "1px solid var(--admin-row-border)",
-                opacity: stylist.status === "inactive" ? 0.5 : 1,
-              }}
+              stylist={stylist}
+              index={index}
+              count={shown.length}
+              canReorder={isOwner}
+              onMove={(to) => void moveStylist(index, to)}
             >
               <div>
                 <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
@@ -434,9 +648,11 @@ const StylistRoster = ({ onSuccess, onError }: Props) => {
                   {stylist.status === "active" ? "Deactivate" : "Reactivate"}
                 </button>
               </div>
-            </div>
+            </SortableRow>
           ))}
         </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

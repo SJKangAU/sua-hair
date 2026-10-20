@@ -28,6 +28,7 @@ const ManagePage = ({ isOwner }: Props) => {
       </div>
 
       <StylistRoster
+        isOwner={isOwner}
         onSuccess={(msg) => addToast(msg, "success")}
         onError={(msg) => addToast(msg, "error")}
       />

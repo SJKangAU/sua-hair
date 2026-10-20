@@ -17,6 +17,9 @@
     "test:e2e": "firebase emulators:exec --project demo-sua-e2e --only firestore,auth \"playwright test -c e2e/playwright.config.ts\""
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "firebase": "^12.11.0",
     "lucide-react": "^1.22.0",
     "react": "^19.2.4",

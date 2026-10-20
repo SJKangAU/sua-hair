@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 // Permission matrix for firestore.rules — run against the Firestore
 // emulator via `npm run test:rules`.
-import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   assertFails,
   assertSucceeds,
@@ -473,5 +473,69 @@ describe("stylistDayLocks — admin slot-claim lock documents", () => {
     });
     const staff = testEnv.authenticatedContext("staff-1").firestore();
     await assertFails(staff.doc("stylistDayLocks/2026-12-01_s1").delete());
+  });
+});
+
+describe("stylists.order — only the owner can write the display order", () => {
+  const stylist = { name: "Alex", role: "Senior", level: "senior", status: "active" };
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("users/owner-uid").set({ role: "owner" });
+      await ctx
+        .firestore()
+        .doc("users/stylist-uid")
+        .set({ role: "stylist", stylistId: "s1" });
+      await ctx.firestore().doc("stylists/s1").set({ ...stylist, order: 0 });
+      await ctx.firestore().doc("stylists/s2").set(stylist); // legacy: no order
+    });
+  });
+
+  it("anyone, including anonymous visitors, can read stylists and their order", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    const snap = await assertSucceeds(anon.doc("stylists/s1").get());
+    expect(snap.data()?.order).toBe(0);
+    await assertSucceeds(anon.collection("stylists").get());
+  });
+
+  it("the owner can write order (update and create)", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertSucceeds(owner.doc("stylists/s1").update({ order: 5 }));
+    await assertSucceeds(owner.doc("stylists/s2").update({ order: 1 }));
+    await assertSucceeds(owner.doc("stylists/s3").set({ ...stylist, order: 2 }));
+  });
+
+  it("the owner cannot write a non-numeric order", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertFails(owner.doc("stylists/s1").update({ order: "first" }));
+  });
+
+  it("a stylist account cannot add or change order", async () => {
+    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertFails(staff.doc("stylists/s1").update({ order: 3 }));
+    await assertFails(staff.doc("stylists/s2").update({ order: 0 }));
+    await assertFails(staff.doc("stylists/s3").set({ ...stylist, order: 0 }));
+  });
+
+  it("a stylist account cannot remove order by overwriting the document without it", async () => {
+    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertFails(staff.doc("stylists/s1").set(stylist));
+  });
+
+  it("anonymous visitors cannot write order", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anon.doc("stylists/s1").update({ order: 9 }));
+    await assertFails(anon.doc("stylists/s9").set({ ...stylist, order: 0 }));
+  });
+
+  it("other staff writes to a stylist are unchanged (edit fields, add without order)", async () => {
+    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertSucceeds(staff.doc("stylists/s1").update({ role: "Director" }));
+    await assertSucceeds(staff.doc("stylists/s4").set(stylist));
+  });
+
+  it("a staff edit that leaves order as it was is allowed", async () => {
+    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertSucceeds(staff.doc("stylists/s1").set({ ...stylist, order: 0 }));
   });
 });
