@@ -1,0 +1,213 @@
+
+> sua-hair@0.0.0 test:e2e
+> firebase emulators:exec --project demo-sua-e2e --only firestore,auth "playwright test -c e2e/playwright.config.ts"
+
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-sua-e2e", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: playwright test -c e2e/playwright.config.ts
+
+Running 65 tests using 1 worker
+
+  ok  1 e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen (4.5s)
+  ok  2 e2e\01-customer.spec.ts:62:1 › TC-002 (revised) a returning phone number is NOT recognised and nothing is pre-filled (4.9s)
+  ok  3 e2e\01-customer.spec.ts:82:1 › TC-003 Monday cannot be selected (1.7s)
+  ok  4 e2e\01-customer.spec.ts:111:1 › TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earliest) (1.6s)
+  x   5 e2e\01-customer.spec.ts:149:1 › TC-004b control: before the cutoff, today can still be chosen (12.1s)
+  -   6 e2e\01-customer.spec.ts:173:1 › TC-005 price follows the stylist's tier
+  -   7 e2e\01-customer.spec.ts:192:1 › TC-006 a slot inside another booking's rest window is available if the service fits
+  -   8 e2e\01-customer.spec.ts:226:1 › TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden
+  x   9 e2e\02-admin-today.spec.ts:70:1 › TC-009 timeline loads: every active stylist, today's bookings, current-time bar (11.5s)
+  -  10 e2e\02-admin-today.spec.ts:88:1 › TC-010 Next moves the timeline to tomorrow and loads its bookings
+  -  11 e2e\02-admin-today.spec.ts:98:1 › TC-011 clicking a booking block opens its quick actions, and View details opens the full booking
+  -  12 e2e\02-admin-today.spec.ts:115:1 › TC-012 clicking an empty slot opens the create form pre-filled with that stylist and time
+  -  13 e2e\02-admin-today.spec.ts:130:1 › TC-013 create walk-in: appears immediately as confirmed
+  -  14 e2e\02-admin-today.spec.ts:153:1 › TC-014 create break: a break block appears on the timeline
+  -  15 e2e\02-admin-today.spec.ts:165:1 › TC-015 confirming a pending booking turns it confirmed with a toast
+  -  16 e2e\02-admin-today.spec.ts:177:1 › TC-033 an admin walk-in that overlaps an existing booking is blocked with a clear message
+  -  17 e2e\02-admin-today.spec.ts:199:1 › TC-033b a walk-in inside another booking's rest window is allowed
+  -  18 e2e\02-admin-today.spec.ts:219:1 › TC-033c a break overlapping a booking is blocked
+  -  19 e2e\02-admin-today.spec.ts:230:1 › D1 two admins saving the same slot at the same moment: exactly one booking is created
+  -  20 e2e\02-admin-today.spec.ts:267:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore
+  -  21 e2e\02-admin-today.spec.ts:306:1 › D3 the timeline follows the opening hours configured for that date
+  -  22 e2e\02-admin-today.spec.ts:327:1 › no deprecated Firestore persistence warning is logged
+TC-016 filter applied after 332ms
+  ok 23 e2e\03-admin-pages.spec.ts:58:1 › TC-016 search by name filters the list within 300ms (1.0s)
+  ok 24 e2e\03-admin-pages.spec.ts:74:1 › TC-017 search by phone number (778ms)
+  ok 25 e2e\03-admin-pages.spec.ts:81:1 › TC-018 filter by stylist (383ms)
+  ok 26 e2e\03-admin-pages.spec.ts:89:1 › D4 the list is ordered upcoming-first (soonest day first) (408ms)
+  ok 27 e2e\03-admin-pages.spec.ts:106:1 › TC-019 bulk confirm: all selected pending bookings become confirmed, with ONE summary toast (D4) (1.1s)
+TC-020 CSV header: "Date","Time","Customer Name","Phone","Stylist","Service","Price","Duration","Status","Type","Notes"
+  ok 28 e2e\03-admin-pages.spec.ts:129:1 › TC-020 Export CSV downloads a file with the visible bookings (616ms)
+  ok 29 e2e\03-admin-pages.spec.ts:150:1 › TC-021 client search shows visit count and total spend (1.1s)
+  ok 30 e2e\03-admin-pages.spec.ts:163:1 › TC-022 View history expands the booking history, newest first (29ms)
+  ok 31 e2e\03-admin-pages.spec.ts:175:1 › TC-023 Book again pre-fills the create form with the client's name and phone (150ms)
+  ok 32 e2e\03-admin-pages.spec.ts:184:1 › TC-024 a cancelled booking is not counted in total spend (1.1s)
+  ok 33 e2e\03-admin-pages.spec.ts:194:1 › TC-025 create a training session: appears under upcoming sessions with a toast (655ms)
+  ok 34 e2e\03-admin-pages.spec.ts:217:1 › TC-026 a training session does not appear on the main timeline (323ms)
+  ok 35 e2e\03-admin-pages.spec.ts:225:1 › TC-027 a session dated yesterday appears under Past Sessions (599ms)
+  ok 36 e2e\03-admin-pages.spec.ts:264:1 › TC-028 a new stylist appears in the roster and the customer booking form (1.8s)
+  ok 37 e2e\03-admin-pages.spec.ts:275:1 › TC-029 deactivating a stylist hides them from customers; their bookings remain (1.7s)
+  ok 38 e2e\03-admin-pages.spec.ts:293:1 › TC-030 reactivating a stylist brings them back to the booking form (1.3s)
+  ok 39 e2e\03-admin-pages.spec.ts:300:1 › TC-031 editing a service price updates the booking form and logs the old price (2.0s)
+  ok 40 e2e\03-admin-pages.spec.ts:331:1 › TC-032 deactivating a service removes it from the booking form (1.3s)
+  ok 41 e2e\03-admin-pages.spec.ts:343:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics (3.4s)
+  ok 42 e2e\04-smoke.spec.ts:11:1 › SMOKE client books online -> owner approves -> overlapping admin walk-in is blocked (5.9s)
+  ok 43 e2e\05-features.spec.ts:15:1 › TC-034 a client can join the waitlist for a full day and the owner sees them (3.8s)
+  ok 44 e2e\05-features.spec.ts:46:1 › TC-035 the owner is notified of a new online booking, and the notification opens it (4.7s)
+  ok 45 e2e\05-features.spec.ts:66:1 › TC-036 closing a date in Manage -> Opening hours makes it unbookable for customers (4.3s)
+  ok 46 e2e\06-hover-preview.spec.ts:39:1 › hovering an available start highlights the exact range the service would occupy (2.1s)
+  ok 47 e2e\06-hover-preview.spec.ts:58:1 › the block's length follows the selected service, with hands-on and processing phases (3.9s)
+  ok 48 e2e\06-hover-preview.spec.ts:83:1 › the hover snaps to 15-minute rows, and every row is a bookable start (DEC-024) (4.4s)
+  ok 49 e2e\06-hover-preview.spec.ts:104:1 › unavailable areas show a muted state and no highlight (2.1s)
+  ok 50 e2e\06-hover-preview.spec.ts:123:1 › a block that fits inside another booking's processing window is highlighted; one that does not is not (3.9s)
+  ok 51 e2e\06-hover-preview.spec.ts:142:1 › clicking selects the time and the existing flow continues to a pending booking (3.0s)
+  ok 52 e2e\06-hover-preview.spec.ts:164:1 › keyboard: arrows move in 15-minute steps and Enter chooses a quarter-hour start (2.2s)
+  ok 53 e2e\06-hover-preview.spec.ts:188:1 › keyboard: an unavailable position cannot be chosen (1.7s)
+  ok 54 e2e\06-hover-preview.spec.ts:201:1 › prefers-reduced-motion switches the block's animation off (2.5s)
+  ok 55 e2e\06-hover-preview.spec.ts:217:3 › touch device › tap a time to preview its block, then Select to choose it (1.9s)
+  ok 56 e2e\06-hover-preview.spec.ts:233:3 › touch device › tapping a quarter-hour row previews that start (1.9s)
+  ok 57 e2e\06-hover-preview.spec.ts:241:3 › touch device › tapping an unavailable time previews nothing (1.7s)
+  x  58 e2e\07-stylist-order.spec.ts:68:1 › with no `order` saved, the existing order is kept everywhere (0ms)
+  -  59 e2e\07-stylist-order.spec.ts:75:1 › the owner sees drag handles and Move up / Move down on every row; the ends are disabled
+  -  60 e2e\07-stylist-order.spec.ts:86:1 › Move up changes the order, saves only `order`, and persists after reload
+  -  61 e2e\07-stylist-order.spec.ts:113:1 › Move down works too
+  -  62 e2e\07-stylist-order.spec.ts:120:1 › dragging a row by its handle reorders and persists
+  -  63 e2e\07-stylist-order.spec.ts:140:1 › keyboard: Space picks a row up, an arrow moves it, Space drops it
+  -  64 e2e\07-stylist-order.spec.ts:154:1 › a stylist added later (no order) goes after the ordered ones
+  -  65 e2e\07-stylist-order.spec.ts:169:1 › if saving fails the order is put back and an error toast is shown
+
+
+  1) e2e\01-customer.spec.ts:149:1 › TC-004b control: before the cutoff, today can still be chosen ─
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator:  getByRole('button', { name: /^Tuesday 20 October/ })
+    Expected: enabled
+    Received: disabled
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('button', { name: /^Tuesday 20 October/ }) with timeout 10000ms
+      - waiting for getByRole('button', { name: /^Tuesday 20 October/ })
+        23 × locator resolved to <button disabled class="bk-day" aria-pressed="false" aria-label="Tuesday 20 October, unavailable">20</button>
+           - unexpected value "disabled"
+
+
+      168 |   await expect(
+      169 |     page.getByRole("button", { name: new RegExp(`^${label}`) }),
+    > 170 |   ).toBeEnabled();
+          |     ^
+      171 | });
+      172 |
+      173 | test("TC-005 price follows the stylist's tier", async ({ page }) => {
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\01-customer.spec.ts:170:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\01-customer-TC-004b-contro-8095d-f-today-can-still-be-chosen\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\01-customer-TC-004b-contro-8095d-f-today-can-still-be-chosen\error-context.md
+
+  2) e2e\02-admin-today.spec.ts:70:1 › TC-009 timeline loads: every active stylist, today's bookings, current-time bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Todd Today').first()
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Todd Today').first() with timeout 10000ms
+      - waiting for getByText('Todd Today').first()
+
+
+      81 |     await expect(p.getByText(name).first()).toBeVisible();
+      82 |   }
+    > 83 |   await expect(p.getByText("Todd Today").first()).toBeVisible();
+         |                                                   ^
+      84 |   await expect(p.getByText("2:20 PM", { exact: true })).toHaveCount(1); // the now-bar label
+      85 |   await p.context().close();
+      86 | });
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\02-admin-today.spec.ts:83:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\02-admin-today-TC-009-time-da91e-s-bookings-current-time-bar\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\02-admin-today-TC-009-time-da91e-s-bookings-current-time-bar\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\02-admin-today-TC-009-time-da91e-s-bookings-current-time-bar\error-context.md
+
+    Error Context: test-results\02-admin-today-TC-009-time-da91e-s-bookings-current-time-bar\error-context.md
+
+  3) e2e\07-stylist-order.spec.ts:68:1 › with no `order` saved, the existing order is kept everywhere 
+
+    "beforeAll" hook timeout of 90000ms exceeded.
+
+      19 | let page: Page;
+      20 |
+    > 21 | test.beforeAll(async ({ browser }) => {
+         |      ^
+      22 |   await seedEmulator();
+      23 |   ({ page } = await newAdminPage(browser));
+      24 | });
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\07-stylist-order.spec.ts:21:6
+
+    TypeError: Cannot read properties of undefined (reading 'context')
+
+      24 | });
+      25 | test.afterAll(async () => {
+    > 26 |   await page.context().close();
+         |              ^
+      27 | });
+      28 |
+      29 | const rosterOrder = (p: Page) =>
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\07-stylist-order.spec.ts:26:14
+
+    Error: locator.fill: Test ended.
+    Call log:
+      - waiting for getByPlaceholder('admin@suahair.com.au')
+
+
+       at helpers.ts:132
+
+      130 | export async function adminLogin(page: Page): Promise<void> {
+      131 |   await page.goto("/admin/login");
+    > 132 |   await page.getByPlaceholder("admin@suahair.com.au").fill(OWNER_EMAIL);
+          |                                                       ^
+      133 |   await page.getByPlaceholder("••••••••").fill(OWNER_PASSWORD);
+      134 |   await page.locator('button[type="submit"]').click();
+      135 |   await page.waitForURL(/\/admin\/today/);
+        at adminLogin (C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\helpers.ts:132:55)
+        at newAdminPage (C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\admin.ts:22:3)
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\07-stylist-order.spec.ts:23:15
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\07-stylist-order-with-no-o-8a307-ng-order-is-kept-everywhere\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\07-stylist-order-with-no-o-8a307-ng-order-is-kept-everywhere\error-context.md
+
+    Error Context: test-results\07-stylist-order-with-no-o-8a307-ng-order-is-kept-everywhere\error-context.md
+
+  3 failed
+    e2e\01-customer.spec.ts:149:1 › TC-004b control: before the cutoff, today can still be chosen ──
+    e2e\02-admin-today.spec.ts:70:1 › TC-009 timeline loads: every active stylist, today's bookings, current-time bar 
+    e2e\07-stylist-order.spec.ts:68:1 › with no `order` saved, the existing order is kept everywhere 
+  23 did not run
+  39 passed (3.5m)
+!  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+Error: Script "playwright test -c e2e/playwright.config.ts" exited with code 1

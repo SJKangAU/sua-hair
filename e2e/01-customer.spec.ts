@@ -7,7 +7,7 @@ import {
   addDaysIso,
   bookOnline,
   chooseSlotOnline,
-  iso,
+  melbourneInstant,
   pickDate,
   slotButton,
   tap,
@@ -111,9 +111,9 @@ test("TC-003 Monday cannot be selected", async ({ page }) => {
 test("TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earliest)", async ({
   page,
 }) => {
-  const now = new Date();
-  const sixPm = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0);
-  await page.clock.setFixedTime(sixPm);
+  // 6:00 PM on the salon's clock today (an explicit Melbourne instant, not the
+  // runner's local 6 PM)
+  await page.clock.setFixedTime(melbourneInstant(todayIso(), 18, 0));
   await page.goto("/");
   await tap(page.getByRole("button", { name: /Men's Cut/ }).first());
   await tap(page.getByRole("button", { name: "Continue" }));
@@ -149,11 +149,8 @@ test("TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earl
 test("TC-004b control: before the cutoff, today can still be chosen", async ({
   page,
 }) => {
-  test.skip(new Date().getDay() === 1, "today is a Monday (closed)");
-  const now = new Date();
-  await page.clock.setFixedTime(
-    new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0),
-  );
+  test.skip(weekdayOf(todayIso()) === 1, "today is a Monday (closed)");
+  await page.clock.setFixedTime(melbourneInstant(todayIso(), 9, 0));
   await page.goto("/");
   await tap(page.getByRole("button", { name: /Men's Cut/ }).first());
   await tap(page.getByRole("button", { name: "Continue" }));
@@ -257,5 +254,4 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
   // a different stylist is unaffected at the same time
   await tap(page.getByRole("button", { name: /Yuto/ }).first());
   await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
-  void iso;
 });

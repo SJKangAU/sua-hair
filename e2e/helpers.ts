@@ -5,18 +5,70 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import { OWNER_EMAIL, OWNER_PASSWORD } from "./seed";
 
 export const pad = (n: number) => String(n).padStart(2, "0");
+// Formats a calendar date built from local y/m/d parts (pure date arithmetic;
+// never use it on an instant - see melbourneNow / melbourneInstant)
 export const iso = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/** The next date (strictly after `daysAhead` days from now) falling on `weekday`
- *  (0=Sun .. 6=Sat). Always at least 3 days out so notice/cutoff rules never
- *  interfere with scenarios that are not about them. */
+// ── The salon's clock ────────────────────────────────────────────────────────
+// The salon (and so every rule under test: "today", the 5 pm cutoff, opening
+// hours) lives in Australia/Melbourne. The browser contexts are pinned to that
+// zone (playwright.config.ts), so the tests must reason in it too - NOT in the
+// zone of the machine running them (CI is UTC, 11 hours behind).
+export const SALON_TZ = "Australia/Melbourne";
+
+const partsIn = (instant: Date) => {
+  const f = new Intl.DateTimeFormat("en-CA", {
+    timeZone: SALON_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const get = Object.fromEntries(
+    f.formatToParts(instant).map((p) => [p.type, p.value]),
+  );
+  return {
+    y: Number(get.year),
+    m: Number(get.month),
+    d: Number(get.day),
+    h: Number(get.hour),
+    min: Number(get.minute),
+  };
+};
+
+/** Today's date in Melbourne, as YYYY-MM-DD. */
+export const todayIso = (): string => {
+  const { y, m, d } = partsIn(new Date());
+  return `${y}-${pad(m)}-${pad(d)}`;
+};
+
+/** The exact instant at which Melbourne's wall clock reads `hh:mm` on `dateIso`
+ *  (handles daylight saving). Use it for page.clock.setFixedTime. */
+export function melbourneInstant(dateIso: string, hh: number, mm = 0): Date {
+  const [y, m, d] = dateIso.split("-").map(Number);
+  const wall = Date.UTC(y, m - 1, d, hh, mm);
+  // Melbourne's offset at that wall time: (what Melbourne reads at a guess) - guess
+  let guess = wall;
+  for (let i = 0; i < 2; i++) {
+    const p = partsIn(new Date(guess));
+    const readAsUtc = Date.UTC(p.y, p.m - 1, p.d, p.h, p.min);
+    guess += wall - readAsUtc;
+  }
+  return new Date(guess);
+}
+
+/** The next date (at least `minDaysAhead` days after today in Melbourne) falling
+ *  on `weekday` (0=Sun .. 6=Sat). Always at least 3 days out so notice/cutoff
+ *  rules never interfere with scenarios that are not about them. */
 export function upcoming(weekday: number, minDaysAhead = 3, extraWeeks = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + minDaysAhead);
-  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
-  d.setDate(d.getDate() + extraWeeks * 7);
-  return iso(d);
+  const [y, m, d] = todayIso().split("-").map(Number);
+  const dt = new Date(y, m - 1, d + minDaysAhead);
+  while (dt.getDay() !== weekday) dt.setDate(dt.getDate() + 1);
+  dt.setDate(dt.getDate() + extraWeeks * 7);
+  return iso(dt);
 }
 
 export function addDaysIso(dateIso: string, n: number): string {
@@ -24,8 +76,6 @@ export function addDaysIso(dateIso: string, n: number): string {
   const dt = new Date(y, m - 1, d + n);
   return iso(dt);
 }
-
-export const todayIso = () => iso(new Date());
 
 export function weekdayOf(dateIso: string): number {
   const [y, m, d] = dateIso.split("-").map(Number);

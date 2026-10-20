@@ -38,7 +38,7 @@ const openManage = async (p: Page) => {
 
 /** What a customer sees, in a fresh browser context (nothing cached). */
 async function customerOrder(browser: Browser): Promise<string[]> {
-  const ctx = await browser.newContext({ baseURL: BASE_URL });
+  const ctx = await browser.newContext({ baseURL: BASE_URL, locale: "en-AU", timezoneId: "Australia/Melbourne" });
   const p = await ctx.newPage();
   await p.goto("/");
   await p.getByRole("button", { name: /Men's Cut/ }).first().dispatchEvent("click");

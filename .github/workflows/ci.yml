@@ -74,6 +74,11 @@ jobs:
   e2e:
     name: Browser scenarios (Playwright + emulators)
     runs-on: ubuntu-latest
+    # The salon runs on Melbourne time. The tests build every date and clock from
+    # explicit Melbourne instants (e2e/helpers.ts), so this is belt and braces,
+    # but it keeps Node's own "local" time the same as the browser's.
+    env:
+      TZ: Australia/Melbourne
     steps:
       - uses: actions/checkout@v4
 

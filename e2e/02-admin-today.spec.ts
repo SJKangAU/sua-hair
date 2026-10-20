@@ -10,7 +10,7 @@ import {
   seedEmulator,
   connectEnv,
 } from "./seed";
-import { addDaysIso, todayIso, upcoming, weekdayOf } from "./helpers";
+import { addDaysIso, melbourneInstant, todayIso, upcoming, weekdayOf } from "./helpers";
 import {
   dialog,
   fillBreak,
@@ -73,8 +73,7 @@ test("TC-009 timeline loads: every active stylist, today's bookings, current-tim
   test.skip(weekdayOf(todayIso()) === 1, "salon is closed on Mondays");
   const { page: p } = await newAdminPage(browser);
   // fix the clock at 2:20 PM today so the now-bar is inside trading hours
-  const n = new Date();
-  await p.clock.setFixedTime(new Date(n.getFullYear(), n.getMonth(), n.getDate(), 14, 20));
+  await p.clock.setFixedTime(melbourneInstant(todayIso(), 14, 20));
   await p.reload();
   await expect(p.getByText("Steve · Director").first()).toBeVisible();
   for (const name of ["Elly · Senior", "Ethan · Junior", "Harry · Junior", "Steve · Director", "Yuto · Senior"]) {
