@@ -113,6 +113,22 @@ service cloud.firestore {
       }
     }
 
+    // ── stylistDayLocks ─────────────────────────────────────────────────
+    // One tiny document per stylist per day ({date}_{stylistId}). Every admin
+    // write that claims a slot (walk-in, break, restore, reschedule) reads and
+    // bumps it inside the same transaction as its conflict check, so two admins
+    // saving the same slot at once cannot both succeed — see
+    // src/lib/adminBookingWrites.ts. Holds no customer data. Staff only;
+    // anonymous customers never touch it.
+    match /stylistDayLocks/{lockId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.keys().hasOnly(['version', 'updatedAt'])
+        && request.resource.data.version is number
+        && request.resource.data.updatedAt is string;
+      allow delete: if false;
+    }
+
     // ── Reference data used by the public booking flow ─────────────────
     // Publicly readable so the calendar can show stylists/services/hours;
     // writes are staff-only (Manage → Stylists/Services/Hours screens).

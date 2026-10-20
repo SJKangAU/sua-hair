@@ -15,30 +15,23 @@
 // message instead.
 
 import { useEffect, useRef, useState } from "react";
-import {
-  collection,
-  doc,
-  getDoc,
-  writeBatch,
-  increment,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { UserCheck } from "lucide-react";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
-import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
 import { cleanPhone, validatePhone } from "../../../lib/validation";
 import { combineServices, fitsGap } from "../../../lib/walkinServices";
 import {
   nextAutofillName,
   returningClientLabel,
 } from "../../../lib/customerLookup";
-import { fetchBookingConflict } from "../../../lib/bookingConflicts";
+import { BookingConflictError } from "../../../lib/bookingConflicts";
+import { createAdminBooking } from "../../../lib/adminBookingWrites";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
   computeReturnTime,
-  describeConflict,
   buildBookingRef,
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
@@ -268,24 +261,6 @@ const CreateBookingModal = ({
 
     setSubmitting(true);
     try {
-      const clash = await fetchBookingConflict({
-        stylistId: stylist.id,
-        date: walkin.date,
-        time: walkin.time,
-        totalTime: totals.totalTime,
-        activeTime: totals.activeTime,
-      });
-      if (clash) {
-        setConflict({
-          key: walkinKey,
-          message: `${stylist.name} is already booked at that time: ${describeConflict(
-            clash,
-          )}. Choose another time or stylist.`,
-        });
-        setSubmitting(false);
-        return;
-      }
-
       const booking: Omit<Booking, "id"> = {
         bookingType: "walkin",
         status: "confirmed", // walk-ins are auto-confirmed
@@ -310,25 +285,10 @@ const CreateBookingModal = ({
         createdAt: new Date().toISOString(),
       };
 
-      const docId = doc(collection(db, "bookings")).id;
-      const batch = writeBatch(db);
-      batch.set(doc(db, "bookings", docId), booking);
-      queueSlotBlockCreate(batch, docId, booking);
-      if (booking.customerPhone.trim()) {
-        // Keep the customer visit-history record in sync for walk-ins too.
-        // Reads are staff-only (see firestore.rules `customerLookups`) —
-        // the public booking page no longer looks this up anonymously.
-        batch.set(
-          doc(db, "customerLookups", cleanPhone(booking.customerPhone)),
-          {
-            name: booking.customerName,
-            lastVisit: booking.date,
-            visitCount: increment(1),
-          },
-          { merge: true },
-        );
-      }
-      await batch.commit();
+      // Conflict-checked and written under the stylist-day lock (see
+      // adminBookingWrites.ts): a clash throws BookingConflictError and
+      // nothing is saved, even if another admin saves the same slot at once.
+      const docId = await createAdminBooking(db, booking);
 
       writeBookingNotifications({
         bookingId: docId,
@@ -343,8 +303,15 @@ const CreateBookingModal = ({
       onSuccess(`Walk-in booking created for ${walkin.customerName}`);
       onClose();
     } catch (err) {
-      console.error("Error creating walk-in:", err);
-      onError("Failed to create booking. Please try again.");
+      if (err instanceof BookingConflictError) {
+        setConflict({
+          key: walkinKey,
+          message: `${err.message} Choose another time or stylist.`,
+        });
+      } else {
+        console.error("Error creating walk-in:", err);
+        onError("Failed to create booking. Please try again.");
+      }
     }
     setSubmitting(false);
   };
@@ -361,24 +328,6 @@ const CreateBookingModal = ({
 
     setSubmitting(true);
     try {
-      const clash = await fetchBookingConflict({
-        stylistId: stylist.id,
-        date: breakForm.date,
-        time: breakForm.time,
-        totalTime: breakForm.duration,
-        activeTime: breakForm.duration,
-      });
-      if (clash) {
-        setConflict({
-          key: breakKey,
-          message: `${stylist.name} is already booked at that time: ${describeConflict(
-            clash,
-          )}. Choose another time or move that booking first.`,
-        });
-        setSubmitting(false);
-        return;
-      }
-
       const booking: Omit<Booking, "id"> = {
         bookingType: "break",
         status: "confirmed",
@@ -406,19 +355,22 @@ const CreateBookingModal = ({
         createdAt: new Date().toISOString(),
       };
 
-      const docId = doc(collection(db, "bookings")).id;
-      const batch = writeBatch(db);
-      batch.set(doc(db, "bookings", docId), booking);
-      queueSlotBlockCreate(batch, docId, booking);
-      await batch.commit();
+      await createAdminBooking(db, booking);
 
       onSuccess(
         `Break blocked for ${stylist.name} at ${breakForm.time} (${breakForm.duration} min)`,
       );
       onClose();
     } catch (err) {
-      console.error("Error creating break:", err);
-      onError("Failed to create break. Please try again.");
+      if (err instanceof BookingConflictError) {
+        setConflict({
+          key: breakKey,
+          message: `${err.message} Choose another time or move that booking first.`,
+        });
+      } else {
+        console.error("Error creating break:", err);
+        onError("Failed to create break. Please try again.");
+      }
     }
     setSubmitting(false);
   };

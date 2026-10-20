@@ -432,3 +432,46 @@ describe("users — role documents", () => {
     await assertFails(staff.doc("users/owner-uid").set({ role: "owner" }));
   });
 });
+
+describe("stylistDayLocks — admin slot-claim lock documents", () => {
+  const lock = { version: 1, updatedAt: "2026-12-01T00:00:00.000Z" };
+
+  it("staff can create and bump a lock", async () => {
+    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    await assertSucceeds(staff.doc("stylistDayLocks/2026-12-01_s1").set(lock));
+    await assertSucceeds(
+      staff.doc("stylistDayLocks/2026-12-01_s1").set({ ...lock, version: 2 }),
+    );
+    await assertSucceeds(staff.doc("stylistDayLocks/2026-12-01_s1").get());
+  });
+
+  it("anonymous visitors cannot read, create or change a lock", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("stylistDayLocks/2026-12-01_s1").set(lock);
+    });
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anon.doc("stylistDayLocks/2026-12-01_s1").get());
+    await assertFails(anon.doc("stylistDayLocks/2026-12-01_s1").set(lock));
+    await assertFails(
+      anon.doc("stylistDayLocks/2026-12-01_s2").set({ ...lock, version: 9 }),
+    );
+    await assertFails(anon.collection("stylistDayLocks").get());
+  });
+
+  it("a lock cannot carry anything but version and updatedAt", async () => {
+    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    await assertFails(
+      staff.doc("stylistDayLocks/x").set({ ...lock, customerName: "Jane" }),
+    );
+    await assertFails(staff.doc("stylistDayLocks/x").set({ version: "1", updatedAt: "now" }));
+    await assertFails(staff.doc("stylistDayLocks/x").set({ version: 1 }));
+  });
+
+  it("nobody can delete a lock", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("stylistDayLocks/2026-12-01_s1").set(lock);
+    });
+    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    await assertFails(staff.doc("stylistDayLocks/2026-12-01_s1").delete());
+  });
+});

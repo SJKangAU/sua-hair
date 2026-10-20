@@ -25,18 +25,7 @@
 
 import { doc, type WriteBatch } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Booking } from "../types";
-
-type SlotBlockSource = Pick<
-  Booking,
-  | "stylistId"
-  | "date"
-  | "time"
-  | "activeTime"
-  | "totalTime"
-  | "restTime"
-  | "status"
->;
+import { toSlotBlock, type SlotBlockSource } from "./slotBlockData";
 
 // Queues the paired `slotBlocks/{id}` create onto an existing batch so a new
 // booking and its public availability projection commit atomically. The
@@ -48,13 +37,5 @@ export const queueSlotBlockCreate = (
   id: string,
   booking: SlotBlockSource,
 ): void => {
-  batch.set(doc(db, "slotBlocks", id), {
-    stylistId: booking.stylistId,
-    date: booking.date,
-    time: booking.time,
-    activeTime: booking.activeTime,
-    totalTime: booking.totalTime,
-    restTime: booking.restTime,
-    status: booking.status,
-  });
+  batch.set(doc(db, "slotBlocks", id), toSlotBlock(booking));
 };

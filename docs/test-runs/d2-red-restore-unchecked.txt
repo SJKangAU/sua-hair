@@ -1,0 +1,19 @@
+# D2: restore tests run with the restore-time slot check/lock REMOVED (restoring = false) to prove they detect the defect
+# command: npm run test:admin
+
+     × restore is refused when someone has booked the slot meanwhile 150ms
+     × restoring a no-show is checked the same way 130ms
+     × two cancelled bookings for the same slot restored at once: exactly one comes back 97ms
+     × a restore racing a new walk-in for the same slot: exactly one wins 80ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/firestore/adminSlotClaims.test.ts > D2 — restoring a cancelled booking re-checks the slot > restore is refused when someone has booked the slot meanwhile
+AssertionError: promise resolved "undefined" instead of rejecting
+ FAIL  tests/firestore/adminSlotClaims.test.ts > D2 — restoring a cancelled booking re-checks the slot > restoring a no-show is checked the same way
+AssertionError: promise resolved "undefined" instead of rejecting
+ FAIL  tests/firestore/adminSlotClaims.test.ts > D2 — restoring a cancelled booking re-checks the slot > two cancelled bookings for the same slot restored at once: exactly one comes back
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(1) ] to have a length of 1 but got 2
+ FAIL  tests/firestore/adminSlotClaims.test.ts > D2 — restoring a cancelled booking re-checks the slot > a restore racing a new walk-in for the same slot: exactly one wins
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(1) ] to have a length of 1 but got 2
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 32 passed (36)
+Error: Script "vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts" exited with code 1

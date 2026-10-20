@@ -14,7 +14,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useBookingContext } from "../context/BookingContext";
 import { useToastContext } from "../context/ToastContext";
-import { fetchBookingConflict } from "../lib/bookingConflicts";
+import { db } from "../lib/firebase";
+import {
+  BookingConflictError,
+  fetchBookingConflict,
+} from "../lib/bookingConflicts";
 import { describeConflict } from "../lib/scheduling";
 import {
   UNDO_TOAST_MS,
@@ -61,7 +65,7 @@ const useBookingActions = (): UseBookingActions => {
           // Coming back from cancelled / no-show: the slot was released, so
           // make sure nobody else has taken it since.
           if (isSlotFreeing(booking.status) && !isSlotFreeing(status)) {
-            const clash = await fetchBookingConflict({
+            const clash = await fetchBookingConflict(db, {
               stylistId: booking.stylistId,
               date: booking.date,
               time: booking.time,
@@ -81,6 +85,16 @@ const useBookingActions = (): UseBookingActions => {
           await updateStatus(id, status);
           applied.push({ id, from: booking.status, to: status });
         } catch (err) {
+          // The pre-check above passed but someone claimed the slot in the
+          // instant before the write: the locked write caught it.
+          if (err instanceof BookingConflictError) {
+            clashes.push(
+              `${booking.customerName || "Booking"} at ${
+                booking.time
+              } clashes with ${describeConflict(err.conflict)}`,
+            );
+            continue;
+          }
           console.error("Booking status change failed:", err);
           failed++;
         }

@@ -1,0 +1,113 @@
+# D1 race tests run against the CURRENT check-then-write implementation (before adding the transaction)
+# command: npm run test:admin   (4 failed | 19 passed)
+
+
+> sua-hair@0.0.0 test:admin
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/adminBookings.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/adminBookings.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ❯ tests/firestore/adminBookings.test.ts (23 tests | 4 failed) 4387ms
+     × two simultaneous creates for the same slot: exactly one succeeds 42ms
+     × overlapping (not identical) simultaneous creates: still exactly one wins 44ms
+     × a walk-in and a break racing for the same slot: exactly one wins 41ms
+     × five admins racing, repeated: never more than one booking per slot 76ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/firestore/adminBookings.test.ts > D1 — two admins saving the same slot at once cannot both win > two simultaneous creates for the same slot: exactly one succeeds
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/firestore/adminBookings.test.ts:332:16
+    330|     const ok = results.filter((r) => r.status === "fulfilled");
+    331|     const rejected = results.filter((r) => r.status === "rejected");
+    332|     expect(ok).toHaveLength(1);
+       |                ^
+    333|     expect(rejected).toHaveLength(1);
+    334|     expect((rejected[0] as PromiseRejectedResult).reason).toBeInstance…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/firestore/adminBookings.test.ts > D1 — two admins saving the same slot at once cannot both win > overlapping (not identical) simultaneous creates: still exactly one wins
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/firestore/adminBookings.test.ts:345:61
+    343|       createAdminBooking(staffDb("admin-b"), walkin({ time: "10:30 AM"…
+    344|     ]);
+    345|     expect(results.filter((r) => r.status === "fulfilled")).toHaveLeng…
+       |                                                             ^
+    346|     expect(await bookingIds()).toHaveLength(1);
+    347|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/firestore/adminBookings.test.ts > D1 — two admins saving the same slot at once cannot both win > a walk-in and a break racing for the same slot: exactly one wins
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/firestore/adminBookings.test.ts:354:61
+    352|       createAdminBooking(staffDb("admin-b"), breakBlock({ time: "10:00…
+    353|     ]);
+    354|     expect(results.filter((r) => r.status === "fulfilled")).toHaveLeng…
+       |                                                             ^
+    355|     expect(await bookingIds()).toHaveLength(1);
+    356|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/firestore/adminBookings.test.ts > D1 — two admins saving the same slot at once cannot both win > five admins racing, repeated: never more than one booking per slot
+AssertionError: expected [ { status: 'fulfilled', …(1) }, …(4) ] to have a length of 1 but got 5
+
+- Expected
++ Received
+
+- 1
++ 5
+
+ ❯ tests/firestore/adminBookings.test.ts:369:63
+    367|         ),
+    368|       );
+    369|       expect(results.filter((r) => r.status === "fulfilled")).toHaveLe…
+       |                                                               ^
+    370|       for (const r of results) {
+    371|         if (r.status === "rejected") {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 19 passed (23)
+   Start at  17:32:43
+   Duration  6.00s (transform 371ms, setup 0ms, import 1.01s, tests 4.39s, environment 0ms)
+
+!  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+Error: Script "vitest run tests/firestore/adminBookings.test.ts" exited with code 1

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:unit": "vitest run tests/unit",
     "test:rules": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/rules.test.ts\"",
-    "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\""
+    "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\"",
+    "test:admin": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts\""
   },
   "dependencies": {
     "firebase": "^12.11.0",

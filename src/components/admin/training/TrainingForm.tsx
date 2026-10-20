@@ -7,10 +7,10 @@
 
 import { useState } from "react";
 import { GraduationCap } from "lucide-react";
-import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
-import { queueSlotBlockCreate } from "../../../lib/slotBlocks";
+import { createAdminBooking } from "../../../lib/adminBookingWrites";
+import { BookingConflictError } from "../../../lib/bookingConflicts";
 import type { Booking } from "../../../types";
 
 interface Props {
@@ -139,14 +139,9 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
         createdAt: new Date().toISOString(),
       };
 
-      const timestamp = Date.now();
-      const docId = `${form.date}_training_${selectedTrainee.name
-        .replace(/\s+/g, "-")
-        .toLowerCase()}_${timestamp}`;
-      const batch = writeBatch(db);
-      batch.set(doc(collection(db, "bookings"), docId), booking);
-      queueSlotBlockCreate(batch, docId, booking);
-      await batch.commit();
+      // Auto-generated ID, conflict-checked under the stylist-day lock
+      // (adminBookingWrites.ts) like every other admin booking
+      await createAdminBooking(db, booking);
 
       onSuccess(
         `Training session created — ${selectedTrainer.name} → ${selectedTrainee.name}: ${effectiveTopic}`,
@@ -164,8 +159,12 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
       });
       setCustomTopic("");
     } catch (err) {
-      console.error("Error creating training session:", err);
-      onError("Failed to create training session. Please try again.");
+      if (err instanceof BookingConflictError) {
+        onError(err.message);
+      } else {
+        console.error("Error creating training session:", err);
+        onError("Failed to create training session. Please try again.");
+      }
     }
     setSubmitting(false);
   };

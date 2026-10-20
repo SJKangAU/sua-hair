@@ -22,10 +22,12 @@ import { todayString, addDays } from "../lib/dates";
 import { bookingConverter } from "../lib/converters";
 import { computeReturnTime } from "../lib/scheduling";
 import { isSlotFreeing } from "../lib/bookingStatus";
+import { phasesHistoryEntry } from "../lib/bookingHistory";
+import { buildStatusPatch } from "../lib/statusPatch";
 import {
-  phasesHistoryEntry,
-  statusHistoryEntry,
-} from "../lib/bookingHistory";
+  updateBookingWithSlotLock,
+  writeStatusChange,
+} from "../lib/adminBookingWrites";
 import {
   BookingConflictError,
   fetchBookingConflict,
@@ -124,38 +126,8 @@ const useBookings = (salon: SalonLookup): UseBookings => {
       const previous = bookingsRef.current.find((b) => b.id === id);
       if (!previous) return;
 
-      // Fields that travel with the status, written to Firestore (`patch`)
-      // and mirrored into local state (`local`) in the same step:
-      //  - arrivedAt: stamped on arrival, cleared if moved back to
-      //    pending/confirmed (e.g. undoing a mis-tap)
-      //  - restoreStatus: remembers what a cancelled / no-show booking was,
-      //    so Restore returns it there instead of always to pending
-      const patch: Record<string, unknown> = { status };
-      const local: Partial<Booking> = { status };
-
-      if (status === "arrived") {
-        const arrivedAt = new Date().toISOString();
-        patch.arrivedAt = arrivedAt;
-        local.arrivedAt = arrivedAt;
-      } else if (status === "pending" || status === "confirmed") {
-        patch.arrivedAt = deleteField();
-        local.arrivedAt = undefined;
-      }
-
-      // History log line: "Confirmed", "Arrived", "Restored to confirmed"...
-      const historyEntry = statusHistoryEntry(previous.status, status);
-      patch.history = arrayUnion(historyEntry);
-      local.history = [...(previous.history ?? []), historyEntry];
-
-      const releasing = isSlotFreeing(status);
-      const wasReleased = isSlotFreeing(previous.status);
-      if (releasing && !wasReleased) {
-        patch.restoreStatus = previous.status;
-        local.restoreStatus = previous.status;
-      } else if (!releasing && wasReleased) {
-        patch.restoreStatus = deleteField();
-        local.restoreStatus = undefined;
-      }
+      // Patch for Firestore + the same fields for local state (statusPatch.ts)
+      const { patch, local } = buildStatusPatch(previous, status);
 
       // Optimistic update — update UI immediately
       setBookings((prev) =>
@@ -163,15 +135,11 @@ const useBookings = (salon: SalonLookup): UseBookings => {
       );
 
       try {
-        // slotBlocks/{id} is the PII-free projection the public
-        // availability calendar reads from — keep its status in sync so a
-        // cancelled / no-show booking's slot correctly frees up and every
-        // other status keeps it blocked. Batched so both writes succeed or
-        // fail together.
-        const batch = writeBatch(db);
-        batch.update(doc(db, "bookings", id), patch);
-        batch.update(doc(db, "slotBlocks", id), { status });
-        await batch.commit();
+        // Bringing a cancelled / no-show booking back re-checks the slot
+        // under the stylist-day lock and throws BookingConflictError if it
+        // was taken meanwhile; everything else is a plain batch (see
+        // adminBookingWrites.writeStatusChange).
+        await writeStatusChange(db, previous, status, patch);
       } catch (err) {
         console.error("Error updating booking status:", err);
 
@@ -352,7 +320,7 @@ const useBookings = (salon: SalonLookup): UseBookings => {
           : salonRef.current.stylists.find((s) => s.id === target.stylistId);
       if (!stylist) throw new Error("Choose a stylist to move this booking to.");
 
-      const clash = await fetchBookingConflict({
+      const clash = await fetchBookingConflict(db, {
         stylistId: target.stylistId,
         date: target.date,
         time: target.time,
@@ -379,20 +347,27 @@ const useBookings = (salon: SalonLookup): UseBookings => {
 
       try {
         const { returnTime, ...rest } = fields;
-        const batch = writeBatch(db);
-        batch.update(doc(db, "bookings", id), {
-          ...rest,
-          returnTime: returnTime ?? deleteField(),
-          history: arrayUnion(entry),
-        });
-        // The PII-free availability projection follows the move, so the old
-        // slot frees up and the new one blocks on the public calendar.
-        batch.update(doc(db, "slotBlocks", id), {
-          stylistId: fields.stylistId,
-          date: fields.date,
-          time: fields.time,
-        });
-        await batch.commit();
+        // Under the stylist-day lock, so a walk-in saved at the same instant
+        // for the target slot cannot slip in alongside this move. The
+        // PII-free availability projection follows the move, so the old slot
+        // frees up and the new one blocks on the public calendar.
+        await updateBookingWithSlotLock(
+          db,
+          id,
+          {
+            stylistId: target.stylistId,
+            date: target.date,
+            time: target.time,
+            totalTime: previous.totalTime,
+            activeTime: previous.activeTime,
+          },
+          {
+            ...rest,
+            returnTime: returnTime ?? deleteField(),
+            history: arrayUnion(entry),
+          },
+          { stylistId: fields.stylistId, date: fields.date, time: fields.time },
+        );
       } catch (err) {
         console.error("Error rescheduling booking:", err);
         setBookings((prev) =>
