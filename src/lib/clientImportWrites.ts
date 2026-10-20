@@ -109,6 +109,7 @@ export const runImport = async (
 
   let created = 0;
   let existed = 0;
+  let processed = 0;
   try {
     const chunks = chunkEntries(entries);
     for (let i = 0; i < chunks.length; i++) {
@@ -133,7 +134,8 @@ export const runImport = async (
       });
       created += result.created;
       existed += result.existed;
-      onProgress?.(Math.min((i + 1) * chunk.length, entries.length), entries.length);
+      processed += chunk.length;
+      onProgress?.(processed, entries.length);
     }
     await updateDoc(batchRef, {
       status: "complete",

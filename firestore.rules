@@ -235,6 +235,29 @@ service cloud.firestore {
       }
     }
 
+    // ── importBatches ────────────────────────────────────────────────────
+    // The owner's client-list import (Manage → Import clients): one document per
+    // run, and under it the phone numbers each committed chunk created, which is
+    // what a rollback walks. Phone numbers are personal data, so the ledger is
+    // owner-only, never readable by a stylist account or the public. (The
+    // customerLookups records the import creates are written by the same rule as
+    // any walk-in's, i.e. any signed-in account can write them; the import
+    // screen itself is owner-only in the app.)
+    match /importBatches/{batchId} {
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner()
+        && request.resource.data.status in ['running', 'complete', 'failed', 'rolled_back']
+        && request.resource.data.source is string;
+
+      match /chunks/{chunkId} {
+        allow read, delete: if isOwner();
+        allow create, update: if isOwner()
+          && request.resource.data.keys().hasOnly(['phones'])
+          && request.resource.data.phones is list
+          && request.resource.data.phones.size() <= 500;
+      }
+    }
+
     // ── users ────────────────────────────────────────────────────────────
     // Role documents (owner/stylist). Provisioned out-of-band (Firebase
     // console/admin SDK) — the app never writes this collection. A signed
