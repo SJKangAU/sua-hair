@@ -9,7 +9,8 @@ Firestore collections used by the app (rules in `firestore.rules`):
 | `bookings`                | staff only                    | staff; the public may **create** a pending one  | Every appointment, walk-in, break and training session       |
 | `slotBlocks`              | **public**                    | staff; public create of the paired pending doc  | PII-free projection of `bookings` used for public availability |
 | `stylistDayLocks`         | staff                         | staff (`version`, `updatedAt` only; no delete)  | Per-stylist-per-day lock that serialises admin slot-claiming writes |
-| `customerLookups`         | staff only                    | staff; public may write its own record          | Per-phone identity + visit history                           |
+| `customerLookups`         | staff only                    | staff; public may write its own record          | Per-phone identity + visit history (also created by the client import) |
+| `importBatches`           | owner only                    | owner only                                      | Ledger of each client-list import and, in `chunks`, the phones it created (for rollback) |
 | `stylists`                | public                        | staff; **`order` owner only**                   | Roster, tiers, working hours, display order                  |
 | `services`                | public                        | staff                                           | Catalogue, tiered prices, price history                      |
 | `salonSettings`           | public                        | staff                                           | Weekly opening hours + per-date overrides (`salonSettings/main`) |
@@ -78,6 +79,12 @@ ID `{date}_{stylistId}`. Fields: `version` (number), `updatedAt` (ISO string). H
 ## Collection: `customerLookups`
 
 ID = cleaned phone number. `{ name, lastVisit, visitCount }`. Updated whenever a customer or walk-in booking is created. Staff-read-only.
+
+The public booking rule allows **only** these three fields on a write (the merge result is checked), so nothing else may be stored here. A record created by the Fresha client import (FR-017) is `{ name, lastVisit: "", visitCount: 0 }`: indistinguishable from a client with no visits yet, which is why a later online booking merges into it normally. Which records an import created is kept in `importBatches`, not on the record.
+
+## Collection: `importBatches`
+
+Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'complete' | 'failed' | 'rolled_back', source, createdBy (uid), createdAt, planned, created, existed, finishedAt?, rolledBackAt?, removed?, kept? }`. Subcollection `chunks/{00000...}`: `{ phones: string[] }` (at most 500), the numbers a committed chunk created, written in the same transaction as those records. Rolling back deletes a chunk once its clients are handled, so the ledger holds no phone numbers afterwards. Personal data: owner-readable only.
 
 ---
 

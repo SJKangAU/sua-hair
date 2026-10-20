@@ -307,6 +307,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - **Roles:** every signed-in account is staff; the owner is identified by a `users/{uid}` role document; finance (Analytics) and owner settings are owner-only
 - **Erasure:** the owner can delete a customer's data by phone number — all their bookings are anonymised (name, phone, email, notes removed; service, price, date, status kept) and their visit record deleted
 - Privacy Policy and Terms of Service pages are linked from the footer
+- **Imported client data** (FR-017) stays in Firestore only. The Fresha export is never committed (`exports/`, `*.csv` and `*.xlsx` are ignored; only two synthetic fixtures with fake people are allowed), is read in the owner's browser and never uploaded, and the local file should be deleted once the import is done. Names, numbers and emails never appear in logs, toasts, error reports or test output
 
 **Acceptance criteria:**
 
@@ -336,3 +337,34 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Cancel from the timeline shows Undo, and Undo restores the booking (Playwright "D2" — failed before fix D2b)
 - [x] Restore is refused when the slot has been taken (Playwright "D2"; `admin`)
 - [x] Status patch / restore-status logic (`unit` adminLifecycle, bookingStatus)
+
+---
+
+## FR-017 — Import clients from Fresha (owner only)
+
+**Description:** The owner can load a Fresha **client list** export (.csv or .xlsx) so existing clients are recognised as returning clients when their number is entered. The export contains clients only (no appointments, services, staff or prices), so what is imported is each client's **name and mobile number**: `customerLookups/{04xxxxxxxx}` = `{ name, lastVisit: "", visitCount: 0 }` (exactly the three fields the public booking rule allows, DEC-032). Location: Manage → Import clients.
+
+**Requirements:**
+
+- **Owner only.** The section is not shown to stylist accounts; its ledger (`importBatches`) is owner-only in `firestore.rules`
+- **Read in the browser.** The file is parsed in the page (papaparse for csv, read-excel-file for xlsx, loaded on demand), size-limited (10 MB, 50,000 rows) and never uploaded
+- **Dry run first.** Counts of rows, new clients, clients already in the app (left exactly as they are), skipped rows and clients merged because they share a number; what the import leaves out (emails, landlines, genders, birth dates, staff alerts, blocked clients); a downloadable error report with **row numbers and reasons only**. Nothing is written until the owner confirms
+- **Normalising.** `61 4xx xxx xxx` and `04xx xxx xxx` become `04xxxxxxxx` (`^04\d{8}$`); anything else (missing, landline, overseas) is skipped and reported, never guessed. Names are trimmed and space-collapsed (Full Name, else First + Last) and may be in any script. Two clients sharing a number become one record with the most recently added name
+- **Existing clients are never overwritten.** A number that already has a record (real visit history) is left alone, even if it was created while the import was running
+- **Idempotent.** The number is the record ID, so importing the same file again (as csv or xlsx) adds nobody
+- **Batches.** Written in transactions of 400 clients plus one ledger entry (under Firestore's 500-write limit); a stopped import leaves a ledger of exactly what was written
+- **Rollback.** "Roll back" removes only the clients that import created, and only while their record is still as imported; a client who has booked since is kept and counted. The ledger keeps no phone numbers once handled
+- **Recognition.** Entering an imported client's number in the walk-in form fills their name and shows "Returning client" (with the visit count once they have booked through the app)
+- **Not imported (no home in the app, DEC-032):** email, telephone, gender, birth date, address, marketing flags, referral source, Staff alert (may hold personal notes), Blocked and Block Reason, Fresha's client ID and "Added" date
+- Imported clients do **not** appear in the Clients page or Today search, which are built from bookings; they appear there after their first booking
+
+**Acceptance criteria:**
+
+- [x] csv and xlsx parse to the same plan; phone, name, duplicate and invalid-row rules (`unit` clientImport, clientImportFile)
+- [x] Dry run counts, error report with row numbers only, nothing written before confirming (TC-079)
+- [x] Import writes name + phone only, existing client untouched (TC-080; `admin` clientImport)
+- [x] Imported client shows "Returning client" in the walk-in form (TC-081)
+- [x] Re-import adds nobody (TC-082; `admin`), xlsx matches csv (TC-083)
+- [x] Rollback removes only that import's clients and keeps one who has booked since (TC-084; `admin`)
+- [x] A wrong file is refused (TC-085); a stylist never sees the section (TC-078); the ledger is owner-only (`rules`, `admin`)
+- [x] 1,250 clients import in batches of 400; an imported record still accepts the public booking write (`admin`, `rules`)

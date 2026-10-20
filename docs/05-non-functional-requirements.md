@@ -58,6 +58,7 @@ Scale assumption: one salon, 5 stylists, tens of bookings a day. Nothing has bee
 | NFR-PRIV-04 | A customer's data can be erased on request while financial history is kept                   | `deleteCustomerData` anonymises bookings and deletes the visit record            | Not verified in this pass |
 | NFR-PRIV-05 | Retention is defined                                                                         | None: bookings are kept indefinitely unless erased on request                    | **Gap** — decide a retention period |
 | NFR-PRIV-06 | Legal review of the privacy policy and terms against the Australian Privacy Principles       | —                                                                                | **Not done** |
+| NFR-PRIV-07 | An imported client export is never committed, uploaded or logged                              | Git-ignored; parsed in the browser; only name + number written to Firestore; synthetic fixtures only in tests | Verified (`git ls-files exports` empty; FR-017) |
 
 ## Usability and accessibility
 

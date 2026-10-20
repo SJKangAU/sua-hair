@@ -629,3 +629,61 @@ describe("phase fields (DEC-026) - bookings and slotBlocks", () => {
     });
   });
 });
+
+describe("importBatches — the client import's ledger is owner-only", () => {
+  const batch = { status: "complete", source: "fresha-client-list", created: 3 };
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("users/owner-uid").set({ role: "owner" });
+      await ctx.firestore().doc("users/stylist-uid").set({ role: "stylist" });
+      await ctx.firestore().doc("importBatches/b1").set(batch);
+      await ctx.firestore().doc("importBatches/b1/chunks/00000").set({ phones: ["0400000001"] });
+    });
+  });
+
+  it("the owner can read, create, update and delete batches and chunks", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertSucceeds(owner.doc("importBatches/b1").get());
+    await assertSucceeds(owner.collection("importBatches/b1/chunks").get());
+    await assertSucceeds(owner.doc("importBatches/b2").set({ status: "running", source: "fresha-client-list" }));
+    await assertSucceeds(owner.doc("importBatches/b2").update({ status: "complete" }));
+    await assertSucceeds(owner.doc("importBatches/b1/chunks/00001").set({ phones: ["0400000002"] }));
+    await assertSucceeds(owner.doc("importBatches/b1/chunks/00000").delete());
+  });
+
+  it("a stylist account cannot see or write any of it", async () => {
+    const stylist = testEnv.authenticatedContext("stylist-uid").firestore();
+    await assertFails(stylist.doc("importBatches/b1").get());
+    await assertFails(stylist.collection("importBatches").get());
+    await assertFails(stylist.doc("importBatches/b1/chunks/00000").get());
+    await assertFails(stylist.doc("importBatches/b3").set({ status: "running", source: "x" }));
+    await assertFails(stylist.doc("importBatches/b1/chunks/00005").set({ phones: [] }));
+    await assertFails(stylist.doc("importBatches/b1").delete());
+  });
+
+  it("the public cannot see or write any of it", async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anon.doc("importBatches/b1").get());
+    await assertFails(anon.doc("importBatches/b1/chunks/00000").get());
+    await assertFails(anon.doc("importBatches/b3").set({ status: "running", source: "x" }));
+  });
+
+  it("rejects an unknown status, a non-list or oversize phone list and extra chunk fields", async () => {
+    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    await assertFails(owner.doc("importBatches/b4").set({ status: "odd", source: "x" }));
+    await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: "0400000001" }));
+    await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: Array.from({ length: 501 }, (_, i) => `04${String(i).padStart(8, "0")}`) }));
+    await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: [], note: "x" }));
+  });
+
+  it("an imported lookup (name, empty lastVisit, 0 visits) is accepted by the public booking merge", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("customerLookups/0400000001").set({ name: "Test Client 1", lastVisit: "", visitCount: 0 });
+    });
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(
+      anon.doc("customerLookups/0400000001").set(validCustomerLookup({ name: "Test Client 1", visitCount: 1 }), { merge: true }),
+    );
+  });
+});
