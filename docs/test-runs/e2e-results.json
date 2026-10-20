@@ -1,0 +1,863 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "-c",
+      "e2e/playwright.config.ts",
+      "02-admin",
+      "--timeout=45000",
+      "-g",
+      "D"
+    ],
+    "configFile": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\playwright.config.ts",
+    "rootDir": "C:/Users/Jason/Desktop/Coding/projects/sua-hair/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jason/Desktop/Coding/projects/sua-hair/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/Jason/Desktop/Coding/projects/sua-hair/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.spec\\.ts/"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e",
+        "snapshotDir": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 45000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5174",
+          "channel": "msedge",
+          "headless": true,
+          "screenshot": "only-on-failure",
+          "timezoneId": "Australia/Melbourne",
+          "locale": "en-AU"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/test-runs/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npx vite --port 5174 --strictPort --host 127.0.0.1",
+      "url": "http://127.0.0.1:5174",
+      "cwd": "..",
+      "reuseExistingServer": false,
+      "timeout": 60000,
+      "env": {
+        "VITE_FIREBASE_API_KEY": "AIzaSyDemoE2EKeyNotReal0000000000000000",
+        "VITE_FIREBASE_AUTH_DOMAIN": "demo-sua-e2e.firebaseapp.com",
+        "VITE_FIREBASE_PROJECT_ID": "demo-sua-e2e",
+        "VITE_FIREBASE_STORAGE_BUCKET": "demo-sua-e2e.appspot.com",
+        "VITE_FIREBASE_MESSAGING_SENDER_ID": "000000000000",
+        "VITE_FIREBASE_APP_ID": "1:000000000000:web:0000000000000000000000",
+        "VITE_USE_EMULATORS": "true"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "02-admin-today.spec.ts",
+      "file": "02-admin-today.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-009 timeline loads: every active stylist, today's bookings, current-time bar",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1608,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:05:53.610Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-b00e272ac6e936f87394",
+          "file": "02-admin-today.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "TC-010 Next moves the timeline to tomorrow and loads its bookings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 473,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:05:58.203Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-96005143f77050a9078b",
+          "file": "02-admin-today.spec.ts",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "TC-011 clicking a booking block opens its quick actions, and View details opens the full booking",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 884,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:05:58.692Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-ebda92361cb96fb81048",
+          "file": "02-admin-today.spec.ts",
+          "line": 98,
+          "column": 1
+        },
+        {
+          "title": "TC-012 clicking an empty slot opens the create form pre-filled with that stylist and time",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 527,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:05:59.588Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-a716ed28198f97e9e9ae",
+          "file": "02-admin-today.spec.ts",
+          "line": 115,
+          "column": 1
+        },
+        {
+          "title": "TC-013 create walk-in: appears immediately as confirmed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 935,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:00.126Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-afb1ef829f1293a20038",
+          "file": "02-admin-today.spec.ts",
+          "line": 130,
+          "column": 1
+        },
+        {
+          "title": "TC-014 create break: a break block appears on the timeline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 839,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:01.072Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-170ceb8d38b539fdf4d9",
+          "file": "02-admin-today.spec.ts",
+          "line": 153,
+          "column": 1
+        },
+        {
+          "title": "TC-015 confirming a pending booking turns it confirmed with a toast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 802,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:01.923Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-628acade1ec94459c98d",
+          "file": "02-admin-today.spec.ts",
+          "line": 165,
+          "column": 1
+        },
+        {
+          "title": "TC-033 an admin walk-in that overlaps an existing booking is blocked with a clear message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:02.738Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-cbc26324c45a2f4eaccc",
+          "file": "02-admin-today.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "TC-033b a walk-in inside another booking's rest window is allowed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 741,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:03.471Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-a4820505da07905248e8",
+          "file": "02-admin-today.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "TC-033c a break overlapping a booking is blocked",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 716,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:04.226Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-d4d257aabe84f7b52f12",
+          "file": "02-admin-today.spec.ts",
+          "line": 219,
+          "column": 1
+        },
+        {
+          "title": "D1 two admins saving the same slot at the same moment: exactly one booking is created",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2884,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:04.953Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-0147e5e0f733e6e6b314",
+          "file": "02-admin-today.spec.ts",
+          "line": 230,
+          "column": 1
+        },
+        {
+          "title": "D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2192,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:07.846Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-5ed3ea055b7dfc8aa5d6",
+          "file": "02-admin-today.spec.ts",
+          "line": 267,
+          "column": 1
+        },
+        {
+          "title": "D3 the timeline follows the opening hours configured for that date",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 768,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:10.050Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-cdd391323d5d91a6e6ea",
+          "file": "02-admin-today.spec.ts",
+          "line": 306,
+          "column": 1
+        },
+        {
+          "title": "no deprecated Firestore persistence warning is logged",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-20T07:06:10.829Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "61f078a1de64b436dfad-1f961b22a2ad4981635d",
+          "file": "02-admin-today.spec.ts",
+          "line": 327,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-20T07:05:50.223Z",
+    "duration": 21164.507999999998,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

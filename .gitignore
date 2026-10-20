@@ -33,3 +33,7 @@ dist-ssr
 .cdf-config/
 .cdf-settings/
 .nanobot/
+
+# Playwright
+test-results/
+playwright-report/

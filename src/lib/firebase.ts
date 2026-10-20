@@ -3,11 +3,12 @@
 
 import { initializeApp } from "firebase/app";
 import {
+  connectFirestoreEmulator,
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
 
 // When the project hasn't been wired up with real Firebase credentials yet
@@ -84,6 +85,13 @@ const firestoreSettings: FirestoreDevSettings = {
 export const db = initializeFirestore(app, firestoreSettings);
 
 export const auth = getAuth(app);
+
+// Local end-to-end runs (npm run test:e2e) point the app at the Firebase
+// emulators instead of any real project. Never set in production builds.
+if (import.meta.env.VITE_USE_EMULATORS === "true") {
+  connectFirestoreEmulator(db, "127.0.0.1", 8085);
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+}
 
 // Callable Cloud Functions. Region must match the functions' deployed region
 // (see functions/src/index.ts — australia-southeast1, Sydney).
