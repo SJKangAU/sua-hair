@@ -19,7 +19,8 @@ import {
   validateEmail,
 } from "../../lib/validation";
 import { writeBookingNotifications } from "../../lib/notifications";
-import { computeReturnTime } from "../../lib/scheduling";
+import { combinePhases, phaseTotals } from "../../lib/bookingPhases";
+import { phaseWriteFields } from "../../lib/phaseFields";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
@@ -125,11 +126,10 @@ const BookingForm = () => {
     selectedServiceIds.includes(s.id),
   );
 
-  const totalTime = selectedServices.reduce((sum, s) => sum + s.totalTime, 0);
-  const totalActiveTime = selectedServices.reduce(
-    (sum, s) => sum + s.activeTime,
-    0,
-  );
+  // The booking's phases: services with only hands-on + processing combine
+  // exactly as they always did; a service with a return phase runs end to end
+  const phases = combinePhases(selectedServices);
+  const { totalTime, activeTime: totalActiveTime } = phaseTotals(phases);
 
   const getPrice = (service: FirestoreService): number => {
     if (stylistId === "any") {
@@ -237,15 +237,16 @@ const BookingForm = () => {
       activeTime: s.activeTime,
       restTime: s.restTime,
       totalTime: s.totalTime,
+      ...(s.phases && s.phases.length > 0 ? { phases: s.phases } : {}),
     }));
 
     const finalStylistName =
       stylistId === "any" ? "Any available stylist" : stylist?.name ?? "";
     const finalStylistLevel =
       stylistId === "any" ? "junior" : stylist?.level ?? "junior";
-    const totalRestTime = totalTime - totalActiveTime;
-    const returnTime =
-      totalRestTime > 0 ? computeReturnTime(time, totalTime) : undefined;
+    // phases, absolute segments, legacy totals and the return time - one
+    // consistent set (phaseFields.ts)
+    const timing = phaseWriteFields(time, phases);
 
     setSubmitting(true);
     setSubmitError(null);
@@ -289,13 +290,10 @@ const BookingForm = () => {
         serviceId: bookedServices[0]?.id ?? "",
         serviceName: bookedServices.map((s) => s.name).join(" + "),
         servicePrice: estimatedTotal,
-        activeTime: totalActiveTime,
-        restTime: totalRestTime,
-        totalTime,
+        ...timing,
         date,
         time,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
-        ...(returnTime ? { returnTime } : {}),
         // Records that the customer agreed to the privacy terms, and when.
         consentGivenAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
@@ -415,6 +413,7 @@ const BookingForm = () => {
               time={time}
               totalTime={totalTime > 0 ? totalTime : 30}
               totalActiveTime={totalActiveTime > 0 ? totalActiveTime : 30}
+              phases={phases.length > 0 ? phases : undefined}
               serviceHash={serviceHash}
               onStylistSelect={handleStylistSelect}
               onDateSelect={setDate}

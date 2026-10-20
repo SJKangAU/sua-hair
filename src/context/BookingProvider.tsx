@@ -22,6 +22,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
     updateStatus,
     setFlag,
     updateTimes,
+    updatePhases,
     updateNotes,
     rescheduleBooking,
   } = useBookings({ stylists, services });
@@ -36,6 +37,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
         updateStatus,
         setFlag,
         updateTimes,
+        updatePhases,
         updateNotes,
         rescheduleBooking,
       }}

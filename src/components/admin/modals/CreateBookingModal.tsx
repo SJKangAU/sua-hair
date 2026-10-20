@@ -22,6 +22,7 @@ import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
 import { cleanPhone, validatePhone } from "../../../lib/validation";
 import { combineServices, fitsGap } from "../../../lib/walkinServices";
+import { phaseWriteFields } from "../../../lib/phaseFields";
 import {
   nextAutofillName,
   returningClientLabel,
@@ -31,7 +32,6 @@ import { createAdminBooking } from "../../../lib/adminBookingWrites";
 import {
   minutesToTimeString,
   getSalonHoursForDate,
-  computeReturnTime,
   buildBookingRef,
 } from "../../../lib/scheduling";
 import Modal from "../../ui/Modal";
@@ -254,10 +254,8 @@ const CreateBookingModal = ({
       : null;
     if (!stylist || !totals) return;
 
-    const returnTime =
-      totals.restTime > 0
-        ? computeReturnTime(walkin.time, totals.totalTime)
-        : undefined;
+    // phases, absolute segments, legacy totals and the return time, consistent
+    const timing = phaseWriteFields(walkin.time, totals.phases);
 
     setSubmitting(true);
     try {
@@ -274,14 +272,11 @@ const CreateBookingModal = ({
         serviceId: totals.serviceId,
         serviceName: totals.serviceName,
         servicePrice: totals.servicePrice,
-        activeTime: totals.activeTime,
-        restTime: totals.restTime,
-        totalTime: totals.totalTime,
+        ...timing,
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
         bookingRef: buildBookingRef("WI", walkin.date, stylist.id, walkin.time),
-        ...(returnTime ? { returnTime } : {}),
         createdAt: new Date().toISOString(),
       };
 

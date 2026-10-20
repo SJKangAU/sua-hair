@@ -48,6 +48,8 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       activeTime: d.activeTime ?? 0,
       restTime: d.restTime ?? 0,
       totalTime: d.totalTime ?? d.activeTime ?? 0,
+      phases: Array.isArray(d.phases) ? d.phases : undefined,
+      segments: Array.isArray(d.segments) ? d.segments : undefined,
       returnTime: d.returnTime,
       date: d.date ?? "",
       time: d.time ?? "",

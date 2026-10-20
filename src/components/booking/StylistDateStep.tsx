@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useSalonData } from "../../context/SalonDataContext";
 import useBookingAvailability from "../../hooks/useBookingAvailability";
 import { todayString, parseLocalDate } from "../../lib/dates";
+import type { Phase } from "../../types";
 
 import MonthCalendar from "./MonthCalendar";
 import TimeSlotGrid from "./TimeSlotGrid";
@@ -29,6 +30,8 @@ interface Props {
   time: string;
   totalTime: number;
   totalActiveTime: number;
+  // The booking's phases (omitted for a plain hands-on + processing booking)
+  phases?: Phase[];
   serviceHash: string; // joined sorted service IDs — triggers re-availability on change
   onStylistSelect: (id: string) => void;
   onDateSelect: (date: string) => void;
@@ -69,6 +72,7 @@ const StylistDateStep = ({
   time,
   totalTime,
   totalActiveTime,
+  phases,
   serviceHash,
   onStylistSelect,
   onDateSelect,
@@ -92,6 +96,7 @@ const StylistDateStep = ({
     date,
     totalTime,
     activeTime: totalActiveTime,
+    phases,
     allStylistIds,
     isAny,
     viewYear,
@@ -304,6 +309,7 @@ const StylistDateStep = ({
             onTimeSelect={onTimeSelect}
             totalTime={totalTime}
             activeTime={totalActiveTime}
+            phases={phases}
             stylistId={stylistId}
           />
         )}

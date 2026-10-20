@@ -36,6 +36,10 @@ const ALLOWED_SLOT_BLOCK_FIELDS = new Set([
   "totalTime",
   "restTime",
   "status",
+  // phase footprint (DEC-026): hands-on blocks in minutes from midnight and the
+  // minute the stylist is due back - no identity of any kind
+  "busy",
+  "returnAt",
 ]);
 
 let testEnv: RulesTestEnvironment;

@@ -4,7 +4,7 @@
 // react-refresh/only-export-components.
 
 import { createContext, useContext } from "react";
-import type { Booking, BookingStatus } from "../types";
+import type { Booking, BookingStatus, Phase } from "../types";
 import type { RescheduleTarget } from "../lib/reschedule";
 
 interface BookingContextValue {
@@ -21,6 +21,9 @@ interface BookingContextValue {
     activeTime: number,
     restTime: number,
   ) => Promise<void>;
+  // Replaces this booking's phases (per-booking customisation, conflict-checked
+  // in a transaction; throws BookingConflictError naming the clashing booking)
+  updatePhases: (id: string, phases: Phase[]) => Promise<void>;
   // Saves the booking's free-text notes
   updateNotes: (id: string, notes: string) => Promise<void>;
   // Moves a booking to a new date / time / stylist. Runs the same conflict

@@ -5,7 +5,8 @@
 // the stylist's level, and the booking carries the per-service list as well as
 // the flat legacy fields the admin views still read.
 
-import type { BookedService, TieredPrice } from "../types";
+import { combinePhases, phaseTotals } from "./bookingPhases";
+import type { BookedService, Phase, TieredPrice } from "../types";
 
 export interface ServiceSource {
   id: string;
@@ -13,6 +14,7 @@ export interface ServiceSource {
   activeTime: number;
   restTime: number;
   totalTime: number;
+  phases?: Phase[];
   price: TieredPrice;
 }
 
@@ -24,6 +26,8 @@ export interface CombinedServices {
   activeTime: number;
   restTime: number;
   totalTime: number;
+  // The services' combined phases (see combinePhases)
+  phases: Phase[];
 }
 
 export const combineServices = (
@@ -38,9 +42,13 @@ export const combineServices = (
     activeTime: s.activeTime,
     restTime: s.restTime,
     totalTime: s.totalTime,
+    ...(s.phases && s.phases.length > 0 ? { phases: s.phases } : {}),
   }));
-  const activeTime = services.reduce((n, s) => n + s.activeTime, 0);
-  const totalTime = services.reduce((n, s) => n + s.totalTime, 0);
+  // Services with only hands-on + processing combine exactly as before (all
+  // hands-on, then all processing); a service with a return phase makes them
+  // run end to end
+  const phases = combinePhases(selected);
+  const { activeTime, totalTime } = phaseTotals(phases);
   return {
     services,
     serviceId: services[0].id,
@@ -49,6 +57,7 @@ export const combineServices = (
     activeTime,
     restTime: totalTime - activeTime,
     totalTime,
+    phases,
   };
 };
 

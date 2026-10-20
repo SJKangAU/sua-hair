@@ -38,6 +38,8 @@ import {
   type SlotPreview,
 } from "../../lib/slotPreview";
 import type { Slot } from "../../hooks/useBookingAvailability";
+import type { Segment } from "../../lib/bookingPhases";
+import type { Phase } from "../../types";
 
 interface Props {
   date: string;
@@ -45,6 +47,8 @@ interface Props {
   slots: Slot[];
   totalTime: number;
   activeTime: number;
+  // The booking's phases (hands-on, processing, return...); omitted = hands-on + processing
+  phases?: Phase[];
   onTimeSelect: (time: string) => void;
 }
 
@@ -77,16 +81,17 @@ const rowLabel = (p: SlotPreview): string => {
   return `${t}, unavailable — ${p.reason}`;
 };
 
-// A drawn block: hands-on part solid, processing part hatched
+// A drawn block: one band per phase - hands-on solid, processing hatched (a
+// booking with a return after its processing shows solid, hatched, solid)
 const Block = ({
   top,
   height,
-  activeHeight,
+  segments,
   tone,
 }: {
   top: number;
   height: number;
-  activeHeight: number;
+  segments: Segment[];
   tone: "preview" | "selected";
 }) => (
   <div
@@ -110,20 +115,29 @@ const Block = ({
       flexDirection: "column",
     }}
   >
-    <div
-      style={{
-        height: activeHeight,
-        background: tone === "selected" ? "var(--ink)" : "var(--ink-soft)",
-        flexShrink: 0,
-      }}
-    />
-    {height - activeHeight > 0 && (
-      <div style={{ flex: 1, background: HATCH }} />
-    )}
+    {segments.map((seg, i) => {
+      const last = i === segments.length - 1;
+      const px = ((seg.end - seg.start) / PREVIEW_SNAP_MINUTES) * ROW_PX;
+      return (
+        <div
+          key={i}
+          data-phase={seg.type}
+          style={{
+            ...(last ? { flex: 1 } : { height: px, flexShrink: 0 }),
+            background:
+              seg.type === "rest"
+                ? HATCH
+                : tone === "selected"
+                ? "var(--ink)"
+                : "var(--ink-soft)",
+          }}
+        />
+      );
+    })}
   </div>
 );
 
-const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }: Props) => {
+const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, phases, onTimeSelect }: Props) => {
   const { salonSettings } = useSalonData();
   const hours = getSalonHoursForDate(date, salonSettings);
 
@@ -143,7 +157,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
   const pointerType = useRef<string>("mouse");
   const rowRefs = useRef(new Map<number, HTMLElement>());
 
-  const stateAt = (m: number) => previewAt(m, slots, totalTime, activeTime);
+  const stateAt = (m: number) => previewAt(m, slots, totalTime, activeTime, undefined, phases);
 
   const selectedStart = time ? timeStringToMinutes(time) : null;
   const firstAvailable = slots.find((s) => s.available);
@@ -338,7 +352,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
           <Block
             top={px(selectedState.start)}
             height={(totalTime / PREVIEW_SNAP_MINUTES) * ROW_PX}
-            activeHeight={((selectedState.activeEnd - selectedState.start) / PREVIEW_SNAP_MINUTES) * ROW_PX}
+            segments={selectedState.segments}
             tone="selected"
           />
         )}
@@ -348,7 +362,7 @@ const DayTimeGrid = ({ date, time, slots, totalTime, activeTime, onTimeSelect }:
           <Block
             top={px(activeState.start)}
             height={(totalTime / PREVIEW_SNAP_MINUTES) * ROW_PX}
-            activeHeight={((activeState.activeEnd - activeState.start) / PREVIEW_SNAP_MINUTES) * ROW_PX}
+            segments={activeState.segments}
             tone="preview"
           />
         )}

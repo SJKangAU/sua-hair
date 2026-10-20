@@ -539,3 +539,93 @@ describe("stylists.order — only the owner can write the display order", () => 
     await assertSucceeds(staff.doc("stylists/s1").set({ ...stylist, order: 0 }));
   });
 });
+
+describe("phase fields (DEC-026) - bookings and slotBlocks", () => {
+  const busy = [{ start: 600, end: 660 }, { start: 690, end: 720 }];
+  const phases = [
+    { type: "active", minutes: 60 },
+    { type: "rest", minutes: 30 },
+    { type: "active", minutes: 30 },
+  ];
+  const segments = [
+    { type: "active", start: 600, end: 660 },
+    { type: "rest", start: 660, end: 690 },
+    { type: "active", start: 690, end: 720 },
+  ];
+  const tooMany = Array.from({ length: 9 }, () => ({ start: 1, end: 2 }));
+
+  describe("the public slotBlocks projection", () => {
+    it("accepts busy blocks and a return point", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertSucceeds(
+        anon.doc("slotBlocks/new-1").set(validSlotBlock({ busy, returnAt: 690 })),
+      );
+      await assertSucceeds(
+        anon.doc("slotBlocks/new-2").set(validSlotBlock({ busy, returnAt: null })),
+      );
+    });
+
+    it("still accepts the projection without them (records from before phases)", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertSucceeds(anon.doc("slotBlocks/old-1").set(validSlotBlock()));
+    });
+
+    it("rejects busy that is not a list, has too many blocks, or a non-numeric return point", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertFails(anon.doc("slotBlocks/bad-1").set(validSlotBlock({ busy: "all day" })));
+      await assertFails(anon.doc("slotBlocks/bad-2").set(validSlotBlock({ busy: tooMany })));
+      await assertFails(anon.doc("slotBlocks/bad-3").set(validSlotBlock({ busy, returnAt: "noon" })));
+    });
+
+    it("cannot smuggle identity in through the new fields' neighbours", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertFails(
+        anon.doc("slotBlocks/pii").set(validSlotBlock({ busy, customerName: "Jane Customer" })),
+      );
+      await assertFails(anon.doc("slotBlocks/pii2").set(validSlotBlock({ busy, phases })));
+    });
+
+    it("anyone can read the busy blocks (they are the public availability data)", async () => {
+      await seedBooking("bk-p", { busy, returnAt: 690 });
+      const anon = testEnv.unauthenticatedContext().firestore();
+      const snap = await assertSucceeds(anon.doc("slotBlocks/bk-p").get());
+      expect(snap.data()?.busy).toEqual(busy);
+    });
+
+    it("staff can update the busy blocks; a malformed update is refused", async () => {
+      await seedBooking("bk-q");
+      const staff = testEnv.authenticatedContext("staff-1").firestore();
+      await assertSucceeds(staff.doc("slotBlocks/bk-q").update({ busy, returnAt: 690 }));
+      await assertFails(staff.doc("slotBlocks/bk-q").update({ busy: tooMany }));
+      await assertFails(staff.doc("slotBlocks/bk-q").update({ returnAt: "later" }));
+    });
+  });
+
+  describe("bookings", () => {
+    it("a public booking may carry its phases and segments", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertSucceeds(
+        anon.doc("bookings/ph-1").set(validPublicBooking({ phases, segments })),
+      );
+    });
+
+    it("a public booking with phases that are not a list, or too many, is refused", async () => {
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertFails(anon.doc("bookings/ph-2").set(validPublicBooking({ phases: "long" })));
+      await assertFails(anon.doc("bookings/ph-3").set(validPublicBooking({ segments: tooMany })));
+    });
+
+    it("staff can save new phases; an oversized list is refused", async () => {
+      await seedBooking("bk-r");
+      const staff = testEnv.authenticatedContext("staff-1").firestore();
+      await assertSucceeds(staff.doc("bookings/bk-r").update({ phases, segments }));
+      await assertFails(staff.doc("bookings/bk-r").update({ phases: tooMany }));
+    });
+
+    it("the booking list stays staff-only whatever fields it carries", async () => {
+      await seedBooking("bk-s", { phases, segments });
+      const anon = testEnv.unauthenticatedContext().firestore();
+      await assertFails(anon.doc("bookings/bk-s").get());
+    });
+  });
+});

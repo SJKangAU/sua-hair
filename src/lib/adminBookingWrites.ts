@@ -26,7 +26,9 @@
 // emulator with real security rules.
 
 import {
+  arrayUnion,
   collection,
+  deleteField,
   doc,
   increment,
   runTransaction,
@@ -36,10 +38,11 @@ import {
 } from "firebase/firestore";
 import { BookingConflictError, fetchBookingConflict } from "./bookingConflicts";
 import { isSlotFreeing } from "./bookingStatus";
-import { toSlotBlock } from "./slotBlockData";
+import { slotBlockSchedulePatch, toSlotBlock } from "./slotBlockData";
+import { phaseWriteFields } from "./phaseFields";
 import { cleanPhone } from "./validation";
 import type { ConflictProbe } from "./scheduling";
-import type { Booking } from "../types";
+import type { Booking, BookingHistoryEntry, Phase } from "../types";
 
 // Admin concurrency is a handful of people at most; allow more optimistic
 // retries than the SDK default of 5 so a busy moment never surfaces as a
@@ -90,6 +93,7 @@ export const createAdminBooking = (
       time: booking.time,
       totalTime: booking.totalTime,
       activeTime: booking.activeTime,
+      phases: booking.phases,
     },
     (tx) => {
       tx.set(ref, booking);
@@ -133,7 +137,14 @@ export const writeStatusChange = async (
   firestore: Firestore,
   previous: Pick<
     Booking,
-    "id" | "status" | "stylistId" | "date" | "time" | "totalTime" | "activeTime"
+    | "id"
+    | "status"
+    | "stylistId"
+    | "date"
+    | "time"
+    | "totalTime"
+    | "activeTime"
+    | "phases"
   >,
   status: Booking["status"],
   patch: Record<string, unknown>,
@@ -149,6 +160,7 @@ export const writeStatusChange = async (
         time: previous.time,
         totalTime: previous.totalTime,
         activeTime: previous.activeTime,
+        phases: previous.phases,
       },
       patch,
       { status },
@@ -162,4 +174,48 @@ export const writeStatusChange = async (
   batch.update(doc(firestore, "bookings", previous.id), patch);
   batch.update(doc(firestore, "slotBlocks", previous.id), { status });
   await batch.commit();
+};
+
+// Saves a new set of phases for ONE booking, in a transaction with its conflict
+// check: the lock is taken, every busy block of the new shape is checked against
+// every other booking for the stylist, and the booking and its slotBlocks
+// projection are written together. Throws BookingConflictError (naming the
+// clashing booking) and writes nothing if it would collide. The service the
+// booking came from is never touched.
+export const writePhaseEdit = (
+  firestore: Firestore,
+  previous: Pick<
+    Booking,
+    | "id"
+    | "stylistId"
+    | "date"
+    | "time"
+    | "status"
+    | "activeTime"
+    | "restTime"
+    | "totalTime"
+  >,
+  phases: Phase[],
+  historyEntry: BookingHistoryEntry,
+): Promise<void> => {
+  const fields = phaseWriteFields(previous.time, phases);
+  const { returnTime, ...rest } = fields;
+  return updateBookingWithSlotLock(
+    firestore,
+    previous.id,
+    {
+      stylistId: previous.stylistId,
+      date: previous.date,
+      time: previous.time,
+      totalTime: fields.totalTime,
+      activeTime: fields.activeTime,
+      phases,
+    },
+    {
+      ...rest,
+      returnTime: returnTime ?? deleteField(),
+      history: arrayUnion(historyEntry),
+    },
+    slotBlockSchedulePatch({ ...previous, ...fields }),
+  );
 };

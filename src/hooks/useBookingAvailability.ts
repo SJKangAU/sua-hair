@@ -26,7 +26,7 @@ import {
   getDaysInMonth,
 } from "../lib/dates";
 import { useSalonData } from "../context/SalonDataContext";
-import type { SlotBlock } from "../types";
+import type { Phase, SlotBlock } from "../types";
 
 export interface Slot {
   time: string;
@@ -40,6 +40,9 @@ interface Options {
   date: string;
   totalTime: number;
   activeTime: number;
+  // The selected services' combined phases (DEC-026): lets the engine offer only
+  // starts where every hands-on block is free. Absent = hands-on + processing.
+  phases?: Phase[];
   allStylistIds: string[];
   isAny: boolean;
   viewYear: number;
@@ -56,6 +59,7 @@ const useBookingAvailability = ({
   date,
   totalTime,
   activeTime,
+  phases,
   allStylistIds,
   isAny,
   viewYear,
@@ -86,6 +90,9 @@ const useBookingAvailability = ({
   const dateRef = useRef(date);
   const effTotalRef = useRef(effTotal);
   const effActiveRef = useRef(effActive);
+  // The phases as a stable key: a new array with the same content is not a change
+  const phasesKey = phases ? JSON.stringify(phases) : "";
+  const phasesRef = useRef(phases);
   const onDateSelectRef = useRef(onDateSelect);
   const onTimeSelectRef = useRef(onTimeSelect);
   const onViewChangeRef = useRef(onViewChange);
@@ -107,6 +114,9 @@ const useBookingAvailability = ({
   });
   useEffect(() => {
     effActiveRef.current = effActive;
+  });
+  useEffect(() => {
+    phasesRef.current = phases;
   });
   useEffect(() => {
     onDateSelectRef.current = onDateSelect;
@@ -168,6 +178,8 @@ const useBookingAvailability = ({
             effActive,
             bookings,
             settings,
+            undefined,
+            phasesRef.current,
           ).forEach((slot) => {
             if (slot.available) availMap[slot.time] = true;
             else if (!(slot.time in availMap)) availMap[slot.time] = false;
@@ -181,6 +193,8 @@ const useBookingAvailability = ({
           effActive,
           bookings,
           settings,
+          undefined,
+          phasesRef.current,
         );
         setSlots(
           base.map((slot) => ({
@@ -199,7 +213,7 @@ const useBookingAvailability = ({
     return () => {
       cancelled = true;
     };
-  }, [date, stylistId, effTotal, effActive, salonSettings]);
+  }, [date, stylistId, effTotal, effActive, phasesKey, salonSettings]);
 
   // ── Fetch available days for current month ────────────────────────────────
   useEffect(() => {
@@ -254,6 +268,8 @@ const useBookingAvailability = ({
               effActiveRef.current,
               bookings,
               settings,
+              undefined,
+              phasesRef.current,
             );
             if (daySlots.some((s) => s.available)) {
               available.add(day);
@@ -279,6 +295,7 @@ const useBookingAvailability = ({
     serviceId,
     effTotal,
     effActive,
+    phasesKey,
     salonSettings,
   ]);
 
@@ -345,6 +362,8 @@ const useBookingAvailability = ({
           effA,
           bookings,
           settings,
+          undefined,
+          phasesRef.current,
         );
         const firstAvail = daySlots.find((s) => s.available);
         if (firstAvail) {

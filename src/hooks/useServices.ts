@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import type { Phase } from "../types";
 
 export interface TieredPrice {
   director: number;
@@ -27,6 +28,10 @@ export interface FirestoreService {
   activeTime: number;
   restTime: number;
   totalTime: number;
+  // The service's default phases (hands-on, processing, return...). Absent on
+  // services saved before phases existed: derived from activeTime / restTime.
+  // Changing these affects NEW bookings only.
+  phases?: Phase[];
   price: TieredPrice;
   status: "active" | "inactive";
   sortOrder: number;

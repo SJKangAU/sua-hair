@@ -44,6 +44,18 @@ service cloud.firestore {
                         'completed', 'no_show', 'cancelled'];
     }
 
+    // Phase fields (DEC-026). A booking carries `phases` and `segments` (lists of
+    // {type, minutes} / {type, start, end}); its public slotBlocks projection
+    // carries `busy` (the hands-on blocks, {start, end} in minutes from midnight)
+    // and `returnAt` (the minute the stylist is due back, or null). They must be
+    // lists of a sane size - nothing here can carry customer data.
+    function hasValidPhases(d) {
+      return (!('phases' in d) || (d.phases is list && d.phases.size() <= 8))
+        && (!('segments' in d) || (d.segments is list && d.segments.size() <= 8))
+        && (!('busy' in d) || (d.busy is list && d.busy.size() <= 8))
+        && (!('returnAt' in d) || d.returnAt == null || d.returnAt is number);
+    }
+
     // ── bookings ────────────────────────────────────────────────────────
     // Full booking records, including customer PII (name, phone, notes).
     // Reads/list/updates/deletes require a staff account. Anonymous
@@ -54,9 +66,11 @@ service cloud.firestore {
     match /bookings/{bookingId} {
       allow read, list, delete: if isStaff();
 
-      allow update: if isStaff() && hasValidStatus(request.resource.data);
+      allow update: if isStaff() && hasValidStatus(request.resource.data)
+        && hasValidPhases(request.resource.data);
 
-      allow create: if (isStaff() && hasValidStatus(request.resource.data))
+      allow create: if (isStaff() && hasValidStatus(request.resource.data)
+                        && hasValidPhases(request.resource.data))
         || isValidPublicBooking();
 
       function isValidPublicBooking() {
@@ -71,6 +85,7 @@ service cloud.firestore {
           && b.activeTime is number
           && b.totalTime is number
           && b.restTime is number
+          && hasValidPhases(b)
           // Privacy consent must be recorded — the public form can't submit
           // without the consent box ticked (see BookingForm / DetailsStep).
           && b.consentGivenAt is string
@@ -93,16 +108,20 @@ service cloud.firestore {
       allow read, list: if true;
       allow delete: if isStaff();
 
-      allow update: if isStaff() && hasValidStatus(request.resource.data);
+      allow update: if isStaff() && hasValidStatus(request.resource.data)
+        && hasValidPhases(request.resource.data);
 
-      allow create: if (isStaff() && hasValidStatus(request.resource.data))
+      allow create: if (isStaff() && hasValidStatus(request.resource.data)
+                        && hasValidPhases(request.resource.data))
         || isValidPublicSlotBlock();
 
       function isValidPublicSlotBlock() {
         let s = request.resource.data;
         return s.keys().hasOnly(
-            ['stylistId', 'date', 'time', 'activeTime', 'totalTime', 'restTime', 'status']
+            ['stylistId', 'date', 'time', 'activeTime', 'totalTime', 'restTime', 'status',
+             'busy', 'returnAt']
           )
+          && hasValidPhases(s)
           && s.status == 'pending'
           && s.stylistId is string
           && s.date is string

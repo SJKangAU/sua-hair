@@ -13,19 +13,21 @@ import {
   where,
   doc,
   updateDoc,
-  writeBatch,
   deleteField,
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { todayString, addDays } from "../lib/dates";
 import { bookingConverter } from "../lib/converters";
-import { computeReturnTime } from "../lib/scheduling";
 import { isSlotFreeing } from "../lib/bookingStatus";
-import { phasesHistoryEntry } from "../lib/bookingHistory";
+import { phaseEditHistoryEntry } from "../lib/bookingHistory";
+import { resolvePhases } from "../lib/bookingPhases";
+import { phaseWriteFields } from "../lib/phaseFields";
+import { slotBlockSchedulePatch } from "../lib/slotBlockData";
 import { buildStatusPatch } from "../lib/statusPatch";
 import {
   updateBookingWithSlotLock,
+  writePhaseEdit,
   writeStatusChange,
 } from "../lib/adminBookingWrites";
 import {
@@ -39,7 +41,7 @@ import {
   type RescheduleTarget,
   type StylistInfo,
 } from "../lib/reschedule";
-import type { Booking, BookingStatus } from "../types";
+import type { Booking, BookingStatus, Phase } from "../types";
 
 interface UseBookings {
   bookings: Booking[];
@@ -60,6 +62,8 @@ interface UseBookings {
     activeTime: number,
     restTime: number,
   ) => Promise<void>;
+  // Replace this booking's phases (see updatePhases below)
+  updatePhases: (id: string, phases: Phase[]) => Promise<void>;
   updateNotes: (id: string, notes: string) => Promise<void>;
   rescheduleBooking: (id: string, target: RescheduleTarget) => Promise<void>;
 }
@@ -204,82 +208,78 @@ const useBookings = (salon: SalonLookup): UseBookings => {
     [],
   );
 
-  // Per-session time override — same optimistic-update-then-write-then-
-  // rollback pattern as updateStatus/setFlag. Recomputes totalTime and the
-  // locked returnTime from the new split so the timeline, booking cards, and
-  // confirmation views stay consistent with the override immediately.
-  const updateTimes = useCallback(
-    async (id: string, activeTime: number, restTime: number) => {
-      const previous = bookingsRef.current.find((b) => b.id === id);
-      if (!previous) return;
+  // Save a new set of phases for ONE booking (per-booking customisation: the
+  // service's defaults are never touched). Optimistic with rollback like the
+  // rest, but the write itself runs in a transaction with the conflict check on
+  // every busy block (adminBookingWrites.writePhaseEdit): a collision throws
+  // BookingConflictError, the optimistic change is rolled back, nothing is saved.
+  const updatePhases = useCallback(async (id: string, phases: Phase[]) => {
+    const previous = bookingsRef.current.find((b) => b.id === id);
+    if (!previous) return;
 
-      const totalTime = activeTime + restTime;
-      const returnTime =
-        restTime > 0 ? computeReturnTime(previous.time, totalTime) : undefined;
+    const before = resolvePhases(previous);
+    const fields = phaseWriteFields(previous.time, phases);
+    const changed = JSON.stringify(before) !== JSON.stringify(phases);
+    const historyEntry = phaseEditHistoryEntry(before, phases, fields.returnTime);
 
-      // Log the change — but only when a phase length really moved
-      const changed =
-        previous.activeTime !== activeTime || previous.restTime !== restTime;
-      const historyEntry = changed
-        ? phasesHistoryEntry(previous, { activeTime, restTime })
-        : null;
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === id
+          ? {
+              ...b,
+              ...fields,
+              returnTime: fields.returnTime,
+              ...(changed
+                ? { history: [...(b.history ?? []), historyEntry] }
+                : {}),
+            }
+          : b,
+      ),
+    );
 
+    try {
+      await writePhaseEdit(db, previous, phases, historyEntry);
+    } catch (err) {
+      if (!(err instanceof BookingConflictError)) {
+        console.error("Error updating booking phases:", err);
+      }
       setBookings((prev) =>
         prev.map((b) =>
           b.id === id
             ? {
                 ...b,
-                activeTime,
-                restTime,
-                totalTime,
-                returnTime,
-                ...(historyEntry
-                  ? { history: [...(b.history ?? []), historyEntry] }
-                  : {}),
+                phases: previous.phases,
+                segments: previous.segments,
+                activeTime: previous.activeTime,
+                restTime: previous.restTime,
+                totalTime: previous.totalTime,
+                returnTime: previous.returnTime,
+                history: previous.history,
               }
             : b,
         ),
       );
+      throw err;
+    }
+  }, []);
 
-      try {
-        // Keep the slotBlocks projection's schedule fields in sync —
-        // batched with the bookings write so they never drift apart.
-        const batch = writeBatch(db);
-        batch.update(doc(db, "bookings", id), {
-          activeTime,
-          restTime,
-          totalTime,
-          returnTime: returnTime ?? deleteField(),
-          ...(historyEntry ? { history: arrayUnion(historyEntry) } : {}),
-        });
-        batch.update(doc(db, "slotBlocks", id), {
-          activeTime,
-          restTime,
-          totalTime,
-        });
-        await batch.commit();
-      } catch (err) {
-        console.error("Error updating booking times:", err);
-
-        setBookings((prev) =>
-          prev.map((b) =>
-            b.id === id
-              ? {
-                  ...b,
-                  activeTime: previous.activeTime,
-                  restTime: previous.restTime,
-                  totalTime: previous.totalTime,
-                  returnTime: previous.returnTime,
-                  history: previous.history,
-                }
-              : b,
-          ),
-        );
-
-        throw err;
-      }
+  // The two-number form (hands-on, processing) used by the timeline's resize
+  // handle and undo: the booking's phases with its first hands-on and first
+  // processing phase set to these lengths.
+  const updateTimes = useCallback(
+    async (id: string, activeTime: number, restTime: number) => {
+      const previous = bookingsRef.current.find((b) => b.id === id);
+      if (!previous) return;
+      const phases = resolvePhases(previous);
+      const next = phases.map((p) => ({ ...p }));
+      const firstActive = next.findIndex((p) => p.type === "active");
+      const firstRest = next.findIndex((p) => p.type === "rest");
+      if (firstActive >= 0) next[firstActive].minutes = activeTime;
+      if (firstRest >= 0) next[firstRest].minutes = restTime;
+      else if (restTime > 0) next.push({ type: "rest", minutes: restTime });
+      await updatePhases(id, next);
     },
-    [],
+    [updatePhases],
   );
 
   // Save a booking's free-text notes — optimistic with rollback, like the rest.
@@ -330,21 +330,31 @@ const useBookings = (salon: SalonLookup): UseBookings => {
         time: target.time,
         totalTime: previous.totalTime,
         activeTime: previous.activeTime,
+        phases: previous.phases,
         excludeId: id,
       });
       if (clash) throw new BookingConflictError(clash);
 
-      const { fields, entry } = buildReschedule(
+      const { fields: baseFields, entry } = buildReschedule(
         previous,
         target,
         stylist,
         salonRef.current.services,
       );
+      // The booking's phases move with it: new absolute segments, and the time
+      // the stylist is first due back follows the phases (not just the total)
+      const placed = phaseWriteFields(target.time, resolvePhases(previous));
+      const fields = { ...baseFields, returnTime: placed.returnTime };
 
       setBookings((prev) =>
         prev.map((b) =>
           b.id === id
-            ? { ...b, ...fields, history: [...(b.history ?? []), entry] }
+            ? {
+                ...b,
+                ...fields,
+                segments: placed.segments,
+                history: [...(b.history ?? []), entry],
+              }
             : b,
         ),
       );
@@ -364,13 +374,20 @@ const useBookings = (salon: SalonLookup): UseBookings => {
             time: target.time,
             totalTime: previous.totalTime,
             activeTime: previous.activeTime,
+            phases: previous.phases,
           },
           {
             ...rest,
+            segments: placed.segments,
             returnTime: returnTime ?? deleteField(),
             history: arrayUnion(entry),
           },
-          { stylistId: fields.stylistId, date: fields.date, time: fields.time },
+          slotBlockSchedulePatch({
+            ...previous,
+            stylistId: fields.stylistId,
+            date: fields.date,
+            time: fields.time,
+          }),
         );
       } catch (err) {
         console.error("Error rescheduling booking:", err);
@@ -411,6 +428,7 @@ const useBookings = (salon: SalonLookup): UseBookings => {
     updateStatus,
     setFlag,
     updateTimes,
+    updatePhases,
     updateNotes,
     rescheduleBooking,
   };

@@ -16,6 +16,7 @@
 //   available, never as a highlighted block.
 
 import { SALON_CONFIG } from "./config";
+import { phasesFromLegacy, segmentsFor, type Phase, type Segment } from "./bookingPhases";
 import { formatRangeShort } from "./timelineLayout";
 import { minutesToTimeString, timeStringToMinutes } from "./scheduling";
 
@@ -35,6 +36,8 @@ export type SlotPreview =
       start: number;
       end: number;
       activeEnd: number;
+      // every phase placed on the day, in order (hands-on, processing, return...)
+      segments: Segment[];
       time: string;
       label: string;
     }
@@ -70,6 +73,8 @@ export const previewAt = (
   totalTime: number,
   activeTime: number,
   interval: number = SALON_CONFIG.slotIntervalMinutes,
+  // The booking's phases; derived from the two totals when omitted
+  phases?: readonly Phase[],
 ): SlotPreview => {
   const start = snapToPreviewGrid(position);
   if (!isBookableStartPosition(start, interval)) {
@@ -92,6 +97,12 @@ export const previewAt = (
     start,
     end,
     activeEnd: start + Math.min(activeTime, totalTime),
+    segments: segmentsFor(
+      start,
+      phases && phases.length > 0
+        ? phases
+        : phasesFromLegacy(activeTime, totalTime - activeTime, totalTime),
+    ),
     time: minutesToTimeString(start),
     label: formatRangeShort(start, end),
   };

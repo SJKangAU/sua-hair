@@ -9,8 +9,10 @@
 
 import { formatClockTime, isSlotFreeing, STATUS_LABELS } from "./bookingStatus";
 import { parseLocalDate } from "./dates";
+import { phaseLabels } from "./bookingPhases";
 import type {
   Booking,
+  Phase,
   BookingHistoryEntry,
   BookingStatus,
 } from "../types";
@@ -108,6 +110,36 @@ export const phasesHistoryEntry = (
     at,
     type: "phases",
     label: `Timings changed: ${parts.join(", ")}`,
+  };
+};
+
+// One line for an edit to a booking's phases, e.g.
+// "Timings changed: processing 30 to 45 min, return 30 to 15 min (back at 11:45 AM)"
+export const phaseEditHistoryEntry = (
+  before: readonly Phase[],
+  after: readonly Phase[],
+  returnTime: string | undefined,
+  at: string = new Date().toISOString(),
+): BookingHistoryEntry => {
+  const nameBefore = phaseLabels(before);
+  const nameAfter = phaseLabels(after);
+  const parts: string[] = [];
+  const n = Math.max(before.length, after.length);
+  for (let i = 0; i < n; i++) {
+    const was = before[i]?.minutes ?? 0;
+    const now = after[i]?.minutes ?? 0;
+    if (was !== now) {
+      parts.push(
+        `${(nameAfter[i] ?? nameBefore[i]).toLowerCase()} ${was} to ${now} min`,
+      );
+    }
+  }
+  return {
+    at,
+    type: "phases",
+    label: `Timings changed: ${parts.join(", ") || "phases"}${
+      returnTime ? ` (back at ${returnTime})` : ""
+    }`,
   };
 };
 

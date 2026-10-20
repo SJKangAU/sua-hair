@@ -12,6 +12,7 @@ import { parseLocalDate } from "../../lib/dates";
 import WaitlistForm from "./WaitlistForm";
 import DayTimeGrid from "./DayTimeGrid";
 import type { Slot } from "../../hooks/useBookingAvailability";
+import type { Phase } from "../../types";
 
 interface Props {
   date: string;
@@ -21,6 +22,7 @@ interface Props {
   onTimeSelect: (time: string) => void;
   totalTime: number; // minutes the booking occupies (hands-on + processing)
   activeTime: number; // hands-on minutes
+  phases?: Phase[]; // the booking's phases, for drawing the preview
   stylistId?: string; // passed to waitlist entry if a specific stylist was chosen
 }
 
@@ -158,6 +160,7 @@ const TimeSlotGrid = ({
   onTimeSelect,
   totalTime,
   activeTime,
+  phases,
   stylistId,
 }: Props) => {
 
@@ -221,6 +224,7 @@ const TimeSlotGrid = ({
               slots={slots}
               totalTime={totalTime}
               activeTime={activeTime}
+              phases={phases}
               onTimeSelect={onTimeSelect}
             />
           </div>

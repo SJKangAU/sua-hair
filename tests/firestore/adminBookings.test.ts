@@ -223,8 +223,10 @@ describe("D1 — document IDs are unique and never reuse a slot's identity", () 
     expect(slot.exists()).toBe(true);
     expect(Object.keys(slot.data() ?? {}).sort()).toEqual([
       "activeTime",
+      "busy",
       "date",
       "restTime",
+      "returnAt",
       "status",
       "stylistId",
       "time",

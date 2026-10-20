@@ -221,3 +221,19 @@ export const withPhaseMinutes = (
   index: number,
   minutes: number,
 ): Phase[] => phases.map((p, i) => (i === index ? { ...p, minutes } : { ...p }));
+
+// What to call each phase in the UI: hands-on before any processing, then
+// "processing", then "return" (hands-on after a processing gap).
+export const phaseLabels = (phases: readonly Phase[]): string[] => {
+  let seenRest = false;
+  let handsOn = 0;
+  return phases.map((p) => {
+    if (p.type === "rest") {
+      seenRest = true;
+      return "Processing";
+    }
+    if (seenRest) return "Return";
+    handsOn += 1;
+    return handsOn > 1 ? `Hands-on ${handsOn}` : "Hands-on";
+  });
+};
