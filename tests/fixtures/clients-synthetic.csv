@@ -1,0 +1,16 @@
+Client ID,First Name,Last Name,Full Name,Blocked,Block Reason,Gender,Mobile Number,Telephone,Email,Accepts Marketing,Accepts SMS Marketing,Address,Apartement Suite,Area,City,State,Post Code,Date of Birth,Added,Staff alert,Referral Source,Tags
+900000001,,,Test Client 1,No,,,61 400 000 001,,,Yes,Yes,,,,,,,,2026-01-10,,Walk-In,
+900000002,,,Test Client 2,No,,,61 400 000 002,,,Yes,Yes,,,,,,,,2026-01-11,,,
+900000003,,,Test Client 3,No,,,0400 000 003,,,Yes,Yes,,,,,,,,2026-01-12,,,
+900000004,,,Test Client 4,Yes,Test reason,Female,61 400 000 004,+61 3 9000 0001,test.client4@example.test,Yes,Yes,,,,,,,,2026-01-13,Fake staff alert text,,
+900000005,,,Shared Older,No,,,61 400 000 005,,,Yes,Yes,,,,,,,,2026-02-01,,,
+900000006,,,Shared Newer,No,,,61 400 000 005,,,Yes,Yes,,,,,,,,2026-03-01,,,
+900000007,Test,Split,,No,,,61 400 000 006,,,Yes,Yes,,,,,,,,2026-01-14,,,
+900000008,,,No Phone Client,No,,,,,,Yes,Yes,,,,,,,,2026-01-15,,,
+900000009,,,Overseas Client,No,,,44 7700 900123,,,Yes,Yes,,,,,,,,2026-01-16,,,
+900000010,,,,No,,,61 400 000 007,,,Yes,Yes,,,,,,,,2026-01-17,,,
+900000011,,,Test   Ünïcöde  Client,No,,,61 400 000 008,,,Yes,Yes,,,,,,,,2026-01-18,,,
+900000012,,,Landline Client,No,,,61 3 9000 0000,,,Yes,Yes,,,,,,,,2026-01-19,,,
+900000013,,,Existing Client,No,,,61 400 000 009,,,Yes,Yes,,,,,,,,2026-01-20,,,
+900000014,,,Test Client 10,No,,,61 400 000 010,,,Yes,Yes,,,,,,,,2026-01-21,,,
+

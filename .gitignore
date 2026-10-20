@@ -42,3 +42,6 @@ playwright-report/
 exports/
 *.csv
 *.xlsx
+# ...except the synthetic test fixtures (fake people only; see tests/fixtures/make-clients-fixture.py)
+!tests/fixtures/clients-synthetic.csv
+!tests/fixtures/clients-synthetic.xlsx
