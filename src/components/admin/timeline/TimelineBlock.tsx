@@ -8,11 +8,14 @@
 //   completed  — grey fill with a check icon, no processing window
 //   cancelled / no_show — faint dashed "ghost" (restorable, can be hidden)
 //   break      — diagonal hatch, ink text
-// The processing window (stylist is free) is its own region at the bottom:
-// hatched, with the live countdown, and — when something fits in it — a click
-// target that opens "Add booking to gap". Dragging the block moves it;
-// dragging the bottom edge resizes it (mouse only; both are handled by
-// useTimelineDrag, this component just reports the pointer-down).
+// Each processing phase (the stylist is free) is a hatched band, labelled
+// "Processing 30 · back 12:30" or, while it is running, the live countdown;
+// the hands-on parts around it stay solid, and a hands-on phase after a gap is
+// the "return". A press in a band creates a booking in the gap when one fits
+// (useTimelineCreate); a press anywhere else on the block moves it. The bottom
+// edge of every phase has a handle that changes that phase's length (mouse
+// only; both are handled by useTimelineDrag, this component just reports the
+// pointer-down).
 // Geometry arrives in pixels from TimelineColumn so a live resize preview is
 // just a different height.
 
@@ -24,7 +27,6 @@ import {
   Waves,
   Brush,
   CircleCheck,
-  Plus,
   type LucideIcon,
 } from "lucide-react";
 import StatusIcon from "../../ui/StatusIcon";
@@ -44,8 +46,12 @@ export interface RestBand {
   heightPx: number;
   startMinutes: number;
   endMinutes: number;
-  // the band has free time in it, so it is clickable ("Add a booking in this gap")
-  gapOpen: boolean;
+}
+
+// The bottom edge of one phase: where its resize handle sits
+export interface PhaseEdge {
+  index: number; // index into the booking's drawn phases
+  yPx: number; // from the top of the block
 }
 
 interface Props {
@@ -56,18 +62,23 @@ interface Props {
   // hands-on time again after it). topPx is from the top of the block; the
   // minutes are absolute, for the live countdown.
   rests: RestBand[];
+  // Hands-on phases that follow a processing gap (px from the top of the block)
+  returns: { topPx: number; heightPx: number }[];
+  // The resize handles - one per phase; empty when the booking cannot be changed
+  edges: PhaseEdge[];
   isToday?: boolean;
   // Being dragged — the block stays behind as a faint outline at its origin
   isDragOrigin?: boolean;
   canMove: boolean;
-  canResize: boolean;
   onClick: (booking: Booking, e: React.MouseEvent) => void;
-  // A processing band with free time in it was clicked (index into `rests`)
-  onGapClick: (booking: Booking, bandIndex: number) => void;
+  // A press inside a processing band. Returns true when it started creating a
+  // booking in the gap, so the press is not also a move of this booking.
+  onBandPointerDown: (booking: Booking, e: React.PointerEvent) => boolean;
   onDragStart: (
     kind: "move" | "resize",
     booking: Booking,
     e: React.PointerEvent,
+    phaseIndex?: number,
   ) => void;
   wasDragging: () => boolean;
 }
@@ -102,12 +113,13 @@ const TimelineBlock = ({
   topPx,
   heightPx,
   rests,
+  returns,
+  edges,
   isToday = false,
   isDragOrigin = false,
   canMove,
-  canResize,
   onClick,
-  onGapClick,
+  onBandPointerDown,
   onDragStart,
   wasDragging,
 }: Props) => {
@@ -182,39 +194,51 @@ const TimelineBlock = ({
     transition: "opacity 0.15s",
   };
 
-  // Bottom-edge resize handle (hidden for touch / until hover — see Timeline's CSS)
-  const resizeHandle = canResize && !isDragOrigin && (
-    <div
-      className="tl-handle"
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        onDragStart("resize", booking, e);
-      }}
-      onClick={(e) => e.stopPropagation()}
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: "10px",
-        cursor: "ns-resize",
-        display: "flex",
-        alignItems: "flex-end",
-        justifyContent: "center",
-        zIndex: 3,
-      }}
-    >
-      <span
-        style={{
-          width: "28px",
-          height: "3px",
-          marginBottom: "2px",
-          borderRadius: "2px",
-          background: showRest ? "var(--ink-muted)" : "var(--surface)",
-        }}
-      />
-    </div>
+  // Phase-edge resize handles (hidden for touch / until hover - see Timeline's CSS).
+  // The last one is the bottom of the block; the others sit on the boundary
+  // between two phases, which for a gap is the gap's top or bottom edge.
+  const resizeHandle = !isDragOrigin && edges.length > 0 && (
+    <>
+      {edges.map((edge) => {
+        const isLast = edge.index === edges[edges.length - 1].index;
+        return (
+          <div
+            key={edge.index}
+            className="tl-handle"
+            data-testid={`phase-edge-${edge.index}`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onDragStart("resize", booking, e, edge.index);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: isLast ? edge.yPx - 10 : edge.yPx - 5,
+              height: "10px",
+              cursor: "ns-resize",
+              display: "flex",
+              alignItems: isLast ? "flex-end" : "center",
+              justifyContent: "center",
+              zIndex: 4,
+            }}
+          >
+            <span
+              style={{
+                width: "28px",
+                height: "3px",
+                marginBottom: isLast ? "2px" : 0,
+                borderRadius: "2px",
+                background: "var(--surface)",
+                outline: "1px solid var(--ink-muted)",
+              }}
+            />
+          </div>
+        );
+      })}
+    </>
   );
 
   // Break — diagonal hatch
@@ -447,32 +471,51 @@ const TimelineBlock = ({
         )}
       </div>
 
-      {/* Processing windows - the stylist is free; clickable when time is free */}
+      {/* Return: hands-on time again after a processing gap */}
+      {!isReleased &&
+        returns.map((r, i) => (
+          <div
+            key={`return-${i}`}
+            data-testid="return-block"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: r.topPx,
+              left: 0,
+              right: 0,
+              height: r.heightPx,
+              borderTop: "1px solid var(--surface)",
+              padding: "2px 8px",
+              boxSizing: "border-box",
+              pointerEvents: "none",
+              fontSize: "var(--text-xs)",
+              fontWeight: 600,
+              color: subColor,
+              lineHeight: 1.3,
+            }}
+          >
+            {r.heightPx >= 26 ? "Return" : ""}
+          </div>
+        ))}
+
+      {/* Processing windows - the stylist is free. A press here starts a new
+          booking in the gap when one fits. */}
       {showRest &&
         rests.map((band, i) => {
           const live =
             restSecondsLeft !== null &&
             getCurrentMinutes() >= band.startMinutes &&
             getCurrentMinutes() < band.endMinutes;
+          const length = band.endMinutes - band.startMinutes;
+          const back = minutesToTimeString(band.endMinutes);
           return (
             <div
               key={`${band.startMinutes}-${i}`}
               data-testid="processing-band"
-              className={band.gapOpen ? "tl-gap" : undefined}
-              onClick={
-                band.gapOpen
-                  ? (e) => {
-                      e.stopPropagation();
-                      if (wasDragging()) return;
-                      onGapClick(booking, i);
-                    }
-                  : undefined
-              }
-              title={
-                band.gapOpen
-                  ? "Add a booking in this gap"
-                  : `Stylist returns at ${minutesToTimeString(band.endMinutes)}`
-              }
+              onPointerDown={(e) => {
+                if (onBandPointerDown(booking, e)) e.stopPropagation();
+              }}
+              title={`Processing ${length} min - the stylist is back at ${back}. Point here to book another client.`}
               style={{
                 position: "absolute",
                 top: band.topPx,
@@ -488,21 +531,12 @@ const TimelineBlock = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "4px",
                 padding: "2px 6px",
-                cursor: band.gapOpen ? "copy" : "inherit",
+                cursor: "cell",
                 boxSizing: "border-box",
+                overflow: "hidden",
               }}
             >
-              {band.gapOpen && band.heightPx >= 26 && (
-                <Plus
-                  size={13}
-                  strokeWidth={2.25}
-                  color="var(--ink)"
-                  aria-hidden="true"
-                  style={{ flexShrink: 0 }}
-                />
-              )}
               <p
                 style={{
                   margin: 0,
@@ -510,14 +544,17 @@ const TimelineBlock = ({
                   color: "var(--ink)",
                   fontWeight:
                     live && (restSecondsLeft ?? 0) <= 300 ? 700 : 500,
-                  whiteSpace: "nowrap",
+                  textAlign: "center",
+                  lineHeight: 1.25,
                   overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                 }}
               >
                 {live && restSecondsLeft !== null
-                  ? formatCountdown(restSecondsLeft)
-                  : `Back ${minutesToTimeString(band.endMinutes)}`}
+                  ? `${formatCountdown(restSecondsLeft)} · back ${back}`
+                  : `Processing ${length} · back ${back}`}
               </p>
             </div>
           );

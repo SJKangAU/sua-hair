@@ -111,18 +111,21 @@ test("TC-011 clicking a booking block opens its quick actions, and View details 
   await expect(dialog(page)).toHaveCount(0);
 });
 
-test("TC-012 clicking an empty slot opens the create form pre-filled with that stylist and time", async () => {
+test("TC-012 clicking empty time opens the create form pre-filled with that stylist, time and a 30-minute block", async () => {
   await gotoToday(page, DAY);
-  // Steve's column: his 11:00 booking leaves an open slot from 10:00
-  const openSlots = page.getByRole("button", { name: /^Open slot/ });
-  await expect(openSlots.first()).toBeVisible();
-  await openSlots.first().click();
+  // No "Open slot" buttons any more: empty time is just the grid
+  await expect(page.getByRole("button", { name: /Open slot/ })).toHaveCount(0);
+  // Ethan has nothing booked: click in his column at 11:10 (the 11:00 row)
+  const column = (await page.getByTestId("timeline-column-ethan").boundingBox())!;
+  await page.mouse.move(column.x + column.width / 2, column.y + (11 * 60 + 10 - 10 * 60) * 2);
+  await expect(page.getByTestId("create-preview-label")).toHaveText("11:00 – 11:30 am");
+  await page.mouse.click(column.x + column.width / 2, column.y + (11 * 60 + 10 - 10 * 60) * 2);
   const d = dialog(page);
   await expect(d).toBeVisible();
   await expect(d.getByRole("heading", { name: "New Booking" })).toBeVisible();
-  const stylist = await d.locator("select").nth(0).inputValue();
-  expect(["elly", "ethan", "harry", "steve", "yuto"]).toContain(stylist);
-  expect(await d.locator("select").nth(1).inputValue()).toMatch(/^\d{1,2}:\d{2} (AM|PM)$/);
+  expect(await d.locator("select").nth(0).inputValue()).toBe("ethan");
+  expect(await d.locator("select").nth(1).inputValue()).toBe("11:00 AM");
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 – 11:30 am · 30 min");
   await d.getByRole("button", { name: "Close dialog" }).click();
 });
 

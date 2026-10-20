@@ -84,6 +84,8 @@ const TodayPage = ({ isOwner }: Props) => {
     time: string;
     // Set when opened from a booking's processing window
     gap?: { start: number; end: number };
+    // Set when the block was chosen on the timeline: its length in minutes
+    duration?: number;
   } | null>(null);
 
   const today = todayString();
@@ -353,14 +355,12 @@ const TodayPage = ({ isOwner }: Props) => {
           <Timeline
             selectedDate={selectedDate}
             onBlockClick={(booking) => drawer.open(booking.id)}
-            onEmptySlotClick={(stylistId, time) =>
-              setCreateModal({ stylistId, time })
-            }
-            onGapClick={(stylistId, window) =>
+            onCreateRange={(stylistId, block, gap) =>
               setCreateModal({
                 stylistId,
-                time: minutesToTimeString(window.start),
-                gap: window,
+                time: minutesToTimeString(block.start),
+                duration: block.length,
+                gap,
               })
             }
           />
@@ -393,6 +393,7 @@ const TodayPage = ({ isOwner }: Props) => {
           prefillTime={createModal.time}
           prefillDate={selectedDate}
           gap={createModal.gap}
+          prefillDuration={createModal.duration}
           onClose={() => setCreateModal(null)}
           onSuccess={(msg) => addToast(msg, "success")}
           onError={(msg) => addToast(msg, "error")}

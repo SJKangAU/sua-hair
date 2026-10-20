@@ -1,13 +1,16 @@
 // useTimelineDrag.ts
 // Pointer-driven drag for the admin timeline: move a booking to another time
-// or stylist column, or drag its bottom edge to change its length.
+// or stylist column, or drag the bottom edge of one of its phases to change that
+// phase's length (everything after it moves along).
 //
 //   - Positions snap to 15 minutes; moves are clamped to the day's grid
 //   - While dragging, `drag` holds the live target plus any predicted clash,
 //     so columns can draw the preview and tooltip ("Move to 2:30 – 4:00 pm")
 //   - Nothing is written here. On release the hook calls onMove / onResize and
-//     the caller does the real (conflict-checked) write; a resize that
-//     overlaps another booking is rejected up front via canResizeBooking
+//     the caller does the real (conflict-checked) write; a phase edit is
+//     checked up front with planPhaseEdit, the same check and the same messages
+//     as the booking panel, so a phase cannot be dragged into another client's
+//     hands-on time or past closing
 //   - Mouse and pen only. Touch never starts a drag, so scrolling the
 //     timeline on a phone stays natural — the booking drawer's Reschedule is
 //     the touch way to move a booking
@@ -19,7 +22,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MutableRefObject, PointerEvent, RefObject } from "react";
 import {
-  canResizeBooking,
   describeConflict,
   findBookingConflict,
   minutesToTimeString,
@@ -27,14 +29,15 @@ import {
 } from "../lib/scheduling";
 import {
   PX_PER_MIN,
-  SNAP_MINUTES,
   clampStart,
-  resizePhases,
+  formatClockShort,
   snapMinutes,
   type Interval,
 } from "../lib/timelineLayout";
-import type { Phases } from "../lib/phases";
-import type { Booking } from "../types";
+import { phaseLabels, resolvePhases } from "../lib/bookingPhases";
+import { planPhaseEdit } from "../lib/phaseEdit";
+import { drawnPhases, edgeOf, phasesAfterEdgeDrag } from "../lib/phaseResize";
+import type { Booking, Phase } from "../types";
 
 export interface MoveDrag {
   kind: "move";
@@ -47,9 +50,15 @@ export interface MoveDrag {
 export interface ResizeDrag {
   kind: "resize";
   bookingId: string;
-  end: number;
-  phases: Phases | null;
+  phaseIndex: number;
+  // Where the dragged phase now ends, minutes from midnight
+  edge: number;
+  // The booking's phases with that change; null if the change is not valid
+  phases: Phase[] | null;
+  // Why the change is refused (another client, closing time...), or null
   clash: string | null;
+  // What the tooltip says: the new length and end time, or the refusal
+  message: string;
 }
 
 export type DragState = MoveDrag | ResizeDrag;
@@ -62,17 +71,20 @@ interface Options {
   scrollRef: RefObject<HTMLElement | null>;
   // Height of the sticky stylist header the grid scrolls underneath
   headerHeight: number;
+  // The salon's closing time that day (minutes from midnight), if open
+  closeMinutes: number | null;
   onMove: (
     booking: Booking,
     target: { stylistId: string; start: number },
   ) => void;
-  onResize: (booking: Booking, phases: Phases) => void;
+  onResize: (booking: Booking, phases: Phase[]) => void;
   onResizeRejected: (message: string) => void;
 }
 
 interface Session {
   kind: DragState["kind"];
   booking: Booking;
+  phaseIndex: number;
   startX: number;
   startY: number;
   x: number;
@@ -97,10 +109,10 @@ const sameState = (a: DragState | null, b: DragState | null): boolean => {
   }
   if (a.kind === "resize" && b.kind === "resize") {
     return (
-      a.end === b.end &&
+      a.phaseIndex === b.phaseIndex &&
+      a.edge === b.edge &&
       a.clash === b.clash &&
-      a.phases?.activeTime === b.phases?.activeTime &&
-      a.phases?.restTime === b.phases?.restTime
+      JSON.stringify(a.phases) === JSON.stringify(b.phases)
     );
   }
   return false;
@@ -119,7 +131,12 @@ const useTimelineDrag = (options: Options) => {
   useEffect(() => () => teardown.current?.(), []);
 
   const begin = useCallback(
-    (kind: DragState["kind"], booking: Booking, e: PointerEvent) => {
+    (
+      kind: DragState["kind"],
+      booking: Booking,
+      e: PointerEvent,
+      phaseIndex = 0,
+    ) => {
       if (e.pointerType === "touch" || e.button !== 0) return;
       const { columnRefs, range } = optsRef.current;
       const column = columnRefs.current.get(booking.stylistId);
@@ -130,6 +147,7 @@ const useTimelineDrag = (options: Options) => {
       const session: Session = {
         kind,
         booking,
+        phaseIndex,
         startX: e.clientX,
         startY: e.clientY,
         x: e.clientX,
@@ -146,49 +164,32 @@ const useTimelineDrag = (options: Options) => {
         if (session.kind === "resize") {
           const own = columnRefs.current.get(session.booking.stylistId);
           if (!own) return null;
+          const b = session.booking;
           const top = own.getBoundingClientRect().top;
-          const start = timeStringToMinutes(session.booking.time);
-          const end = Math.min(
-            range.end,
-            Math.max(
-              start + SNAP_MINUTES,
-              snapMinutes(range.start + (session.y - top) / PX_PER_MIN),
-            ),
+          const pointer = range.start + (session.y - top) / PX_PER_MIN;
+          const drawn = drawnPhases(b);
+          const phases = phasesAfterEdgeDrag(drawn, session.phaseIndex, pointer);
+          if (!phases) return null;
+          const plan = planPhaseEdit(
+            { id: b.id, stylistId: b.stylistId, date, time: b.time },
+            phases,
+            bookings,
+            optsRef.current.closeMinutes,
+            describeConflict,
+            resolvePhases(b),
           );
-          const phases = resizePhases(session.booking, end);
-          let clash: string | null = null;
-          if (phases) {
-            const total = phases.activeTime + phases.restTime;
-            if (
-              !canResizeBooking(
-                session.booking,
-                phases.activeTime,
-                total,
-                bookings,
-              )
-            ) {
-              const other = findBookingConflict(
-                {
-                  stylistId: session.booking.stylistId,
-                  date,
-                  time: session.booking.time,
-                  totalTime: total,
-                  activeTime: phases.activeTime,
-                  excludeId: session.booking.id,
-                },
-                bookings,
-              );
-              clash = other
-                ? `Overlaps ${describeConflict(other)}`
-                : "Overlaps another booking";
-            }
-          }
+          const edge = edgeOf(drawn, session.phaseIndex, phases);
+          const name = phaseLabels(phases)[session.phaseIndex] ?? "Phase";
           return {
             kind: "resize",
-            bookingId: session.booking.id,
-            end,
+            bookingId: b.id,
+            phaseIndex: session.phaseIndex,
+            edge,
             phases,
-            clash,
+            clash: plan.ok ? null : plan.message,
+            message: plan.ok
+              ? `${name} ${phases[session.phaseIndex].minutes} min · ends ${formatClockShort(plan.endsAt)}`
+              : plan.message,
           };
         }
 
@@ -225,6 +226,7 @@ const useTimelineDrag = (options: Options) => {
             time: minutesToTimeString(start),
             totalTime: booking.totalTime,
             activeTime: booking.activeTime,
+            phases: booking.phases,
             excludeId: booking.id,
           },
           bookings,
@@ -311,8 +313,8 @@ const useTimelineDrag = (options: Options) => {
         } else if (final.clash) {
           onResizeRejected(final.clash);
         } else if (
-          final.phases.activeTime !== b.activeTime ||
-          final.phases.restTime !== b.restTime
+          JSON.stringify(final.phases) !==
+          JSON.stringify(drawnPhases(b).phases)
         ) {
           onResize(b, final.phases);
         }

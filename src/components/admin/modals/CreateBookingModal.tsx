@@ -4,7 +4,7 @@
 // from customerLookups and their name filled in), one or more services,
 // stylist, date, time, notes
 // Break: stylist, start time, duration, reason
-// Pre-fills stylistId and time if clicked from an empty timeline slot
+// Pre-fills stylist, time and length when a block was chosen on the timeline
 // Saves to Firestore with appropriate bookingType.
 //
 // Document IDs are always auto-generated (a deterministic ID would let a
@@ -40,6 +40,7 @@ import {
 import Modal from "../../ui/Modal";
 import ConflictNotice from "../ConflictNotice";
 import { formatRangeShort } from "../../../lib/timelineLayout";
+import { formatLength } from "../../../lib/timelineCreate";
 import type { Booking, Phase } from "../../../types";
 
 interface Props {
@@ -52,6 +53,9 @@ interface Props {
   // another booking's processing window. Fixes the stylist and date, offers
   // only start times inside the stretch and services whose hands-on time fits.
   gap?: { start: number; end: number };
+  // Length of the block chosen on the timeline, in minutes: the first phase
+  // until a service is chosen, and a block of time's duration
+  prefillDuration?: number;
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
@@ -118,6 +122,7 @@ const CreateBookingModal = ({
   prefillCustomerName = "", // add this
   prefillCustomerPhone = "", // add this
   gap,
+  prefillDuration,
   onClose,
   onSuccess,
   onError,
@@ -147,7 +152,7 @@ const CreateBookingModal = ({
     stylistId: prefillStylistId,
     date: prefillDate || new Date().toISOString().split("T")[0],
     time: prefillTime,
-    duration: 30,
+    duration: prefillDuration ?? 30,
     reason: "",
   });
 
@@ -161,6 +166,53 @@ const CreateBookingModal = ({
   const [phaseAdjust, setPhaseAdjust] = useState<{ key: string; phases: Phase[] } | null>(null);
   const [showPhases, setShowPhases] = useState(false);
   const phaseKey = `${walkin.stylistId}|${walkin.serviceIds.join(",")}`;
+
+  // The phases this walk-in will have: the chosen services' defaults, or - before
+  // a service is chosen - one hands-on phase of the length picked on the
+  // timeline; the owner's changes replace either. "Client returns after
+  // processing" adds or removes the hands-on phase that follows the gap.
+  const phaseStylist = stylists.find((x) => x.id === walkin.stylistId);
+  const chosenServices = services.filter((x) => walkin.serviceIds.includes(x.id));
+  const serviceTotals =
+    phaseStylist && chosenServices.length > 0
+      ? combineServices(chosenServices, phaseStylist.level)
+      : null;
+  const basePhases: Phase[] = serviceTotals
+    ? serviceTotals.phases
+    : [{ type: "active", minutes: prefillDuration ?? 30 }];
+  const currentPhases =
+    phaseAdjust && phaseAdjust.key === phaseKey ? phaseAdjust.phases : basePhases;
+  const returnsAfterProcessing = currentPhases.some(
+    (p, i) =>
+      p.type === "active" && currentPhases.slice(0, i).some((q) => q.type === "rest"),
+  );
+  const setReturns = (on: boolean) => {
+    let next: Phase[];
+    if (on) {
+      const last = currentPhases[currentPhases.length - 1];
+      next =
+        last && last.type === "rest"
+          ? [...currentPhases, { type: "active", minutes: 30 }]
+          : [...currentPhases, { type: "rest", minutes: 30 }, { type: "active", minutes: 30 }];
+    } else {
+      // Back to the base, or - if the base itself has a return - without it
+      const baseHasReturn = basePhases.some(
+        (p, i) =>
+          p.type === "active" && basePhases.slice(0, i).some((q) => q.type === "rest"),
+      );
+      const firstRest = basePhases.findIndex((p) => p.type === "rest");
+      next = baseHasReturn
+        ? basePhases.filter((p, i) => !(p.type === "active" && i > firstRest))
+        : basePhases;
+    }
+    setPhaseAdjust({ key: phaseKey, phases: next });
+    setShowPhases(true);
+  };
+  const phaseStart = walkin.time ? timeStringToMinutes(walkin.time) : null;
+  const phaseLengths = currentPhases.every((p) => Number.isFinite(p.minutes));
+  const phaseTotal = phaseLengths
+    ? currentPhases.reduce((n, p) => n + p.minutes, 0)
+    : null;
 
   const walkinKey = `walkin|${walkin.stylistId}|${walkin.serviceIds.join(",")}|${walkin.date}|${walkin.time}`;
   const breakKey = `break|${breakForm.stylistId}|${breakForm.date}|${breakForm.time}|${breakForm.duration}`;
@@ -630,6 +682,28 @@ const CreateBookingModal = ({
             )}
           </fieldset>
 
+          {walkin.stylistId && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                margin: "0 0 1rem",
+                fontSize: "var(--text-base)",
+                color: "var(--ink)",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={returnsAfterProcessing}
+                onChange={(e) => setReturns(e.target.checked)}
+                style={{ accentColor: "var(--ink)" }}
+              />
+              Client returns after processing
+            </label>
+          )}
+
           {selectedServices.length > 0 && walkin.stylistId && (() => {
             const stylist = getSelectedStylist(walkin.stylistId);
             const t = stylist ? combineServices(selectedServices, stylist.level) : null;
@@ -693,6 +767,25 @@ const CreateBookingModal = ({
             );
           })()}
 
+          {selectedServices.length === 0 && walkin.stylistId && showPhases && (
+            <div style={{ margin: "0 0 1rem" }}>
+              <p
+                style={{
+                  margin: "0 0 0.5rem",
+                  fontSize: "var(--text-xs)",
+                  color: "var(--ink-muted)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Choosing a service fills in that service's phases.
+              </p>
+              <PhasesEditor
+                phases={currentPhases}
+                onChange={(phases) => setPhaseAdjust({ key: phaseKey, phases })}
+              />
+            </div>
+          )}
+
           <div
             className="admin-form-grid-2"
             style={{
@@ -735,6 +828,20 @@ const CreateBookingModal = ({
               </select>
             </label>
           </div>
+
+          {phaseStart !== null && phaseTotal !== null && (
+            <p
+              data-testid="walkin-range"
+              style={{
+                margin: "-0.25rem 0 1rem",
+                fontSize: "var(--text-sm)",
+                fontWeight: 600,
+                color: "var(--ink)",
+              }}
+            >
+              {formatRangeShort(phaseStart, phaseStart + phaseTotal)} · {phaseTotal} min
+            </p>
+          )}
 
           <label style={labelStyle}>
             Notes (optional)
@@ -843,7 +950,16 @@ const CreateBookingModal = ({
                 }))
               }
             >
-              {BREAK_DURATIONS.map((d) => (
+              {(BREAK_DURATIONS.some((d) => d.value === breakForm.duration)
+                ? BREAK_DURATIONS
+                : [
+                    ...BREAK_DURATIONS,
+                    {
+                      label: formatLength(breakForm.duration),
+                      value: breakForm.duration,
+                    },
+                  ].sort((a, b) => a.value - b.value)
+              ).map((d) => (
                 <option key={d.value} value={d.value}>
                   {d.label}
                 </option>

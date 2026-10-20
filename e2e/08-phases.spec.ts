@@ -22,6 +22,22 @@ import {
   submitWalkin,
 } from "./admin";
 
+// The fields these tests read back from Firestore
+interface Doc {
+  id: string;
+  phases: { type: "active" | "rest"; minutes: number }[];
+  segments: { type: "active" | "rest"; start: number; end: number }[];
+  busy: { start: number; end: number }[];
+  totalTime: number;
+  servicePrice: number;
+  stylistId: string;
+  time: string;
+  customerName: string;
+  priceHistory: unknown[];
+  activeTime: number;
+  restTime: number;
+}
+
 test.use({ viewport: { width: 1300, height: 1500 } });
 
 const DAY = upcoming(3, 3); // a Wednesday
@@ -58,9 +74,9 @@ const cut = (name: string, time: string) => ({
 });
 
 const booking = async (id: string) =>
-  (await readCollection("bookings")).find((b) => b.id === id) as Record<string, any>;
+  (await readCollection("bookings")).find((b) => b.id === id) as unknown as Doc;
 const slot = async (id: string) =>
-  (await readCollection("slotBlocks")).find((b) => b.id === id) as Record<string, any>;
+  (await readCollection("slotBlocks")).find((b) => b.id === id) as unknown as Doc;
 
 test.beforeEach(async () => {
   await seedEmulator();
@@ -92,7 +108,7 @@ test("the timeline draws the processing gap between the hands-on and the return"
   await gotoToday(page, DAY);
   const bands = page.getByTestId("processing-band");
   await expect(bands).toHaveCount(1);
-  await expect(bands.first()).toContainText("Back 11:30 AM");
+  await expect(bands.first()).toContainText("back 11:30 AM");
   // the band sits in the middle of the block (hands-on above it AND below it)
   const block = await page.getByText("Pam Perm").first().evaluate((el) => {
     let n: HTMLElement | null = el as HTMLElement;
@@ -233,10 +249,10 @@ test("Manage: the owner edits a service's default phases; existing bookings keep
   await page.getByRole("button", { name: "Save Changes" }).click();
 
   await expect.poll(async () => {
-    const svc = (await readCollection("services")).find((s) => s.id === "digital-perm") as Record<string, any>;
+    const svc = (await readCollection("services")).find((s) => s.id === "digital-perm") as unknown as Doc;
     return svc.phases;
   }).toEqual([A(60), R(45), A(45)]);
-  const svc = (await readCollection("services")).find((s) => s.id === "digital-perm") as Record<string, any>;
+  const svc = (await readCollection("services")).find((s) => s.id === "digital-perm") as unknown as Doc;
   expect(svc.totalTime).toBe(150);
   expect(svc.activeTime).toBe(105);
   expect(svc.restTime).toBe(45);
@@ -263,7 +279,7 @@ test("a walk-in can have its phases adjusted when it is created", async ({ brows
   await submitWalkin(page);
   await expect(page.getByText("Walk-in booking created for Wendy Walkin")).toBeVisible();
 
-  const b = (await readCollection("bookings")).find((x) => x.customerName === "Wendy Walkin") as Record<string, any>;
+  const b = (await readCollection("bookings")).find((x) => x.customerName === "Wendy Walkin") as unknown as Doc;
   expect(b.phases).toEqual([A(60), R(45), A(30)]);
   expect(b.totalTime).toBe(135);
   // the service default is still 60 / 30 / 30

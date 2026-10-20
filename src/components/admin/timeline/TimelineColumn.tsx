@@ -3,24 +3,26 @@
 //
 //   - Blocks: that stylist's bookings, positioned in pixels from the day's
 //     range (see lib/timelineLayout). Clicking a booking opens the quick-action
-//     popover (breaks / training go straight to the drawer).
-//   - Hours: time outside the stylist's working hours (salon hours for the
-//     date, narrowed by their own hours) is hatched and labelled, e.g.
-//     "Not working until 10:30 AM".
-//   - Open slots: free stretches of 45+ minutes get a dashed "Open slot"
-//     button that starts a booking there.
-//   - Gaps: a booking's processing window is clickable when something fits in
-//     it ("Add booking to gap").
+//     popover (breaks / training go straight to the drawer). A booking with
+//     several phases draws a hatched band for each processing gap; the hands-on
+//     parts around it stay solid.
+//   - Empty time: nothing is drawn but the grid's faint lines. Pointing at it
+//     highlights a 30-minute block; press and drag sets the length; releasing
+//     opens the create form (the pointer, touch and keyboard logic is in
+//     useTimelineCreate, the rules in lib/timelineCreate). A processing gap takes
+//     part: another client can be created inside it.
+//   - Unavailable time (outside the stylist's hours, a closed day, the past) has
+//     a muted fill and cannot be created on.
 //   - Drag: while a booking is dragged the column draws the drop preview and
-//     tooltip; while one is resized it draws the new length.
-// Clicking empty column space opens the create-booking modal at that time.
+//     tooltip; while a phase edge is dragged it draws the new length.
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
-import TimelineBlock, { type RestBand } from "./TimelineBlock";
-import { effectivePhases, resolvePhases } from "../../../lib/bookingPhases";
+import TimelineBlock, { type PhaseEdge, type RestBand } from "./TimelineBlock";
+import CreatePreview from "./CreatePreview";
 import QuickActionPopover from "./QuickActionPopover";
-import { blocksSlot, isOpenStatus } from "../../../lib/bookingStatus";
+import { phaseTotals } from "../../../lib/bookingPhases";
+import { drawnPhases } from "../../../lib/phaseResize";
+import { blocksSlot } from "../../../lib/bookingStatus";
 import {
   minutesToTimeString,
   timeStringToMinutes,
@@ -28,17 +30,13 @@ import {
 import {
   PX_PER_MIN,
   SNAP_MINUTES,
-  clampStart,
-  computeOpenSlots,
-  findRestGaps,
-  formatClockShort,
   formatRangeShort,
   minutesToPx,
   type DayRange,
-  type Interval,
 } from "../../../lib/timelineLayout";
 import { todayString } from "../../../lib/dates";
 import type { DragState } from "../../../hooks/useTimelineDrag";
+import type { CreatePreview as Preview } from "../../../hooks/useTimelineCreate";
 import type { Booking } from "../../../types";
 
 // What a column needs to know about whoever it belongs to. The "Unassigned"
@@ -65,14 +63,25 @@ interface Props {
   drag: DragState | null;
   // Columns can't be created on the fly, so the Unassigned one is click-inert
   allowCreate: boolean;
+  // The create highlight, when it is in this column
+  preview: Preview | null;
   registerColumn: (id: string, el: HTMLElement | null) => void;
   onBlockClick: (booking: Booking) => void;
-  onEmptySlotClick: (stylistId: string, time: string) => void;
-  onGapClick: (booking: Booking, window: Interval) => void;
+  onCreatePointerDown: (
+    stylistId: string,
+    e: React.PointerEvent,
+    fromBooking?: boolean,
+  ) => void;
+  onCreateHover: (stylistId: string, e: React.PointerEvent) => void;
+  onCreateLeave: () => void;
+  // Can a booking be created where the pointer is (a press in a processing gap)?
+  canCreateAt: (stylistId: string, clientY: number) => boolean;
+  onConfirmTouch: () => void;
   onDragStart: (
     kind: "move" | "resize",
     booking: Booking,
     e: React.PointerEvent,
+    phaseIndex?: number,
   ) => void;
   wasDragging: () => boolean;
 }
@@ -82,8 +91,8 @@ const MOVABLE = new Set(["pending", "confirmed", "arrived"]);
 const RESIZABLE = new Set(["pending", "confirmed", "arrived", "in_service"]);
 const SERVICE_TYPES = new Set(["customer", "walkin"]);
 
-const SHADE_BG =
-  "repeating-linear-gradient(135deg, transparent, transparent 6px, var(--border) 6px, var(--border) 7px)";
+// Unavailable time: a muted fill, nothing dashed or hatched
+const MUTED_FILL = "color-mix(in srgb, var(--ink) 5%, var(--surface))";
 
 const shadeLabel: React.CSSProperties = {
   padding: "6px 8px",
@@ -122,10 +131,14 @@ const TimelineColumn = ({
   nowMinutes,
   drag,
   allowCreate,
+  preview,
   registerColumn,
   onBlockClick,
-  onEmptySlotClick,
-  onGapClick,
+  onCreatePointerDown,
+  onCreateHover,
+  onCreateLeave,
+  canCreateAt,
+  onConfirmTouch,
   onDragStart,
   wasDragging,
 }: Props) => {
@@ -146,41 +159,21 @@ const TimelineColumn = ({
     () => mine.filter((b) => showReleased || blocksSlot(b.status)),
     [mine, showReleased],
   );
-  const blocking = useMemo(
-    () => mine.filter((b) => blocksSlot(b.status)),
-    [mine],
-  );
 
-  // ── Open slots: free stretches of 45+ minutes inside working hours ───────
-  const openSlots = useMemo(
-    () =>
-      computeOpenSlots({
-        hours,
-        range,
-        isPast: date < todayString(),
-        isToday,
-        nowMinutes,
-        // Ghost blocks stay on the grid while shown, so they hold their space
-        // — an "Open slot" button never sits on top of a visible ghost
-        occupied: (showReleased ? mine : blocking).map((b) => {
-          const s = timeStringToMinutes(b.time);
-          return { start: s, end: s + b.totalTime };
-        }),
-      }),
-    [hours, range, date, isToday, nowMinutes, blocking, mine, showReleased],
-  );
-
-  // ── Hours shading ─────────────────────────────────────────────────────────
-  const shades: { top: number; height: number; label: string }[] = [];
+  // ── Unavailable time: muted fill ──────────────────────────────────────────
+  const shades: { key: string; top: number; height: number; label: string }[] = [];
+  const fullHeight = (range.end - range.start) * PX_PER_MIN;
   if (!hours) {
     shades.push({
+      key: "off",
       top: 0,
-      height: (range.end - range.start) * PX_PER_MIN,
+      height: fullHeight,
       label: range.closed ? "Closed" : "Not working today",
     });
   } else {
     if (hours.open * 60 > range.start) {
       shades.push({
+        key: "before",
         top: 0,
         height: (hours.open * 60 - range.start) * PX_PER_MIN,
         label: `Not working until ${minutesToTimeString(hours.open * 60)}`,
@@ -188,9 +181,27 @@ const TimelineColumn = ({
     }
     if (hours.close * 60 < range.end) {
       shades.push({
+        key: "after",
         top: minutesToPx(hours.close * 60, range),
         height: (range.end - hours.close * 60) * PX_PER_MIN,
         label: `Not working after ${minutesToTimeString(hours.close * 60)}`,
+      });
+    }
+  }
+  // The past: the whole of an earlier day, or today up to the current quarter hour
+  if (date < todayString()) {
+    shades.push({ key: "past", top: 0, height: fullHeight, label: "" });
+  } else if (isToday) {
+    const until = Math.min(
+      range.end,
+      Math.floor(nowMinutes / SNAP_MINUTES) * SNAP_MINUTES,
+    );
+    if (until > range.start) {
+      shades.push({
+        key: "past",
+        top: 0,
+        height: (until - range.start) * PX_PER_MIN,
+        label: "",
       });
     }
   }
@@ -203,19 +214,6 @@ const TimelineColumn = ({
       return;
     }
     setPopover({ booking, x: e.clientX, y: e.clientY });
-  };
-
-  // Empty column space — which slot was clicked
-  const handleColumnClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!allowCreate) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const minutes = range.start + (e.clientY - rect.top) / PX_PER_MIN;
-    const slot = clampStart(
-      Math.floor(minutes / SNAP_MINUTES) * SNAP_MINUTES,
-      SNAP_MINUTES,
-      range,
-    );
-    onEmptySlotClick(stylist.id, minutesToTimeString(slot));
   };
 
   // ── Drag previews ─────────────────────────────────────────────────────────
@@ -241,35 +239,40 @@ const TimelineColumn = ({
   const resizeTooltip =
     drag?.kind === "resize" && dragged && dragged.stylistId === stylist.id
       ? {
-          top:
-            minutesToPx(drag.end, range) + 6,
-          label: drag.clash
-            ? drag.clash
-            : drag.phases
-            ? `Ends ${formatClockShort(drag.end)} · ${
-                drag.phases.activeTime + drag.phases.restTime
-              } min`
-            : "Too short",
-          clash: drag.clash !== null || !drag.phases,
+          top: minutesToPx(drag.edge, range) + 6,
+          label: drag.message,
+          clash: drag.clash !== null,
         }
       : null;
 
   return (
     <div
       ref={(el) => registerColumn(stylist.id, el)}
-      onClick={handleColumnClick}
+      data-testid={`timeline-column-${stylist.id}`}
+      onPointerDown={(e) => {
+        if (!allowCreate) return;
+        // Presses on a booking move it; on the Create button they confirm
+        if ((e.target as HTMLElement).closest(".tl-block, button")) return;
+        onCreatePointerDown(stylist.id, e);
+      }}
+      onPointerMove={(e) => allowCreate && onCreateHover(stylist.id, e)}
+      onPointerLeave={onCreateLeave}
       style={{
         flex: "1 1 140px",
         position: "relative",
         borderLeft: "1px solid var(--border)",
         cursor: allowCreate ? "cell" : "default",
         minWidth: "140px",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
       }}
     >
-      {/* Hours shading */}
+      {/* Unavailable time */}
       {shades.map((s) => (
         <div
-          key={s.label}
+          key={s.key}
+          data-testid="unavailable-shade"
           aria-hidden="true"
           style={{
             position: "absolute",
@@ -277,66 +280,14 @@ const TimelineColumn = ({
             right: 0,
             top: s.top,
             height: s.height,
-            background: SHADE_BG,
-            backgroundColor: "var(--paper)",
+            background: MUTED_FILL,
             pointerEvents: "none",
             zIndex: 0,
           }}
         >
-          <div style={shadeLabel}>{s.label}</div>
+          {s.label && <div style={shadeLabel}>{s.label}</div>}
         </div>
       ))}
-
-      {/* Open slots — hidden while dragging to keep the grid calm */}
-      {!drag &&
-        allowCreate &&
-        openSlots.map((slot) => (
-          <button
-            key={slot.start}
-            className="bk-row tl-open-slot"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEmptySlotClick(stylist.id, minutesToTimeString(slot.start));
-            }}
-            aria-label={`Open slot ${formatRangeShort(slot.start, slot.end)}`}
-            style={{
-              position: "absolute",
-              left: "4px",
-              right: "4px",
-              top: minutesToPx(slot.start, range) + 2,
-              height: (slot.end - slot.start) * PX_PER_MIN - 4,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "flex-start",
-              gap: "2px",
-              padding: "6px 8px",
-              background: "transparent",
-              border: "1px dashed var(--border-strong)",
-              borderRadius: "6px",
-              color: "var(--ink-muted)",
-              fontSize: "var(--text-xs)",
-              fontFamily: "var(--font-body)",
-              textAlign: "left",
-              cursor: "pointer",
-              zIndex: 1,
-            }}
-          >
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-                fontWeight: 600,
-                color: "var(--ink-soft)",
-              }}
-            >
-              <Plus size={12} strokeWidth={2.25} aria-hidden="true" />
-              Open slot
-            </span>
-            <span>{formatRangeShort(slot.start, slot.end)}</span>
-          </button>
-        ))}
 
       {/* Bookings */}
       {shown.map((booking) => {
@@ -345,35 +296,47 @@ const TimelineColumn = ({
           drag?.kind === "resize" && drag.bookingId === booking.id
             ? drag
             : null;
-        const total = resizing
-          ? Math.max(SNAP_MINUTES, resizing.end - start)
-          : booking.totalTime;
         const isService = SERVICE_TYPES.has(booking.bookingType);
 
-        // The booking's processing phases as bands on its block. While its
-        // bottom edge is being dragged, the (legacy-shaped) booking previews
-        // its new hands-on / processing split.
-        const shape = resizing?.phases
-          ? { ...booking, phases: undefined, ...resizing.phases, totalTime: total }
+        // The booking as drawn. While the edge of one of its phases is being
+        // dragged, it previews the new phase lengths.
+        const shape: Booking = resizing?.phases
+          ? { ...booking, ...phaseTotals(resizing.phases), phases: resizing.phases }
           : booking;
-        const gaps = isService
-          ? findRestGaps(
-              shape,
-              blocking.filter((o) => o.id !== booking.id),
-            )
-          : [];
-        const bands: RestBand[] = gaps.map((g) => ({
-          topPx: (g.segment.start - start) * PX_PER_MIN,
-          heightPx: (g.segment.end - g.segment.start) * PX_PER_MIN,
-          startMinutes: g.segment.start,
-          endMinutes: g.segment.end,
-          gapOpen: g.gap !== null && isOpenStatus(booking.status),
-        }));
-        // A booking with hands-on time after its gap is edited per phase in its
-        // panel; the single bottom-edge handle only suits hands-on + processing
-        const legacyShaped = !effectivePhases(resolvePhases(booking)).some(
-          (p, i, all) => p.type === "active" && i > 0 && all[i - 1].type === "rest",
-        );
+        const total = shape.totalTime;
+        const drawn = isService ? drawnPhases(shape) : null;
+
+        // Processing gaps as hatched bands; hands-on phases after a gap as
+        // "return" blocks
+        const bands: RestBand[] = [];
+        const returns: { topPx: number; heightPx: number }[] = [];
+        drawn?.phases.forEach((p, i) => {
+          const topPx = (drawn.starts[i] - start) * PX_PER_MIN;
+          const heightPx = p.minutes * PX_PER_MIN;
+          if (p.type === "rest") {
+            bands.push({
+              topPx,
+              heightPx,
+              startMinutes: drawn.starts[i],
+              endMinutes: drawn.starts[i] + p.minutes,
+            });
+          } else if (i > 0 && drawn.phases[i - 1].type === "rest") {
+            returns.push({ topPx, heightPx });
+          }
+        });
+
+        // The bottom edge of every phase can be dragged
+        const canEdit =
+          isService &&
+          RESIZABLE.has(booking.status) &&
+          booking.stylistId !== "any";
+        const edges: PhaseEdge[] =
+          canEdit && drawn
+            ? drawn.phases.map((p, i) => ({
+                index: i,
+                yPx: (drawn.starts[i] + p.minutes - start) * PX_PER_MIN,
+              }))
+            : [];
 
         return (
           <TimelineBlock
@@ -382,27 +345,31 @@ const TimelineColumn = ({
             topPx={minutesToPx(start, range)}
             heightPx={total * PX_PER_MIN}
             rests={bands}
+            returns={returns}
+            edges={edges}
             isToday={isToday}
             isDragOrigin={
               drag?.kind === "move" && drag.bookingId === booking.id
             }
             canMove={MOVABLE.has(booking.status)}
-            canResize={
-              isService &&
-              legacyShaped &&
-              RESIZABLE.has(booking.status) &&
-              booking.stylistId !== "any"
-            }
             onClick={handleBlockClick}
-            onGapClick={(b, i) => {
-              const g = gaps[i]?.gap;
-              if (g) onGapClick(b, g);
+            onBandPointerDown={(b, e) => {
+              if (!allowCreate || !canCreateAt(b.stylistId, e.clientY)) {
+                return false;
+              }
+              onCreatePointerDown(b.stylistId, e, true);
+              return true;
             }}
             onDragStart={onDragStart}
             wasDragging={wasDragging}
           />
         );
       })}
+
+      {/* Create highlight: hover, drag, touch tap or keyboard cursor */}
+      {preview && (
+        <CreatePreview preview={preview} range={range} onCreate={onConfirmTouch} />
+      )}
 
       {/* Drop preview + tooltip */}
       {movePreview && (
@@ -448,7 +415,10 @@ const TimelineColumn = ({
         </>
       )}
       {resizeTooltip && (
-        <div style={{ ...tooltipStyle(resizeTooltip.clash), top: resizeTooltip.top }}>
+        <div
+          data-testid="resize-tooltip"
+          style={{ ...tooltipStyle(resizeTooltip.clash), top: resizeTooltip.top }}
+        >
           {resizeTooltip.label}
         </div>
       )}

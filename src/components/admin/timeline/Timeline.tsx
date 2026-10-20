@@ -8,14 +8,18 @@
 //           outside opening hours stretch the grid so nothing is hidden.
 //   Now     A "now" line with the current time on today's grid.
 //   Drag    Drag a booking to another time or stylist (snaps to 15 minutes;
-//           ghost at the origin, tooltip "Move to 2:30 – 4:00 pm"). Drag its
-//           bottom edge to change its length. Mouse only — on touch use the
-//           booking drawer's Reschedule. Both writes are conflict-checked; a
-//           clash reverts with an error toast and a success offers Undo.
-//   Gaps    A booking's processing window opens "Add booking to gap"; free
-//           stretches of 45+ minutes offer an "Open slot" button.
+//           ghost at the origin, tooltip "Move to 2:30 – 4:00 pm"). Drag the
+//           bottom edge of any of its phases to change that phase's length (the
+//           ones after it move along). Mouse only — on touch use the booking
+//           drawer. Both writes are conflict-checked; a clash reverts with an
+//           error toast and a success offers Undo.
+//   Create  Point at empty time to highlight a 30-minute block; press and drag
+//           to set the length; release opens the create form. Touch: hold, or
+//           tap and press Create. Keyboard: focus the grid, arrow keys, Enter.
+//           (useTimelineCreate; the rules are in lib/timelineCreate.) A booking's
+//           processing gap takes part - another client can be created in it.
 // Clicking a booking opens the quick-action popover; its "View details" opens
-// the booking drawer. Clicking empty space opens the create-booking modal.
+// the booking drawer.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarOff, Eye, EyeOff, Info } from "lucide-react";
@@ -23,33 +27,39 @@ import { useSalonData } from "../../../context/SalonDataContext";
 import { useBookingContext } from "../../../context/BookingContext";
 import { useToastContext } from "../../../context/ToastContext";
 import useTimelineDrag from "../../../hooks/useTimelineDrag";
+import useTimelineCreate from "../../../hooks/useTimelineCreate";
 import {
   getCurrentMinutes,
   getSalonHoursForDate,
   getStylistHoursForDate,
   minutesToTimeString,
 } from "../../../lib/scheduling";
-import { isSlotFreeing, UNDO_TOAST_MS } from "../../../lib/bookingStatus";
+import { blocksSlot, isSlotFreeing, UNDO_TOAST_MS } from "../../../lib/bookingStatus";
 import { formatWhen } from "../../../lib/bookingHistory";
 import { BookingConflictError } from "../../../lib/bookingConflicts";
 import {
+  PX_PER_MIN,
   computeDayRange,
+  findRestGaps,
   minutesToPx,
   rangeHeightPx,
   type Interval,
 } from "../../../lib/timelineLayout";
+import type { CreateBlock, CreateEnv } from "../../../lib/timelineCreate";
+import { drawnPhases } from "../../../lib/phaseResize";
 import { todayString } from "../../../lib/dates";
-import type { Phases } from "../../../lib/phases";
+import type { Phase } from "../../../types";
 import TimelineColumn, { type ColumnStylist } from "./TimelineColumn";
 import NowLine from "./NowLine";
 import type { Booking } from "../../../types";
 
 interface Props {
   onBlockClick: (booking: Booking) => void;
-  onEmptySlotClick: (stylistId: string, time: string) => void;
-  // "Add booking to gap": the stylist and the free stretch inside a
-  // booking's processing window
-  onGapClick: (stylistId: string, window: Interval) => void;
+  // A block was chosen on the timeline (hover + click, drag, touch or keyboard):
+  // open the create form for that stylist, start and length. `gap` is set when
+  // the block starts inside another client's processing gap - the free stretch
+  // up to the end of that gap.
+  onCreateRange: (stylistId: string, block: CreateBlock, gap?: Interval) => void;
   selectedDate: string;
 }
 
@@ -70,23 +80,21 @@ const UNASSIGNED: ColumnStylist = {
 const TIMELINE_CSS = `
   .tl-handle { opacity: 0; transition: opacity var(--transition-fast); }
   .tl-block:hover .tl-handle { opacity: 1; }
-  .tl-gap:hover { outline: 1.5px solid var(--ink); outline-offset: -1.5px; }
-  .tl-open-slot:hover { border-color: var(--ink) !important; color: var(--ink) !important; }
-  /* Touch never drags, so the resize handle would only be in the way */
+  .tl-create-preview { transition: top 80ms ease-out, height 80ms ease-out; }
+  .tl-grid:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+  /* Touch never drags a phase edge, so the handles would only be in the way */
   @media (pointer: coarse) { .tl-handle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .tl-create-preview, .tl-handle { transition: none !important; }
+  }
 `;
 
 const errorMessage = (err: unknown, fallback: string): string =>
   err instanceof BookingConflictError ? err.message : fallback;
 
-const Timeline = ({
-  onBlockClick,
-  onEmptySlotClick,
-  onGapClick,
-  selectedDate,
-}: Props) => {
+const Timeline = ({ onBlockClick, onCreateRange, selectedDate }: Props) => {
   const { stylists, stylistsLoading, salonSettings } = useSalonData();
-  const { bookings, rescheduleBooking, updateTimes } = useBookingContext();
+  const { bookings, rescheduleBooking, updatePhases } = useBookingContext();
   const { addToast } = useToastContext();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -186,34 +194,29 @@ const Timeline = ({
     }
   };
 
-  const handleResize = async (booking: Booking, phases: Phases) => {
-    const previous = {
-      activeTime: booking.activeTime,
-      restTime: booking.restTime,
-    };
+  // A phase edge was dragged: the same transactional, conflict-checked write as
+  // the booking panel's Save (the drag already refused what it could see)
+  const handleResize = async (booking: Booking, phases: Phase[]) => {
+    const previous = drawnPhases(booking).phases;
     try {
-      await updateTimes(booking.id, phases.activeTime, phases.restTime);
-      addToast(
-        `Length set to ${phases.activeTime + phases.restTime} min`,
-        "success",
-        {
-          durationMs: UNDO_TOAST_MS,
-          action: {
-            label: "Undo",
-            onClick: () => {
-              updateTimes(
-                booking.id,
-                previous.activeTime,
-                previous.restTime,
-              ).catch(() =>
-                addToast("Couldn't undo that change.", "error"),
-              );
-            },
+      await updatePhases(booking.id, phases);
+      const total = phases.reduce((n, p) => n + p.minutes, 0);
+      addToast(`Length set to ${total} min`, "success", {
+        durationMs: UNDO_TOAST_MS,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            updatePhases(booking.id, previous).catch((err) =>
+              addToast(errorMessage(err, "Couldn't undo that change."), "error"),
+            );
           },
         },
+      });
+    } catch (err) {
+      addToast(
+        errorMessage(err, "Couldn't change the length. Please try again."),
+        "error",
       );
-    } catch {
-      addToast("Couldn't change the length. Please try again.", "error");
     }
   };
 
@@ -224,11 +227,73 @@ const Timeline = ({
     columnRefs,
     scrollRef,
     headerHeight: HEADER_HEIGHT,
+    closeMinutes: salonHours ? salonHours.close * 60 : null,
     onMove: handleMove,
     onResize: handleResize,
     onResizeRejected: (message) =>
       addToast(`Can't change the length: ${message}`, "error"),
   });
+
+  // ── Create: hover, drag, touch and keyboard (see useTimelineCreate) ────────
+  const envFor = (stylistId: string): CreateEnv | null => {
+    if (stylistId === UNASSIGNED.id) return null;
+    const column = columns.shown.find((c) => c.stylist.id === stylistId);
+    if (!column) return null;
+    return {
+      stylistId,
+      date: selectedDate,
+      hours: column.hours,
+      isPastDate: selectedDate < todayString(),
+      isToday,
+      nowMinutes: getCurrentMinutes(),
+      bookings: dayBookings,
+    };
+  };
+
+  const handleCreate = (stylistId: string, block: CreateBlock) => {
+    // Inside another client's processing gap? Then the form offers only what fits
+    let gap: Interval | undefined;
+    for (const b of dayBookings) {
+      if (b.stylistId !== stylistId || !blocksSlot(b.status)) continue;
+      for (const g of findRestGaps(b, [])) {
+        if (g.segment.start <= block.start && block.start < g.segment.end) {
+          gap = { start: block.start, end: g.segment.end };
+        }
+      }
+    }
+    onCreateRange(stylistId, block, gap);
+  };
+
+  const create = useTimelineCreate({
+    range,
+    columnRefs,
+    scrollRef,
+    headerHeight: HEADER_HEIGHT,
+    columnIds: columns.shown.map((c) => c.stylist.id),
+    stylistName: (id) =>
+      stylists.find((s) => s.id === id)?.name.split(" ")[0] ?? "Stylist",
+    envFor,
+    onCreate: handleCreate,
+    onRefuse: (message) => addToast(message, "error"),
+    paused: drag !== null,
+  });
+  const { clearTouchPick } = create;
+  useEffect(() => clearTouchPick(), [selectedDate, clearTouchPick]);
+
+  // Keep the keyboard cursor in view as it moves
+  const keyboardBlock =
+    create.preview?.kind === "keyboard" ? create.preview.block : null;
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !keyboardBlock) return;
+    const top = (keyboardBlock.start - range.start) * PX_PER_MIN + HEADER_HEIGHT;
+    const bottom = top + keyboardBlock.length * PX_PER_MIN;
+    if (top < el.scrollTop + HEADER_HEIGHT) {
+      el.scrollTop = Math.max(0, top - HEADER_HEIGHT - 8);
+    } else if (bottom > el.scrollTop + el.clientHeight) {
+      el.scrollTop = bottom - el.clientHeight + 8;
+    }
+  }, [keyboardBlock, range.start]);
 
   const registerColumn = (id: string, el: HTMLElement | null) => {
     if (el) columnRefs.current.set(id, el);
@@ -456,8 +521,15 @@ const Timeline = ({
             ))}
           </div>
 
-          {/* Grid body */}
+          {/* Grid body - focusable: arrow keys move a highlight, Enter creates */}
           <div
+            className="tl-grid"
+            data-testid="timeline-grid"
+            role="group"
+            tabIndex={0}
+            aria-label="Timeline. Use the arrow keys to choose a time and stylist, Shift with the up and down arrows to change the length, Enter to create a booking, Escape to cancel."
+            onKeyDown={create.onKeyDown}
+            onBlur={create.onBlur}
             style={{
               display: "flex",
               position: "relative",
@@ -537,14 +609,20 @@ const Timeline = ({
                   nowMinutes={nowMinutes}
                   drag={drag}
                   allowCreate={stylist.id !== UNASSIGNED.id}
+                  preview={
+                    create.preview?.stylistId === stylist.id
+                      ? create.preview
+                      : null
+                  }
                   registerColumn={registerColumn}
                   onBlockClick={onBlockClick}
-                  onEmptySlotClick={onEmptySlotClick}
-                  onGapClick={(booking, window) =>
-                    onGapClick(booking.stylistId, window)
-                  }
+                  onCreatePointerDown={create.begin}
+                  onCreateHover={create.onHover}
+                  onCreateLeave={create.onLeave}
+                  canCreateAt={create.canCreateAt}
+                  onConfirmTouch={create.confirmTouchPick}
                   onDragStart={begin}
-                  wasDragging={wasDragging}
+                  wasDragging={() => wasDragging() || create.wasCreating()}
                 />
               ))}
             </div>
@@ -558,6 +636,21 @@ const Timeline = ({
             )}
           </div>
         </div>
+      </div>
+      <div
+        role="status"
+        aria-live="polite"
+        data-testid="timeline-announcer"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          overflow: "hidden",
+          clip: "rect(0 0 0 0)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {create.announcement}
       </div>
     </div>
   );
