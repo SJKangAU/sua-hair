@@ -51,8 +51,10 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 - Opening hours for a date = a **date override** (closed, or custom open/close) if one exists, otherwise the **weekly schedule**, otherwise the `config.ts` default (10:00–18:00, closed Monday). A stylist's own **working hours** narrow that further.
 - Customer slots are generated every 15 minutes (`slotIntervalMinutes`, DEC-024); a service must finish by closing time.
-- A slot is unavailable if the new booking's total time overlaps an existing booking's occupied window.
-- **Rest rule:** inside another booking's rest (setting) window the stylist is free, so a slot is available if the new booking's **active** time fits entirely within the remaining rest window.
+- A booking is an ordered list of **phases** (DEC-026): each is `active` (the stylist is hands-on, so they are busy) or `rest` (the client sits while product sets, so the stylist is free). A service's phases are its default; a booking stores its own copy. A service with no stored phases derives them from `activeTime` / `restTime`, so every existing service and booking behaves as before.
+- **Conflict rule (DEC-027):** only **busy** (active) blocks occupy the stylist. A slot is unavailable if any busy block of the new booking overlaps a busy block of an existing booking, or if the point where the stylist returns to a client (the end of a trailing rest phase) falls strictly inside the other booking's busy block. The rule is symmetric: it does not matter which booking was made first.
+- **Rest rule (DEC-007, amended by DEC-029):** inside another booking's rest phase the stylist is free, so another client can be booked there if all of that client's busy blocks fit. The new booking's own rest phase may now also run over an existing booking, which the old engine refused. Example: Digital Perm = 60 hands-on + 30 processing + 30 return; a cut booked in the 30-minute gap is fine, but a start whose return block would land on another booking is not offered.
+- A stylist can return to the same client for more hands-on time after a gap; that later block stays blocked like any other.
 - Minimum notice of 2 hours; same-day bookings stop at 5pm.
 - Cancelled and no-show bookings do not block time; pending, confirmed, arrived, in-service and completed ones do.
 - Closed days return no slots.
@@ -60,7 +62,13 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Acceptance criteria:**
 
 - [x] No double bookings possible through the customer flow (TC-007; `unit` scheduling suite)
-- [x] A stylist is bookable during another booking's rest period if the service fits, and not if it does not (TC-006)
+- [x] A stylist is bookable during another booking's rest period if the service fits, and not if it does not (TC-006: a 20-minute Beard Trim fits a 30-minute rest window; a 45-minute Men's Cut does not)
+- [x] A three-phase service (hands-on, processing, hands-on) is offered only where every busy block is free, and the gap can hold another client (TC-050, TC-051; `unit` bookingPhases suite)
+- [x] The owner can change the length of every phase of one booking, at creation and afterwards, in 15-minute steps; later phases move with a change and the new end time is shown live (TC-052, TC-057)
+- [x] Every phase change re-checks all busy blocks inside a transaction; a refusal names the clashing booking and time and offers to move the return to the next free time (TC-053, TC-054)
+- [x] Hands-on phases are at least 15 minutes, processing may be 0, a booking must end before closing, and the stored price never changes (TC-055)
+- [x] The owner edits a service's default phases in Manage; existing bookings are unchanged (TC-056)
+- [x] The `slotBlocks` projection carries busy segments only and no personal data (TC-058)
 - [x] Unavailable slots are shown greyed out, not hidden (TC-008)
 - [x] A stale async response cannot overwrite the UI (cancellation flags in `useBookingAvailability`)
 - [x] A closed date override makes that date unselectable (TC-036)

@@ -40,10 +40,12 @@ Public availability reads **only** `slotBlocks`, never `bookings`, because Fires
 | `stylistLevel`     | `'director' \| 'senior' \| 'junior'`                                       | Tier at time of booking                                                       |
 | `services`         | `BookedService[]?`                                                         | Multi-service bookings: each with id, name, price, active/rest/total time     |
 | `serviceId` / `serviceName` / `servicePrice` | `string` / `string` / `number`                           | Legacy flat fields, always populated (joined names, total price)              |
-| `activeTime`       | `number`                                                                   | Minutes the stylist is hands-on                                               |
-| `restTime`         | `number`                                                                   | Minutes the client sits while product sets                                    |
-| `totalTime`        | `number`                                                                   | `activeTime + restTime`                                                       |
-| `returnTime`       | `string?`                                                                  | Clock time the stylist returns (only when `restTime > 0`), locked at creation |
+| `phases`           | `Phase[]?` — `{ type: 'active' \| 'rest', minutes }`                       | This booking's own ordered phases (DEC-026, DEC-028). Absent on bookings made before phases: derived from `activeTime` / `restTime` |
+| `segments`         | `PlacedSegment[]?` — `{ type, start, end }` (minutes from midnight)       | `phases` placed on the day from `time`; kept in step with `phases`            |
+| `activeTime`       | `number`                                                                   | Total hands-on minutes (sum of the `active` phases); legacy field, always kept consistent |
+| `restTime`         | `number`                                                                   | Total rest minutes (sum of the `rest` phases); legacy field                   |
+| `totalTime`        | `number`                                                                   | Length of the whole appointment (`activeTime + restTime`)                     |
+| `returnTime`       | `string?`                                                                  | Clock time the stylist first returns (end of the first rest phase); only when there is a rest phase |
 | `date`             | `string`                                                                   | `YYYY-MM-DD`                                                                  |
 | `time`             | `string`                                                                   | e.g. `"10:00 AM"`                                                             |
 | `notes`            | `string?`                                                                  | Optional client notes                                                         |
@@ -67,7 +69,7 @@ Public availability reads **only** `slotBlocks`, never `bookings`, because Fires
 
 ## Collection: `slotBlocks`
 
-Same ID as the booking. Fields: `stylistId`, `date`, `time`, `activeTime`, `totalTime`, `restTime`, `status` — and nothing else. Written in the same atomic write as the booking and kept in step on every status, time or stylist change. Publicly readable.
+Same ID as the booking. Fields: `stylistId`, `date`, `time`, `activeTime`, `totalTime`, `restTime`, `status`, `busy` and `returnAt` — and nothing else. `busy` is the list of busy (active) segments as `{ start, end }` in minutes from midnight; rest gaps are not in it. `returnAt` is the minute the stylist returns after a trailing rest phase, or `null` (DEC-027). Neither holds any personal data. Written in the same atomic write as the booking and kept in step on every status, time, stylist or phase change. Publicly readable. Documents written before phases have no `busy` / `returnAt`; the engine derives them from the legacy fields.
 
 ## Collection: `stylistDayLocks`
 
@@ -103,7 +105,8 @@ ID = cleaned phone number. `{ name, lastVisit, visitCount }`. Updated whenever a
 | -------------- | -------------------------------------- | ----------------------------------------------- |
 | `name`         | `string`                               | e.g. "Colour (Regrowth)"                        |
 | `category`     | `string`                               | e.g. "cut", "colour"                            |
-| `activeTime` / `restTime` / `totalTime` | `number`              | Minutes                                         |
+| `phases`       | `Phase[]?`                             | The service's default phases, e.g. Digital Perm = active 60, rest 30, active 30. Absent on older services: derived from `activeTime` / `restTime`. Changing them affects **new** bookings only (DEC-028) |
+| `activeTime` / `restTime` / `totalTime` | `number`              | Minutes (totals of `phases`, kept consistent)   |
 | `price`        | `{ director, senior, junior: number }` | Tiered pricing                                  |
 | `status`       | `'active' \| 'inactive'`               |                                                 |
 | `sortOrder`    | `number`                               | Order shown in the booking flow                 |
