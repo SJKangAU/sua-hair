@@ -2,94 +2,153 @@
 
 ## Overview
 
-Three Firestore collections: `bookings`, `stylists`, `services`. Bookings reference stylists and services by ID but also store denormalised copies of names and prices at the time of booking — this preserves historical accuracy when stylists are deactivated or prices change.
+Firestore collections used by the app (rules in `firestore.rules`):
+
+| Collection                | Who can read                  | Who can write                                   | Purpose                                                      |
+| ------------------------- | ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| `bookings`                | staff only                    | staff; the public may **create** a pending one  | Every appointment, walk-in, break and training session       |
+| `slotBlocks`              | **public**                    | staff; public create of the paired pending doc  | PII-free projection of `bookings` used for public availability |
+| `stylistDayLocks`         | staff                         | staff (`version`, `updatedAt` only; no delete)  | Per-stylist-per-day lock that serialises admin slot-claiming writes |
+| `customerLookups`         | staff only                    | staff; public may write its own record          | Per-phone identity + visit history                           |
+| `stylists`                | public                        | staff                                           | Roster, tiers, working hours                                 |
+| `services`                | public                        | staff                                           | Catalogue, tiered prices, price history                      |
+| `salonSettings`           | public                        | staff                                           | Weekly opening hours + per-date overrides (`salonSettings/main`) |
+| `privateSettings`         | owner only                    | owner only                                      | Owner email-notification preference (`privateSettings/notifications`) |
+| `notifications`           | staff                         | public create (written by the booking flow)     | In-app bell for owner and stylists                           |
+| `waitlist`                | staff                         | public create; staff update/delete              | Customers waiting for an opening                             |
+| `users`                   | own document only             | nobody (provisioned in the console)             | Role document: `owner` or `stylist` (+ `stylistId`)          |
+
+Bookings reference stylists and services by ID but also store denormalised copies of names and prices at the time of booking — this preserves historical accuracy when stylists are deactivated or prices change.
+
+Public availability reads **only** `slotBlocks`, never `bookings`, because Firestore rules cannot hide individual fields from an authorised read (DEC-013).
 
 ---
 
 ## Collection: `bookings`
 
-| Field           | Type                                              | Description                                      |
-| --------------- | ------------------------------------------------- | ------------------------------------------------ |
-| `bookingType`   | `'customer' \| 'walkin' \| 'break' \| 'training'` | Origin of the booking                            |
-| `status`        | `'pending' \| 'confirmed' \| 'cancelled'`         | Current status                                   |
-| `customerName`  | `string`                                          | Client name                                      |
-| `customerPhone` | `string`                                          | Australian mobile, stripped of spaces            |
-| `stylistId`     | `string`                                          | Firestore document ID of stylist                 |
-| `stylistName`   | `string`                                          | Denormalised — preserved if stylist deactivated  |
-| `stylistLevel`  | `'director' \| 'senior' \| 'junior'`              | Tier at time of booking                          |
-| `serviceId`     | `string`                                          | Firestore document ID of service                 |
-| `serviceName`   | `string`                                          | Denormalised                                     |
-| `servicePrice`  | `number`                                          | Resolved price at time of booking                |
-| `activeTime`    | `number`                                          | Minutes stylist is hands-on (minutes)            |
-| `restTime`      | `number`                                          | Minutes client sits while product sets (minutes) |
-| `totalTime`     | `number`                                          | `activeTime + restTime`                          |
-| `date`          | `string`                                          | `YYYY-MM-DD`                                     |
-| `time`          | `string`                                          | e.g. `"10:00 AM"`                                |
-| `notes`         | `string?`                                         | Optional client notes                            |
-| `blockReason`   | `string?`                                         | Reason for break block                           |
-| `traineeId`     | `string?`                                         | For training sessions                            |
-| `traineeName`   | `string?`                                         | For training sessions                            |
-| `trainingTopic` | `string?`                                         | For training sessions                            |
-| `createdAt`     | `string`                                          | ISO timestamp                                    |
+| Field              | Type                                                                       | Description                                                                   |
+| ------------------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `bookingType`      | `'customer' \| 'walkin' \| 'break' \| 'training'`                          | Origin of the booking                                                         |
+| `status`           | `'pending' \| 'confirmed' \| 'arrived' \| 'in_service' \| 'completed' \| 'no_show' \| 'cancelled'` | Lifecycle (see below)                              |
+| `bookingRef`       | `string?`                                                                  | Human-readable reference, e.g. `BK-20261028-elly-1100` — a label, **not** the document ID |
+| `customerName`     | `string`                                                                   | Client name (`"Break"` for breaks)                                            |
+| `customerNameLower`| `string?`                                                                  | Lowercased copy for case-insensitive prefix search                            |
+| `customerPhone`    | `string`                                                                   | Australian mobile, digits only                                                |
+| `customerEmail`    | `string?`                                                                  | Optional; used for confirmation / reminder emails                             |
+| `stylistId`        | `string`                                                                   | Firestore ID of the stylist (`"any"` for first-available online bookings)     |
+| `stylistName`      | `string`                                                                   | Denormalised                                                                  |
+| `stylistLevel`     | `'director' \| 'senior' \| 'junior'`                                       | Tier at time of booking                                                       |
+| `services`         | `BookedService[]?`                                                         | Multi-service bookings: each with id, name, price, active/rest/total time     |
+| `serviceId` / `serviceName` / `servicePrice` | `string` / `string` / `number`                           | Legacy flat fields, always populated (joined names, total price)              |
+| `activeTime`       | `number`                                                                   | Minutes the stylist is hands-on                                               |
+| `restTime`         | `number`                                                                   | Minutes the client sits while product sets                                    |
+| `totalTime`        | `number`                                                                   | `activeTime + restTime`                                                       |
+| `returnTime`       | `string?`                                                                  | Clock time the stylist returns (only when `restTime > 0`), locked at creation |
+| `date`             | `string`                                                                   | `YYYY-MM-DD`                                                                  |
+| `time`             | `string`                                                                   | e.g. `"10:00 AM"`                                                             |
+| `notes`            | `string?`                                                                  | Optional client notes                                                         |
+| `blockReason`      | `string?`                                                                  | Reason for a break                                                            |
+| `traineeId` / `traineeName` / `trainingTopic` | `string?`                                               | Training sessions                                                             |
+| `arrivedAt`        | `string?`                                                                  | ISO time marked arrived; cleared if moved back to pending/confirmed           |
+| `restoreStatus`    | `status?`                                                                  | What a cancelled / no-show booking returns to on Restore                      |
+| `history`          | `BookingHistoryEntry[]?`                                                   | Append-only log of status changes, moves and phase edits                       |
+| `flagged` / `flagReason` | `boolean?` / `string?`                                               | Owner follow-up flag                                                          |
+| `consentGivenAt`   | `string?`                                                                  | ISO time the customer ticked privacy consent (online bookings)                |
+| `reminderSentAt`   | `string \| null?`                                                          | Set by the reminder function once the 24-hour email is sent                   |
+| `createdAt`        | `string`                                                                   | ISO timestamp                                                                 |
 
-**Document ID convention:** `{date}_{stylist-name}_{timestamp}` — human-readable, avoids auto-generated IDs
+**Document ID:** always a Firestore **auto-generated ID**. (DEC-008's readable `{date}_{stylist}_{timestamp}` IDs were replaced — a deterministic ID let a second admin booking silently overwrite the first. See DEC-016.) The readable label lives in `bookingRef`; the matching `slotBlocks` document uses the **same ID** as the booking.
 
-**Composite indexes:**
+**Status lifecycle:** `pending → confirmed → arrived → in_service → completed`; any open status → `cancelled`; confirmed → `no_show`. **Cancelled and no-show free the slot; every other status holds it.** Customer bookings start `pending`; walk-ins, breaks and training start `confirmed`.
 
-- `customerPhone` + `createdAt` — customer lookup in booking form
-- `stylistId` + `date` — slot availability check
+**Indexes** (`firestore.indexes.json`): `bookings(customerPhone, createdAt desc)`; `bookings(status, date)` (reminder function); `notifications(recipientId, createdAt desc)`; `stylists(status, startDate)`; `services(status, category)`. Queries by `date` + `stylistId` (equality only) use index merging.
+
+---
+
+## Collection: `slotBlocks`
+
+Same ID as the booking. Fields: `stylistId`, `date`, `time`, `activeTime`, `totalTime`, `restTime`, `status` — and nothing else. Written in the same atomic write as the booking and kept in step on every status, time or stylist change. Publicly readable.
+
+## Collection: `stylistDayLocks`
+
+ID `{date}_{stylistId}`. Fields: `version` (number), `updatedAt` (ISO string). Holds no customer data. Every admin write that claims a slot reads and bumps it inside the same transaction as its conflict check, so concurrent writers serialise (see FR-013, DEC-017). Created on first use.
+
+## Collection: `customerLookups`
+
+ID = cleaned phone number. `{ name, lastVisit, visitCount }`. Updated whenever a customer or walk-in booking is created. Staff-read-only.
 
 ---
 
 ## Collection: `stylists`
 
-| Field       | Type                                 | Description                      |
-| ----------- | ------------------------------------ | -------------------------------- |
-| `name`      | `string`                             | Full name                        |
-| `role`      | `string`                             | e.g. "Senior Stylist"            |
-| `level`     | `'director' \| 'senior' \| 'junior'` | Used for price resolution        |
-| `status`    | `'active' \| 'inactive'`             | Inactive hides from booking form |
-| `isTrainer` | `boolean`                            | Can create training sessions     |
-| `startDate` | `string`                             | `YYYY-MM-DD`                     |
-| `instagram` | `string?`                            | Handle without @                 |
-| `photoUrl`  | `string?`                            | Direct image URL for headshot    |
-| `createdAt` | `string`                             | ISO timestamp                    |
+| Field          | Type                                 | Description                                           |
+| -------------- | ------------------------------------ | ----------------------------------------------------- |
+| `name`         | `string`                             | Full name                                             |
+| `role`         | `string`                             | e.g. "Senior Stylist"                                 |
+| `level`        | `'director' \| 'senior' \| 'junior'` | Used for price resolution                             |
+| `status`       | `'active' \| 'inactive'`             | Inactive hides from the booking form                  |
+| `isTrainer`    | `boolean`                            | Can run training sessions                             |
+| `startDate`    | `string`                             | `YYYY-MM-DD`                                          |
+| `instagram`    | `string?`                            | Handle without @                                      |
+| `photoUrl`     | `string?`                            | Direct image URL                                      |
+| `workingHours` | `StylistWeeklyHours?`                | Per weekday `{ isWorking, start, end }`; absent = full salon hours |
+| `createdAt`    | `string`                             | ISO timestamp                                         |
 
-**Design decision:** Inactive flag instead of delete — historical bookings retain valid `stylistId` reference and denormalised name.
-
----
+**Design decision:** inactive flag instead of delete (DEC-002).
 
 ## Collection: `services`
 
-| Field          | Type                                   | Description                            |
-| -------------- | -------------------------------------- | -------------------------------------- |
-| `name`         | `string`                               | e.g. "Colour (Regrowth)"               |
-| `category`     | `string`                               | e.g. "colour", "cut", "treatment"      |
-| `activeTime`   | `number`                               | Minutes stylist is actively working    |
-| `restTime`     | `number`                               | Minutes product sets (stylist is free) |
-| `totalTime`    | `number`                               | `activeTime + restTime`                |
-| `price`        | `{ director, senior, junior: number }` | Tiered pricing object                  |
-| `status`       | `'active' \| 'inactive'`               |                                        |
-| `priceHistory` | `PriceHistoryEntry[]`                  | Append-only log of price changes       |
-| `createdAt`    | `string`                               | ISO timestamp                          |
+| Field          | Type                                   | Description                                     |
+| -------------- | -------------------------------------- | ----------------------------------------------- |
+| `name`         | `string`                               | e.g. "Colour (Regrowth)"                        |
+| `category`     | `string`                               | e.g. "cut", "colour"                            |
+| `activeTime` / `restTime` / `totalTime` | `number`              | Minutes                                         |
+| `price`        | `{ director, senior, junior: number }` | Tiered pricing                                  |
+| `status`       | `'active' \| 'inactive'`               |                                                 |
+| `sortOrder`    | `number`                               | Order shown in the booking flow                 |
+| `priceHistory` | `PriceHistoryEntry[]`                  | Append-only log of prices                       |
+| `createdAt`    | `string`                               | ISO timestamp                                   |
 
-**PriceHistoryEntry:**
-
-```ts
-{
-  price: { director: number, senior: number, junior: number }
-  effectiveFrom: string  // YYYY-MM-DD
-  recordedAt: string     // ISO timestamp
-}
-```
-
-**Design decision:** Price history is append-only. When a price changes via the Manage tab, the new price is written using Firestore `arrayUnion` — the old price entry is never modified. This means historical bookings can always be reconciled against the price that was active on their date.
+`PriceHistoryEntry` = `{ price, effectiveFrom (YYYY-MM-DD), recordedAt (ISO) }`. When a price changes in Manage, the previous price stays and the new one is appended with `arrayUnion`.
 
 ---
 
-## Key Relationships
+## Collection: `salonSettings` (document `main`)
 
-bookings.stylistId ──→ stylists (document ID)
-bookings.serviceId ──→ services (document ID)
+```ts
+{
+  weeklySchedule: { sun|mon|tue|wed|thu|fri|sat: { isOpen: boolean, open: number, close: number } }  // 24h integers
+  dateOverrides:  { "YYYY-MM-DD": { closed?: boolean, open?: number, close?: number } }
+}
+```
 
-Both relationships are soft references — bookings also store denormalised copies of stylist name, level, service name, and resolved price. This means the booking record is self-contained for analytics and display even if the referenced documents change.
+A date override wins over the weekly schedule. If the document is missing, `SALON_CONFIG` in `config.ts` (10:00–18:00, Monday closed) is used.
+
+## Collection: `privateSettings` (document `notifications`)
+
+`{ notifyOwnerByEmail: boolean, ownerEmail: string }` — owner-only. Kept out of `salonSettings` because that document is world-readable.
+
+## Collection: `notifications`
+
+`{ recipientId ('owner' or a stylist id), recipientType, bookingId, message, read, createdAt }`.
+
+## Collection: `waitlist`
+
+`{ customerName, customerPhone, requestedDate, requestedStylistId ('any' if none), status ('pending'|'contacted'|'resolved'), createdAt }`.
+
+## Collection: `users`
+
+`{ role: 'owner' | 'stylist', stylistId? }` keyed by Firebase Auth uid. Written only through the Firebase console / Admin SDK.
+
+---
+
+## Key relationships
+
+```
+bookings.stylistId ──→ stylists (document ID, soft reference)
+bookings.serviceId ──→ services  (document ID, soft reference)
+bookings (id)      ══  slotBlocks (same id)
+bookings (stylistId + date) ──→ stylistDayLocks ({date}_{stylistId})
+```
+
+All are soft references — bookings store denormalised copies of stylist name, level, service name and resolved price, so a booking record stays self-contained for analytics and display even if the referenced documents change.

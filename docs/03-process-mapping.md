@@ -2,34 +2,39 @@
 
 ## Current State — As-Is Process
 
-### Customer Booking (Phone)
+Bookings arrive by **phone call or SMS**. Whoever is free picks it up and handles it by hand — usually while they are also serving a client in the chair.
 
-Customer calls during business hours
+### Customer booking (phone / SMS)
+
+Customer calls or texts the salon
 ↓
-Steve or staff answers (if available)
+Whoever is free answers or replies — often interrupting the client they are serving
 ↓
-Manually checks scheduling engine
+Works out by hand whether the requested stylist and time are free, including whether a colour in its setting time leaves room
 ↓
-↓ [If available] → Confirms verbally → Customer writes it down
-↓ [If busy] → Customer calls back later or gives up
+↓ [If it fits] → Confirms to the customer by voice or text → Notes it down for the stylist
+↓ [If busy / nobody free] → Call goes unanswered or the customer is asked to call back, and may give up
 ↓
-No confirmation sent
-No record created beyond paper schedule
+No automatic confirmation or reminder is sent
+No shared digital record of the booking
 
 **Pain points identified:**
 
-- No booking possible outside 10am–6pm (Business Operating Hours)
-- Relies entirely on staff memory and training for scheduling rules
+- Booking is only possible while someone can answer (business hours, 10am–6pm)
+- Booking admin competes with serving the client in front of the stylist
+- Relies entirely on staff memory and training for the scheduling rules (rest periods, tiers, closed day)
+- Double bookings are possible when two requests arrive close together
+- No confirmation or reminder reaches the customer
 
 ---
 
-### Admin Schedule Management (Current)
+### Daily schedule management (current)
 
-Steve checks physical schedule book each morning
+The day's bookings are held in the heads and hands of the staff who took them
 ↓
-Updates manually throughout the day as walk-ins arrive
+Walk-ins are fitted in by judgement as they arrive
 ↓
-No visibility if away from the salon
+The owner has no view of the floor when away from the salon
 ↓
 End of day — no data captured, no analytics possible
 
@@ -37,49 +42,62 @@ End of day — no data captured, no analytics possible
 
 ## Future State — To-Be Process
 
-### Customer Booking (Online)
+### Customer booking (online)
 
-Customer visits booking page (any time, any device)
+Customer opens the booking page (any time, any device — no account)
 ↓
-Enters mobile number → system checks for returning customer
+Chooses one or more services → sees total time and a price ("from $X" until a stylist is chosen)
 ↓
-Selects stylist → service price resolves to stylist tier automatically
+Chooses a stylist (or "any available") → the price resolves to that stylist's tier
 ↓
-Selects date → Monday blocked, past cutoff blocked
+Chooses a date → closed days, past days and the same-day cutoff are not selectable
 ↓
-Selects time → only available slots shown (scheduling engine checks all existing bookings including rest periods)
+Chooses a time → only free times are selectable; unavailable ones are shown greyed out. If the whole day is full, the customer can join a waitlist
 ↓
-Confirms booking → saved to Firestore with status: pending
+Enters mobile number and name (email optional), ticks the privacy consent → confirms
 ↓
-Calendar invite generated (Google / Apple / Outlook)
+Booking is saved as **pending**; a confirmation screen with Add-to-Calendar links is shown; a confirmation email is sent if an email address was given
 ↓
-Steve sees booking appear on dashboard in real time
+Owner is notified (bell in the app; optional email) and the booking appears on the Today timeline and in Approvals
+↓
+Owner **approves** (→ confirmed), declines (→ cancelled, with Undo) or sends a suggested time from their own messaging app
+↓
+24 hours before the appointment a reminder email is sent (if an email address was given)
 
 ---
 
-### Admin Booking Management (To-Be)
+### Admin booking management (to-be)
 
-Steve opens Today tab → sees all 5 stylist columns with real-time bookings
+Owner opens **Today** → sees all stylist columns for the day, live, with "open slot" buttons and the day-at-a-glance strip
 ↓
-Walk-in arrives → clicks empty slot → creates walk-in booking in seconds
+Online bookings waiting for approval appear in the right-hand rail → Approve / Decline / Suggest time
 ↓
-Pending online bookings visible with gold border → confirms with one click
+Walk-in arrives (or a phone/SMS booking is taken) → clicks an open slot or "New booking" → enters the booking in seconds. If the time clashes with another booking, it is refused on the spot and the clashing booking is named
 ↓
-Needs to block time → clicks slot → creates break block
+Needs to block time → "Block Time" → break block (checked the same way)
 ↓
-Client history lookup → Clients tab → search by name or phone
+During the day: Arrived → Start service → Completed (or No-show / Cancel). A booking can be dragged to another time or stylist, or resized
 ↓
-End of day → Analytics tab shows revenue, occupancy, top services
+Colour setting → countdown shows when the stylist is due back; another client can be added in the gap if the service fits
+↓
+Client history lookup → Clients → search by name or phone
+↓
+End of day / week → Analytics shows revenue, busiest service and stylist
 
 ---
 
 ## Key Process Improvements
 
-| Scenario                | As-Is                 | To-Be                               |
-| ----------------------- | --------------------- | ----------------------------------- |
-| After-hours booking     | Impossible            | Available 24/7                      |
-| Double booking risk     | High                  | Eliminated by scheduling engine     |
-| Walk-in creation        | Mental note / paper   | 10 seconds in dashboard             |
-| Client history lookup   | Memory / paper        | Instant search                      |
-| Price change management | Informal              | Logged with timestamp automatically |
-| Staff change            | Update paper schedule | Deactivate in Manage tab            |
+| Scenario                          | As-Is                                                  | To-Be                                                                      |
+| --------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Taking a booking request          | Phone/SMS, handled by hand while serving a client      | Customer books online; staff only review                                  |
+| After-hours booking               | Impossible                                             | Available 24/7                                                             |
+| Double booking risk               | High                                                   | Prevented by the scheduling engine and, for staff entries, by a conflict check |
+| Walk-in creation                  | Mental note                                            | A few seconds in the dashboard, clash-checked                              |
+| Customer confirmation / reminder  | None                                                   | On-screen confirmation, confirmation email, 24-hour reminder email         |
+| Owner visibility                  | Only in the salon                                      | Live from any device                                                       |
+| Client history lookup             | Memory                                                 | Instant search                                                             |
+| Price change management           | Informal                                               | Logged with timestamp automatically                                        |
+| Staff change                      | Rework by hand                                         | Deactivate in Manage                                                       |
+| Busy day (full)                   | Customer gives up                                      | Customer joins the waitlist; owner can offer a freed slot                  |
+| Late cancellation                 | Slot lost unless someone remembers                     | Cancel frees the slot immediately; restore re-checks it                    |
