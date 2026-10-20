@@ -180,7 +180,7 @@ test("if saving fails the order is put back and an error toast is shown", async 
       body: JSON.stringify({ rules: { files: [{ name: "firestore.rules", content: rules }] } }),
     });
   const deny = real.replace(
-    /match \/stylists\/\{stylistId\} \{[\s\S]*?\r?\n    \}\r?\n/,
+    /match \/stylists\/\{stylistId\} \{[\s\S]*?\r?\n {4}\}\r?\n/,
     "match /stylists/{stylistId} {\n allow read: if true;\n allow write: if false;\n }\n",
   );
   expect(deny).not.toEqual(real);
