@@ -209,9 +209,9 @@ test("TC-006 a slot inside another booking's rest window is available if the ser
     stylist: "Steve",
     date: fri,
   });
-  await expect(slotButton(page, "10:30 AM")).toBeEnabled();
+  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
   // ...but the colour's own hands-on time is still blocked
-  await expect(slotButton(page, "10:00 AM")).toBeDisabled();
+  await expect(slotButton(page, "10:00 AM")).toHaveAttribute("aria-disabled", "true");
 
   // Men's Cut needs 45 min hands-on: it does NOT fit a 30-minute window.
   // (The original TC-006 expected 10:30 to be open for it - inconsistent data.)
@@ -220,7 +220,7 @@ test("TC-006 a slot inside another booking's rest window is available if the ser
     stylist: "Steve",
     date: fri,
   });
-  await expect(slotButton(page, "10:30 AM")).toBeDisabled();
+  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "true");
 });
 
 test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden", async ({
@@ -242,7 +242,7 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
     date: THU,
   });
   // TC-007: 10:30 unavailable
-  await expect(slotButton(page, "10:30 AM")).toBeDisabled();
+  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "true");
   // TC-008: still present in the grid, labelled unavailable (not removed)
   await expect(slotButton(page, "10:00 AM")).toHaveAttribute(
     "aria-label",
@@ -253,9 +253,9 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
     /unavailable/,
   );
   // 11:00 is free
-  await expect(slotButton(page, "11:00 AM")).toBeEnabled();
+  await expect(slotButton(page, "11:00 AM")).toHaveAttribute("aria-disabled", "false");
   // a different stylist is unaffected at the same time
   await tap(page.getByRole("button", { name: /Yuto/ }).first());
-  await expect(slotButton(page, "10:30 AM")).toBeEnabled();
+  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
   void iso;
 });

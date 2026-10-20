@@ -1,16 +1,16 @@
 // TimeSlotGrid.tsx
-// Time slot picker grouped into Morning / Afternoon sections — B&W theme
+// Time picker for the chosen date — B&W theme
 //
-// Slots are split by AM/PM suffix on the time string (e.g. "10:00 AM" →
-// Morning, "1:30 PM" → Afternoon).  Unavailable slots are rendered with
-// strikethrough text and a line-through decoration so the time grid shape
-// stays consistent — the user can see what times exist but can't click them.
+// The times themselves are drawn by DayTimeGrid (a day column with a hover
+// preview of the block the booking would occupy). This component owns what
+// surrounds it: the date heading, the loading skeleton and the waitlist
+// opt-in when nothing is available.
 // Receives pre-fetched slots from the parent (useBookingAvailability).
-// When no slots are available for a date, offers a waitlist opt-in.
 
 import { useState } from "react";
 import { parseLocalDate } from "../../lib/dates";
 import WaitlistForm from "./WaitlistForm";
+import DayTimeGrid from "./DayTimeGrid";
 import type { Slot } from "../../hooks/useBookingAvailability";
 
 interface Props {
@@ -19,6 +19,8 @@ interface Props {
   slots: Slot[];
   loading: boolean;
   onTimeSelect: (time: string) => void;
+  totalTime: number; // minutes the booking occupies (hands-on + processing)
+  activeTime: number; // hands-on minutes
   stylistId?: string; // passed to waitlist entry if a specific stylist was chosen
 }
 
@@ -154,54 +156,16 @@ const TimeSlotGrid = ({
   slots,
   loading,
   onTimeSelect,
+  totalTime,
+  activeTime,
   stylistId,
 }: Props) => {
-  const morningSlots = slots.filter((s) => s.time.endsWith("AM"));
-  const afternoonSlots = slots.filter((s) => s.time.endsWith("PM"));
 
   const noSlotsAtAll = !loading && slots.length === 0 && date;
   const allUnavailable =
     !loading && slots.length > 0 && slots.every((s) => !s.available);
 
   const [showWaitlist, setShowWaitlist] = useState(false);
-
-  const renderSlot = (slot: Slot) => {
-    const isSelected = time === slot.time;
-    const unavailable = !slot.available;
-    return (
-      <button
-        key={slot.time}
-        className="bk-slot"
-        onClick={() => slot.available && onTimeSelect(slot.time)}
-        disabled={unavailable}
-        title={unavailable ? slot.reason : undefined}
-        aria-label={`${slot.time}${
-          unavailable ? `, unavailable — ${slot.reason ?? "booked"}` : ""
-        }`}
-        aria-pressed={isSelected}
-        style={{
-          padding: "0.6rem 0.25rem",
-          minHeight: "44px", // touch target minimum
-          textAlign: "center",
-          border: `1.5px solid ${isSelected ? "var(--ink)" : "var(--border)"}`,
-          borderRadius: "8px",
-          cursor: unavailable ? "default" : "pointer",
-          background: isSelected ? "var(--ink)" : "var(--surface)",
-          fontSize: "var(--text-sm)",
-          fontWeight: isSelected ? 600 : 400,
-          color: isSelected
-            ? "var(--surface)"
-            : unavailable
-            ? "var(--border-strong)"
-            : "var(--ink)",
-          fontFamily: "var(--font-body)",
-          textDecoration: unavailable ? "line-through" : "none",
-        }}
-      >
-        {slot.time}
-      </button>
-    );
-  };
 
   return (
     <div style={{ marginBottom: "1.25rem" }}>
@@ -250,25 +214,15 @@ const TimeSlotGrid = ({
           )}
 
           <div className="bk-fade-in">
-            {/* Morning */}
-            {morningSlots.length > 0 && (
-              <div style={{ marginBottom: "1rem" }}>
-                <SectionLabel label="Morning" />
-                <div className="bk-slot-grid">
-                  {morningSlots.map(renderSlot)}
-                </div>
-              </div>
-            )}
-
-            {/* Afternoon */}
-            {afternoonSlots.length > 0 && (
-              <div>
-                <SectionLabel label="Afternoon" />
-                <div className="bk-slot-grid">
-                  {afternoonSlots.map(renderSlot)}
-                </div>
-              </div>
-            )}
+            <DayTimeGrid
+              key={`${date}-${totalTime}-${activeTime}`}
+              date={date}
+              time={time}
+              slots={slots}
+              totalTime={totalTime}
+              activeTime={activeTime}
+              onTimeSelect={onTimeSelect}
+            />
           </div>
         </>
       )}

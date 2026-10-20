@@ -73,7 +73,8 @@ export async function pickDate(page: Page, dateIso: string): Promise<void> {
 }
 
 export function slotButton(page: Page, time: string) {
-  return page.getByRole("button", { name: new RegExp(`^${time}`) });
+  // A start time in the day grid (an option; aria-disabled when it cannot be booked)
+  return page.getByRole("option", { name: new RegExp(`^${time}`) });
 }
 
 /** Steps 1-2 of the customer flow, leaving the page on the time grid. */
