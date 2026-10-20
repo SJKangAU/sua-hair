@@ -179,6 +179,9 @@ Specs: `e2e/09-timeline-create.spec.ts`; rules in `tests/unit/timelineCreate.tes
 | TC-075 | Keyboard on a booked time                  | Move the cursor onto a time already booked; press Enter                                                                                        | The cursor is dashed and announced "Already booked"; Enter opens nothing and says why                                                                                                        | 09-timeline-create |
 | TC-076 | Reduced motion                             | Turn on reduced motion; hover empty time                                                                                                       | The highlight has no transition (transition-duration 0s)                                                                                                                                     | 09-timeline-create |
 | TC-077 | Create form: client returns after processing | Drag a block, enter a name, choose Men's Cut, tick "Client returns after processing", lengthen processing by 15, create | Before a service is chosen the dragged length is the hands-on phase; the service pre-fills its phases; ticking adds processing 30 and return 30 (105 min) and the range updates live; unticking restores the service's own phases; the booking is saved with phases 45 / 45 / 30 (total 120) and drawn solid / hatched / solid | 09-timeline-create |
+
+---
+
 ## Manage — import clients from Fresha (owner only)
 
 Specs: `e2e/10-client-import.spec.ts`; rules in `tests/unit/clientImport.test.ts`, `tests/unit/clientImportFile.test.ts` (synthetic fixtures, fake people only), `tests/firestore/clientImport.test.ts` and `rules.test.ts`. The Fresha file is a client list, so the equivalents of "Bookings, Clients visit counts, Analytics" are the walk-in form's returning-client recognition (TC-081). No real client data is used anywhere in these tests.
