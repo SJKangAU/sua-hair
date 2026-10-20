@@ -122,12 +122,11 @@ export const tileFreeIntervals = (
   return tiles;
 };
 
-// The "Open slot" buttons for one stylist on one day: free stretches of 45+
-// minutes inside their working hours, tiled. Nothing on a closed day, an off
-// day or a past date; today nothing before now (rounded up a step). `occupied`
-// is whatever should count as taken — the timeline passes the visible ghosts
-// too so a button never sits on top of one. Shared by the timeline columns and
-// the Today page's "next opening".
+// Free stretches of 45+ minutes inside one stylist's working hours on one day,
+// tiled. Nothing on a closed day, an off day or a past date; today nothing
+// before now (rounded up a step). `occupied` is whatever should count as taken.
+// Used by the Today page's "next opening" (the timeline itself no longer draws
+// buttons for free time: bookings are created by pointing, see timelineCreate).
 export const computeOpenSlots = ({
   hours,
   range,

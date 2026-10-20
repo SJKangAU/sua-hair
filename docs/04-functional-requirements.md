@@ -82,13 +82,16 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Requirements:**
 
 - One column per active stylist working that day, driven by Firestore (not hardcoded)
-- The grid follows **the salon's opening hours for that date** (override → weekly schedule), stretching in whole hours so a booking outside the hours is never hidden; time outside a stylist's own working hours is shaded
+- The grid follows **the salon's opening hours for that date** (override → weekly schedule), stretching in whole hours so a booking outside the hours is never hidden; unavailable time (outside a stylist's own working hours, a closed day, the past) has a muted fill
 - Current-time line, updated live
-- Booking blocks show customer, service and status; pending is dashed; cancelled / no-show appear as faint "ghost" blocks that can be hidden ("Hide cancelled & no-shows"); breaks and rest periods have their own treatment
-- Free stretches of ≥ 45 minutes get an **Open slot** button; a booking's rest window can offer **Add booking to gap**
+- Booking blocks show customer, service and status; pending is dashed; cancelled / no-show appear as faint "ghost" blocks that can be hidden ("Hide cancelled & no-shows"); breaks have their own treatment
+- **A booking with phases (FR-002) is drawn in parts**: a solid block for each hands-on phase, a hatched band for each processing gap labelled e.g. "Processing 30 · back 12:30" (or the live countdown while it runs), and the hands-on block after a gap marked "Return". All parts open the same booking, except that pointing into the gap books another client (below)
+- **Empty time has no buttons, labels or dashed borders**, only faint hour and half-hour lines
+- **Create by pointing (DEC-030).** Pointing at empty time in a stylist's column highlights a 30-minute block snapped to 15 minutes, labelled with its range ("11:15 – 11:45 am"). There is no highlight over a booking, a break, a return block, unavailable time, or where 30 minutes would not fit. Pressing and dragging up or down in the same column sets the length (live label with range and length, "11:15 am – 12:15 pm, 1h"), clamped at the next conflicting busy block or break; releasing opens the create form (Walk-in / Block Time) pre-filled with stylist, start and length. A plain click makes the 30-minute block. Escape cancels; the grid edge-scrolls while dragging. Starting a drag on a booking moves that booking instead. A block may sit inside another booking's processing gap (and is then offered only services whose hands-on time fits), but never on a hands-on block or a return. The past (before the current quarter hour today) and times outside the stylist's hours are refused
+- **Touch:** a long press (about 300 ms) starts the drag so scrolling still works; a short tap previews the 30-minute block with a Create button. **Keyboard:** the timeline is focusable; arrow up / down move the highlight 15 minutes, left / right change stylist, Shift + up / down change its length, Enter opens the form, Escape cancels; the position is announced (aria-live) and the focus ring is visible. Reduced motion removes the highlight's transition
+- The create form has **Client returns after processing**: it adds (or removes) the hands-on phase after the gap, and the owner sets the hands-on, processing and return lengths in 15-minute steps. Choosing a service pre-fills that service's phases, which the owner can still change. The save re-checks every busy block inside the transaction that writes the booking and its `slotBlocks` document, so two people cannot create overlapping bookings
 - Clicking a booking opens a **quick-action popover** (status actions, Cancel / Restore, View details); **View details** opens the full booking drawer (FR-016)
-- Clicking an open slot or **New booking** opens the create form (Walk-in / Block Time) pre-filled with stylist, date and time
-- A booking can be **dragged** to another time or stylist, or **resized** (15-minute steps); moves are conflict-checked (FR-013) and offer Undo
+- A booking can be **dragged** to another time or stylist; the **bottom edge of each phase** can be dragged (15-minute steps; later phases move along). Both are conflict-checked (FR-013), a phase cannot be dragged into another client's hands-on time or past closing (same messages as the booking panel), and offer Undo
 - Day navigation: previous/next, **Today**, jump-to-date, and `?date=` in the URL; Ctrl K searches clients and bookings
 - Phones get an agenda list instead of the grid
 
@@ -97,7 +100,13 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] Renders every active stylist and the day's bookings, with the current-time line (TC-009)
 - [x] Next day shows that day's bookings (TC-010)
 - [x] Clicking a booking opens its actions, not the create form; View details opens the booking (TC-011)
-- [x] Clicking empty space opens the create form pre-filled (TC-012)
+- [x] Pointing at and clicking empty time opens the create form pre-filled; there are no Open slot buttons (TC-012, TC-060, TC-061, TC-065)
+- [x] Dragging sets the length in 15-minute steps, stops at the next booking or break, can go up as well as down, and Escape cancels (TC-062, TC-063, TC-064, TC-066)
+- [x] The past and times outside the stylist's hours cannot be booked (TC-067; `unit` timelineCreate)
+- [x] A booking with a processing gap is drawn solid / hatched / solid; another client can be booked in the gap and the return stays reserved (TC-068, TC-069, TC-070)
+- [x] Dragging the edge of a phase changes it, and a conflicting change is refused with the booking panel's message (TC-071; `unit` phaseResize)
+- [x] A conflicting save is rejected when it is made (TC-072; `admin` suite)
+- [x] Touch long-press, tap-then-Create and the keyboard cursor all work (TC-073 to TC-075); reduced motion is respected (TC-076)
 - [x] The grid uses the date's configured hours (Playwright "D3"; `unit` adminLifecycle, timelineLayout)
 - [x] Cancelled bookings can be shown and restored (Playwright "D2")
 

@@ -60,8 +60,8 @@ interface OpeningArgs {
   onlyStylistId?: string;
 }
 
-// The earliest free stretch (45+ minutes, the same rule as the timeline's
-// "Open slot" buttons) on `date` across the stylists: the earliest wins, and
+// The earliest free stretch (45+ minutes, see computeOpenSlots) on `date`
+// across the stylists: the earliest wins, and
 // on a tie the one listed first. Today it never returns a time already past.
 export const findNextOpening = ({
   date,
