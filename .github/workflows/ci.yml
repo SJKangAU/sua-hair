@@ -1,4 +1,5 @@
-# CI — typecheck, lint, unit tests, and emulator-backed Firestore rules tests.
+# CI — typecheck, lint, unit tests, emulator-backed Firestore tests, and the
+# Playwright browser scenarios.
 # Runs on every push and pull request so "committed but never ran" states
 # (missing installs, stale rules, lint regressions) get caught immediately.
 name: CI
@@ -63,3 +64,40 @@ jobs:
 
       - name: Security / PII-leak tests
         run: npm run test:security
+
+      - name: Admin write path (walk-ins, breaks, restore, reschedule, races)
+        run: npm run test:admin
+
+      - name: Smoke - client books, owner approves, overlapping walk-in blocked
+        run: npm run test:smoke
+
+  e2e:
+    name: Browser scenarios (Playwright + emulators)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache Firestore emulator
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}
+
+      - name: Scenarios from docs/08-test-scenarios.md
+        run: npm run test:e2e

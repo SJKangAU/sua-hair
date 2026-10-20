@@ -71,12 +71,18 @@ Firestore Security Rules cannot redact individual fields from an authorised read
 ## Testing
 
 ```bash
-npm run test:unit      # scheduling engine + date utils (no emulator needed)
+npm run test:unit      # scheduling engine, dates, status/lifecycle logic (no emulator needed)
 npm run test:rules     # firestore.rules permission matrix (needs Java 21)
 npm run test:security  # PII-leak evidence tests (needs Java 21)
+npm run test:admin     # admin write path against real rules: walk-ins, breaks, restore,
+                       # reschedule, and two-admins-at-once races (needs Java 21)
+npm run test:smoke     # client books -> owner approves -> overlapping walk-in blocked
+npm run test:e2e       # Playwright drives the real UI against the Auth + Firestore emulators
+                       # (docs/08-test-scenarios.md); uses installed Edge locally
+npm run test:all       # build + everything above
 ```
 
-The rules suites wrap Vitest in `firebase emulators:exec`, so a local Firestore emulator backs every assertion. CI (`.github/workflows/ci.yml`) runs typecheck, lint, and all three suites on every push and pull request.
+The emulator suites wrap Vitest / Playwright in `firebase emulators:exec`, so a local Firestore (and Auth, for e2e) emulator backs every assertion; the e2e run points the dev server at a `demo-` project via `VITE_USE_EMULATORS=true` and never uses `.env`. CI (`.github/workflows/ci.yml`) runs typecheck, lint, and all suites on every push and pull request. Saved evidence from the pilot-readiness pass is in `docs/test-runs/`.
 
 ---
 

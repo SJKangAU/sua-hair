@@ -5,7 +5,7 @@
 //
 // The dev server is started here with VITE_* overrides pointing at a `demo-`
 // project and VITE_USE_EMULATORS=true, so the real .env credentials are never
-// used. Edge is driven through its installed channel — no browser download.
+// used. Locally Edge is driven through its installed channel (no browser download).
 import { defineConfig } from "@playwright/test";
 
 const PORT = 5174;
@@ -25,7 +25,9 @@ export default defineConfig({
   outputDir: "../test-results",
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
-    channel: "msedge",
+    // Locally: the installed Edge (no browser download). CI has no Edge and
+    // installs Playwright's own Chromium instead.
+    channel: process.env.CI ? undefined : "msedge",
     headless: true,
     screenshot: "only-on-failure",
     timezoneId: "Australia/Melbourne",

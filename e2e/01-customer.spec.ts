@@ -178,15 +178,9 @@ test("TC-005 price follows the stylist's tier", async ({ page }) => {
   });
   await tap(slotButton(page, "3:00 PM"));
   await tap(page.getByRole("button", { name: "Review Booking" }));
-  const sheet = page.locator("body");
-  await expect(sheet).toContainText("$160"); // director tier
-  await page.keyboard.press("Escape");
-  // close the sheet if still open, then switch to a junior stylist
-  const close = page.getByRole("button", { name: /Change|Close|Edit|Back/i }).first();
-  if (await page.getByText("Confirm & Continue").count()) {
-    await tap(page.getByRole("button", { name: /Change|Close|Edit/i }).first());
-  }
-  void close;
+  await expect(page.locator("body")).toContainText("$160"); // director tier
+  // back out of the review sheet and switch to a junior stylist
+  await tap(page.getByRole("button", { name: "Edit Booking" }));
   await tap(page.getByRole("button", { name: /Ethan/ }).first());
   await pickDate(page, THU);
   await tap(slotButton(page, "3:00 PM"));

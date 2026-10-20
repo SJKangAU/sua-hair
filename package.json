@@ -13,7 +13,7 @@
     "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\"",
     "test:admin": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts\"",
     "test:smoke": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/smoke.test.ts\"",
-    "test:all": "npm run build && npm run test:unit && npm run test:rules && npm run test:security && npm run test:admin && npm run test:smoke",
+    "test:all": "npm run build && npm run test:unit && npm run test:rules && npm run test:security && npm run test:admin && npm run test:smoke && npm run test:e2e",
     "test:e2e": "firebase emulators:exec --project demo-sua-e2e --only firestore,auth \"playwright test -c e2e/playwright.config.ts\""
   },
   "dependencies": {
