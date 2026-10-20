@@ -106,6 +106,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] A booking with a processing gap is drawn solid / hatched / solid; another client can be booked in the gap and the return stays reserved (TC-068, TC-069, TC-070)
 - [x] Dragging the edge of a phase changes it, and a conflicting change is refused with the booking panel's message (TC-071; `unit` phaseResize)
 - [x] A conflicting save is rejected when it is made (TC-072; `admin` suite)
+- [x] The create form adds processing and return phases, pre-filled from the chosen service (TC-077)
 - [x] Touch long-press, tap-then-Create and the keyboard cursor all work (TC-073 to TC-075); reduced motion is respected (TC-076)
 - [x] The grid uses the date's configured hours (Playwright "D3"; `unit` adminLifecycle, timelineLayout)
 - [x] Cancelled bookings can be shown and restored (Playwright "D2")

@@ -389,6 +389,48 @@ test("TC-072 a save that conflicts is rejected when it is made", async ({ browse
   await page.context().close();
 });
 
+test("TC-077 the create form: Client returns after processing adds processing and return phases", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await open(page, DAY);
+  // a drag opens the form; the length is the hands-on phase until a service is chosen
+  const from = await at(page, "yuto", h(11, 5));
+  const to = await at(page, "yuto", h(11, 35));
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 5 });
+  await page.mouse.up();
+  const d = dialog(page);
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 – 11:45 am · 45 min");
+  const returns = d.getByLabel("Client returns after processing");
+  await expect(returns).not.toBeChecked();
+
+  // choosing a service pre-fills its phases (Men's Cut: one 45-minute phase)
+  await d.getByPlaceholder("e.g. Jane Smith").fill("Wendy Return");
+  await d.locator("label", { hasText: "Men's Cut" }).locator('input[type="checkbox"]').check();
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 – 11:45 am · 45 min");
+  await returns.check();
+  await expect(d.getByTestId("phase-row-0")).toContainText("Hands-on");
+  await expect(d.getByTestId("phase-row-1")).toContainText("Processing");
+  await expect(d.getByTestId("phase-row-2")).toContainText("Return");
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 am – 12:45 pm · 105 min");
+  await d.getByRole("button", { name: "Lengthen processing by 15 minutes" }).click();
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 am – 1:00 pm · 120 min");
+  // turning it off puts the service's own phases back
+  await returns.uncheck();
+  await expect(d.getByTestId("walkin-range")).toHaveText("11:00 – 11:45 am · 45 min");
+  await returns.check();
+  await d.getByRole("button", { name: "Lengthen processing by 15 minutes" }).click();
+  await submitWalkin(page);
+  await expect(page.getByText("Walk-in booking created for Wendy Return")).toBeVisible();
+  const b = (await bookings()).find((x) => x.customerName === "Wendy Return") as unknown as Doc;
+  expect(b.phases).toEqual([A(45), R(45), A(30)]);
+  expect(b.totalTime).toBe(120);
+  // and it is drawn solid / hatched / solid on the timeline
+  await expect(page.getByTestId("processing-band")).toContainText("Processing 45 · back 12:30 PM");
+  await expect(page.getByTestId("return-block")).toHaveCount(1);
+  await page.context().close();
+});
+
 // ── Touch ─────────────────────────────────────────────────────────────────────
 
 async function touchPage(browser: Browser) {
