@@ -36,7 +36,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
-import useStylists from "../../../hooks/useStylists";
+import useStylists, { clearStylistCaches } from "../../../hooks/useStylists";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
 import { moveItem, orderUpdates } from "../../../lib/stylistOrder";
 
@@ -236,6 +236,9 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
     if (updates.length === 0) return;
 
     setPendingOrder({ base: stylists, ids: nextIds }); // optimistic
+    // Before the write, not after it: a reload while the commit is still being
+    // acknowledged would otherwise reopen the page on the old cached order.
+    clearStylistCaches();
     try {
       const batch = writeBatch(db);
       for (const u of updates) {

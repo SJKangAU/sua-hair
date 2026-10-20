@@ -26,6 +26,21 @@ export interface FirestoreStylist {
   workingHours?: import("../types").StylistWeeklyHours;
 }
 
+const STYLIST_CACHE_KEYS = ["sua_hair_stylists_active", "sua_hair_stylists_all"];
+
+// Drops both cached stylist lists. Call BEFORE writing a change to stylists:
+// a reload that lands between the write reaching the server and the page
+// noticing it must not find the old list in sessionStorage.
+export const clearStylistCaches = (): void => {
+  for (const key of STYLIST_CACHE_KEYS) {
+    try {
+      sessionStorage.removeItem(key);
+    } catch {
+      /* cache clear is best-effort */
+    }
+  }
+};
+
 interface UseStylists {
   stylists: FirestoreStylist[];
   loading: boolean;
