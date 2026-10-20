@@ -43,7 +43,10 @@ export const TrainingRoute = () => <TrainingPage />;
 // Defense in depth: finance data is never rendered for a non-owner, even if
 // they reach this URL some other way
 export const AnalyticsRoute = () => {
-  const { isOwner } = useAdminContext();
+  const { isOwner, roleLoading } = useAdminContext();
+  // Wait for the role document before deciding - opening or refreshing
+  // /admin/analytics must not bounce an owner to Today while it loads.
+  if (roleLoading) return null;
   return isOwner ? <AnalyticsPage /> : <Navigate to="/admin/today" replace />;
 };
 

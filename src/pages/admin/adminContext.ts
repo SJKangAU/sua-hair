@@ -8,6 +8,8 @@ import type { BookingStatus } from "../../types";
 
 export interface AdminOutletContext {
   isOwner: boolean;
+  // True until the signed-in user's role document has been read
+  roleLoading: boolean;
   onUpdateStatus: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }

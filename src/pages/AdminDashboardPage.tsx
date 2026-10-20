@@ -33,7 +33,7 @@ import type { BookingStatus, Notification } from "../types";
 const DashboardInner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { appUser } = useAppUser();
+  const { appUser, loading: roleLoading } = useAppUser();
   const { bookings, loading, setFlag } = useBookingContext();
   const { changeStatus } = useBookingActions();
   const { addToast } = useToastContext();
@@ -85,6 +85,7 @@ const DashboardInner = () => {
 
   const outletContext: AdminOutletContext = {
     isOwner,
+    roleLoading,
     onUpdateStatus: handleUpdateStatus,
     onSetFlag: handleSetFlag,
   };
