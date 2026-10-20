@@ -194,33 +194,6 @@ export const slotFootprint = (
   return applyRestPolicy(footprintFor(start, resolvePhases(b)));
 };
 
-// Check whether overriding a single existing booking's active/rest time
-// (a per-session quick-edit, distinct from editing the Service template in
-// Manage → Services) would overlap another booking for the same stylist on
-// the same date. The booking being resized is excluded from its own
-// conflict check.
-export const canResizeBooking = (
-  booking: Booking,
-  newActiveTime: number,
-  newTotalTime: number,
-  allBookings: SlotBlock[],
-): boolean => {
-  const candidate = applyRestPolicy(
-    footprintFor(
-      timeStringToMinutes(booking.time),
-      phasesFromLegacy(newActiveTime, newTotalTime - newActiveTime, newTotalTime),
-    ),
-  );
-  return !allBookings.some(
-    (b) =>
-      b.id !== booking.id &&
-      b.stylistId === booking.stylistId &&
-      b.date === booking.date &&
-      blocksSlot(b.status) &&
-      footprintsConflict(candidate, slotFootprint(b)),
-  );
-};
-
 // ── Time Block Builder ─────────────────────────────────────────────────────────
 
 // Convert existing bookings into TimeBlock objects for a specific stylist and date

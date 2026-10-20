@@ -94,25 +94,6 @@ export const movedHistoryEntry = (
   return { at, type: "moved", label: `${base}${price}` };
 };
 
-export const phasesHistoryEntry = (
-  from: { activeTime: number; restTime: number },
-  to: { activeTime: number; restTime: number },
-  at: string = new Date().toISOString(),
-): BookingHistoryEntry => {
-  const parts: string[] = [];
-  if (from.activeTime !== to.activeTime) {
-    parts.push(`apply ${from.activeTime} to ${to.activeTime} min`);
-  }
-  if (from.restTime !== to.restTime) {
-    parts.push(`processing ${from.restTime} to ${to.restTime} min`);
-  }
-  return {
-    at,
-    type: "phases",
-    label: `Timings changed: ${parts.join(", ")}`,
-  };
-};
-
 // One line for an edit to a booking's phases, e.g.
 // "Timings changed: processing 30 to 45 min, return 30 to 15 min (back at 11:45 AM)"
 export const phaseEditHistoryEntry = (

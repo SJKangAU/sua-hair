@@ -13,7 +13,6 @@ import {
   isPastSameDayCutoff,
   getMinBookableDate,
   computeReturnTime,
-  canResizeBooking,
   buildTimeBlocks,
   isSlotAvailable,
   generateSlots,
@@ -358,31 +357,6 @@ describe("generateSlots", () => {
     expect(
       generateSlots("2026-08-05", "stylist-1", 30, 30, [], settings(), hours),
     ).toEqual([]);
-  });
-});
-
-// ── canResizeBooking ─────────────────────────────────────────────────────
-
-describe("canResizeBooking", () => {
-  const booking = {
-    id: "bk-1",
-    stylistId: "stylist-1",
-    date: "2026-08-05",
-    time: "10:00 AM",
-    activeTime: 30,
-    restTime: 0,
-    totalTime: 30,
-    status: "confirmed",
-  } as Booking;
-
-  it("excludes the booking from its own conflict check", () => {
-    expect(canResizeBooking(booking, 60, 60, [block()])).toBe(true);
-  });
-
-  it("blocks a resize that would overlap the next booking", () => {
-    const next = block({ id: "bk-2", time: "10:30 AM" });
-    expect(canResizeBooking(booking, 60, 60, [block(), next])).toBe(false);
-    expect(canResizeBooking(booking, 30, 30, [block(), next])).toBe(true);
   });
 });
 

@@ -102,26 +102,6 @@ test("the customer page lists a service's phases and offers only starts where ev
   expect(phases).toEqual(["active", "rest", "active"]); // solid, hatched, solid
 });
 
-test("the timeline draws the processing gap between the hands-on and the return", async ({ browser }) => {
-  await insertPhasedBooking("pam", perm(), h(10), [A(60), R(30), A(30)]);
-  const { page } = await newAdminPage(browser);
-  await gotoToday(page, DAY);
-  const bands = page.getByTestId("processing-band");
-  await expect(bands).toHaveCount(1);
-  await expect(bands.first()).toContainText("back 11:30 AM");
-  // the band sits in the middle of the block (hands-on above it AND below it)
-  const block = await page.getByText("Pam Perm").first().evaluate((el) => {
-    let n: HTMLElement | null = el as HTMLElement;
-    while (n && !n.classList.contains("tl-block")) n = n.parentElement;
-    const r = n!.getBoundingClientRect();
-    return { top: r.top, bottom: r.bottom };
-  });
-  const band = (await bands.first().boundingBox())!;
-  expect(band.y).toBeGreaterThan(block.top + 20);
-  expect(band.y + band.height).toBeLessThan(block.bottom - 20);
-  await page.context().close();
-});
-
 test("the owner changes ONE booking's phases: live end time, saved to the booking and its projection, service untouched", async ({ browser }) => {
   await insertPhasedBooking("pam", perm(), h(10), [A(60), R(30), A(30)]);
   const servicesBefore = await readCollection("services");

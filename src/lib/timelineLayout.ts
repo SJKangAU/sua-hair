@@ -4,7 +4,6 @@
 // PX_PER_MIN. Kept free of React / Firebase so it can be unit-tested.
 
 import { timeStringToMinutes } from "./scheduling";
-import { validatePhases, MIN_ACTIVE_MINUTES, type Phases } from "./phases";
 import { resolvePhases, segmentsFor } from "./bookingPhases";
 import type { Booking, Phase } from "../types";
 
@@ -154,26 +153,6 @@ export const computeOpenSlots = ({
   );
 };
 
-// The part of a booking's processing window another client could use: the
-// stretch between the end of its apply phase and the stylist's return, minus
-// anything else booked in that stretch. Returns the first free piece of at
-// least one step, or null. Another booking's own processing time is treated
-// as occupied here — the create-booking modal's conflict check has the final
-// say on exactly what fits.
-export const findGapWindow = (
-  booking: Pick<Booking, "time" | "activeTime" | "totalTime" | "restTime">,
-  others: Pick<Booking, "time" | "totalTime">[],
-): Interval | null => {
-  if (booking.restTime <= 0) return null;
-  const start = timeStringToMinutes(booking.time);
-  const window = { start: start + booking.activeTime, end: start + booking.totalTime };
-  const occupied = others.map((o) => {
-    const s = timeStringToMinutes(o.time);
-    return { start: s, end: s + o.totalTime };
-  });
-  return findFreeIntervals(occupied, window, SNAP_MINUTES)[0] ?? null;
-};
-
 // One entry per processing phase of a booking (a booking can have more than
 // one): the part another client could use, as findGapWindow computes it.
 export interface RestGap {
@@ -198,37 +177,6 @@ export const findRestGaps = (
       segment: { start: seg.start, end: seg.end },
       gap: findFreeIntervals(occupied, { start: seg.start, end: seg.end }, SNAP_MINUTES)[0] ?? null,
     }));
-};
-
-// ── Resize ───────────────────────────────────────────────────────────────────
-
-// New phase lengths when the bottom edge of a booking is dragged to
-// `endMinutes`. The change lands on processing when the booking has any
-// (spilling into apply if it shrinks past zero), otherwise on apply.
-// Returns null if the result isn't a valid booking length.
-export const resizePhases = (
-  booking: Pick<Booking, "time" | "activeTime" | "restTime">,
-  endMinutes: number,
-): Phases | null => {
-  const start = timeStringToMinutes(booking.time);
-  const total = snapMinutes(endMinutes) - start;
-  const delta = total - (booking.activeTime + booking.restTime);
-
-  let activeTime = booking.activeTime;
-  let restTime = booking.restTime;
-  if (booking.restTime > 0) {
-    restTime += delta;
-    if (restTime < 0) {
-      activeTime += restTime;
-      restTime = 0;
-    }
-  } else {
-    activeTime += delta;
-  }
-  const next = { activeTime, restTime };
-  return validatePhases(next) === null && activeTime >= MIN_ACTIVE_MINUTES
-    ? next
-    : null;
 };
 
 // ── Wording ──────────────────────────────────────────────────────────────────

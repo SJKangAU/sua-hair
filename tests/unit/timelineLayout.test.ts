@@ -1,6 +1,6 @@
 // tests/unit/timelineLayout.test.ts
 // ─────────────────────────────────────────────────────────────────────────
-// Geometry, free-time and resize maths behind the admin timeline, plus the
+// Geometry and free-time maths behind the admin timeline, plus the
 // stylist-hours helper that replaced SALON_CONFIG on the grid.
 import { describe, expect, it } from "vitest";
 import {
@@ -8,11 +8,9 @@ import {
   clampStart,
   computeDayRange,
   findFreeIntervals,
-  findGapWindow,
   formatRangeShort,
   minutesToPx,
   pxToMinutes,
-  resizePhases,
   snapMinutes,
   tileFreeIntervals,
 } from "../../src/lib/timelineLayout";
@@ -141,62 +139,6 @@ describe("findFreeIntervals / tileFreeIntervals", () => {
 
   it("ignores stretches under 45 minutes", () => {
     expect(tileFreeIntervals([{ start: h(10), end: h(10, 30) }])).toEqual([]);
-  });
-});
-
-describe("findGapWindow", () => {
-  const colour = {
-    time: "10:00 AM",
-    activeTime: 30,
-    restTime: 60,
-    totalTime: 90,
-  };
-
-  it("is the processing stretch when nobody else is booked in it", () => {
-    expect(findGapWindow(colour, [])).toEqual({ start: h(10, 30), end: h(11, 30) });
-  });
-
-  it("starts after another booking that occupies the front of the gap", () => {
-    expect(
-      findGapWindow(colour, [{ time: "10:30 AM", totalTime: 30 }]),
-    ).toEqual({ start: h(11), end: h(11, 30) });
-  });
-
-  it("is null for a booking with no processing time or a fully used gap", () => {
-    expect(findGapWindow({ ...colour, restTime: 0, totalTime: 30 }, [])).toBeNull();
-    expect(
-      findGapWindow(colour, [{ time: "10:30 AM", totalTime: 60 }]),
-    ).toBeNull();
-  });
-});
-
-describe("resizePhases", () => {
-  const colour = { time: "10:00 AM", activeTime: 30, restTime: 60 };
-  const cut = { time: "10:00 AM", activeTime: 45, restTime: 0 };
-
-  it("lengthens processing when the booking has one", () => {
-    expect(resizePhases(colour, h(12))).toEqual({ activeTime: 30, restTime: 90 });
-  });
-
-  it("lengthens apply when there is no processing", () => {
-    expect(resizePhases(cut, h(11))).toEqual({ activeTime: 60, restTime: 0 });
-  });
-
-  it("snaps the dragged edge to 15 minutes", () => {
-    expect(resizePhases(cut, h(10, 58))).toEqual({ activeTime: 60, restTime: 0 });
-  });
-
-  it("shortens processing first when shrinking", () => {
-    expect(resizePhases(colour, h(10, 45))).toEqual({ activeTime: 30, restTime: 15 });
-  });
-
-  it("shrinking past the processing time eats into apply", () => {
-    expect(resizePhases(colour, h(10, 15))).toEqual({ activeTime: 15, restTime: 0 });
-  });
-
-  it("rejects a booking shorter than the minimum apply time", () => {
-    expect(resizePhases(cut, h(10))).toBeNull();
-    expect(resizePhases(colour, h(10))).toBeNull();
   });
 });
 
