@@ -83,6 +83,7 @@ const useBookingAvailability = ({
   const allStylistIdsRef = useRef(allStylistIds);
   const isAnyRef = useRef(isAny);
   const stylistIdRef = useRef(stylistId);
+  const dateRef = useRef(date);
   const effTotalRef = useRef(effTotal);
   const effActiveRef = useRef(effActive);
   const onDateSelectRef = useRef(onDateSelect);
@@ -97,6 +98,9 @@ const useBookingAvailability = ({
   });
   useEffect(() => {
     stylistIdRef.current = stylistId;
+  });
+  useEffect(() => {
+    dateRef.current = date;
   });
   useEffect(() => {
     effTotalRef.current = effTotal;
@@ -344,6 +348,10 @@ const useBookingAvailability = ({
         );
         const firstAvail = daySlots.find((s) => s.available);
         if (firstAvail) {
+          // The search is async. If the customer has already picked a date
+          // while it was in flight, keep their choice - never overwrite it
+          // with the suggestion (it used to jump them to a different day).
+          if (dateRef.current) return;
           onDateSelectRef.current(checkDate);
           onTimeSelectRef.current(firstAvail.time);
           const d = parseLocalDate(checkDate);

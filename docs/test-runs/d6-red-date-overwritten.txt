@@ -1,0 +1,37 @@
+# D6 (found by the browser run): customer's chosen date overwritten by the async 'next available' suggestion
+# TC-001 run against the code BEFORE the fix (npm run test:e2e -- -g TC-001)
+i  Running script: npx playwright test -c e2e/playwright.config.ts 01-customer -g TC-001 --timeout=45000
+Running 1 test using 1 worker
+  x  1 e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen (3.9s)
+  1) e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen 
+    Error: expect(received).toMatchObject(expected)
+    - Expected  - 1
+    + Received  + 1
+      Object {
+        "activeTime": 60,
+        "bookingType": "customer",
+        "customerName": "Tina Newcustomer",
+        "customerPhone": "0412345678",
+    -   "date": "2026-10-28",
+    +   "date": "2026-10-21",
+        "status": "pending",
+        "stylistId": "elly",
+        "time": "11:00 AM",
+        "totalTime": 60,
+      }
+      43 |   const bookings = await readCollection("bookings");
+      44 |   expect(bookings).toHaveLength(1);
+    > 45 |   expect(bookings[0]).toMatchObject({
+         |                       ^
+      46 |     status: "pending",
+      47 |     bookingType: "customer",
+      48 |     customerName: "Tina Newcustomer",
+        at C:\Users\Jason\Desktop\Coding\projects\sua-hair\e2e\01-customer.spec.ts:45:23
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\01-customer-TC-001-new-cus-aec0a-ows-the-confirmation-screen\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results\01-customer-TC-001-new-cus-aec0a-ows-the-confirmation-screen\error-context.md
+  1 failed
+    e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen 
+!  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
