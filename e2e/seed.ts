@@ -35,6 +35,16 @@ export const SERVICES = [
   { id: "fringe-trim", name: "Fringe Trim", category: "cut", activeTime: 15, restTime: 0, price: tier(20, 15, 15) },
   { id: "colour-regrowth", name: "Colour (Regrowth)", category: "colour", activeTime: 30, restTime: 30, price: tier(160, 140, 120) },
   { id: "balayage", name: "Balayage / Highlights", category: "colour", activeTime: 60, restTime: 45, price: tier(300, 260, 220) },
+  // Three phases: hands-on 60, processing 30, then the stylist RETURNS for 30 more
+  {
+    id: "digital-perm", name: "Digital Perm", category: "perm", activeTime: 90, restTime: 30,
+    phases: [
+      { type: "active", minutes: 60 },
+      { type: "rest", minutes: 30 },
+      { type: "active", minutes: 30 },
+    ],
+    price: tier(300, 260, 220),
+  },
 ] as const;
 
 async function createOwnerLogin(): Promise<string> {
@@ -92,6 +102,7 @@ export async function seedEmulator(env?: RulesTestEnvironment): Promise<void> {
         activeTime: s.activeTime,
         restTime: s.restTime,
         totalTime: s.activeTime + s.restTime,
+        ...("phases" in s ? { phases: s.phases } : {}),
         price: s.price,
         status: "active",
         sortOrder: order++,
@@ -159,3 +170,59 @@ export async function insertBooking(
     await env.cleanup();
   }
 }
+
+/** Writes a booking WITH phases, plus its PII-free slotBlock (busy blocks and the
+ *  return point derived from the phases). Rules bypassed. `time` is minutes from
+ *  midnight for the first phase; `phases` are {type, minutes}. */
+export async function insertPhasedBooking(
+  id: string,
+  booking: Record<string, unknown>,
+  startMinutes: number,
+  phases: { type: "active" | "rest"; minutes: number }[],
+): Promise<void> {
+  let at = startMinutes;
+  const segments = phases.map((p) => {
+    const seg = { type: p.type, start: at, end: at + p.minutes };
+    at += p.minutes;
+    return seg;
+  });
+  const busy = segments.filter((s) => s.type === "active").map((s) => ({ start: s.start, end: s.end }));
+  const last = segments[segments.length - 1];
+  const activeTime = phases.filter((p) => p.type === "active").reduce((n, p) => n + p.minutes, 0);
+  const restTime = phases.filter((p) => p.type === "rest").reduce((n, p) => n + p.minutes, 0);
+  const firstRest = segments.find((s) => s.type === "rest");
+  const full = {
+    ...booking,
+    phases,
+    segments,
+    activeTime,
+    restTime,
+    totalTime: activeTime + restTime,
+    ...(firstRest ? { returnTime: clock(firstRest.end) } : {}),
+  };
+  const env = await connectEnv();
+  try {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`bookings/${id}`).set(full);
+      await db.doc(`slotBlocks/${id}`).set({
+        stylistId: full.stylistId,
+        date: full.date,
+        time: full.time,
+        activeTime,
+        totalTime: activeTime + restTime,
+        restTime,
+        status: full.status,
+        busy,
+        returnAt: last && last.type === "rest" ? last.end : null,
+      });
+    });
+  } finally {
+    await env.cleanup();
+  }
+}
+
+const clock = (m: number): string => {
+  const h = Math.floor(m / 60);
+  return `${h % 12 || 12}:${String(m % 60).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+};
