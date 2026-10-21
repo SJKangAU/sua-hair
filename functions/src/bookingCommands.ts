@@ -70,6 +70,7 @@ import type {
 import { CALL_THE_SALON, CommandError } from "./commandErrors";
 import { clientIdFromPhone } from "../../src/lib/clients";
 import { clientIdOfBooking, planClientWrite } from "./clients";
+import { runTx } from "./tx";
 import { LIMITS, consumeRateLimit } from "./limits";
 
 export interface CommandContext {
@@ -443,7 +444,7 @@ export const createBookingRequestCore = async (
   // flag is the one the Fresha import set. Either one stops the request.
   const clientDocRef = db.doc(`clients/${input.customerPhone}`);
 
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       // ── all reads first ───────────────────────────────────────────────
       const [existing, phoneLock, pending, lookup, clientDoc] = await Promise.all([
@@ -670,7 +671,7 @@ export const approveBookingCore = async (
   ctx: OwnerContext,
 ): Promise<CommandOutcome> => {
   const id = idOf(raw);
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       const b = await readBooking(tx, db, id);
       if (b.status !== "pending") {
@@ -714,7 +715,7 @@ export const declineBookingCore = async (
   ctx: OwnerContext,
 ): Promise<CommandOutcome> => {
   const id = idOf(raw);
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       const b = await readBooking(tx, db, id);
       if (b.status !== "pending") {
@@ -750,7 +751,7 @@ export const cancelBookingCore = async (
   ctx: OwnerContext,
 ): Promise<CommandOutcome> => {
   const id = idOf(raw);
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       const b = await readBooking(tx, db, id);
       if (!isOpenStatus(b.status)) {
@@ -790,7 +791,7 @@ export const restoreBookingCore = async (
   const id = idOf(raw);
   const requested =
     typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>).status : undefined;
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       const b = await readBooking(tx, db, id);
       if (!isSlotFreeing(b.status)) {
@@ -863,7 +864,7 @@ export const assignStylistCore = async (
   }
   const settings = await loadSettings(db);
 
-  return db.runTransaction(
+  return runTx(db, 
     async (tx) => {
       const b = await readBooking(tx, db, id);
       if (b.stylistId !== "any" && b.stylistId) {
@@ -955,7 +956,7 @@ export const releaseExpiredPendingCore = async (
 
   const released: string[] = [];
   for (const doc of due.docs) {
-    const done = await db.runTransaction(async (tx) => {
+    const done = await runTx(db, async (tx) => {
       const b = await readBooking(tx, db, doc.id);
       const hold = b.holdExpiresAt;
       if (b.status !== "pending" || !hold || hold > iso(now)) return false;
