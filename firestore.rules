@@ -82,6 +82,31 @@ service cloud.firestore {
       return isStylist() && request.auth.token.stylistId == id;
     }
 
+    // Whose clients a stylist may open BEYOND their own (DEC-051). The owner sets it
+    // per stylist; it is a custom claim written only by the Admin SDK:
+    //   clientsAll: true          every client
+    //   clientStylists: [ids]     those colleagues' clients
+    // A stylist with neither sees only the clients who have a booking with them.
+    function clientsAll() {
+      return isStylist() && request.auth.token.get('clientsAll', false) == true;
+    }
+
+    // The stylist `id` is one this stylist may read bookings of: their own, a
+    // colleague they were given, or anyone (all).
+    function viewableStylist(id) {
+      return ownStylist(id)
+        || clientsAll()
+        || (isStylist() && id in request.auth.token.get('clientStylists', []));
+    }
+
+    // A client card (its stylistIds list) this stylist may open.
+    function viewableCard(stylistIds) {
+      return isStylist()
+        && (stylistIds.hasAny([request.auth.token.stylistId])
+            || clientsAll()
+            || stylistIds.hasAny(request.auth.token.get('clientStylists', [])));
+    }
+
     // Booking lifecycle statuses (src/lib/bookingStatus.ts). Owner writes to
     // bookings and slotBlocks must use one of these so a typo can't strand a
     // booking in a state the app doesn't understand. A document without a status
@@ -120,8 +145,10 @@ service cloud.firestore {
     // direct writes remain for walk-ins, breaks, training, phase edits and
     // reschedules (src/lib/adminBookingWrites.ts, same lock).
     match /bookings/{bookingId} {
-      allow get: if isOwner() || ownStylist(resource.data.stylistId);
-      allow list: if isOwner() || ownStylist(resource.data.stylistId);
+      // A stylist reads their own bookings, and (DEC-051) those of colleagues whose
+      // clients the owner has let them open - needed to show those clients' history.
+      allow get: if isOwner() || viewableStylist(resource.data.stylistId);
+      allow list: if isOwner() || viewableStylist(resource.data.stylistId);
 
       allow create: if isOwner() && hasValidStatus(request.resource.data)
         && hasValidPhases(request.resource.data);
@@ -307,9 +334,7 @@ service cloud.firestore {
     // except to pin or unpin; the owner deletes any, a stylist only their own.
     // The audit trail is owner-only and write-once.
     function cardAllowsMe(clientId) {
-      return isStylist()
-        && get(/databases/$(database)/documents/clientCards/$(clientId)).data.stylistIds
-             .hasAny([request.auth.token.stylistId]);
+      return viewableCard(get(/databases/$(database)/documents/clientCards/$(clientId)).data.stylistIds);
     }
 
     function validNote(n) {
@@ -343,8 +368,8 @@ service cloud.firestore {
     }
 
     match /clientCards/{clientId} {
-      allow get, list: if isOwner()
-        || (isStylist() && request.auth.token.stylistId in resource.data.stylistIds);
+      // The stylist's own clients, plus whoever the owner has let them open (DEC-051).
+      allow get, list: if isOwner() || viewableCard(resource.data.stylistIds);
       allow write: if isOwner();
     }
 
@@ -359,7 +384,7 @@ service cloud.firestore {
     }
 
     // ── users ────────────────────────────────────────────────────────────
-    // The readable record of each role grant ({role, stylistId?, email?}),
+    // The readable record of each role grant ({role, stylistId?, clientAccess?, email?}),
     // written ONLY by the Admin SDK (roles.ts). A provisioned user reads their own;
     // the owner reads all (role management). An unprovisioned account has no
     // access, not even to its own (non-existent) document.

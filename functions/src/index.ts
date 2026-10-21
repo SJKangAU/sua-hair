@@ -57,6 +57,7 @@ import { SALON } from "./salon";
 import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } from "./sms/provider";
 import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
 import { requireOwner } from "./guards";
+import { normaliseAccess } from "../../src/lib/clientAccess";
 import { RoleError, grantRole, revokeRole, type Role } from "./roles";
 import { bookingInstant, localDateString } from "./time";
 
@@ -207,19 +208,22 @@ export const deleteCustomerData = onCall(
 /**
  * setUserRole - owner-only, callable. Role management (DEC-033).
  *
- * { email, role: "owner" | "stylist" | "none", stylistId? }  -> grants or removes
- * the role by writing the custom claim and the users/{uid} record together. The
- * person must sign out and in once to pick up a new claim. Refuses to remove the
- * last owner or the caller's own owner access.
+ * { email, role: "owner" | "stylist" | "none", stylistId?, clientAccess? } -> grants or
+ * removes the role by writing the custom claim and the users/{uid} record together.
+ * `clientAccess` { all, stylistIds } widens a stylist from their own clients to named
+ * colleagues' or everyone's (DEC-051); left out, what they had is kept. The person's
+ * screens pick the change up within moments (or at next sign-in). Refuses to remove
+ * the last owner or the caller's own owner access.
  */
 export const setUserRole = onCall(
   { region: "australia-southeast1" },
   async (request) => {
     const caller = await requireOwner(db, request, "manage roles");
-    const { email, role, stylistId } = (request.data ?? {}) as {
+    const { email, role, stylistId, clientAccess } = (request.data ?? {}) as {
       email?: unknown;
       role?: unknown;
       stylistId?: unknown;
+      clientAccess?: unknown;
     };
     if (typeof email !== "string" || !isValidEmail(email)) {
       throw new HttpsError("invalid-argument", "A valid email address is required.");
@@ -241,7 +245,18 @@ export const setUserRole = onCall(
           getAuth(),
           db,
           uid,
-          { role: role as Role, stylistId: typeof stylistId === "string" ? stylistId : undefined },
+          {
+            role: role as Role,
+            stylistId: typeof stylistId === "string" ? stylistId : undefined,
+            ...(clientAccess !== undefined
+              ? {
+                  clientAccess: normaliseAccess(
+                    clientAccess,
+                    typeof stylistId === "string" ? stylistId : undefined,
+                  ),
+                }
+              : {}),
+          },
           { actingUid: caller.uid },
         );
       }

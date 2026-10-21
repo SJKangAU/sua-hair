@@ -8,7 +8,9 @@
 //   list                                     show every user with a role claim
 //   verify   --email <e> [--role owner]      check claim + record, exit 1 if wrong
 //   grant    --email <e> --role owner        give the owner role
-//   grant    --email <e> --role stylist --stylist <stylistId>
+//   grant    --email <e> --role stylist --stylist <stylistId> [--clients all | id,id]
+//            (--clients: whose clients they may open besides their own; left out, what
+//             they already had is kept)
 //   revoke   --email <e>                     remove the role (claim + record + sessions)
 //   rollback                                 remove the CLAIMS this script/function
 //                                            added from every user, keeping the
@@ -29,6 +31,7 @@
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { normaliseAccess } from "../../src/lib/clientAccess";
 import {
   grantRole,
   revokeRole,
@@ -46,7 +49,7 @@ const dryRun = args.includes("--dry-run");
 
 const usage = (): never => {
   console.error(
-    "Usage: provision-roles <list|verify|grant|revoke|rollback> [--email e] [--role owner|stylist] [--stylist id] [--project id] [--dry-run]",
+    "Usage: provision-roles <list|verify|grant|revoke|rollback> [--email e] [--role owner|stylist] [--stylist id] [--clients all|id,id] [--project id] [--dry-run]",
   );
   process.exit(2);
 };
@@ -98,7 +101,21 @@ const main = async (): Promise<void> => {
     const uid = await byEmail();
     const role = opt("role") as Role | undefined;
     if (role !== "owner" && role !== "stylist") usage();
-    const grant = { role: role as Role, stylistId: opt("stylist") };
+    const clients = opt("clients");
+    const grant = {
+      role: role as Role,
+      stylistId: opt("stylist"),
+      ...(clients !== undefined
+        ? {
+            clientAccess: normaliseAccess(
+              clients === "all"
+                ? { all: true }
+                : { stylistIds: clients.split(",").map((c) => c.trim()).filter(Boolean) },
+              opt("stylist"),
+            ),
+          }
+        : {}),
+    };
     console.log(`Would grant ${grant.role}${grant.stylistId ? ` (${grant.stylistId})` : ""} to uid=${uid}`);
     if (dryRun) return;
     await grantRole(auth, db, uid, grant);
