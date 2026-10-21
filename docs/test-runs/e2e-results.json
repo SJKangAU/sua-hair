@@ -141,12 +141,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6331,
+                  "duration": 6579,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:14.295Z",
+                  "startTime": "2026-10-21T10:51:02.103Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -193,12 +193,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5249,
+                  "duration": 4455,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:21.570Z",
+                  "startTime": "2026-10-21T10:51:09.508Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -245,12 +245,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1917,
+                  "duration": 1685,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:26.833Z",
+                  "startTime": "2026-10-21T10:51:13.976Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -297,12 +297,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1632,
+                  "duration": 2108,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:28.765Z",
+                  "startTime": "2026-10-21T10:51:15.674Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -349,12 +349,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1683,
+                  "duration": 1973,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:30.413Z",
+                  "startTime": "2026-10-21T10:51:17.797Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -401,12 +401,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4033,
+                  "duration": 3815,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:32.113Z",
+                  "startTime": "2026-10-21T10:51:19.786Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -453,12 +453,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5842,
+                  "duration": 6562,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:36.162Z",
+                  "startTime": "2026-10-21T10:51:23.614Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -505,12 +505,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4605,
+                  "duration": 4761,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:42.018Z",
+                  "startTime": "2026-10-21T10:51:30.188Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -565,12 +565,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1887,
+                  "duration": 1705,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:46.664Z",
+                  "startTime": "2026-10-21T10:51:34.992Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -617,12 +617,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 483,
+                  "duration": 488,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:50.216Z",
+                  "startTime": "2026-10-21T10:51:38.162Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -669,12 +669,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 865,
+                  "duration": 894,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:50.712Z",
+                  "startTime": "2026-10-21T10:51:38.669Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -721,12 +721,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 484,
+                  "duration": 531,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:51.590Z",
+                  "startTime": "2026-10-21T10:51:39.578Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -773,12 +773,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 864,
+                  "duration": 869,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:52.084Z",
+                  "startTime": "2026-10-21T10:51:40.121Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -825,12 +825,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 777,
+                  "duration": 659,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:52.962Z",
+                  "startTime": "2026-10-21T10:51:41.003Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -877,12 +877,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2922,
+                  "duration": 2856,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:53.754Z",
+                  "startTime": "2026-10-21T10:51:41.674Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -929,12 +929,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 765,
+                  "duration": 625,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:56.692Z",
+                  "startTime": "2026-10-21T10:51:44.541Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -981,12 +981,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 755,
+                  "duration": 716,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:57.471Z",
+                  "startTime": "2026-10-21T10:51:45.177Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1033,12 +1033,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 616,
+                  "duration": 636,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:58.235Z",
+                  "startTime": "2026-10-21T10:51:45.904Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1085,12 +1085,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5613,
+                  "duration": 3263,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:23:58.863Z",
+                  "startTime": "2026-10-21T10:51:46.549Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1137,12 +1137,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5936,
+                  "duration": 6465,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:04.486Z",
+                  "startTime": "2026-10-21T10:51:49.829Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1189,12 +1189,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 719,
+                  "duration": 699,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:10.434Z",
+                  "startTime": "2026-10-21T10:51:56.312Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1241,12 +1241,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3,
+                  "duration": 1,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:11.166Z",
+                  "startTime": "2026-10-21T10:51:57.023Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1301,16 +1301,16 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 870,
+                  "duration": 836,
                   "errors": [],
                   "stdout": [
                     {
-                      "text": "TC-016 filter applied after 344ms\n"
+                      "text": "TC-016 filter applied after 335ms\n"
                     }
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:11.294Z",
+                  "startTime": "2026-10-21T10:51:57.133Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1357,12 +1357,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 730,
+                  "duration": 714,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:13.885Z",
+                  "startTime": "2026-10-21T10:51:59.562Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1409,12 +1409,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 377,
+                  "duration": 338,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:14.623Z",
+                  "startTime": "2026-10-21T10:52:00.286Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1461,12 +1461,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 385,
+                  "duration": 359,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:15.011Z",
+                  "startTime": "2026-10-21T10:52:00.633Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1513,12 +1513,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 935,
+                  "duration": 921,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:15.409Z",
+                  "startTime": "2026-10-21T10:52:01.003Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1565,7 +1565,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 534,
+                  "duration": 542,
                   "errors": [],
                   "stdout": [
                     {
@@ -1574,7 +1574,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:16.353Z",
+                  "startTime": "2026-10-21T10:52:01.936Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1621,12 +1621,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 595,
+                  "duration": 429,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:16.900Z",
+                  "startTime": "2026-10-21T10:52:02.490Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1645,11 +1645,11 @@
           ],
           "id": "72233cec458b5920a2b1-4d32ba8cd6c9b26cdd0a",
           "file": "03-admin-pages.spec.ts",
-          "line": 150,
+          "line": 155,
           "column": 1
         },
         {
-          "title": "TC-022 View history expands the booking history, newest first",
+          "title": "TC-022 the client's history lists their bookings, newest first",
           "ok": true,
           "tags": [],
           "tests": [
@@ -1673,12 +1673,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 35,
+                  "duration": 115,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:17.508Z",
+                  "startTime": "2026-10-21T10:52:02.931Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1695,9 +1695,9 @@
               "status": "expected"
             }
           ],
-          "id": "72233cec458b5920a2b1-bf61598658efa02d28e7",
+          "id": "72233cec458b5920a2b1-41f098cce7df0b8abba0",
           "file": "03-admin-pages.spec.ts",
-          "line": 163,
+          "line": 168,
           "column": 1
         },
         {
@@ -1725,12 +1725,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 68,
+                  "duration": 117,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:17.553Z",
+                  "startTime": "2026-10-21T10:52:03.062Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1749,7 +1749,7 @@
           ],
           "id": "72233cec458b5920a2b1-a982e1223197192b3981",
           "file": "03-admin-pages.spec.ts",
-          "line": 175,
+          "line": 178,
           "column": 1
         },
         {
@@ -1777,12 +1777,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1151,
+                  "duration": 342,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:17.631Z",
+                  "startTime": "2026-10-21T10:52:03.193Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1801,7 +1801,7 @@
           ],
           "id": "72233cec458b5920a2b1-cf4efb4dbefabcf0cfd2",
           "file": "03-admin-pages.spec.ts",
-          "line": 184,
+          "line": 187,
           "column": 1
         },
         {
@@ -1829,12 +1829,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 612,
+                  "duration": 638,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:18.791Z",
+                  "startTime": "2026-10-21T10:52:03.544Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1853,7 +1853,7 @@
           ],
           "id": "72233cec458b5920a2b1-2dab5a637f75ae1a8330",
           "file": "03-admin-pages.spec.ts",
-          "line": 194,
+          "line": 197,
           "column": 1
         },
         {
@@ -1881,12 +1881,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 266,
+                  "duration": 261,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:19.413Z",
+                  "startTime": "2026-10-21T10:52:04.192Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1905,7 +1905,7 @@
           ],
           "id": "72233cec458b5920a2b1-78466cee62babe252407",
           "file": "03-admin-pages.spec.ts",
-          "line": 217,
+          "line": 220,
           "column": 1
         },
         {
@@ -1933,12 +1933,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 558,
+                  "duration": 592,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:19.689Z",
+                  "startTime": "2026-10-21T10:52:04.467Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1957,7 +1957,7 @@
           ],
           "id": "72233cec458b5920a2b1-22cb57a746470dd203f8",
           "file": "03-admin-pages.spec.ts",
-          "line": 225,
+          "line": 228,
           "column": 1
         },
         {
@@ -1985,12 +1985,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1769,
+                  "duration": 1670,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:20.259Z",
+                  "startTime": "2026-10-21T10:52:05.070Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2009,7 +2009,7 @@
           ],
           "id": "72233cec458b5920a2b1-6a5e9c65e16542cbeb29",
           "file": "03-admin-pages.spec.ts",
-          "line": 264,
+          "line": 267,
           "column": 1
         },
         {
@@ -2037,12 +2037,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2339,
+                  "duration": 1836,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:22.039Z",
+                  "startTime": "2026-10-21T10:52:06.751Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2061,7 +2061,7 @@
           ],
           "id": "72233cec458b5920a2b1-7dc5eb4c7af594d38dd7",
           "file": "03-admin-pages.spec.ts",
-          "line": 275,
+          "line": 278,
           "column": 1
         },
         {
@@ -2089,12 +2089,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1806,
+                  "duration": 1374,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:24.388Z",
+                  "startTime": "2026-10-21T10:52:08.599Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2113,7 +2113,7 @@
           ],
           "id": "72233cec458b5920a2b1-7cf0a3e9b728248e8c58",
           "file": "03-admin-pages.spec.ts",
-          "line": 293,
+          "line": 296,
           "column": 1
         },
         {
@@ -2141,12 +2141,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2181,
+                  "duration": 1713,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:26.205Z",
+                  "startTime": "2026-10-21T10:52:09.983Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2165,7 +2165,7 @@
           ],
           "id": "72233cec458b5920a2b1-216733c121d467369338",
           "file": "03-admin-pages.spec.ts",
-          "line": 300,
+          "line": 303,
           "column": 1
         },
         {
@@ -2193,12 +2193,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1327,
+                  "duration": 1274,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:28.406Z",
+                  "startTime": "2026-10-21T10:52:11.711Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2217,7 +2217,7 @@
           ],
           "id": "72233cec458b5920a2b1-1d42d3e8b288fe7ff921",
           "file": "03-admin-pages.spec.ts",
-          "line": 332,
+          "line": 335,
           "column": 1
         },
         {
@@ -2245,12 +2245,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3217,
+                  "duration": 3219,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:29.749Z",
+                  "startTime": "2026-10-21T10:52:13.001Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2269,7 +2269,7 @@
           ],
           "id": "72233cec458b5920a2b1-5a1b76a41ca876317a7a",
           "file": "03-admin-pages.spec.ts",
-          "line": 344,
+          "line": 347,
           "column": 1
         }
       ]
@@ -2296,12 +2296,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6594,
+                  "duration": 6368,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:33.096Z",
+                  "startTime": "2026-10-21T10:52:16.360Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -2347,12 +2347,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6561,
+                  "duration": 5807,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:39.720Z",
+                  "startTime": "2026-10-21T10:52:22.760Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2399,12 +2399,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4926,
+                  "duration": 4579,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:46.530Z",
+                  "startTime": "2026-10-21T10:52:28.795Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2451,12 +2451,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4161,
+                  "duration": 3624,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:24:51.469Z",
+                  "startTime": "2026-10-21T10:52:33.388Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2477,648 +2477,6 @@
           "file": "05-features.spec.ts",
           "line": 66,
           "column": 1
-        }
-      ]
-    },
-    {
-      "title": "06-hover-preview.spec.ts",
-      "file": "06-hover-preview.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [
-        {
-          "title": "hovering an available start highlights the exact range the service would occupy",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2158,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:24:55.667Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-fe2429db4c33993233f5",
-          "file": "06-hover-preview.spec.ts",
-          "line": 39,
-          "column": 1
-        },
-        {
-          "title": "the block's length follows the selected service, with hands-on and processing phases",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 3861,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:24:58.137Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-6d6f058457ba7c2fb3bc",
-          "file": "06-hover-preview.spec.ts",
-          "line": 58,
-          "column": 1
-        },
-        {
-          "title": "the hover snaps to 15-minute rows, and every row is a bookable start (DEC-024)",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 3862,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:02.011Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-4301f4555011e1d38778",
-          "file": "06-hover-preview.spec.ts",
-          "line": 83,
-          "column": 1
-        },
-        {
-          "title": "unavailable areas show a muted state and no highlight",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2203,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:05.884Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-70a4f0aed118529846f0",
-          "file": "06-hover-preview.spec.ts",
-          "line": 104,
-          "column": 1
-        },
-        {
-          "title": "a block that fits inside another booking's processing window is highlighted; one that does not is not",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 4727,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:08.100Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-a6f22ed323691c2eb9a7",
-          "file": "06-hover-preview.spec.ts",
-          "line": 123,
-          "column": 1
-        },
-        {
-          "title": "clicking selects the time and the existing flow continues to a pending booking",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 3624,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:12.839Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-efeb62493d7227720047",
-          "file": "06-hover-preview.spec.ts",
-          "line": 142,
-          "column": 1
-        },
-        {
-          "title": "keyboard: arrows move in 15-minute steps and Enter chooses a quarter-hour start",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1655,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:16.475Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-3a848c75f4c33713aa18",
-          "file": "06-hover-preview.spec.ts",
-          "line": 164,
-          "column": 1
-        },
-        {
-          "title": "keyboard: an unavailable position cannot be chosen",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1703,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:18.140Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-7cfabf29766e08744587",
-          "file": "06-hover-preview.spec.ts",
-          "line": 188,
-          "column": 1
-        },
-        {
-          "title": "prefers-reduced-motion switches the block's animation off",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 90000,
-              "annotations": [
-                {
-                  "type": "serial",
-                  "location": {
-                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                    "line": 0,
-                    "column": 0
-                  }
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2452,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T01:25:19.855Z",
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "996cf47b474ec7eb155e-4d6846a1a3a57516e585",
-          "file": "06-hover-preview.spec.ts",
-          "line": 201,
-          "column": 1
-        }
-      ],
-      "suites": [
-        {
-          "title": "touch device",
-          "file": "06-hover-preview.spec.ts",
-          "line": 214,
-          "column": 6,
-          "specs": [
-            {
-              "title": "tap a time to preview its block, then Select to choose it",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2530,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T01:25:22.318Z",
-                      "annotations": [
-                        {
-                          "type": "serial",
-                          "location": {
-                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                            "line": 0,
-                            "column": 0
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "996cf47b474ec7eb155e-694423ff05e7496c086b",
-              "file": "06-hover-preview.spec.ts",
-              "line": 217,
-              "column": 3
-            },
-            {
-              "title": "tapping a quarter-hour row previews that start",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2008,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T01:25:24.863Z",
-                      "annotations": [
-                        {
-                          "type": "serial",
-                          "location": {
-                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                            "line": 0,
-                            "column": 0
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "996cf47b474ec7eb155e-8b3c518bcf1b27d29d70",
-              "file": "06-hover-preview.spec.ts",
-              "line": 233,
-              "column": 3
-            },
-            {
-              "title": "tapping an unavailable time previews nothing",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [
-                    {
-                      "type": "serial",
-                      "location": {
-                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                        "line": 0,
-                        "column": 0
-                      }
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1681,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T01:25:26.882Z",
-                      "annotations": [
-                        {
-                          "type": "serial",
-                          "location": {
-                            "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\06-hover-preview.spec.ts",
-                            "line": 0,
-                            "column": 0
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "996cf47b474ec7eb155e-93825a28f23cc9bf62cd",
-              "file": "06-hover-preview.spec.ts",
-              "line": 241,
-              "column": 3
-            }
-          ]
         }
       ]
     },
@@ -3153,12 +2511,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1802,
+                  "duration": 1796,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:28.590Z",
+                  "startTime": "2026-10-21T10:52:37.050Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3205,12 +2563,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 491,
+                  "duration": 486,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:31.506Z",
+                  "startTime": "2026-10-21T10:52:40.061Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3257,12 +2615,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2288,
+                  "duration": 2360,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:32.013Z",
+                  "startTime": "2026-10-21T10:52:40.560Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3309,12 +2667,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 698,
+                  "duration": 658,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:34.313Z",
+                  "startTime": "2026-10-21T10:52:42.932Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3361,12 +2719,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2243,
+                  "duration": 2878,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:35.029Z",
+                  "startTime": "2026-10-21T10:52:43.604Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3413,12 +2771,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1031,
+                  "duration": 1011,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:37.285Z",
+                  "startTime": "2026-10-21T10:52:46.494Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3465,12 +2823,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 581,
+                  "duration": 383,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:38.327Z",
+                  "startTime": "2026-10-21T10:52:47.515Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3517,12 +2875,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 964,
+                  "duration": 1145,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:38.922Z",
+                  "startTime": "2026-10-21T10:52:47.910Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -3568,12 +2926,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2388,
+                  "duration": 2230,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:40.026Z",
+                  "startTime": "2026-10-21T10:52:49.179Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3602,12 +2960,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2552,
+                  "duration": 2595,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:42.427Z",
+                  "startTime": "2026-10-21T10:52:51.430Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3617,7 +2975,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-790f4bad30b14c733386",
           "file": "08-phases.spec.ts",
-          "line": 105,
+          "line": 98,
           "column": 1
         },
         {
@@ -3636,12 +2994,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2249,
+                  "duration": 2487,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:44.990Z",
+                  "startTime": "2026-10-21T10:52:54.040Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3651,7 +3009,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-f1112d453a3de574617b",
           "file": "08-phases.spec.ts",
-          "line": 140,
+          "line": 133,
           "column": 1
         },
         {
@@ -3670,12 +3028,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2397,
+                  "duration": 2481,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:47.253Z",
+                  "startTime": "2026-10-21T10:52:56.546Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3685,7 +3043,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-b9279e3816f227e8fcf4",
           "file": "08-phases.spec.ts",
-          "line": 156,
+          "line": 149,
           "column": 1
         },
         {
@@ -3704,12 +3062,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1908,
+                  "duration": 1949,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:49.663Z",
+                  "startTime": "2026-10-21T10:52:59.040Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3719,7 +3077,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-bbd031ff2722999ac9ae",
           "file": "08-phases.spec.ts",
-          "line": 181,
+          "line": 174,
           "column": 1
         },
         {
@@ -3738,12 +3096,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3028,
+                  "duration": 2693,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:51.581Z",
+                  "startTime": "2026-10-21T10:53:01.003Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3753,7 +3111,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-255695172169e7ae5a7f",
           "file": "08-phases.spec.ts",
-          "line": 211,
+          "line": 204,
           "column": 1
         },
         {
@@ -3772,12 +3130,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2118,
+                  "duration": 2157,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:54.621Z",
+                  "startTime": "2026-10-21T10:53:03.706Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3787,7 +3145,7 @@
           ],
           "id": "ac48d0fabb9cc5f44b4b-de3d80e4ecbe3b28d74b",
           "file": "08-phases.spec.ts",
-          "line": 245,
+          "line": 238,
           "column": 1
         }
       ]
@@ -3814,12 +3172,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2915,
+                  "duration": 3088,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:56.773Z",
+                  "startTime": "2026-10-21T10:53:05.906Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3848,12 +3206,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2304,
+                  "duration": 2293,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:25:59.701Z",
+                  "startTime": "2026-10-21T10:53:09.008Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3882,12 +3240,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2169,
+                  "duration": 2270,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:02.017Z",
+                  "startTime": "2026-10-21T10:53:11.311Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3916,12 +3274,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2188,
+                  "duration": 2164,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:04.196Z",
+                  "startTime": "2026-10-21T10:53:13.593Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3950,12 +3308,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2402,
+                  "duration": 2496,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:06.398Z",
+                  "startTime": "2026-10-21T10:53:15.770Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3984,12 +3342,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2108,
+                  "duration": 2183,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:08.813Z",
+                  "startTime": "2026-10-21T10:53:18.277Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4018,12 +3376,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2174,
+                  "duration": 2180,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:10.934Z",
+                  "startTime": "2026-10-21T10:53:20.471Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4052,12 +3410,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2065,
+                  "duration": 2089,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:13.124Z",
+                  "startTime": "2026-10-21T10:53:22.664Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4086,12 +3444,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2268,
+                  "duration": 2376,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:15.203Z",
+                  "startTime": "2026-10-21T10:53:24.766Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4120,12 +3478,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2432,
+                  "duration": 2590,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:17.481Z",
+                  "startTime": "2026-10-21T10:53:27.157Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4154,12 +3512,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2565,
+                  "duration": 2686,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:19.926Z",
+                  "startTime": "2026-10-21T10:53:29.759Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4188,12 +3546,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2679,
+                  "duration": 2823,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:22.504Z",
+                  "startTime": "2026-10-21T10:53:32.458Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4222,12 +3580,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2492,
+                  "duration": 2495,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:25.198Z",
+                  "startTime": "2026-10-21T10:53:35.295Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4256,12 +3614,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2622,
+                  "duration": 2606,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:27.702Z",
+                  "startTime": "2026-10-21T10:53:37.802Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4290,12 +3648,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3301,
+                  "duration": 3377,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:30.338Z",
+                  "startTime": "2026-10-21T10:53:40.420Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4324,12 +3682,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2260,
+                  "duration": 2350,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:33.651Z",
+                  "startTime": "2026-10-21T10:53:43.814Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4358,12 +3716,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2263,
+                  "duration": 2615,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:35.923Z",
+                  "startTime": "2026-10-21T10:53:46.177Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4392,12 +3750,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2093,
+                  "duration": 2278,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:38.199Z",
+                  "startTime": "2026-10-21T10:53:48.803Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4434,12 +3792,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2931,
+                  "duration": 3163,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:40.318Z",
+                  "startTime": "2026-10-21T10:53:51.119Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4468,12 +3826,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2161,
+                  "duration": 2428,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:43.261Z",
+                  "startTime": "2026-10-21T10:53:54.295Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4502,12 +3860,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2328,
+                  "duration": 2670,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:45.437Z",
+                  "startTime": "2026-10-21T10:53:56.744Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4536,12 +3894,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2646,
+                  "duration": 2978,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:47.781Z",
+                  "startTime": "2026-10-21T10:53:59.433Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4570,12 +3928,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2463,
+                  "duration": 3586,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:50.439Z",
+                  "startTime": "2026-10-21T10:54:02.425Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4604,12 +3962,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2003,
+                  "duration": 2309,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:52.917Z",
+                  "startTime": "2026-10-21T10:54:06.025Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4638,12 +3996,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2629,
+                  "duration": 3005,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:54.930Z",
+                  "startTime": "2026-10-21T10:54:08.349Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4672,12 +4030,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1797,
+                  "duration": 1985,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:57.571Z",
+                  "startTime": "2026-10-21T10:54:11.364Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4706,12 +4064,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 11790,
+                  "duration": 12206,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:26:59.382Z",
+                  "startTime": "2026-10-21T10:54:13.362Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4740,12 +4098,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2736,
+                  "duration": 2790,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:11.184Z",
+                  "startTime": "2026-10-21T10:54:25.582Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4791,12 +4149,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3483,
+                  "duration": 3988,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:13.946Z",
+                  "startTime": "2026-10-21T10:54:28.408Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4843,12 +4201,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3374,
+                  "duration": 3550,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:17.443Z",
+                  "startTime": "2026-10-21T10:54:32.411Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4895,12 +4253,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5096,
+                  "duration": 5423,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:20.831Z",
+                  "startTime": "2026-10-21T10:54:35.982Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4947,12 +4305,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7977,
+                  "duration": 8146,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:25.941Z",
+                  "startTime": "2026-10-21T10:54:41.418Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4999,12 +4357,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4416,
+                  "duration": 4886,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:33.933Z",
+                  "startTime": "2026-10-21T10:54:49.583Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5051,12 +4409,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2009,
+                  "duration": 2129,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:38.366Z",
+                  "startTime": "2026-10-21T10:54:54.483Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5103,12 +4461,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3305,
+                  "duration": 3393,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:40.387Z",
+                  "startTime": "2026-10-21T10:54:56.627Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5155,12 +4513,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 9153,
+                  "duration": 8371,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T01:27:43.707Z",
+                  "startTime": "2026-10-21T10:55:00.035Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5181,15 +4539,699 @@
           "file": "11-booking-commands.spec.ts",
           "line": 255,
           "column": 1
+        },
+        {
+          "title": "TC-097 a stylist sees only their own bookings; another stylist's are not readable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\11-booking-commands.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1619,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:08.419Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\11-booking-commands.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2501e92a7dea9ada61e5-be1bce792a372866eac6",
+          "file": "11-booking-commands.spec.ts",
+          "line": 265,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "12-clients.spec.ts",
+      "file": "12-clients.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-098 search finds a client by a word of their name, the start of their name, or their mobile number",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7823,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:10.100Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-4e73d0522f194865cd21",
+          "file": "12-clients.spec.ts",
+          "line": 151,
+          "column": 1
+        },
+        {
+          "title": "TC-099 the Today page's search sends someone straight into the directory with that search",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3487,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:17.939Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-e1003525754f47c737d9",
+          "file": "12-clients.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "TC-100 the client page shows history, last visit and the key numbers; also as a full page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2916,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:21.439Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-26a5d61e53d33f8b6e1e",
+          "file": "12-clients.spec.ts",
+          "line": 188,
+          "column": 1
+        },
+        {
+          "title": "TC-101 notes: add, pin (pinned first), see who wrote them, delete",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2709,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:24.369Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-18a0d02a00145b1cdde4",
+          "file": "12-clients.spec.ts",
+          "line": 216,
+          "column": 1
+        },
+        {
+          "title": "TC-102 blocking a client: a badge, an audit entry, and the booking command refuses them",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5912,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:27.089Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-72c48f1542323dc86397",
+          "file": "12-clients.spec.ts",
+          "line": 240,
+          "column": 1
+        },
+        {
+          "title": "TC-103 merging a duplicate moves their bookings onto the client you keep and keeps the other name as an alias",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7456,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:33.016Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-3a7101b7ec4fb0a0c614",
+          "file": "12-clients.spec.ts",
+          "line": 268,
+          "column": 1
+        },
+        {
+          "title": "TC-104 anonymising shows how many bookings it affects, then removes the personal data and keeps the bookings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5913,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:40.485Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-c6fd8d7c2d9af6f7f90a",
+          "file": "12-clients.spec.ts",
+          "line": 293,
+          "column": 1
+        },
+        {
+          "title": "TC-105 filters: lapsed, new, blocked, has a booking, has no-shows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3163,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:46.409Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-7831719615dffd0b473a",
+          "file": "12-clients.spec.ts",
+          "line": 315,
+          "column": 1
+        },
+        {
+          "title": "TC-106 the list is paged: 25 at a time, then Show more",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3876,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:49.588Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-763e16ccb9328232ce58",
+          "file": "12-clients.spec.ts",
+          "line": 350,
+          "column": 1
+        },
+        {
+          "title": "TC-107 a stylist sees only their own clients, no spend, no blocked reason; and can add a note",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4955,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:53.478Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-070670d802942d00edf6",
+          "file": "12-clients.spec.ts",
+          "line": 369,
+          "column": 1
+        },
+        {
+          "title": "TC-108 import then directory: imported clients appear with no history; rollback removes them; an existing client is untouched",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7801,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:55:58.449Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-0101a41d722b7cbb3113",
+          "file": "12-clients.spec.ts",
+          "line": 421,
+          "column": 1
+        },
+        {
+          "title": "TC-109 Build the client list: dry run, apply, and the clients appear; rollback removes what it made",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8449,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T10:56:06.263Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\12-clients.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e2ddc3f3d0db83bc42a4-18e5d2726093b34cfd07",
+          "file": "12-clients.spec.ts",
+          "line": 453,
+          "column": 1
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-21T01:23:10.416Z",
-    "duration": 282935.74799999996,
-    "expected": 108,
+    "startTime": "2026-10-21T10:50:58.537Z",
+    "duration": 316716.726,
+    "expected": 109,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

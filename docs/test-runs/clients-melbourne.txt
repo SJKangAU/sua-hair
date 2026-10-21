@@ -1,0 +1,1964 @@
+TZ=Australia/Melbourne
+=== npm run build ===
+
+> sua-hair@0.0.0 build
+> tsc -b && vite build
+
+vite v8.0.2 building client environment for production...
+[2Ktransforming...✓ 2020 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                1.15 kB │ gzip:   0.56 kB
+dist/assets/index-CMwZ6i2P.css                 3.06 kB │ gzip:   1.22 kB
+dist/assets/chunk-B3K2TuZy.js                  0.55 kB │ gzip:   0.35 kB
+dist/assets/createLucideIcon-BOZtUMpf.js       1.41 kB │ gzip:   0.79 kB
+dist/assets/StylistClientsPage-BPAw-04O.js     1.56 kB │ gzip:   0.76 kB
+dist/assets/AdminLoginPage-CBJBf4A8.js         2.55 kB │ gzip:   1.12 kB
+dist/assets/StylistLoginPage-wXfl9m7C.js       2.57 kB │ gzip:   1.13 kB
+dist/assets/ToastProvider-BNcGv9D0.js          2.64 kB │ gzip:   1.27 kB
+dist/assets/NotificationBell-B8v4gJ6t.js       4.55 kB │ gzip:   1.90 kB
+dist/assets/StylistSchedulePage-BYyy99oy.js    5.01 kB │ gzip:   1.67 kB
+dist/assets/useAppUser-DWK06iS2.js             8.35 kB │ gzip:   3.33 kB
+dist/assets/x-HKt-Iiaz.js                      8.39 kB │ gzip:   3.57 kB
+dist/assets/phaseEdit-BTvtpZ34.js             15.13 kB │ gzip:   5.72 kB
+dist/assets/papaparse.min-Cbe136t_.js         18.66 kB │ gzip:   6.78 kB
+dist/assets/AdminDashboardPage-5FK36IHE.js    39.70 kB │ gzip:  11.44 kB
+dist/assets/ClientView-BonrrPvf.js            41.61 kB │ gzip:  12.34 kB
+dist/assets/browser-e3Y8TP6a.js               66.34 kB │ gzip:  18.73 kB
+dist/assets/AdminRoutes-D257M7Gf.js          233.95 kB │ gzip:  62.38 kB
+dist/assets/index-DBoFyPYV.js                253.26 kB │ gzip:  76.53 kB
+dist/assets/useAuth-C9ZTJG2P.js              551.04 kB │ gzip: 168.31 kB
+
+✓ built in 721ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+EXIT 0
+=== npm run lint ===
+
+> sua-hair@0.0.0 lint
+> eslint .
+
+
+EXIT 0
+=== npm run test:unit ===
+
+> sua-hair@0.0.0 test:unit
+> vitest run tests/unit
+
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  25 passed (25)
+      Tests  368 passed (368)
+   Start at  21:41:13
+   Duration  8.59s (transform 425ms, setup 0ms, import 1.21s, tests 2.73s, environment 3ms)
+
+
+EXIT 0
+=== npm run test:rules ===
+
+> sua-hair@0.0.0 test:rules
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts tests/firestore/clientsRules.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts tests/firestore/clientsRules.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  3 passed (3)
+      Tests  123 passed (123)
+   Start at  21:41:26
+   Duration  15.67s (transform 130ms, setup 0ms, import 819ms, tests 14.26s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:security ===
+
+> sua-hair@0.0.0 test:security
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/security.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/security.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  21:41:47
+   Duration  3.24s (transform 40ms, setup 0ms, import 252ms, tests 2.80s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:lockdown ===
+
+> sua-hair@0.0.0 test:lockdown
+> firebase emulators:exec --project demo-sua-lockdown --only firestore "node scripts/verify-lockdown.mjs"
+
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-sua-lockdown", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: node scripts/verify-lockdown.mjs
+Project: demo-sua-lockdown (emulator), anonymous visitor
+
+PASS  read stylists  (allowed)
+PASS  read services  (allowed)
+PASS  read salonSettings  (allowed)
+PASS  read slotBlocks  (allowed)
+PASS  read bookings  (denied)
+PASS  read customerLookups  (denied)
+PASS  read waitlist  (denied)
+PASS  read notifications  (denied)
+PASS  read users  (denied)
+PASS  create a booking  (denied)
+PASS  create a slotBlock  (denied)
+PASS  create a waitlist entry  (denied)
+PASS  create a notification  (denied)
+PASS  write a customerLookups record  (denied)
+PASS  write a service price  (denied)
+PASS  write salonSettings  (denied)
+
+All checks passed: the public site can read what it needs and nothing else.
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+[2026-10-21T10:41:57.787Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34af error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107
+[2026-10-21T10:41:57.807Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+[2026-10-21T10:41:57.824Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224
+[2026-10-21T10:41:57.841Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L216
+[2026-10-21T10:41:57.858Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+[2026-10-21T10:41:57.877Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+[2026-10-21T10:41:57.890Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x7c6d34b5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+EXIT 0
+=== npm run test:admin ===
+
+> sua-hair@0.0.0 test:admin
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  4 passed (4)
+      Tests  81 passed (81)
+   Start at  21:42:02
+   Duration  42.85s (transform 264ms, setup 0ms, import 1.30s, tests 40.76s, environment 1ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:functions ===
+
+> sua-hair@0.0.0 test:functions
+> firebase emulators:exec --project demo-sua-functions --only firestore,auth "vitest run tests/functions"
+
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-sua-functions", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/functions
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  4 passed (4)
+      Tests  135 passed (135)
+   Start at  21:42:56
+   Duration  68.09s (transform 348ms, setup 0ms, import 2.65s, tests 64.66s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:smoke ===
+
+> sua-hair@0.0.0 test:smoke
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/smoke.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/smoke.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  21:44:09
+   Duration  3.99s (transform 187ms, setup 0ms, import 462ms, tests 3.27s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:e2e ===
+
+> sua-hair@0.0.0 test:e2e
+> node scripts/e2e.mjs
+
+i  emulators: Starting emulators: auth, functions, firestore
+i  emulators: Detected demo project ID "demo-sua-e2e", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  functions: Watching "C:\Users\Jason\Desktop\Coding\projects\sua-hair\functions" for Cloud Functions...
+!  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+!  functions: Please note that there will be breaking changes when you upgrade.
+!  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host.
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+Serving at port 8838
+
++  functions: Loaded functions definitions from source: deleteCustomerData, setUserRole, createBookingRequest, joinWaitlist, approveBooking, declineBooking, cancelBooking, restoreBooking, assignStylist, recomputeClients, backfillClients, mergeClients, anonymiseClient, exportClientData, settleClientSummaries, releaseExpiredRequests, sendBookingReminders, onBookingWritten, onBookingCreated, onBookingUpdated.
++  functions[australia-southeast1-deleteCustomerData]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/deleteCustomerData).
++  functions[australia-southeast1-setUserRole]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/setUserRole).
++  functions[australia-southeast1-createBookingRequest]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/createBookingRequest).
++  functions[australia-southeast1-joinWaitlist]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/joinWaitlist).
++  functions[australia-southeast1-approveBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/approveBooking).
++  functions[australia-southeast1-declineBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/declineBooking).
++  functions[australia-southeast1-cancelBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/cancelBooking).
++  functions[australia-southeast1-restoreBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/restoreBooking).
++  functions[australia-southeast1-assignStylist]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/assignStylist).
++  functions[australia-southeast1-recomputeClients]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/recomputeClients).
++  functions[australia-southeast1-backfillClients]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/backfillClients).
++  functions[australia-southeast1-mergeClients]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/mergeClients).
++  functions[australia-southeast1-anonymiseClient]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/anonymiseClient).
++  functions[australia-southeast1-exportClientData]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/exportClientData).
+i  functions[australia-southeast1-settleClientSummaries]: function ignored because the pubsub emulator does not exist or is not running.
+i  functions[australia-southeast1-releaseExpiredRequests]: function ignored because the pubsub emulator does not exist or is not running.
+i  functions[australia-southeast1-sendBookingReminders]: function ignored because the pubsub emulator does not exist or is not running.
++  functions[australia-southeast2-onBookingWritten]: firestore function initialized.
++  functions[australia-southeast2-onBookingCreated]: firestore function initialized.
++  functions[australia-southeast2-onBookingUpdated]: firestore function initialized.
+i  Running script: npx playwright test -c e2e/playwright.config.ts 
+
+Running 109 tests using 1 worker
+
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 3.6224ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 504.5665ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+  ok   1 e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen (6.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 413.6452ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+>  [emulator] email not sent: "We have your booking request — Sua Hair Studio"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 346.0698ms
+  ok   2 e2e\01-customer.spec.ts:62:1 › TC-002 (revised) a returning phone number is NOT recognised and nothing is pre-filled (4.4s)
+  ok   3 e2e\01-customer.spec.ts:82:1 › TC-003 Monday cannot be selected (1.7s)
+  ok   4 e2e\01-customer.spec.ts:111:1 › TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earliest) (2.1s)
+  ok   5 e2e\01-customer.spec.ts:149:1 › TC-004b control: before the cutoff, today can still be chosen (2.1s)
+  ok   6 e2e\01-customer.spec.ts:170:1 › TC-005 price follows the stylist's tier (3.7s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.8197ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 117.9815ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 29.7029ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.5654ms
+  ok   7 e2e\01-customer.spec.ts:189:1 › TC-006 a slot inside another booking's rest window is available if the service fits (5.6s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.603ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 111.8742ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.0936ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.0091ms
+  ok   8 e2e\01-customer.spec.ts:223:1 › TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden (4.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 23.1286ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.2512ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.9096ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 53.4841ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.2008ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 32.2839ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 13.2099ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 26.0294ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.4715ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 23.7266ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.0936ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.3107ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3344ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.7205ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.9808ms
+  ok   9 e2e\02-admin-today.spec.ts:70:1 › TC-009 timeline loads: every active stylist, today's bookings, current-time bar (1.6s)
+  ok  10 e2e\02-admin-today.spec.ts:87:1 › TC-010 Next moves the timeline to tomorrow and loads its bookings (441ms)
+  ok  11 e2e\02-admin-today.spec.ts:97:1 › TC-011 clicking a booking block opens its quick actions, and View details opens the full booking (756ms)
+  ok  12 e2e\02-admin-today.spec.ts:114:1 › TC-012 clicking empty time opens the create form pre-filled with that stylist, time and a 30-minute block (450ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 27.3185ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.6736ms
+  ok  13 e2e\02-admin-today.spec.ts:132:1 › TC-013 create walk-in: appears immediately as confirmed (862ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.1109ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.2937ms
+  ok  14 e2e\02-admin-today.spec.ts:155:1 › TC-014 create break: a break block appears on the timeline (659ms)
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 2.9482ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 436.1972ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.7944ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.7192ms
+  ok  15 e2e\02-admin-today.spec.ts:167:1 › TC-015 confirming a pending booking turns it confirmed with a toast (2.8s)
+  ok  16 e2e\02-admin-today.spec.ts:179:1 › TC-033 an admin walk-in that overlaps an existing booking is blocked with a clear message (661ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 63.0167ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.6759ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.3918ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.8898ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.5586ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.8757ms
+  ok  17 e2e\02-admin-today.spec.ts:201:1 › TC-033b a walk-in inside another booking's rest window is allowed (764ms)
+  ok  18 e2e\02-admin-today.spec.ts:221:1 › TC-033c a break overlapping a booking is blocked (693ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 3.3362ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.6906ms
+  ok  19 e2e\02-admin-today.spec.ts:232:1 › D1 two admins saving the same slot at the same moment: exactly one booking is created (3.9s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 88.503ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.7777ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.3371ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.7049ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+i  functions: Finished "australia-southeast1-cancelBooking" in 3.4714ms
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-cancelBooking" in 487.5327ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.214ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.7093ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-restoreBooking"
+i  functions: Finished "australia-southeast1-restoreBooking" in 3.4116ms
+i  functions: Beginning execution of "australia-southeast1-restoreBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-restoreBooking" in 454.672ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.3543ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.5441ms
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-cancelBooking" in 102.7335ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.3745ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.044ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 100.0795ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.6566ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 26.1843ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.4818ms
+  ok  20 e2e\02-admin-today.spec.ts:269:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore (6.7s)
+  ok  21 e2e\02-admin-today.spec.ts:308:1 › D3 the timeline follows the opening hours configured for that date (834ms)
+  ok  22 e2e\02-admin-today.spec.ts:329:1 › no deprecated Firestore persistence warning is logged (2ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.4522ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.3191ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.8637ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.2209ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.3449ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.9718ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.7085ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.2908ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.7647ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.4398ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 64.767ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.9027ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 56.4856ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.3749ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 63.9412ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.6983ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.6069ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.7256ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 64.9587ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.8384ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 78.2325ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.7274ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.7785ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.4328ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 55.2643ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.6446ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.6328ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.4574ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 52.6494ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.4026ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 23.5665ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3299ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 36.4367ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.4097ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 32.709ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.593ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.3409ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.4328ms
+TC-016 filter applied after 362ms
+  ok  23 e2e\03-admin-pages.spec.ts:58:1 › TC-016 search by name filters the list within 300ms (863ms)
+  ok  24 e2e\03-admin-pages.spec.ts:74:1 › TC-017 search by phone number (694ms)
+  ok  25 e2e\03-admin-pages.spec.ts:81:1 › TC-018 filter by stylist (360ms)
+  ok  26 e2e\03-admin-pages.spec.ts:89:1 › D4 the list is ordered upcoming-first (soonest day first) (360ms)
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 2.0588ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 102.2542ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.1493ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.1041ms
+i  functions: Finished "australia-southeast1-approveBooking" in 115.8719ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.3338ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.6666ms
+i  functions: Finished "australia-southeast1-approveBooking" in 100.7079ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5441ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.1057ms
+  ok  27 e2e\03-admin-pages.spec.ts:106:1 › TC-019 bulk confirm: all selected pending bookings become confirmed, with ONE summary toast (D4) (944ms)
+TC-020 CSV header: "Date","Time","Customer Name","Phone","Stylist","Service","Price","Duration","Status","Type","Notes"
+  ok  28 e2e\03-admin-pages.spec.ts:129:1 › TC-020 Export CSV downloads a file with the visible bookings (579ms)
+  ok  29 e2e\03-admin-pages.spec.ts:155:1 › TC-021 client search shows visit count and total spend (447ms)
+  ok  30 e2e\03-admin-pages.spec.ts:168:1 › TC-022 the client's history lists their bookings, newest first (123ms)
+  ok  31 e2e\03-admin-pages.spec.ts:178:1 › TC-023 Book again pre-fills the create form with the client's name and phone (147ms)
+  ok  32 e2e\03-admin-pages.spec.ts:187:1 › TC-024 a cancelled booking is not counted in total spend (315ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.8902ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.5971ms
+  ok  33 e2e\03-admin-pages.spec.ts:197:1 › TC-025 create a training session: appears under upcoming sessions with a toast (659ms)
+  ok  34 e2e\03-admin-pages.spec.ts:220:1 › TC-026 a training session does not appear on the main timeline (275ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.9519ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.1937ms
+  ok  35 e2e\03-admin-pages.spec.ts:228:1 › TC-027 a session dated yesterday appears under Past Sessions (573ms)
+  ok  36 e2e\03-admin-pages.spec.ts:267:1 › TC-028 a new stylist appears in the roster and the customer booking form (1.6s)
+  ok  37 e2e\03-admin-pages.spec.ts:278:1 › TC-029 deactivating a stylist hides them from customers; their bookings remain (1.9s)
+  ok  38 e2e\03-admin-pages.spec.ts:296:1 › TC-030 reactivating a stylist brings them back to the booking form (1.4s)
+  ok  39 e2e\03-admin-pages.spec.ts:303:1 › TC-031 editing a service price updates the booking form and logs the old price (1.8s)
+  ok  40 e2e\03-admin-pages.spec.ts:335:1 › TC-032 deactivating a service removes it from the booking form (1.4s)
+  ok  41 e2e\03-admin-pages.spec.ts:347:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics (3.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.3833ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5126ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.4982ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.6896ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.8001ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 22.8659ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 3.1096ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 28.0178ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.2074ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 2.2053ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 181.2852ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.7681ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.8214ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.6537ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 92.5364ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.4797ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.856ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.1289ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.432ms
+  ok  42 e2e\04-smoke.spec.ts:11:1 › SMOKE client books online -> owner approves -> overlapping admin walk-in is blocked (6.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.1329ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.9181ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 80.5864ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.1201ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 24.6074ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.784ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 90.1996ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.3194ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 118.4617ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.3748ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 139.9805ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.975ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 34.7073ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3713ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 106.3333ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7902ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.9263ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.0322ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 63.9022ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.9822ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 50.7914ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.5888ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 23.1911ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.7746ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 88.1899ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7385ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 30.8027ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.5589ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 27.4906ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.2927ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.858ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.4874ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.5108ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.3584ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-joinWaitlist"
+i  functions: Finished "australia-southeast1-joinWaitlist" in 3.7102ms
+i  functions: Beginning execution of "australia-southeast1-joinWaitlist"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-joinWaitlist" in 432.9718ms
+  ok  43 e2e\05-features.spec.ts:15:1 › TC-034 a client can join the waitlist for a full day and the owner sees them (6.7s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.4002ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 196.7584ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 25.5699ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.3116ms
+  ok  44 e2e\05-features.spec.ts:46:1 › TC-035 the owner is notified of a new online booking, and the notification opens it (4.7s)
+  ok  45 e2e\05-features.spec.ts:66:1 › TC-036 closing a date in Manage -> Opening hours makes it unbookable for customers (3.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5059ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.6881ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 23.5975ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.9629ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.3782ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.0832ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.7875ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.3673ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.5093ms
+  ok  46 e2e\07-stylist-order.spec.ts:68:1 › with no `order` saved, the existing order is kept everywhere (1.8s)
+  ok  47 e2e\07-stylist-order.spec.ts:75:1 › the owner sees drag handles and Move up / Move down on every row; the ends are disabled (554ms)
+  ok  48 e2e\07-stylist-order.spec.ts:86:1 › Move up changes the order, saves only `order`, and persists after reload (2.3s)
+  ok  49 e2e\07-stylist-order.spec.ts:113:1 › Move down works too (618ms)
+  ok  50 e2e\07-stylist-order.spec.ts:120:1 › dragging a row by its handle reorders and persists (3.0s)
+  ok  51 e2e\07-stylist-order.spec.ts:140:1 › keyboard: Space picks a row up, an arrow moves it, Space drops it (1.1s)
+  ok  52 e2e\07-stylist-order.spec.ts:154:1 › a stylist added later (no order) goes after the ordered ones (1.1s)
+  ok  53 e2e\07-stylist-order.spec.ts:169:1 › if saving fails the order is put back and an error toast is shown (1.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 76.6059ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.7962ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.6244ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.2126ms
+  ok  54 e2e\08-phases.spec.ts:85:1 › the customer page lists a service's phases and offers only starts where every busy block is free (2.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.419ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 57.9793ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.79ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.3865ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.4089ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.4844ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.9301ms
+  ok  55 e2e\08-phases.spec.ts:98:1 › the owner changes ONE booking's phases: live end time, saved to the booking and its projection, service untouched (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.7165ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 90.3753ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.9373ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.4878ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.921ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 95.7582ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.6325ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 24.1864ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.756ms
+  ok  56 e2e\08-phases.spec.ts:133:1 › shortening processing while another client is booked in the gap is refused, naming them (2.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.852ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.8902ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 102.5713ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.7808ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.6616ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.1722ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 73.151ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.155ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.1654ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.6249ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.2676ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3929ms
+  ok  57 e2e\08-phases.spec.ts:149:1 › an edit that collides offers to move the return to the next free time (2.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.7725ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.1832ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 59.975ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.6972ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 30.6589ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.023ms
+  ok  58 e2e\08-phases.spec.ts:174:1 › minimums: hands-on at least 15, 15-minute steps, and the booking must end before closing (2.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.5947ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 72.2251ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.4494ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.6405ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3283ms
+  ok  59 e2e\08-phases.spec.ts:204:1 › Manage: the owner edits a service's default phases; existing bookings keep theirs (2.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.2783ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.6911ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.2346ms
+  ok  60 e2e\08-phases.spec.ts:238:1 › a walk-in can have its phases adjusted when it is created (2.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.2945ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 65.334ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.2051ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 26.5247ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.1537ms
+  ok  61 e2e\09-timeline-create.spec.ts:90:1 › TC-060 there are no Open slot buttons or labels; unavailable time is a muted fill (3.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.7415ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 77.6557ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.9714ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.6061ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.5679ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.337ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.4995ms
+  ok  62 e2e\09-timeline-create.spec.ts:106:1 › TC-061 hovering empty time highlights a 30-minute block snapped to 15 minutes; not over a booking, a break or where it will not fit (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.5476ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.8636ms
+  ok  63 e2e\09-timeline-create.spec.ts:142:1 › TC-062 dragging down 90 minutes opens the create form with the stylist, start and length (2.3s)
+  ok  64 e2e\09-timeline-create.spec.ts:167:1 › TC-063 dragging up grows the block upward (2.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 86.2322ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.5031ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.4525ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.1256ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.1814ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.6483ms
+  ok  65 e2e\09-timeline-create.spec.ts:182:1 › TC-064 a drag stops at the next booking, and at a break (2.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.4165ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.1362ms
+  ok  66 e2e\09-timeline-create.spec.ts:209:1 › TC-065 a plain click creates a 30-minute block (2.2s)
+  ok  67 e2e\09-timeline-create.spec.ts:222:1 › TC-066 Escape cancels a drag; nothing opens (2.2s)
+  ok  68 e2e\09-timeline-create.spec.ts:238:1 › TC-067 the past and a stylist's closed hours cannot be booked (2.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 58.3494ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.7433ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.9992ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.4448ms
+  ok  69 e2e\09-timeline-create.spec.ts:251:1 › TC-068 a booking with a processing gap draws solid / hatched / solid (2.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.1787ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 55.759ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.6761ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.3795ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.9ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.4219ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.8345ms
+  ok  70 e2e\09-timeline-create.spec.ts:277:1 › TC-069 another client can be booked into the gap; the return stays reserved (2.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.9311ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.4905ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 73.4642ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.3617ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.8905ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3706ms
+  ok  71 e2e\09-timeline-create.spec.ts:309:1 › TC-070 a drag in the gap stops at the return block; a booking that clashes with the return is refused (2.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.2448ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 85.8442ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.0382ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.3264ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.903ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 105.7934ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 14.2707ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.5218ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.2027ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5488ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.3593ms
+  ok  72 e2e\09-timeline-create.spec.ts:332:1 › TC-071 dragging the edge of a phase changes that phase and moves the later ones (2.9s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.9471ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.2916ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 58.1651ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.1141ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.8584ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.8988ms
+  ok  73 e2e\09-timeline-create.spec.ts:371:1 › TC-072 a save that conflicts is rejected when it is made (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.4641ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 3.3393ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.1951ms
+  ok  74 e2e\09-timeline-create.spec.ts:392:1 › TC-077 the create form: Client returns after processing adds processing and return phases (3.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.2946ms
+  ok  75 e2e\09-timeline-create.spec.ts:452:1 › TC-073 touch: a long press then drag creates; a swipe scrolls; a tap previews with a Create button (3.5s)
+  ok  76 e2e\09-timeline-create.spec.ts:491:1 › TC-074 keyboard: arrows move the highlight, Shift+arrows extend it, Enter opens the form, Escape cancels (2.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 52.8246ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.8765ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.3261ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.7631ms
+  ok  77 e2e\09-timeline-create.spec.ts:532:1 › TC-075 a keyboard cursor on a booked time cannot be created and says why (2.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.0243ms
+  ok  78 e2e\09-timeline-create.spec.ts:554:1 › TC-076 reduced motion: the highlight does not animate (2.2s)
+  ok  79 e2e\10-client-import.spec.ts:43:1 › TC-078 the owner sees Import clients in Manage; a stylist account does not (3.1s)
+  ok  80 e2e\10-client-import.spec.ts:78:1 › TC-079 the dry run reports counts and the error report has row numbers only (2.4s)
+  ok  81 e2e\10-client-import.spec.ts:111:1 › TC-080 confirming imports the clients as name + phone only; an existing client is untouched (2.3s)
+  ok  82 e2e\10-client-import.spec.ts:135:1 › TC-081 an imported client is recognised as a returning client in the walk-in form (3.1s)
+  ok  83 e2e\10-client-import.spec.ts:155:1 › TC-082 importing the same file again, as csv or xlsx, adds nobody (2.7s)
+  ok  84 e2e\10-client-import.spec.ts:173:1 › TC-083 the xlsx gives the same dry run as the csv (2.2s)
+  ok  85 e2e\10-client-import.spec.ts:185:1 › TC-084 rolling back removes only what that import created (2.8s)
+  ok  86 e2e\10-client-import.spec.ts:206:1 › TC-085 a wrong file is refused with a message, nothing is written (2.0s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.1639ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 96.2945ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 193.3938ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.1983ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.6041ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.7083ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 250.9591ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.9325ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.3145ms
+  ok  87 e2e\10-client-import.spec.ts:216:1 › TC-095 a client Fresha has blocked cannot book online; rolling the import back lets them book again (12.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.6877ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.1185ms
+  ok  88 e2e\10-client-import.spec.ts:251:1 › TC-096 the walk-in form warns about a blocked client instead of calling them a returning client (2.8s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.3095ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 189.7157ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.6197ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+>  [emulator] email not sent: "We have your booking request — Sua Hair Studio"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.48ms
+  ok  89 e2e\11-booking-commands.spec.ts:54:1 › TC-087 a request shows 'request received', the assigned stylist and the exact price; it is pending and holds the slot (3.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5641ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.0047ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 224.5003ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.8874ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.7088ms
+  ok  90 e2e\11-booking-commands.spec.ts:86:1 › TC-088 'Any Available Stylist' shows 'from $X' before sending, then the assigned stylist and exact price (3.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.8643ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.2154ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 200.2839ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.2025ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.5312ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 2.2453ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 118.0888ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.4602ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.713ms
+  ok  91 e2e\11-booking-commands.spec.ts:116:1 › TC-089 the owner approves a request and the booking is confirmed (with its availability projection) (5.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.8494ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Finished "australia-southeast1-createBookingRequest" in 18.3353ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 222.3884ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.6509ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.4449ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.0613ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 81.4007ms
+  ok  92 e2e\11-booking-commands.spec.ts:137:1 › TC-090 two customers choose the same slot at the same moment: exactly one request is accepted (8.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.0043ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 145.2875ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.7209ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.8698ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.0112ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 2.9793ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.9427ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+i  functions: Finished "australia-southeast1-assignStylist" in 3.135ms
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-assignStylist" in 428.3498ms
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-assignStylist" in 210.6455ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.9288ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.4644ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.3072ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 109.004ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.6721ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.4726ms
+  ok  93 e2e\11-booking-commands.spec.ts:181:1 › TC-091 a legacy booking with stylist 'any' shows 'Needs stylist'; assigning one is conflict-checked and re-priced, then it can be approved (5.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.418ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.4116ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 97.9182ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.598ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.8378ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.947ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 4.3089ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.6451ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.2285ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 58.0529ms
+  ok  94 e2e\11-booking-commands.spec.ts:225:1 › TC-092 approving a request whose slot has since been taken is refused with a clear message (2.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 3.9944ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.8807ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.3428ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 96.9008ms
+  ok  95 e2e\11-booking-commands.spec.ts:240:1 › TC-093 a blocked client is told to call the salon, and nothing is booked (3.9s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.6433ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 237.1204ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.0953ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.822ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 154.3082ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.4834ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.1461ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 2.5437ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 83.8843ms
+  ok  96 e2e\11-booking-commands.spec.ts:255:1 › TC-094 a third pending request from one phone number is refused (8.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.7899ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.475ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 137.8567ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 14.1334ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.578ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.6883ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 75.304ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.4612ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.1815ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.4411ms
+  ok  97 e2e\11-booking-commands.spec.ts:265:1 › TC-097 a stylist sees only their own bookings; another stylist's are not readable (1.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.6294ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.9574ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 67.267ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.8691ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 49.2832ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.5667ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.2765ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.1872ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 79.0708ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.2496ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.2697ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.3536ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.0455ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.4545ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.7329ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.8549ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.8364ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.3298ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 94.0775ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.6416ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.9442ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 6.5631ms
+  ok  98 e2e\12-clients.spec.ts:151:1 › TC-098 search finds a client by a word of their name, the start of their name, or their mobile number (7.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.4058ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.3856ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.9845ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.4387ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.878ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.3505ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.1939ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.1948ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.9761ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.7131ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 62.6511ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.1595ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 71.816ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.4685ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.6214ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 6.5057ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 65.3731ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.1629ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.3517ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.9962ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.671ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.6878ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.7442ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.9557ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.0808ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.1899ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 88.4274ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.0641ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.799ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.6332ms
+  ok  99 e2e\12-clients.spec.ts:180:1 › TC-099 the Today page's search sends someone straight into the directory with that search (2.9s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.339ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.1091ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.1809ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.0175ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.0226ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.6662ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.6594ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.9006ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.7196ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.7072ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 66.076ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.0663ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 37.3495ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.2726ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.5898ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.2636ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 50.1535ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.2617ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.7678ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.3354ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.7714ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.918ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.9705ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.5867ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.7534ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.0982ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 73.814ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.9887ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.6186ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.616ms
+  ok 100 e2e\12-clients.spec.ts:188:1 › TC-100 the client page shows history, last visit and the key numbers; also as a full page (3.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.3918ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.3597ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.3413ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.8944ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.6846ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.1592ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.4087ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.9711ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.9751ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.5151ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 70.9277ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.6416ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 52.9086ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7481ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.8537ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.6715ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 59.3103ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.251ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.476ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.0243ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.0036ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.0396ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.6904ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.9677ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.0956ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.5587ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 91.6952ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.1384ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 27.6356ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.9115ms
+  ok 101 e2e\12-clients.spec.ts:216:1 › TC-101 notes: add, pin (pinned first), see who wrote them, delete (2.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.0353ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.7191ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.4425ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.6944ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.8134ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.9471ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.5572ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.1046ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.8072ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.361ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 61.1766ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.0713ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 37.3885ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.339ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.3587ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.2485ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 61.2713ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.5974ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.9276ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.6624ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.6747ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.3287ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.7581ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.7112ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.11ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.0819ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 88.7518ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.341ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.3337ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.6112ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.1212ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 92.2333ms
+  ok 102 e2e\12-clients.spec.ts:240:1 › TC-102 blocking a client: a badge, an audit entry, and the booking command refuses them (6.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.8918ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.9392ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.0002ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.2205ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.3202ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 4.9716ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.4862ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.8476ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.7174ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.0256ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 61.2784ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 14.3504ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 33.0518ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.0978ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.8669ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.8386ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 70.2058ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.4286ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.039ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.2929ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.9436ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.0622ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.3159ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.4817ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.436ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.356ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 78.8427ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.177ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.1034ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.5809ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-mergeClients"
+i  functions: Finished "australia-southeast1-mergeClients" in 4.2886ms
+i  functions: Beginning execution of "australia-southeast1-mergeClients"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 30.6032ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.3584ms
+i  functions: Finished "australia-southeast1-mergeClients" in 539.9164ms
+  ok 103 e2e\12-clients.spec.ts:268:1 › TC-103 merging a duplicate moves their bookings onto the client you keep and keeps the other name as an alias (7.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5157ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.1743ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.9805ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.3705ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.7287ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.0842ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.9103ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.645ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.8488ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.4011ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 59.9034ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.3831ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 40.6609ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.5377ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.3266ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.5042ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 66.2897ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.8159ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.6351ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.8867ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.5754ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.2814ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.7408ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.2272ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.0088ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.5838ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 84.3918ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.7334ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.0058ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.9983ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-anonymiseClient"
+i  functions: Finished "australia-southeast1-anonymiseClient" in 3.1743ms
+i  functions: Beginning execution of "australia-southeast1-anonymiseClient"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.2763ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.23ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast1-anonymiseClient" in 494.6979ms
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.9556ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 1.3529ms
+  ok 104 e2e\12-clients.spec.ts:293:1 › TC-104 anonymising shows how many bookings it affects, then removes the personal data and keeps the bookings (5.9s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.4833ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.8699ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.0913ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.7562ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.2965ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.7023ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.9707ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.2652ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 1.6417ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.9129ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 54.9014ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.2981ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 46.7659ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.0166ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.3639ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.4042ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 60.4593ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.6184ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.835ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.9718ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.1714ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.0286ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.4777ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.0074ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.7855ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.0993ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 99.6202ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.6699ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.4221ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.7252ms
+  ok 105 e2e\12-clients.spec.ts:315:1 › TC-105 filters: lapsed, new, blocked, has a booking, has no-shows (3.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.4851ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.0956ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.937ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.6084ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.1267ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.2359ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.0246ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 21.1763ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.0871ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.5537ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 62.0713ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.7007ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 55.7558ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.753ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.6962ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.7067ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 60.0868ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.9867ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.6086ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.6737ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.4564ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.3213ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.8529ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.428ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.8171ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.4508ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 118.3839ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 6.7073ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.2804ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.1044ms
+  ok 106 e2e\12-clients.spec.ts:350:1 › TC-106 the list is paged: 25 at a time, then Show more (3.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.0483ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.4729ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.0811ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.5329ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.2465ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.0761ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.9046ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.7482ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.7907ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.9372ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 64.7029ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.6966ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 53.3251ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.0584ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.1804ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.5388ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 72.9828ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.0873ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 9.7917ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.0101ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.444ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.7648ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 20.3316ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.197ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.1905ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.8037ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 91.2253ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.7971ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.8113ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.0424ms
+  ok 107 e2e\12-clients.spec.ts:369:1 › TC-107 a stylist sees only their own clients, no spend, no blocked reason; and can add a note (4.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.4331ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.44ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.2289ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.907ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.8007ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 7.2048ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.6778ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.8395ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.9139ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.9228ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 60.2032ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.5366ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 26.9264ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.5995ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5019ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.7337ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 72.3271ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.2248ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 17.7741ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.6815ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.2527ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.6762ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.4297ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.0429ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 6.1297ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.91ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 96.3619ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7321ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 18.6655ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.3101ms
+  ok 108 e2e\12-clients.spec.ts:421:1 › TC-108 import then directory: imported clients appear with no history; rollback removes them; an existing client is untouched (7.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 19.5232ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.2813ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 12.2027ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 16.0631ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 8.6208ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.2568ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.5981ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.2363ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 10.6579ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.1836ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 71.4195ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.4062ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 68.6796ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.7816ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.5596ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.0534ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 71.2332ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 14.0281ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 13.3342ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.7116ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 15.2845ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.2059ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 5.7591ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.3197ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 14.8448ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.4565ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 119.9783ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.9839ms
+i  functions: Beginning execution of "australia-southeast2-onBookingWritten"
+i  functions: Finished "australia-southeast2-onBookingWritten" in 11.7416ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.2917ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-backfillClients"
+i  functions: Finished "australia-southeast1-backfillClients" in 3.1557ms
+i  functions: Beginning execution of "australia-southeast1-backfillClients"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-backfillClients" in 367.992ms
+i  functions: Beginning execution of "australia-southeast1-backfillClients"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-backfillClients" in 178.9952ms
+i  functions: Beginning execution of "australia-southeast1-backfillClients"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-backfillClients" in 83.6611ms
+  ok 109 e2e\12-clients.spec.ts:453:1 › TC-109 Build the client list: dry run, apply, and the clients appear; rollback removes what it made (8.5s)
+
+  109 passed (5.3m)
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  functions: Stopping Functions Emulator
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  eventarc: Stopping Eventarc Emulator
+i  tasks: Stopping Cloud Tasks Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+FINISHED
