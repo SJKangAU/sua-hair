@@ -106,12 +106,11 @@ Conventions: "the salon" is open Tuesday–Sunday 10:00–18:00 and closed Monda
 
 ---
 
-## Booking page — hover preview (day grid)
+## Booking page - hover preview (day grid): superseded
 
-Steve has a Colour (30 hands-on + 30 processing) at 10:00 and a Ladies Cut 12:00–1:00; Yuto has no bookings. Specs: `e2e/06-hover-preview.spec.ts`.
+TC-038 to TC-044 tested a day-column hover preview on the customer page. The owner asked for the plain time-block buttons back (DEC-043), so that grid, its hover preview and these scenarios were removed. Time selection is covered by TC-005 to TC-008 and TC-050 (buttons, greyed-out unavailable times, tiers, processing gaps).
 
-| ID     | Scenario                                   | Steps                                                                                                  | Expected Result                                                                                                                                                         | Automated by      |
-| ------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | TC-038 | Hover highlights the exact block           | Choose Ladies Cut (60 min) and Yuto, pick a date, hover 2:00 PM, then 10:45 AM and click it. Then Balayage (60 hands-on + 45 processing), hover 11:30 AM | Highlight runs 2:00 – 3:00 pm; 10:45 – 11:45 am (a quarter-hour start, chosen on click); for Balayage 11:30 am – 1:15 pm, 105 minutes tall, a solid 60-minute part then a hatched 45-minute part. A service with no processing time has no hatched part | 06-hover-preview  |
 | TC-039 | Unavailable areas                         | With Steve (booked 12:00–1:00), hover every start from 11:15 to 12:45 for a 60-minute service, then 11:00 and 1:00 | Muted "Not available", no highlight, clicking chooses nothing, for 11:15–12:45; 11:00 – 12:00 and 1:00 – 2:00 are highlighted. Hovering anywhere inside a 15-minute row gives the same block | 06-hover-preview  |
 | TC-040 | Inside another booking's rest window       | Steve's colour is processing 10:30–11:00. Hover 10:30 for Beard Trim (20 min), then 10:00, 10:15 and 10:45; then 10:30 for Men's Cut (45 min) | Beard Trim: highlighted 10:30 – 10:50 am. 10:00 / 10:15 (the colour's hands-on time) and 10:45 (would run past 11:00) show no highlight. Men's Cut at 10:30: no highlight (its hands-on time does not fit) | 06-hover-preview  |

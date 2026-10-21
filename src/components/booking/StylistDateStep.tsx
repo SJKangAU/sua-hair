@@ -307,9 +307,6 @@ const StylistDateStep = ({
             slots={slots}
             loading={loadingSlots}
             onTimeSelect={onTimeSelect}
-            totalTime={totalTime}
-            activeTime={totalActiveTime}
-            phases={phases}
             stylistId={stylistId}
           />
         )}

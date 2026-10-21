@@ -206,9 +206,9 @@ test("TC-006 a slot inside another booking's rest window is available if the ser
     stylist: "Steve",
     date: fri,
   });
-  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
+  await expect(slotButton(page, "10:30 AM")).toBeEnabled();
   // ...but the colour's own hands-on time is still blocked
-  await expect(slotButton(page, "10:00 AM")).toHaveAttribute("aria-disabled", "true");
+  await expect(slotButton(page, "10:00 AM")).toBeDisabled();
 
   // Men's Cut needs 45 min hands-on: it does NOT fit a 30-minute window.
   // (The original TC-006 expected 10:30 to be open for it - inconsistent data.)
@@ -217,7 +217,7 @@ test("TC-006 a slot inside another booking's rest window is available if the ser
     stylist: "Steve",
     date: fri,
   });
-  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "true");
+  await expect(slotButton(page, "10:30 AM")).toBeDisabled();
 });
 
 test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden", async ({
@@ -239,7 +239,7 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
     date: THU,
   });
   // TC-007: 10:30 unavailable
-  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "true");
+  await expect(slotButton(page, "10:30 AM")).toBeDisabled();
   // TC-008: still present in the grid, labelled unavailable (not removed)
   await expect(slotButton(page, "10:00 AM")).toHaveAttribute(
     "aria-label",
@@ -250,12 +250,12 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
     /unavailable/,
   );
   // 11:00 is free
-  await expect(slotButton(page, "11:00 AM")).toHaveAttribute("aria-disabled", "false");
+  await expect(slotButton(page, "11:00 AM")).toBeEnabled();
   // a different stylist is unaffected at the same time. Choosing a stylist resets the
   // chosen date to today, so pick the same day again first - without that the grid is
   // TODAY's, and its 10:30 AM is unavailable simply because it is already past
   // (this assertion only passed before about 8:30 am Melbourne time).
   await tap(page.getByRole("button", { name: /Yuto/ }).first());
   await pickDate(page, THU);
-  await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
+  await expect(slotButton(page, "10:30 AM")).toBeEnabled();
 });

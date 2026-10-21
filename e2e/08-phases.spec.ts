@@ -90,16 +90,9 @@ test("the customer page lists a service's phases and offers only starts where ev
   await expect(page.locator("body")).toContainText("60 hands-on + 30 processing + 30 return");
 
   await chooseSlotOnline(page, { services: ["Digital Perm"], stylist: "Steve", date: DAY });
-  await expect(slotButton(page, "10:00 AM")).toHaveAttribute("aria-disabled", "true"); // return block on the other booking
-  await expect(slotButton(page, "11:00 AM")).toHaveAttribute("aria-disabled", "true"); // hands-on block on it
-  await expect(slotButton(page, "10:15 AM")).toHaveAttribute("aria-disabled", "false"); // busy 10:15-11:15 and 11:45-12:15
-
-  await slotButton(page, "10:15 AM").hover();
-  await expect(page.getByTestId("bk-preview-label")).toHaveText("10:15 am – 12:15 pm");
-  const phases = await page
-    .locator(".bk-day-block > div")
-    .evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.phase));
-  expect(phases).toEqual(["active", "rest", "active"]); // solid, hatched, solid
+  await expect(slotButton(page, "10:00 AM")).toBeDisabled(); // return block on the other booking
+  await expect(slotButton(page, "11:00 AM")).toBeDisabled(); // hands-on block on it
+  await expect(slotButton(page, "10:15 AM")).toBeEnabled(); // busy 10:15-11:15 and 11:45-12:15
 });
 
 test("the owner changes ONE booking's phases: live end time, saved to the booking and its projection, service untouched", async ({ browser }) => {
