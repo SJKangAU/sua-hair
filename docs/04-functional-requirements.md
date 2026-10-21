@@ -9,16 +9,16 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Steps:**
 
 1. **Services** — pick one or more services (grouped by category). Each shows its duration and a price ("from $X" until a stylist is chosen). Totals of active and rest time are summed.
-2. **Date & Stylist** — pick a stylist (or "Any Available Stylist", listed in the order the owner set — FR-008), a date from the month calendar and a time. The next available date/time is pre-selected, but a date the customer picks is never overwritten. The time is chosen on a **day grid with a hover preview** (FR-001a). If the whole day is full, the customer is offered the waitlist (FR-010). **Review Booking** opens a summary sheet (services, stylist, date, time, duration, estimated total) → **Confirm & Continue**.
+2. **Date & Stylist** — pick a stylist (or "Any Available Stylist", listed in the order the owner set — FR-008), a date from the month calendar and a time. The next available date/time is pre-selected, but a date the customer picks is never overwritten. The time is chosen on a **day grid with a hover preview** (FR-001a). If the whole day is full, the customer is offered the waitlist (FR-010). **Review Booking** opens a summary sheet (services, stylist, date, time, duration, total) → **Confirm & Continue**. With "Any Available Stylist" the prices read **"from $X"** (the lowest tier): the stylist is not known until the request is received.
 3. **Your Details** — mobile number (Australian, `^04\d{8}$`), full name (letters and spaces, ≥ 2 characters), email (optional, for confirmation and reminder emails), notes (optional), and a **required privacy consent** tick.
-4. **Confirm Booking** → saved with `status: pending`, together with its PII-free `slotBlocks` projection and the customer's visit record, in one atomic write. A confirmation screen shows the summary with Add-to-Calendar links (Google, Apple/Outlook `.ics`).
-5. A confirmation email is sent if an email address was given (FR-012).
+4. **Request Booking** → sends the customer's *choices* (service ids, stylist or "any", date, time, name, phone, email, notes, consent) to the `createBookingRequest` function (FR-018), which validates them, recomputes price, duration and phases from its own records, picks a real stylist for "any", and holds the slot. The **"Request received"** screen shows what the server decided: the **assigned stylist**, the **exact price** and the time held, says plainly that it is **not confirmed yet** and that the salon will confirm within 24 hours, and offers Add-to-Calendar links marked tentative (Google, Apple/Outlook `.ics`). If the time was just taken the customer is sent back to choose another; a blocked client is told to call the salon.
+5. A "we have your request" email is sent if an email address was given; the "confirmed" email follows only when the owner approves (FR-012).
 
 **Day grid with hover preview (FR-001a):** the chosen date is shown as a calendar column (opening hours, 15-minute rows).
 
 - **Hover (mouse):** over an available start, the exact block the booking would occupy is highlighted — from the hovered start to start + the booking's total time — with a label such as "11:30 am – 1:15 pm". The block shows the hands-on time solid and the processing (rest) time hatched.
 - **Which positions are bookable:** the display snaps to 15 minutes and **a booking can start every 15 minutes** (`slotIntervalMinutes: 15`, DEC-024) — :00, :15, :30, :45. Every position is looked up in the scheduling engine's own slots, so a start the engine rejects (clash, too soon, would finish after closing) is muted with "Not available" and no block. A start inside another booking's rest window **is** highlighted when the new service's hands-on time fits (existing rule, unchanged). If the interval were ever set wider than 15, positions between starts would show "Bookings start every N minutes" and no block.
-- **Click** chooses the time; the flow continues exactly as before (pending booking, same validation).
+- **Click** chooses the time; the flow continues exactly as before (pending request, same validation).
 - **Touch:** there is no hover, so a tap previews the block with a **Select** button; Select chooses it.
 - **Keyboard:** the grid is one listbox; Up / Down move 15 minutes, PageUp / PageDown an hour, Home / End the first / last row, Enter or Space chooses; the position under the cursor is announced.
 - Motion is switched off under `prefers-reduced-motion`; the grid has a visible focus ring; label and shading colours meet WCAG AA contrast.
@@ -27,7 +27,8 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 **Acceptance criteria:**
 
-- [x] New customer booking is saved as pending with all required fields and consent timestamp (TC-001)
+- [x] New customer booking is saved as pending with all required fields and consent timestamp (TC-001); the screen says "Request received", never "confirmed", and shows the assigned stylist and the exact price (TC-087)
+- [x] "Any Available Stylist" shows "from $X" before sending, then the real stylist and exact price; the stored booking never has stylist `any` (TC-088; `functions` createBookingRequest)
 - [x] A previously used phone number is not recognised and nothing is pre-filled — no personal data is returned to an anonymous visitor (TC-002, `security`)
 - [x] Service price updates when the stylist's tier changes (TC-005)
 - [x] Monday dates are not selectable (TC-003)
@@ -38,7 +39,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] Hover highlights the exact range (start to start + total time), with solid / hatched phases (TC-038; `unit` slotPreview)
 - [x] An unavailable area, or a block that does not fit, shows no highlight and cannot be chosen (TC-039; `unit` slotPreview)
 - [x] A block inside another booking's rest window is highlighted if it fits, not if it does not (TC-040; `unit`)
-- [x] Clicking a hovered time chooses it and the booking is saved pending (TC-041)
+- [x] Clicking a hovered time chooses it and the request is saved pending (TC-041)
 - [x] Keyboard, touch and reduced-motion behave as described (TC-042, TC-043, TC-044; `unit` previewContrast)
 
 ---
@@ -55,7 +56,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - **Conflict rule (DEC-027):** only **busy** (active) blocks occupy the stylist. A slot is unavailable if any busy block of the new booking overlaps a busy block of an existing booking, or if the point where the stylist returns to a client (the end of a trailing rest phase) falls strictly inside the other booking's busy block. The rule is symmetric: it does not matter which booking was made first.
 - **Rest rule (DEC-007, amended by DEC-029):** inside another booking's rest phase the stylist is free, so another client can be booked there if all of that client's busy blocks fit. The new booking's own rest phase may now also run over an existing booking, which the old engine refused. Example: Digital Perm = 60 hands-on + 30 processing + 30 return; a cut booked in the 30-minute gap is fine, but a start whose return block would land on another booking is not offered.
 - A stylist can return to the same client for more hands-on time after a gap; that later block stays blocked like any other.
-- Minimum notice of 2 hours; same-day bookings stop at 5pm.
+- Minimum notice of 2 hours; same-day bookings stop at 5pm. All of it — "today", "now", the cutoff, the notice, opening hours and the weekday of a date — is judged on **Melbourne's clock** (`src/lib/businessTime.ts`, DEC-034), whatever time zone the visitor's browser or the server is in; the server applies the same rules again when a request arrives (FR-018).
 - Cancelled and no-show bookings do not block time; pending, confirmed, arrived, in-service and completed ones do.
 - Closed days return no slots.
 
@@ -219,19 +220,23 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 ## FR-009 — Approvals
 
-**Description:** Online bookings are created `pending`. The owner reviews them before they are treated as final.
+**Description:** Online requests are created `pending` — "request received", not confirmed (DEC-038). The owner reviews them; only approval confirms.
 
 **Requirements:**
 
 - **Approvals** page and the Today right rail list pending bookings, oldest first
-- **Approve** → confirmed; **Decline** → cancelled (with Undo)
+- **Approve** → confirmed (the `approveBooking` command re-checks the slot under the stylist-day lock and **refuses with a clear message if it no longer fits**); **Decline** → cancelled (`declineBooking`, with Undo)
 - **Suggest time** opens the owner's own messaging app with a text proposing the nearest free time for the same stylist. Nothing is sent by the platform.
 - Walk-ins, breaks and training are created already confirmed
-- A pending booking already holds its slot (other customers cannot book it)
+- A pending request already holds its slot (other customers cannot book it), for **24 hours**. After that it is released automatically (the slot opens, the customer is emailed that it was not confirmed) unless the owner approved it; the owner can approve or decline any time before then (DEC-036)
+- A booking stored with stylist "any" (made before the server assigned stylists) shows **Needs stylist** and an assign control instead of Approve (FR-018)
 
 **Acceptance criteria:**
 
-- [x] Approving turns a pending booking confirmed and mirrors the status to `slotBlocks` (TC-015, SMOKE)
+- [x] Approving turns a pending booking confirmed and mirrors the status to `slotBlocks` (TC-015, TC-089, SMOKE; `functions` ownerCommands)
+- [x] Approving a request whose slot has since been taken is refused with a message naming the clash, and nothing changes (TC-092; `functions`)
+- [x] A request not approved within 24 hours is released, booking and slotBlocks together; an approved one is left alone (`functions`)
+- [x] A legacy "any" booking shows "Needs stylist"; assigning one is conflict-checked and re-priced, then it can be approved (TC-091; `functions`)
 
 ---
 
@@ -239,7 +244,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 **Description:** When a stylist's day has no free time, the customer can ask to be told when something opens.
 
-- Customer enters name and mobile number; the entry stores the requested date and stylist (or "any")
+- Customer enters name and mobile number; the entry stores the requested date and, if they chose one, the stylist (no stylist field when they have no preference). It is created by the `joinWaitlist` function: validated, rate limited (5 per phone a day, 20 per address an hour), one entry per phone and date, refused for a blocked client, and it raises the owner's notification
 - Owner sees entries on the Bookings page (status pending / contacted / resolved) and in the Today rail, and can **Offer slot** (opens the owner's own messaging app with the text filled in)
 
 **Acceptance criteria:**
@@ -252,7 +257,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 **Description:** A bell with an unread count for the owner and for each stylist.
 
-- A new online or walk-in booking writes a notification for the owner and for the assigned stylist
+- A new online request writes a notification for the owner and for the assigned stylist (written by `createBookingRequest`; an expired request and a waitlist entry notify the owner); a walk-in's are written by the owner's own screen. Customers cannot create notifications. A stylist sees only their own
 - Clicking a notification opens that booking on its date
 - Mark read / mark all read; the 30 most recent are shown
 
@@ -266,14 +271,17 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 
 **Description:** Transactional emails sent by Cloud Functions. **Built and unit-tested (templates) but not exercised end to end and not deployed as of this document — see PILOT_READINESS.md.**
 
-- **Confirmation** — on creation of a customer booking that has an email address
-- **Reminder** — hourly scheduler emails customers whose appointment starts 24–25 hours away (pending and confirmed bookings only), once (`reminderSentAt`)
-- **Owner notification** — if the owner has switched it on (Manage), an email for each new online booking; address stored in `privateSettings/notifications` (owner-only), never in the world-readable `salonSettings`
+- **Request received** — when an online request is created and has an email address: "we have your request", explicitly *not* a confirmation (DEC-038)
+- **Confirmed** — only when the owner **approves** (pending → confirmed; `onBookingUpdated`), or for a booking created already confirmed
+- **Not confirmed** — when a request is declined or lapses after 24 hours: the time is no longer held
+- **Reminder** — hourly scheduler emails customers whose **confirmed** appointment starts 24–25 hours away, once (`reminderSentAt`); a request still awaiting approval is not an appointment
+- **Owner notification** — if the owner has switched it on (Manage), an email for each new online request; address stored in `privateSettings/notifications` (owner-only), never in the world-readable `salonSettings`
+- Each send uses an idempotency key (`received-`, `confirmed-`, `notconfirmed-<bookingId>`), so a repeated trigger cannot send twice; the Functions emulator logs "email not sent" instead of sending
 - Requires the `RESEND_API_KEY` secret, the `EMAIL_FROM` parameter (a domain verified with Resend), and a Firebase plan that allows Cloud Functions
 
 **Acceptance criteria:**
 
-- [x] Email templates render the right content (`unit` emailTemplates)
+- [x] Email templates render the right content; "received" never says confirmed; the right email for each status change (`unit` emailTemplates, emailEvents)
 - [ ] Delivery to a real inbox — **not tested** (TC-037)
 
 ---
@@ -286,7 +294,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - **Conflict check:** a walk-in, break, training session, restore of a cancelled / no-show booking, or reschedule is checked with the same rest-aware rules as the customer flow. A clash is refused with a message naming the clashing booking and its time range, and nothing is written.
 - **No admin race:** these writes run in a Firestore transaction that reads and bumps `stylistDayLocks/{date}_{stylistId}` before committing, so two admins saving the same slot at once cannot both succeed.
 - A new booking, its `slotBlocks` projection and its customer record commit together or not at all.
-- **Known limit:** an online customer booking is written directly and does not take the lock; one landing in the same instant as an admin booking for that slot is not prevented (see PILOT_READINESS.md).
+- **Online requests take the same lock** (FR-018): `createBookingRequest` runs on the Admin SDK in a transaction that reads and bumps the same `stylistDayLocks` document, so a customer's request and an admin walk-in for one slot cannot both succeed (this was the "known limit" in earlier versions).
 
 **Acceptance criteria:**
 
@@ -297,38 +305,40 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] Two admins saving the same slot simultaneously: exactly one booking (Playwright "D1"; `admin` — failed 4/4 before the transaction)
 - [x] Restore is refused if the slot was taken; two restores or a restore and a walk-in racing: one wins (`admin`; Playwright "D2")
 - [x] Reschedule into an occupied slot is refused (`admin`)
+- [x] An owner walk-in written from the browser SDK and an online request for the same slot, started together: exactly one wins, twelve rounds in a row (`functions` ownerCommands)
 
 ---
 
 ## FR-014 — Privacy and data protection
 
 - **Consent:** the booking form requires a privacy consent tick; the time is stored (`consentGivenAt`)
-- **Public data exposure:** anonymous visitors can create a pending booking but never read any booking. Public availability is computed from a PII-free `slotBlocks` projection (stylist, date, time, durations, status only). Customer identity (`customerLookups`) is staff-read-only.
-- **Roles:** every signed-in account is staff; the owner is identified by a `users/{uid}` role document; finance (Analytics) and owner settings are owner-only
+- **Public data exposure:** anonymous visitors can read reference data (stylists, services, hours) and the PII-free `slotBlocks` projection (stylist, date, time, durations, busy blocks, status only) — and nothing else; they cannot write anything (requests, waitlist and notifications go through functions). Customer identity and the blocked flag (`customerLookups`) are owner-only.
+- **Roles:** owner / stylist / unprovisioned / anonymous (FR-019); finance (Analytics) and owner settings are owner-only
 - **Erasure:** the owner can delete a customer's data by phone number — all their bookings are anonymised (name, phone, email, notes removed; service, price, date, status kept) and their visit record deleted
 - Privacy Policy and Terms of Service pages are linked from the footer
 - **Imported client data** (FR-017) stays in Firestore only. The Fresha export is never committed (`exports/`, `*.csv` and `*.xlsx` are ignored; only two synthetic fixtures with fake people are allowed), is read in the owner's browser and never uploaded, and the local file should be deleted once the import is done. Names, numbers and emails never appear in logs, toasts, error reports or test output
 
 **Acceptance criteria:**
 
-- [x] Rules permission matrix and PII-leak evidence (`rules` 41 tests, `security` 11 tests)
+- [x] Rules permission matrix for every collection under all four roles, and PII-leak evidence (`rules`, `security`; see test-runs)
+- [x] An anonymous visitor cannot write bookings, slotBlocks, waitlist, notifications or client records (`rules`; `npm run test:lockdown`; `scripts/verify-lockdown.mjs` against the live project)
 - [ ] Erasure function not exercised in this pass (needs the Functions emulator)
 
 ---
 
 ## FR-015 — Stylist schedule
 
-A stylist signs in (separate login page) and sees a **read-only** schedule of their own bookings for a chosen day, plus their notification bell. A stylist account cannot open the owner dashboard.
+A stylist signs in (separate login page) and sees a **read-only** schedule of their own bookings for a chosen day, plus their notification bell. A stylist account cannot open the owner dashboard. In the rules a stylist can read only **their own stylist's** bookings and notifications, and may only move their own booking along its day (arrived, in service, completed, no-show) or add a note — never approve, cancel, move, re-price, create or delete (FR-019).
 
 **Acceptance criteria:**
 
-- [ ] Not covered by an automated scenario in this pass
+- [x] A stylist sees only their own bookings; another stylist's are not readable (TC-097; `rules` roles)
 
 ---
 
 ## FR-016 — Booking lifecycle and booking detail
 
-**Statuses:** `pending → confirmed → arrived → in_service → completed`, plus `no_show` and `cancelled`. Cancelled and no-show free the slot; everything else holds it. A cancelled / no-show booking can be **restored** to the status it had (re-checking the slot, FR-013). Cancel and no-show offer an **Undo** toast.
+**Statuses:** `pending → confirmed → arrived → in_service → completed`, plus `no_show` and `cancelled`. Cancelled and no-show free the slot; everything else holds it. A cancelled / no-show booking can be **restored** to the status it had (the `restoreBooking` command re-checks the slot, FR-013 / FR-018). Cancel and no-show offer an **Undo** toast. Approve, decline, cancel and restore are server commands; arrived, in service, completed and no-show are direct writes.
 
 **Booking drawer** (`?booking=<id>` opens it from anywhere): status progress, edit apply / processing lengths (15-minute steps, conflict-checked), **Reschedule** (date, time, stylist — price follows the new stylist's tier), notes, flag for owner follow-up, and a history log of changes.
 
@@ -348,23 +358,105 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 
 - **Owner only.** The section is not shown to stylist accounts; its ledger (`importBatches`) is owner-only in `firestore.rules`
 - **Read in the browser.** The file is parsed in the page (papaparse for csv, read-excel-file for xlsx, loaded on demand), size-limited (10 MB, 50,000 rows) and never uploaded
-- **Dry run first.** Counts of rows, new clients, clients already in the app (left exactly as they are), skipped rows and clients merged because they share a number; what the import leaves out (emails, landlines, genders, birth dates, staff alerts, blocked clients); a downloadable error report with **row numbers and reasons only**. Nothing is written until the owner confirms
+- **Dry run first.** Counts of rows, new clients, clients already in the app (left exactly as they are, except that a blocked one gets the flag), skipped rows, clients merged because they share a number, and **blocked clients with a clear warning**; what the import leaves out (emails, landlines, genders, birth dates, staff alerts); a downloadable error report with **row numbers and reasons only**. Nothing is written until the owner confirms
 - **Normalising.** `61 4xx xxx xxx` and `04xx xxx xxx` become `04xxxxxxxx` (`^04\d{8}$`); anything else (missing, landline, overseas) is skipped and reported, never guessed. Names are trimmed and space-collapsed (Full Name, else First + Last) and may be in any script. Two clients sharing a number become one record with the most recently added name
-- **Existing clients are never overwritten.** A number that already has a record (real visit history) is left alone, even if it was created while the import was running
+- **Existing clients are never overwritten.** A number that already has a record (real visit history) is left alone, even if it was created while the import was running — the only change is the blocked flag on one Fresha has blocked
 - **Idempotent.** The number is the record ID, so importing the same file again (as csv or xlsx) adds nobody
 - **Batches.** Written in transactions of 400 clients plus one ledger entry (under Firestore's 500-write limit); a stopped import leaves a ledger of exactly what was written
-- **Rollback.** "Roll back" removes only the clients that import created, and only while their record is still as imported; a client who has booked since is kept and counted. The ledger keeps no phone numbers once handled
+- **Rollback.** "Roll back" removes only the clients that import created, and only while their record is still as imported; a client who has booked since is kept and counted. It also **removes the blocked flag the import set** (from a kept or an existing record) and never one that was there before. The ledger keeps no phone numbers once handled
 - **Recognition.** Entering an imported client's number in the walk-in form fills their name and shows "Returning client" (with the visit count once they have booked through the app)
-- **Not imported (no home in the app, DEC-032):** email, telephone, gender, birth date, address, marketing flags, referral source, Staff alert (may hold personal notes), Blocked and Block Reason, Fresha's client ID and "Added" date
+- **Blocked clients are imported as blocked** (DEC-039, FR-020): the one extra field, `blocked: true`
+- **Not imported (no home in the app, DEC-032):** email, telephone, gender, birth date, address, marketing flags, referral source, Staff alert (may hold personal notes), Block Reason, Fresha's client ID and "Added" date
 - Imported clients do **not** appear in the Clients page or Today search, which are built from bookings; they appear there after their first booking
 
 **Acceptance criteria:**
 
 - [x] csv and xlsx parse to the same plan; phone, name, duplicate and invalid-row rules (`unit` clientImport, clientImportFile)
-- [x] Dry run counts, error report with row numbers only, nothing written before confirming (TC-079)
+- [x] Dry run counts, the blocked count and warning, error report with row numbers only, nothing written before confirming (TC-079)
 - [x] Import writes name + phone only, existing client untouched (TC-080; `admin` clientImport)
 - [x] Imported client shows "Returning client" in the walk-in form (TC-081)
 - [x] Re-import adds nobody (TC-082; `admin`), xlsx matches csv (TC-083)
 - [x] Rollback removes only that import's clients and keeps one who has booked since (TC-084; `admin`)
 - [x] A wrong file is refused (TC-085); a stylist never sees the section (TC-078); the ledger is owner-only (`rules`, `admin`)
-- [x] 1,250 clients import in batches of 400; an imported record still accepts the public booking write (`admin`, `rules`)
+- [x] 1,250 clients import in batches of 400; an imported record still accepts the booking function's merge (`admin`, `functions`)
+
+---
+
+## FR-018 — Booking commands (server-side, authoritative)
+
+**Description:** Everything that creates or changes the standing of an online booking happens in a Cloud Function, never in the browser (DEC-035). The browser sends choices; the server decides. Logic: `functions/src/bookingCommands.ts` (tested against the Firestore emulator), callables in `functions/src/index.ts`, browser client `src/lib/bookingApi.ts`.
+
+**`createBookingRequest`** (public, rate limited, App Check when enabled):
+
+- **Validates every input again:** phone `^04\d{8}$`, name 2–100 letters, optional email, notes ≤ 500, consent required, 1–6 distinct service ids, a stylist id or "any", a real calendar date and a 12-hour time; refuses with a message fit to show
+- **Services and stylist must exist and be active.** Price, duration and phases are **recomputed from the service and stylist records**; a price, phases, totals, names or status in the request are never read
+- **Business rules on Melbourne time:** not in the past, within 365 days, not today after 5 pm, at least 2 hours' notice, not a closed day or date override, inside the stylist's working hours, finishing by closing time, on the 15-minute grid
+- **Blocked client** → "Please call the salon to book" (FR-020); **more than 2 pending requests** for the phone → refused; **rate limits** per phone and per address
+- **"Any Available Stylist"** → a real stylist among those free for **all** busy segments; ties → fewest bookings that day → lowest `order`; price from that stylist's tier; `any` is never stored (DEC-037). No stylist free → "that time was just taken", nothing written
+- **Re-runs the shared conflict check inside a transaction** that reads and bumps `stylistDayLocks/{date}_{stylistId}` (the same lock the owner's browser writes use), then writes the booking, its `slotBlocks`, the visit record and the notifications **together**
+- Returns request received, the assigned stylist, the exact price per service and in total, and when the hold ends. A retry with the same `requestId` returns the same booking
+
+**Owner commands** (`approveBooking`, `declineBooking`, `cancelBooking`, `restoreBooking`, `assignStylist`): require the owner (checked against `users/{uid}`); each runs in the locked transaction, **re-checks the slot where it claims one** (approve, restore, assign) and refuses with a clear message naming the clash if it no longer fits; updates the booking and `slotBlocks` together; appends a history line.
+
+**`releaseExpiredRequests`** (every 15 minutes): cancels pending requests whose 24-hour hold has run out (booking and `slotBlocks` together), leaves approved ones alone, notifies the owner.
+
+**`joinWaitlist`**: FR-010.
+
+**App Check:** reCAPTCHA v3 is wired in the browser when `VITE_RECAPTCHA_SITE_KEY` is set; the callables require it only when `ENFORCE_APP_CHECK=true`. Console steps: `DEPLOYMENT.md`.
+
+**Acceptance criteria** (`functions` = `tests/functions`, emulator-backed):
+
+- [x] Every bad input is refused and nothing is written: bad phone, name, email, notes, consent, services, stylist, date, time, past, too far, Monday, closure, outside hours, off-grid, notice, cutoff (`functions`)
+- [x] The server recomputes price and phases; a submitted price, phases, stylist name/level or status has no effect (`functions`)
+- [x] "Any" picks correctly (fewest that day, then order, all busy segments free, return phases respected) and fails cleanly when nobody is free (`functions`)
+- [x] Two, eight or seven simultaneous requests for one slot create exactly the right number of bookings (one; one; five on five stylists); overlapping simultaneous requests: one (`functions`; TC-090 in the browser)
+- [x] A request colliding with an existing admin booking is refused (`functions`); an owner walk-in racing a request: exactly one wins (`functions`)
+- [x] Approve, restore and assign re-check the slot; decline frees it; two simultaneous approvals confirm once (`functions`)
+- [x] The pending limit holds under concurrency; only pending counts (`functions`; TC-094)
+- [x] Expiry releases booking and slotBlocks, frees the slot, leaves approved and legacy no-hold bookings alone (`functions`)
+- [x] Rate limits per phone and per address; counters hold no phone or address (`functions`)
+- [x] The booking/owner callables are reachable from the browser through the Functions emulator (TC-087 to TC-094)
+
+---
+
+## FR-019 — Roles and access
+
+**Description:** Who may do what is enforced by `firestore.rules`, from custom claims on the sign-in token (DEC-033).
+
+| Role | How it is known | Can |
+| ---- | --------------- | --- |
+| **Owner** | claim `role: owner` | everything: services, prices, stylists, settings and hours, imports, deleting bookings, roles |
+| **Stylist** | claim `role: stylist` + `stylistId` | read and update **only their own stylist's** bookings (day-of status and notes), read and mark read their own notifications, read public data. No deletes, no settings, prices, stylist or client lists |
+| **Unprovisioned** | signed in, no claim | nothing beyond what an anonymous visitor can do |
+| **Anonymous** | not signed in | read stylists, services, hours and `slotBlocks`; call the public functions |
+
+- Roles are granted only by the Admin SDK: `functions/scripts/provision-roles.ts` (grant, verify, list, revoke, rollback) and the owner-only `setUserRole` function. The script refuses to remove the last owner or let an owner demote themself; `verify` is the lock-out check run **before** the rules are deployed
+- A new claim reaches the browser on its next token refresh; the app forces one when it finds no role. Removing a role also revokes refresh tokens; rules honour the old claim until the token expires (up to an hour), functions stop honouring it at once
+- The admin routes require the owner role, the stylist route the stylist role; a signed-in account with no role sees an explicit "No access yet" screen
+
+**Acceptance criteria:**
+
+- [x] For every collection, owner / stylist / unprovisioned / anonymous behave as in the table (`rules` roles.test.ts)
+- [x] A stylist cannot edit services, prices, stylists, settings or hours, delete anything, or touch another stylist's booking (`rules`)
+- [x] An unprovisioned account has no access to any collection (`rules`)
+- [x] Provisioning sets claim and record together, verifies, protects the last owner, and can be rolled back (`functions` roles)
+- [x] A stylist account is sent to its own area and never sees Manage (TC-078)
+
+---
+
+## FR-020 — Blocked clients
+
+**Description:** A client Fresha has Blocked cannot book online (DEC-039).
+
+- The client import stores `blocked: true` on their `customerLookups` record (owner-only readable), also on an existing record, and counts them with a warning in the dry run (FR-017)
+- `createBookingRequest` and `joinWaitlist` refuse them with the generic **"Please call the salon to book"**; nothing is written, no notification is raised, the flag is untouched
+- The walk-in form shows **BLOCKED CLIENT** instead of "Returning client" and does not pre-fill their name; the owner decides
+- Rolling the import back removes the flag it set (and no other)
+
+**Acceptance criteria:**
+
+- [x] Blocked parsing (Yes in any case), shared numbers, unusable rows, dry-run counts (`unit` clientImport)
+- [x] Flag stored on new and existing records; ledger records it; rollback removes exactly it; idempotent (`admin` clientImport)
+- [x] A blocked client's request and waitlist entry are refused with the generic message (`functions`; TC-093, TC-095)
+- [x] Import → blocked client refused → rollback → can book (TC-095); walk-in warning (TC-096)
+

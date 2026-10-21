@@ -4,20 +4,23 @@
 
 Firestore collections used by the app (rules in `firestore.rules`):
 
-| Collection                | Who can read                  | Who can write                                   | Purpose                                                      |
-| ------------------------- | ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
-| `bookings`                | staff only                    | staff; the public may **create** a pending one  | Every appointment, walk-in, break and training session       |
-| `slotBlocks`              | **public**                    | staff; public create of the paired pending doc  | PII-free projection of `bookings` used for public availability |
-| `stylistDayLocks`         | staff                         | staff (`version`, `updatedAt` only; no delete)  | Per-stylist-per-day lock that serialises admin slot-claiming writes |
-| `customerLookups`         | staff only                    | staff; public may write its own record          | Per-phone identity + visit history (also created by the client import) |
-| `importBatches`           | owner only                    | owner only                                      | Ledger of each client-list import and, in `chunks`, the phones it created (for rollback) |
-| `stylists`                | public                        | staff; **`order` owner only**                   | Roster, tiers, working hours, display order                  |
-| `services`                | public                        | staff                                           | Catalogue, tiered prices, price history                      |
-| `salonSettings`           | public                        | staff                                           | Weekly opening hours + per-date overrides (`salonSettings/main`) |
-| `privateSettings`         | owner only                    | owner only                                      | Owner email-notification preference (`privateSettings/notifications`) |
-| `notifications`           | staff                         | public create (written by the booking flow)     | In-app bell for owner and stylists                           |
-| `waitlist`                | staff                         | public create; staff update/delete              | Customers waiting for an opening                             |
-| `users`                   | own document only             | nobody (provisioned in the console)             | Role document: `owner` or `stylist` (+ `stylistId`)          |
+Roles come from **custom claims** on the sign-in token (DEC-033): `owner`, or `stylist` with a `stylistId`. An account with no claim ("unprovisioned") and an anonymous visitor are not staff. **Customers never write Firestore:** online requests, waitlist entries and notifications are created by Cloud Functions with the Admin SDK (DEC-035).
+
+| Collection                | Who can read                                   | Who can write                                              | Purpose                                                      |
+| ------------------------- | ---------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ |
+| `bookings`                | owner; a stylist **their own stylist's** only  | **functions** (requests, approve/decline/cancel/restore/assign); owner (walk-ins, edits, deletes); a stylist: own day-of status/notes only, no delete | Every appointment, walk-in, break and training session       |
+| `slotBlocks`              | **public**                                     | functions; owner; a stylist: own slot's status only        | PII-free projection of `bookings` used for public availability |
+| `stylistDayLocks`         | owner                                          | functions and owner (`version`, `updatedAt` only; no delete) | Per-stylist-per-day lock that serialises **every** slot-claiming write |
+| `customerLookups`         | **owner only**                                 | functions (visit record); owner (walk-ins, client import)  | Per-phone identity, visit history and the `blocked` flag     |
+| `importBatches`           | owner only                                     | owner only                                                 | Ledger of each client-list import and, in `chunks`, the phones it created and the ones it blocked (for rollback) |
+| `stylists`                | public                                         | **owner only**                                             | Roster, tiers, working hours, display order                  |
+| `services`                | public                                         | **owner only**                                             | Catalogue, tiered prices, price history                      |
+| `salonSettings`           | public                                         | **owner only**                                             | Weekly opening hours + per-date overrides (`salonSettings/main`) |
+| `privateSettings`         | owner only                                     | owner only                                                 | Owner email-notification preference (`privateSettings/notifications`) |
+| `notifications`           | owner; a stylist **their own** only            | functions; owner; a stylist may mark their own read        | In-app bell for owner and stylists                           |
+| `waitlist`                | owner only                                     | **`joinWaitlist` function** creates; owner updates/deletes | Customers waiting for an opening                             |
+| `users`                   | owner reads all; a provisioned user their own  | nobody from a client (Admin SDK only)                      | Readable record of each role grant                           |
+| `rateLimits`, `phoneLimits` | nobody                                       | functions only                                             | Abuse counters (hashed keys) and the per-phone pending lock  |
 
 Bookings reference stylists and services by ID but also store denormalised copies of names and prices at the time of booking — this preserves historical accuracy when stylists are deactivated or prices change.
 
@@ -36,7 +39,7 @@ Public availability reads **only** `slotBlocks`, never `bookings`, because Fires
 | `customerNameLower`| `string?`                                                                  | Lowercased copy for case-insensitive prefix search                            |
 | `customerPhone`    | `string`                                                                   | Australian mobile, digits only                                                |
 | `customerEmail`    | `string?`                                                                  | Optional; used for confirmation / reminder emails                             |
-| `stylistId`        | `string`                                                                   | Firestore ID of the stylist (`"any"` for first-available online bookings)     |
+| `stylistId`        | `string`                                                                   | Firestore ID of a **real** stylist. Online requests never store `"any"` (DEC-037); only bookings made before that release can still carry it, and show as "needs stylist" |
 | `stylistName`      | `string`                                                                   | Denormalised                                                                  |
 | `stylistLevel`     | `'director' \| 'senior' \| 'junior'`                                       | Tier at time of booking                                                       |
 | `services`         | `BookedService[]?`                                                         | Multi-service bookings: each with id, name, price, active/rest/total time     |
@@ -56,15 +59,19 @@ Public availability reads **only** `slotBlocks`, never `bookings`, because Fires
 | `restoreStatus`    | `status?`                                                                  | What a cancelled / no-show booking returns to on Restore                      |
 | `history`          | `BookingHistoryEntry[]?`                                                   | Append-only log of status changes, moves and phase edits                       |
 | `flagged` / `flagReason` | `boolean?` / `string?`                                               | Owner follow-up flag                                                          |
-| `consentGivenAt`   | `string?`                                                                  | ISO time the customer ticked privacy consent (online bookings)                |
+| `consentGivenAt`   | `string?`                                                                  | ISO time the customer's consent was recorded (online requests; set by the server) |
+| `holdExpiresAt`    | `string?`                                                                  | A pending request holds its slot until this ISO time (24 hours after it was made, `pendingHoldHours`); removed on approval (DEC-036) |
+| `confirmedAt`      | `string?`                                                                  | ISO time of the owner's approval                                              |
+| `cancelReason`     | `'declined' \| 'expired' \| 'cancelled'?`                                  | Why a booking is cancelled                                                    |
+| `assignedAutomatically` | `boolean?`                                                            | The customer chose "Any Available Stylist" and the server picked the stylist  |
 | `reminderSentAt`   | `string \| null?`                                                          | Set by the reminder function once the 24-hour email is sent                   |
 | `createdAt`        | `string`                                                                   | ISO timestamp                                                                 |
 
 **Document ID:** always a Firestore **auto-generated ID**. (DEC-008's readable `{date}_{stylist}_{timestamp}` IDs were replaced — a deterministic ID let a second admin booking silently overwrite the first. See DEC-016.) The readable label lives in `bookingRef`; the matching `slotBlocks` document uses the **same ID** as the booking.
 
-**Status lifecycle:** `pending → confirmed → arrived → in_service → completed`; any open status → `cancelled`; confirmed → `no_show`. **Cancelled and no-show free the slot; every other status holds it.** Customer bookings start `pending`; walk-ins, breaks and training start `confirmed`.
+**Status lifecycle:** `pending → confirmed → arrived → in_service → completed`; any open status → `cancelled`; confirmed → `no_show`. **Cancelled and no-show free the slot; every other status holds it.** Customer bookings start `pending` and **`pending` means "request received"; only the owner's approval makes a booking `confirmed`** (DEC-038); walk-ins, breaks and training start `confirmed`. A `pending` request that is not approved within 24 hours is cancelled (`cancelReason: "expired"`) and its slot released. Approve, decline, cancel, restore and assign-stylist are Cloud Function commands that re-check the slot (FR-018).
 
-**Indexes** (`firestore.indexes.json`): `bookings(customerPhone, createdAt desc)`; `bookings(status, date)` (reminder function); `notifications(recipientId, createdAt desc)`; `stylists(status, startDate)`; `services(status, category)`. Queries by `date` + `stylistId` (equality only) use index merging.
+**Indexes** (`firestore.indexes.json`): `bookings(customerPhone, createdAt desc)`; `bookings(status, date)` (reminder function); `bookings(status, holdExpiresAt)` (the 24-hour release job); `notifications(recipientId, createdAt desc)`; `stylists(status, startDate)`; `services(status, category)`. Queries by `date` + `stylistId` (equality only) use index merging.
 
 ---
 
@@ -74,17 +81,21 @@ Same ID as the booking. Fields: `stylistId`, `date`, `time`, `activeTime`, `tota
 
 ## Collection: `stylistDayLocks`
 
-ID `{date}_{stylistId}`. Fields: `version` (number), `updatedAt` (ISO string). Holds no customer data. Every admin write that claims a slot reads and bumps it inside the same transaction as its conflict check, so concurrent writers serialise (see FR-013, DEC-017). Created on first use.
+ID `{date}_{stylistId}`. Fields: `version` (number), `updatedAt` (ISO string). Holds no customer data. **Every** write that claims a slot reads and bumps it inside the same transaction as its conflict check: the owner's browser writes (`adminBookingWrites.ts`) and the booking functions (`bookingCommands.ts`), so concurrent writers serialise whoever they are (see FR-013, FR-018, DEC-017, DEC-035). Created on first use.
 
 ## Collection: `customerLookups`
 
-ID = cleaned phone number. `{ name, lastVisit, visitCount }`. Updated whenever a customer or walk-in booking is created. Staff-read-only.
+ID = cleaned phone number. `{ name, lastVisit, visitCount, blocked? }`. Updated by `createBookingRequest` and by the owner's walk-ins. **Owner-only**, for reads and writes (a customer must not learn another's name or block status from a phone number).
 
-The public booking rule allows **only** these three fields on a write (the merge result is checked), so nothing else may be stored here. A record created by the Fresha client import (FR-017) is `{ name, lastVisit: "", visitCount: 0 }`: indistinguishable from a client with no visits yet, which is why a later online booking merges into it normally. Which records an import created is kept in `importBatches`, not on the record.
+`blocked: true` is set by the Fresha client import for a client Fresha has Blocked (FR-017, DEC-039); it is the only way a record gets it. A blocked client's booking request and waitlist entry are refused with "Please call the salon to book", and the walk-in form shows a blocked warning instead of "Returning client". An absent flag means not blocked. A record created by the import is otherwise `{ name, lastVisit: "", visitCount: 0 }`: indistinguishable from a client with no visits yet, which is why a later online booking merges into it normally. Which records an import created or flagged is kept in `importBatches`, not on the record.
 
 ## Collection: `importBatches`
 
-Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'complete' | 'failed' | 'rolled_back', source, createdBy (uid), createdAt, planned, created, existed, finishedAt?, rolledBackAt?, removed?, kept? }`. Subcollection `chunks/{00000...}`: `{ phones: string[] }` (at most 500), the numbers a committed chunk created, written in the same transaction as those records. Rolling back deletes a chunk once its clients are handled, so the ledger holds no phone numbers afterwards. Personal data: owner-readable only.
+Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'complete' | 'failed' | 'rolled_back', source, createdBy (uid), createdAt, planned, created, existed, flagged?, finishedAt?, rolledBackAt?, removed?, kept?, unblocked? }`. Subcollection `chunks/{00000...}`: `{ phones: string[], blocked?: string[] }` (each at most 500): the numbers a committed chunk created, and the ones it marked blocked (new or existing), written in the same transaction as those records. Rolling back deletes a chunk once its clients are handled, so the ledger holds no phone numbers afterwards; it removes the blocked flag **it** set and never one that was already there. Personal data: owner-readable only.
+
+## Collections: `rateLimits` and `phoneLimits` (functions only)
+
+`rateLimits/{scope}-{sha256(phone or address)}-{window}` = `{ count, scope, expireAt }`: fixed-window counters for the public callables; the key is a hash, so no phone number or address is stored. Turn on a TTL policy on `expireAt` to have Firestore clear them. `phoneLimits/{phone}` = `{ version, updatedAt }`: bumped inside every booking request's transaction so two simultaneous requests from one phone number cannot both slip past the pending limit. No client can read or write either (no rule matches).
 
 ---
 
@@ -104,7 +115,7 @@ Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'compl
 | `order`        | `number?`                            | Owner-chosen display position (0, 1, 2, ...). Used by the booking page, the timeline and Manage. **Missing = after the ordered stylists**, in the query's order (start date), so existing records keep working |
 | `createdAt`    | `string`                             | ISO timestamp                                         |
 
-**Design decision:** inactive flag instead of delete (DEC-002). Display order is a number on each stylist (DEC-025), not a separate ordering document: a roster of five is renumbered 0..n-1 in one batch, and the public booking page already reads these documents. **Rules:** anyone can read it; creating or changing `order` needs the owner role (`users/{uid}.role == 'owner'`) and a numeric value; all other staff writes to a stylist are unchanged.
+**Design decision:** inactive flag instead of delete (DEC-002). Display order is a number on each stylist (DEC-025), not a separate ordering document: a roster of five is renumbered 0..n-1 in one batch, and the public booking page already reads these documents. `order` is also the last tie-break when "Any Available Stylist" has to choose (DEC-037). **Rules:** anyone can read it; **only the owner** can create, change or delete a stylist (and `order` must be a number); a stylist account cannot edit even their own record.
 
 ## Collection: `services`
 
@@ -141,15 +152,15 @@ A date override wins over the weekly schedule. If the document is missing, `SALO
 
 ## Collection: `notifications`
 
-`{ recipientId ('owner' or a stylist id), recipientType, bookingId, message, read, createdAt }`.
+`{ recipientId ('owner' or a stylist id), recipientType, bookingId, message, read, createdAt }`. Written by the booking functions (new request, expiry, waitlist) and by the owner's admin screens; read by the owner and, for their own `recipientId`, by a stylist.
 
 ## Collection: `waitlist`
 
-`{ customerName, customerPhone, requestedDate, requestedStylistId ('any' if none), status ('pending'|'contacted'|'resolved'), createdAt }`.
+`{ customerName, customerPhone, requestedDate, requestedStylistId? (omitted when the customer has no preference), status ('pending'|'contacted'|'resolved'), createdAt }`. Created only by `joinWaitlist` (validated, rate limited, one entry per phone + date); owner-only to read, update or delete.
 
 ## Collection: `users`
 
-`{ role: 'owner' | 'stylist', stylistId? }` keyed by Firebase Auth uid. Written only through the Firebase console / Admin SDK.
+`{ role: 'owner' | 'stylist', stylistId?, email?, grantedAt }` keyed by Firebase Auth uid: the **readable record** of a role grant. The role itself is a custom claim on the sign-in token (`{ role, stylistId? }`), which is what `firestore.rules` reads (no document reads, DEC-033); the functions check this record, so a revoked role stops working in them at once. Written only by `functions/src/roles.ts` (the `setUserRole` function and `functions/scripts/provision-roles.ts`), never from a client. A role can only be removed from the last owner by first adding another.
 
 ---
 
