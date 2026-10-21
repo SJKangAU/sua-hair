@@ -35,10 +35,14 @@ const ClientNotes = ({ clientId, actor, isOwner, onError }: Props) => {
   const add = async () => {
     if (!text.trim() || saving) return;
     setSaving(true);
+    // Cleared at once, not after the server answers: the note appears in the list as soon
+    // as it is written locally, and anything typed meanwhile must not be wiped
+    const draft = text;
+    setText("");
     try {
-      await addNote(db, clientId, text, actor);
-      setText("");
+      await addNote(db, clientId, draft, actor);
     } catch (err) {
+      setText((current) => current || draft); // put it back, unless they have started another
       onError(err instanceof Error && err.message.length < 80 ? err.message : "Couldn't save the note. Please try again.");
     }
     setSaving(false);

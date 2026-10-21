@@ -15,6 +15,8 @@ interface Props {
   clientId: string;
   role: "owner" | "stylist";
   stylistId?: string;
+  // changes when the client's figures change, so the list is read again
+  version?: string;
 }
 
 const sourceLabel = (b: Booking): string => (b.bookingType === "walkin" ? "Walk-in" : "Online");
@@ -61,8 +63,8 @@ const Row = ({ b, owner, onOpen }: { b: Booking; owner: boolean; onOpen?: () => 
   );
 };
 
-const ClientHistory = ({ clientId, role, stylistId }: Props) => {
-  const { rows, loading, error, hasMore, loadMore, reload } = useClientBookings(clientId, role, stylistId);
+const ClientHistory = ({ clientId, role, stylistId, version }: Props) => {
+  const { rows, loading, error, hasMore, loadMore, reload } = useClientBookings(clientId, role, stylistId, version);
   const navigate = useNavigate();
   const owner = role === "owner";
   const today = businessToday();

@@ -42,7 +42,15 @@ export const useClientRecord = (clientId: string, role: Role) => {
           notFound: !snap.exists(),
           error: false,
         }),
-      () => setState({ id: clientId, client: null, notFound: false, error: true }),
+      // A stylist asking for someone else's client is refused by the rules: shown as "not
+      // found", exactly as if the client did not exist (it must not confirm they do)
+      (err) =>
+        setState({
+          id: clientId,
+          client: null,
+          notFound: (err as { code?: string }).code === "permission-denied",
+          error: (err as { code?: string }).code !== "permission-denied",
+        }),
     );
   }, [clientId, role]);
 
@@ -88,7 +96,9 @@ export const useClientAudit = (clientId: string, enabled: boolean) => {
 
 export const BOOKING_PAGE = 25;
 
-export const useClientBookings = (clientId: string, role: Role, stylistId?: string) => {
+// `version` changes whenever the client's document changes (a merge, a booking made or
+// cancelled): the history is then read again so it never shows a stale list.
+export const useClientBookings = (clientId: string, role: Role, stylistId?: string, version = "") => {
   const [rows, setRows] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -134,7 +144,7 @@ export const useClientBookings = (clientId: string, role: Role, stylistId?: stri
 
   useEffect(() => {
     void load(false);
-  }, [load]);
+  }, [load, version]);
 
   return { rows, loading, error, hasMore, loadMore: () => void load(true), reload: () => void load(false) };
 };

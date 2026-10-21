@@ -163,7 +163,12 @@ const ClientView = ({ clientId, role, stylistId, onBookAgain, onNotice, onGone }
         </section>
       )}
 
-      <ClientHistory clientId={clientId} role={role} stylistId={stylistId} />
+      <ClientHistory
+        clientId={clientId}
+        role={role}
+        stylistId={stylistId}
+        version={full ? `${full.updatedAt}|${full.bookingCount}` : client.stylistIds.join(",")}
+      />
 
       <ClientNotes clientId={clientId} actor={actor} isOwner={owner} onError={(m) => onNotice(m, "error")} />
 
