@@ -66,6 +66,7 @@ const router = createBrowserRouter([
       { path: "approvals", lazy: adminTab("ApprovalsRoute") },
       { path: "bookings", lazy: adminTab("BookingsRoute") },
       { path: "clients", lazy: adminTab("ClientsRoute") },
+      { path: "clients/:clientId", lazy: adminTab("ClientRoute") },
       { path: "training", lazy: adminTab("TrainingRoute") },
       { path: "analytics", lazy: adminTab("AnalyticsRoute") },
       { path: "manage", lazy: adminTab("ManageRoute") },
@@ -95,6 +96,21 @@ const router = createBrowserRouter([
     },
     HydrateFallback: PageLoading,
   },
+  ...["/stylist/clients", "/stylist/clients/:clientId"].map((path) => ({
+    // A stylist's own clients (and one client's page) - requires stylist role
+    path,
+    lazy: async () => {
+      const StylistClientsPage = (await import("../pages/StylistClientsPage")).default;
+      return {
+        Component: () => (
+          <ProtectedRoute requiredRole="stylist" loginPath="/stylist/login">
+            <StylistClientsPage />
+          </ProtectedRoute>
+        ),
+      };
+    },
+    HydrateFallback: PageLoading,
+  })),
 ]);
 
 export default router;

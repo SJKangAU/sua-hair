@@ -1,143 +1,61 @@
 // ClientsPage.tsx
-// Clients tab — search clients by name or phone
-// Uses ToastContext directly — no addToast prop needed
-// Book again pre-fills customer name and phone in CreateBookingModal
+// Clients tab - the client directory (DEC-046): search any client by name word, name
+// start or mobile number, filter (lapsed, new, blocked, has a booking, no-shows),
+// sort, and open a client in a drawer or on their own page. Uses ToastContext
+// directly; "Book again" opens the create-booking form with the client filled in.
+// /admin/clients?q=... starts a search (used by the Today page's search).
 
-import { useState, useCallback } from "react";
-import { Users } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToastContext } from "../../context/ToastContext";
 import { todayString } from "../../lib/dates";
-import ClientSearch from "../../components/admin/clients/ClientSearch";
-import ClientCard from "../../components/admin/clients/ClientCard";
+import ClientDirectory from "../../components/admin/clients/ClientDirectory";
+import ClientDrawer from "../../components/admin/clients/ClientDrawer";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
-import type { ClientProfile } from "../../components/admin/clients/ClientSearch";
 
 const ClientsPage = () => {
   const { addToast } = useToastContext();
-  // /admin/clients?q=... starts the search (used by the Today page's search)
   const [searchParams] = useSearchParams();
-  const [clients, setClients] = useState<ClientProfile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [bookAgainClient, setBookAgainClient] = useState<{
-    phone: string;
-    name: string;
-  } | null>(null);
-
-  const handleResults = useCallback((results: ClientProfile[]) => {
-    setClients(results);
-    setHasSearched(true);
-  }, []);
-
-  const handleLoading = useCallback((isLoading: boolean) => {
-    setLoading(isLoading);
-  }, []);
-
-  // Short or cleared input — back to the prompt state, not "no clients found"
-  const handleReset = useCallback(() => {
-    setClients([]);
-    setHasSearched(false);
-    setLoading(false);
-  }, []);
+  const navigate = useNavigate();
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [bookAgain, setBookAgain] = useState<{ phone: string; name: string } | null>(null);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
-        <h2
-          style={{ fontSize: "1.1rem", fontWeight: 500, margin: "0 0 0.25rem" }}
-        >
-          Client History
-        </h2>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 500, margin: "0 0 0.25rem" }}>Clients</h2>
         <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)", margin: 0 }}>
-          Search by name or mobile number to view visit history and spending.
+          Every client, with their history, last visit and notes. Search by name or mobile number.
         </p>
       </div>
 
-      <ClientSearch
-        initialQuery={searchParams.get("q") ?? ""}
-        onResults={handleResults}
-        onLoading={handleLoading}
-        onReset={handleReset}
+      <ClientDirectory
+        role="owner"
+        initialSearch={searchParams.get("q") ?? ""}
+        onOpen={(id) => setOpenId(id)}
       />
 
-      {loading && (
-        <p
-          style={{ textAlign: "center", color: "var(--ink-muted)", fontSize: "0.9rem" }}
-        >
-          Searching...
-        </p>
+      {openId && (
+        <ClientDrawer
+          clientId={openId}
+          onClose={() => setOpenId(null)}
+          onBookAgain={(name, phone) => setBookAgain({ name, phone })}
+          onNotice={(m, kind) => addToast(m, kind)}
+        />
       )}
 
-      {!loading && !hasSearched && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "3rem",
-            background: "var(--surface)",
-            borderRadius: "12px",
-            color: "var(--ink-muted)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <Users
-            size={32}
-            strokeWidth={1.5}
-            aria-hidden="true"
-            style={{ marginBottom: "0.5rem" }}
-          />
-          <p style={{ fontSize: "0.9rem" }}>
-            Type at least 2 characters to search clients
-          </p>
-        </div>
-      )}
-
-      {!loading && hasSearched && clients.length === 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "3rem",
-            background: "var(--surface)",
-            borderRadius: "12px",
-            color: "var(--ink-muted)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <p style={{ fontSize: "1rem", fontWeight: 500 }}>No clients found</p>
-          <p style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
-            Try a different name or mobile number
-          </p>
-        </div>
-      )}
-
-      {!loading && clients.length > 0 && (
-        <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: 0 }}>
-          {clients.length} client{clients.length > 1 ? "s" : ""} found
-        </p>
-      )}
-
-      {!loading &&
-        clients.map((client) => (
-          <ClientCard
-            key={client.phone || client.name}
-            client={client}
-            onBookAgain={(phone, name) => setBookAgainClient({ phone, name })}
-            onDeleted={(phone) =>
-              setClients((prev) => prev.filter((c) => c.phone !== phone))
-            }
-          />
-        ))}
-
-      {/* Book again modal — pre-fills customer name and phone */}
-      {bookAgainClient && (
+      {bookAgain && (
         <CreateBookingModal
           prefillStylistId=""
           prefillTime=""
           prefillDate={todayString()}
-          prefillCustomerName={bookAgainClient.name}
-          prefillCustomerPhone={bookAgainClient.phone}
-          onClose={() => setBookAgainClient(null)}
-          onSuccess={(msg) => addToast(msg, "success")}
+          prefillCustomerName={bookAgain.name}
+          prefillCustomerPhone={bookAgain.phone}
+          onClose={() => setBookAgain(null)}
+          onSuccess={(msg) => {
+            addToast(msg, "success");
+            navigate("/admin/clients", { replace: true });
+          }}
           onError={(msg) => addToast(msg, "error")}
         />
       )}

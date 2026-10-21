@@ -9,6 +9,7 @@ import TodayPage from "./TodayPage";
 import ApprovalsPage from "./ApprovalsPage";
 import BookingsPage from "./BookingsPage";
 import ClientsPage from "./ClientsPage";
+import ClientPage from "./ClientPage";
 import TrainingPage from "./TrainingPage";
 import AnalyticsPage from "./AnalyticsPage";
 import ManagePage from "./ManagePage";
@@ -37,6 +38,8 @@ export const BookingsRoute = () => {
 };
 
 export const ClientsRoute = () => <ClientsPage />;
+
+export const ClientRoute = () => <ClientPage />;
 
 export const TrainingRoute = () => <TrainingPage />;
 

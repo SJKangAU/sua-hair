@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import useAppUser from "../hooks/useAppUser";
 import { useSalonData } from "../context/SalonDataContext";
@@ -112,6 +112,12 @@ const ScheduleInner = () => {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           {appUser?.stylistId && <NotificationBell />}
+          <Link
+            to="/stylist/clients"
+            style={{ color: "var(--admin-dimmer)", fontSize: "0.8rem" }}
+          >
+            My clients
+          </Link>
           <button
             onClick={handleSignOut}
             style={{
