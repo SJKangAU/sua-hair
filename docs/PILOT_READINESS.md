@@ -1,6 +1,6 @@
 # Pilot Readiness Report
 
-Branch `trust-boundary`, written 2026-10-21 against commit `24b3f7e` (based on `main` at `a7f9d73`). It replaces the earlier report for `pilot-readiness` (b7d4be7); that report's history is in git and `docs/test-runs/`.
+Written 2026-10-21 against commit `24b3f7e` on the trust-boundary work (based on `main` at `a7f9d73`); that work is now merged into `main`. The test counts below are from commit `e4ca557`; see "Changes since the recorded test run" under section 1. It replaces the earlier report for `pilot-readiness` (b7d4be7); that report's history is in git and `docs/test-runs/`.
 
 **Bottom line.** The code now enforces on the server what it used to leave to the browser: who is staff, what an online booking request may contain, who gets a slot when two people want it, and how long an unapproved request holds one. All of that is **tested against Firebase emulators** and passes under UTC and Australia/Melbourne. **None of it has been deployed, and nothing here has been tried with a real user, a real inbox, or the real Firebase project.** Read section 2 before treating any of it as proven.
 
@@ -54,6 +54,10 @@ Also run by hand: `npm run test:unit:tz` earlier in the work (UTC, America/Los_A
 - **TC-097** (a stylist sees only their own bookings, in the browser) is written but **has not been run**; the same access is proved in the rules tests.
 - `test:unit:tz` was not re-run on the final commit.
 - The scale test is opt-in (`npm run test:scale`) and is not in the suite.
+
+### Changes since the recorded test run
+
+After the full runs above, one change was made on `main` (commit `ccba1ce`, DEC-043): the customer page lists times as **buttons** again and the day-column **hover preview was removed**, with its code (`DayTimeGrid`, `slotPreview`), 24 unit tests and the 7 browser tests in `e2e/06-hover-preview.spec.ts` (TC-038 to TC-044), plus one browser test in `08-phases` that repeated TC-068. Unit tests now number **330** (not 354); the browser count falls by the removed tests. Run on this change: the customer, phases and booking-command browser specs (24 passed). **The full suite has not been re-run on `main` since** (an attempted run was spoiled by two suites using the emulator ports at once); do that before relying on the totals above.
 
 ---
 

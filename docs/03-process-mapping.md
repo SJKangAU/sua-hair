@@ -68,11 +68,11 @@ Owner **approves** (→ confirmed), declines (→ cancelled, with Undo) or sends
 
 ### Admin booking management (to-be)
 
-Owner opens **Today** → sees all stylist columns for the day, live, with "open slot" buttons and the day-at-a-glance strip
+Owner opens **Today** → sees all stylist columns for the day, live, with an empty grid that is pointed at to create bookings and the day-at-a-glance strip
 ↓
 Online bookings waiting for approval appear in the right-hand rail → Approve / Decline / Suggest time
 ↓
-Walk-in arrives (or a phone/SMS booking is taken) → clicks an open slot or "New booking" → enters the booking in seconds. If the time clashes with another booking, it is refused on the spot and the clashing booking is named
+Walk-in arrives (or a phone/SMS booking is taken) → points at empty time on the timeline and clicks or drags (or presses "New booking") → enters the booking in seconds. If the time clashes with another booking, it is refused on the spot and the clashing booking is named
 ↓
 Needs to block time → "Block Time" → break block (checked the same way)
 ↓

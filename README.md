@@ -37,14 +37,19 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - Unavailable slots shown with strikethrough rather than hidden
 - **Page transition animations** — direction-aware slide between steps; slide-up animation on the summary sheet
 - **Black & white luxury aesthetic** — Cormorant Garamond display type, no colour accents
-- Booking confirmation screen with full summary
+- **A request, not a confirmation** — submitting sends a booking *request*; the screen says "Request received" with the assigned stylist and the exact price. The salon confirms it (the "confirmed" email is sent only on approval). A pending request holds its slot for 24 hours, then is released
+- **Any Available Stylist** — the server picks a real stylist who is free for the whole appointment (fewest bookings that day, then the owner's order) and recalculates the price from that stylist's tier
+- **Services with phases** — a service can be hands-on, then processing (the stylist is free for another client), then hands-on again (for example a digital perm); the exact blocks are what the calendar checks
 - **Add to Calendar** — Google Calendar link and Apple/Outlook ICS download
 
 ### Admin Dashboard
 
 - Firebase Auth protected routes
 - Real-time bookings via Firestore `onSnapshot`
-- **Today tab** — visual timeline grid per stylist with click-to-create slots
+- **Roles** — an **owner** (everything) and **stylist** accounts (their own schedule only); an account with no role sees "No access yet"
+- **Today tab** — visual timeline grid per stylist. Point at empty time to highlight a 30-minute block, drag to set the length, click for 30 minutes (touch: press and hold; keyboard: arrow keys); processing gaps are hatched and another client can be booked into them; booking phases are edited by dragging a phase edge or in the booking panel
+- **Approvals** — approve, decline, cancel and restore requests; each action re-checks the slot on the server and refuses with a clear message if it no longer fits; old "any stylist" bookings show **Needs stylist** with an assign control
+- **Import clients (owner only)** — load a Fresha client list (.csv or .xlsx) in the browser: dry run, then import names and mobile numbers (blocked clients flagged), idempotent, with rollback
 - **Bookings tab** — filterable list by stylist, date, and status with accurate filtered count
 - **Jump-to-date** input on Today tab for navigating directly to any date
 - Confirm, cancel, and restore bookings with optimistic UI updates
@@ -61,6 +66,9 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 
 Firestore Security Rules cannot redact individual fields from an authorised read — a rule either allows a whole document/query or denies it. The public booking calendar therefore never reads the `bookings` collection (which holds customer names, phones, and notes). Instead:
 
+- **Roles are real** — the owner and stylist roles are custom claims on the sign-in token, written only by the Admin SDK (`functions/scripts/provision-roles.ts`). Any other signed-in account has no access
+- **Customers never write directly** — a booking request, a waitlist entry and every notification are created by Cloud Functions that validate every input, recompute price and phases from the service records, take the same stylist-day lock as admin writes, and rate-limit; blocked clients are refused ("Please call the salon to book")
+- **One business clock** — all booking-rule decisions use Australia/Melbourne, never the visitor's time zone
 - **`slotBlocks` projection** — every booking write also writes a PII-free projection document (`stylistId`, `date`, `time`, durations, `status` only). Public availability queries read exclusively from this collection.
 - **`bookings` is staff-only** — anonymous customers can create their own pending booking but can never read any booking back, including their own.
 - **`customerLookups` is staff-only to read** — customer identity is never returned to an anonymous client, even by exact phone-number lookup (knowing a phone number is not proof of owning it).
@@ -71,16 +79,21 @@ Firestore Security Rules cannot redact individual fields from an authorised read
 ## Testing
 
 ```bash
-npm run test:unit      # scheduling engine, dates, status/lifecycle logic (no emulator needed)
-npm run test:rules     # firestore.rules permission matrix (needs Java 21)
+npm run test:unit      # scheduling engine, phases, dates, import rules, business clock (no emulator)
+npm run test:unit:tz   # the clock and date logic under three time zones
+npm run test:rules     # firestore.rules permission matrix: owner / stylist / unprovisioned / anonymous (needs Java 21)
 npm run test:security  # PII-leak evidence tests (needs Java 21)
-npm run test:admin     # admin write path against real rules: walk-ins, breaks, restore,
-                       # reschedule, and two-admins-at-once races (needs Java 21)
-npm run test:smoke     # client books -> owner approves -> overlapping walk-in blocked
-npm run test:e2e       # Playwright drives the real UI against the Auth + Firestore emulators
+npm run test:lockdown  # the public cannot write bookings, slots, waitlist or notifications
+npm run test:admin     # admin write path against real rules: walk-ins, breaks, phases, import and rollback, races
+npm run test:functions # booking commands, roles, limits and races (Cloud Functions + Auth + Firestore emulators)
+npm run test:smoke     # client requests -> owner approves -> overlapping walk-in blocked
+npm run test:e2e       # Playwright drives the real UI against the Auth + Firestore + Functions emulators
                        # (docs/08-test-scenarios.md); uses installed Edge locally
-npm run test:all       # build + everything above
+npm run test:all       # build + the main suites above
+node scripts/run-suite.mjs <prefix> <tag> [TZ]   # everything under one time zone, log in docs/test-runs/
 ```
+
+Run one suite at a time: they share emulator ports, and two at once fail with "port taken". On Windows PowerShell use `npm.cmd` / `npx.cmd` if scripts are blocked. A guided walkthrough (automatic suite, watching the browser tests, and a hands-on checklist for the real site) is in `docs/TESTING_GUIDE.md`.
 
 The emulator suites wrap Vitest / Playwright in `firebase emulators:exec`, so a local Firestore (and Auth, for e2e) emulator backs every assertion; the e2e run points the dev server at a `demo-` project via `VITE_USE_EMULATORS=true` and never uses `.env`. CI (`.github/workflows/ci.yml`) runs typecheck, lint, and all suites on every push and pull request. Saved evidence from the pilot-readiness pass is in `docs/test-runs/`.
 
@@ -307,6 +320,10 @@ src/
 | 6         | Analytics tab — revenue and occupancy charts                  | ✅ Done    |
 | 7         | Manage tab — stylist and service roster with sort order       | ✅ Done    |
 | 8         | Booking flow redesign — B&W luxury, multi-service, animations | ✅ Done    |
+| 9         | Booking phases (hands-on / processing / return), per-booking edits | ✅ Done |
+| 10        | Timeline: create by hovering and dragging, phase edge resize  | ✅ Done    |
+| 11        | Fresha client-list import (owner only, dry run, rollback)     | ✅ Done    |
+| 12        | Trust boundary: real roles, booking commands in Cloud Functions, Melbourne clock, CI | Built, **not deployed** (see docs/DEPLOYMENT.md) |
 
 ---
 
@@ -353,10 +370,11 @@ npx tsx src/scripts/seedFirestore.ts
 
 ### Deploy
 
-The app deploys to Vercel (pushes to `main` auto-deploy). Firestore Security Rules deploy separately — **a local edit to `firestore.rules` does nothing until deployed**:
+The app deploys to Vercel (pushes to `main` auto-deploy). Cloud Functions and Firestore Security Rules deploy separately — **a local edit to `firestore.rules` or `functions/` does nothing until deployed**, and the **order matters**: provision the owner and verify, deploy the functions, then the app, then the rules last. The exact steps, checks and rollbacks are in `docs/DEPLOYMENT.md` (read it before pushing `main`: the live site calls the functions).
 
 ```bash
-npx firebase deploy --only firestore:rules --project <your-project-id>
+npx firebase deploy --only functions --project <your-project-id>        # step 2
+npx firebase deploy --only firestore:rules --project <your-project-id>  # step 4, last
 ```
 
 ---

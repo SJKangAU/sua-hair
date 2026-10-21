@@ -29,11 +29,9 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 - [x] A date the customer chooses is not replaced by the auto-suggested one (TC-001 — failed before fix D6)
 - [x] Slots inside another booking's rest period are available if the new service fits (TC-006)
 - [x] Booking cannot be submitted without consent (unit/rules: `consentGivenAt` required by the public create rule)
-- [x] Hover highlights the exact range (start to start + total time), with solid / hatched phases (TC-038; `unit` slotPreview)
-- [x] An unavailable area, or a block that does not fit, shows no highlight and cannot be chosen (TC-039; `unit` slotPreview)
-- [x] A block inside another booking's rest window is highlighted if it fits, not if it does not (TC-040; `unit`)
-- [x] Clicking a hovered time chooses it and the request is saved pending (TC-041)
-- [x] Keyboard, touch and reduced-motion behave as described (TC-042, TC-043, TC-044; `unit` previewContrast)
+- [x] The day's offered starts are buttons grouped into Morning and Afternoon, every 15 minutes; an unavailable one is greyed out with the reason and cannot be chosen (TC-007, TC-008)
+- [x] A start inside another booking's processing gap is offered when the new service's hands-on time fits, and a service with a later hands-on block is offered only where every busy block is free (TC-006, TC-050)
+- [x] Choosing a time continues the flow: the request is saved pending and the screen says "Request received" (TC-001, TC-087)
 
 ---
 

@@ -1,6 +1,6 @@
-# Deployment — the trust-boundary release
+# Deployment - the trust-boundary release
 
-Branch `trust-boundary`. Production Firebase project: `sua-hair-ae353`. The site is on Vercel (auto-deploys `main`). **Nothing in this release has been deployed or run against the real project by the developer** — every test ran against emulators. Follow the order below exactly; each step says how to check it and how to undo it.
+**Status (2026-10-21).** The trust-boundary release is **merged into `main` and pushed**. The site is on Vercel, which auto-deploys `main`, so the new app may already be live. **The functions, the owner provisioning and the rules have NOT been deployed.** If the live site is already the new app, online booking requests will fail until the **functions** are deployed: do steps 1 and 2 below now, and skip step 3 (the app is already out). Step 4 (rules) stays last. Production Firebase project: `sua-hair-ae353`. Nothing in this release has been run against the real project by the developer; every test ran against emulators. Follow the order below; each step says how to check it and how to undo it.
 
 ## What changes in production
 
@@ -36,6 +36,14 @@ A customer who left the **old** page open across step 4 will get an error on sub
 - Make a list of every sign-in account (console → Authentication → Users) and decide who is the owner and who is a stylist. **Every account you do not provision loses all access at step 4.**
 
 ### 1. Provision the owner (and stylists), then verify — BEFORE the rules change
+
+*Running it on Windows (PowerShell).* Three things trip people up:
+
+1. **Run it from the project folder**, not from wherever the key file is. The script is `functions/scripts/provision-roles.ts` inside the repo: `cd C:\Users\Jason\Desktop\Coding\projects\sua-hair` first. In another folder you get `ERR_MODULE_NOT_FOUND`.
+2. **There is no `gcloud` on a fresh machine.** Use a service-account key instead: Firebase console -> Project settings -> Service accounts -> Generate new private key. Save it **outside the repo** (for example `C:\Users\Jason\Desktop\Coding\Keys\`), check the real file name (a doubled `.json.json` is common), then in the same window `$env:GOOGLE_APPLICATION_CREDENTIALS = "<full path to the key file>"`.
+3. **Use `npx.cmd`** (PowerShell can block `npx.ps1`). Never commit the key file; delete the key in the console when you are done.
+
+An account that signs in but has no role sees a "No access yet" screen with its UID. That is the expected result for an unprovisioned account (and for the owner until this step is done).
 
 Roles are **custom claims** on the sign-in token, written only by the Admin SDK. The script also writes the `users/{uid}` record (which the *old* rules read), so provisioning is safe to do while the old rules are live — it changes nothing for anyone.
 
@@ -98,7 +106,7 @@ curl -s -X POST https://australia-southeast1-sua-hair-ae353.cloudfunctions.net/c
 
 ### 3. Deploy the app
 
-Merge `trust-boundary` into `main`; Vercel builds and deploys. (Environment variables on Vercel are unchanged; `VITE_RECAPTCHA_SITE_KEY` is added only in the App Check section.)
+The app is deployed by Vercel from `main` (this release is already on `main`; if you are reading this before the first deploy, push `main` at this step, not earlier). (Environment variables on Vercel are unchanged; `VITE_RECAPTCHA_SITE_KEY` is added only in the App Check section.)
 
 *Check — with the old rules still live:*
 
