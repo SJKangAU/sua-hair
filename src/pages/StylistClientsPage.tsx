@@ -8,12 +8,14 @@
 //   /stylist/clients            the list
 //   /stylist/clients/:clientId  one client
 
+import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import useAppUser from "../hooks/useAppUser";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 import { ToastProvider } from "../context/ToastProvider";
 import { useToastContext } from "../context/ToastContext";
+import { useSalonData } from "../context/SalonDataContext";
 import ClientDirectory from "../components/admin/clients/ClientDirectory";
 import ClientView from "../components/admin/clients/ClientView";
 
@@ -23,6 +25,12 @@ const Inner = () => {
   const { addToast } = useToastContext();
   const navigate = useNavigate();
   const stylistId = appUser?.stylistId;
+  const access = appUser?.clientAccess;
+  const { stylists } = useSalonData();
+  const stylistNames = useMemo(
+    () => Object.fromEntries(stylists.map((s) => [s.id, s.name.split(" ")[0]])),
+    [stylists],
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink)" }}>
@@ -59,6 +67,7 @@ const Inner = () => {
               clientId={clientId}
               role="stylist"
               stylistId={stylistId}
+              access={access}
               onNotice={(m, kind) => addToast(m, kind)}
             />
           </>
@@ -66,6 +75,8 @@ const Inner = () => {
           <ClientDirectory
             role="stylist"
             stylistId={stylistId}
+            access={access}
+            stylistNames={stylistNames}
             onOpen={(id) => navigate(`/stylist/clients/${id}`)}
           />
         )}

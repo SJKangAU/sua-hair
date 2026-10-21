@@ -2,26 +2,31 @@
 // A client's bookings, upcoming first then past, newest first: date, time, services,
 // stylist, price, status and where it came from. 25 at a time, loading only THIS
 // client's bookings. The owner can open a booking from a row; a stylist sees only
-// their own bookings with this client.
+// their own bookings with this client, plus (with the owner's say-so, FR-025) a
+// colleague's - shown with the colleague's name and no price.
 
 import { useNavigate } from "react-router-dom";
 import { useClientBookings } from "../../../hooks/useClientData";
 import { STATUS_LABELS } from "../../../lib/bookingStatus";
 import { businessToday } from "../../../lib/businessTime";
 import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
+import type { ClientAccess } from "../../../lib/clientAccess";
 import type { Booking } from "../../../types";
 
 interface Props {
   clientId: string;
   role: "owner" | "stylist";
   stylistId?: string;
+  access?: ClientAccess;
   // changes when the client's figures change, so the list is read again
   version?: string;
 }
 
 const sourceLabel = (b: Booking): string => (b.bookingType === "walkin" ? "Walk-in" : "Online");
 
-const Row = ({ b, owner, onOpen }: { b: Booking; owner: boolean; onOpen?: () => void }) => {
+const Row = ({ b, owner, ownStylistId, onOpen }: { b: Booking; owner: boolean; ownStylistId?: string; onOpen?: () => void }) => {
+  // a stylist sees prices and no name on their own bookings, and the name only on a colleague's
+  const theirs = !owner && !!ownStylistId && b.stylistId !== ownStylistId;
   const dim = b.status === "cancelled" || b.status === "no_show";
   const body = (
     <>
@@ -29,8 +34,8 @@ const Row = ({ b, owner, onOpen }: { b: Booking; owner: boolean; onOpen?: () => 
         {fmtDate(b.date)}, {b.time}
       </span>
       <span style={{ color: "var(--ink-soft)" }}>{b.serviceName}</span>
-      <span>{owner ? b.stylistName : ""}</span>
-      <span>{fmtMoney(b.servicePrice ?? 0)}</span>
+      <span>{owner || theirs ? b.stylistName : ""}</span>
+      <span>{theirs ? "" : fmtMoney(b.servicePrice ?? 0)}</span>
       <span>
         {STATUS_LABELS[b.status]} · {sourceLabel(b)}
       </span>
@@ -63,8 +68,8 @@ const Row = ({ b, owner, onOpen }: { b: Booking; owner: boolean; onOpen?: () => 
   );
 };
 
-const ClientHistory = ({ clientId, role, stylistId, version }: Props) => {
-  const { rows, loading, error, hasMore, loadMore, reload } = useClientBookings(clientId, role, stylistId, version);
+const ClientHistory = ({ clientId, role, stylistId, access, version }: Props) => {
+  const { rows, loading, error, hasMore, loadMore, reload } = useClientBookings(clientId, role, stylistId, version, access);
   const navigate = useNavigate();
   const owner = role === "owner";
   const today = businessToday();
@@ -112,7 +117,7 @@ const ClientHistory = ({ clientId, role, stylistId, version }: Props) => {
             <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflowX: "auto" }}>
               <div style={{ minWidth: 620 }}>
                 {g.list.map((b) => (
-                  <Row key={b.id} b={b} owner={owner} onOpen={open(b)} />
+                  <Row key={b.id} b={b} owner={owner} ownStylistId={stylistId} onOpen={open(b)} />
                 ))}
               </div>
             </div>

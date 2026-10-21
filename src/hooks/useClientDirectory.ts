@@ -1,7 +1,8 @@
 // useClientDirectory.ts
 // The directory's state: the search box (300 ms debounce, 2 characters minimum), the
 // filter and sort, and the pages loaded so far. A slower, older request can never
-// overwrite a newer one. Owner: clients. Stylist: their own clients' cards.
+// overwrite a newer one. Owner: clients. Stylist: the cards of the clients they may open
+// (their own; a colleague's or everyone's when the owner has allowed it).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { db } from "../lib/firebase";
@@ -12,6 +13,7 @@ import {
   type Cursor,
 } from "../lib/clientDirectory";
 import { planSearch, type DirectoryFilter, type DirectorySort } from "../lib/clients";
+import type { ClientScope } from "../lib/clientAccess";
 import type { Client, ClientCard } from "../types";
 
 export const SEARCH_DEBOUNCE_MS = 300;
@@ -36,7 +38,9 @@ export interface DirectoryState {
   reload: () => void;
 }
 
-const useClientDirectory = (role: "owner" | "stylist", stylistId?: string): DirectoryState => {
+// `scope` is a stylist's chosen view (ignored for the owner); undefined until their id is known.
+const useClientDirectory = (role: "owner" | "stylist", scope?: ClientScope): DirectoryState => {
+  const scopeKey = scope ? (scope.kind === "all" ? "all" : `s:${scope.stylistId}`) : "";
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<DirectoryFilter>("all");
@@ -73,7 +77,7 @@ const useClientDirectory = (role: "owner" | "stylist", stylistId?: string): Dire
                 { search: debounced, filter, sort, today: businessToday() },
                 cursor.current,
               )
-            : await fetchCardPage(db, { search: debounced }, stylistId ?? "", cursor.current);
+            : await fetchCardPage(db, { search: debounced }, scope as ClientScope, cursor.current);
         if (id !== requestId.current) return; // a newer request has taken over
         cursor.current = page.cursor;
         setItems((prev) => (more ? [...prev, ...page.items.filter((n) => !prev.some((p) => p.id === n.id))] : page.items));
@@ -89,14 +93,16 @@ const useClientDirectory = (role: "owner" | "stylist", stylistId?: string): Dire
         }
       }
     },
-    [role, stylistId, debounced, filter, sort],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `scope` is compared by its key
+    [role, scopeKey, debounced, filter, sort],
   );
 
   // A new search, filter or sort starts again from the first page
   useEffect(() => {
-    if (role === "stylist" && !stylistId) return;
+    if (role === "stylist" && !scope) return;
     void run(false);
-  }, [run, version, role, stylistId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `scope` is compared by its key
+  }, [run, version, role, scopeKey]);
 
   return {
     search,

@@ -2,7 +2,8 @@
 // What the client page reads: the client (owner: the full document; stylist: the
 // card, no spend), their notes, the audit trail (owner), and their bookings, a page at
 // a time and ONLY this client's (an indexed clientId query; a stylist's is pinned to
-// their own stylist id as well, which is also what the rules allow).
+// their own stylist id and any colleagues the owner has let them open, which is also
+// what the rules allow; a stylist given every client reads them all).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -19,6 +20,7 @@ import {
   type QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { historyStylists, type ClientAccess } from "../lib/clientAccess";
 import type { Booking, Client, ClientAudit, ClientCard, ClientNote } from "../types";
 
 export type Role = "owner" | "stylist";
@@ -98,7 +100,16 @@ export const BOOKING_PAGE = 25;
 
 // `version` changes whenever the client's document changes (a merge, a booking made or
 // cancelled): the history is then read again so it never shows a stale list.
-export const useClientBookings = (clientId: string, role: Role, stylistId?: string, version = "") => {
+export const useClientBookings = (
+  clientId: string,
+  role: Role,
+  stylistId?: string,
+  version = "",
+  access?: ClientAccess,
+) => {
+  // which stylists' bookings to read: just one, several, or (null) all
+  const stylists = role === "stylist" ? historyStylists(stylistId ?? "", access ?? { all: false, stylistIds: [] }) : null;
+  const stylistKey = stylists === null ? "*" : stylists.join(",");
   const [rows, setRows] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -117,7 +128,9 @@ export const useClientBookings = (clientId: string, role: Role, stylistId?: stri
       try {
         const base = [
           where("clientId", "==", clientId),
-          ...(role === "stylist" ? [where("stylistId", "==", stylistId ?? "")] : []),
+          ...(role === "stylist" && stylists !== null
+            ? [stylists.length === 1 ? where("stylistId", "==", stylists[0]) : where("stylistId", "in", stylists)]
+            : []),
           orderBy("date", "desc"),
         ];
         const snap = await getDocs(
@@ -139,7 +152,8 @@ export const useClientBookings = (clientId: string, role: Role, stylistId?: stri
         if (id === request.current) setLoading(false);
       }
     },
-    [clientId, role, stylistId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `stylists` is compared by its key
+    [clientId, role, stylistKey],
   );
 
   useEffect(() => {

@@ -10,13 +10,37 @@
 // is not the same as staff.
 
 import { useState, useEffect } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import type { User } from "firebase/auth";
 import useAuth from "./useAuth";
+import { db } from "../lib/firebase";
+import { accessFromClaims } from "../lib/clientAccess";
 import type { AppUser } from "../types";
 
 interface Result {
   appUser: AppUser | null;
   loading: boolean;
 }
+
+// The role and, for a stylist, whose clients they may open, from the token's claims
+const appUserFromClaims = async (user: User, forceRefresh = false): Promise<AppUser | null> => {
+  let result = await user.getIdTokenResult(forceRefresh);
+  if (result.claims.role !== "owner" && result.claims.role !== "stylist") {
+    result = await user.getIdTokenResult(true);
+  }
+  const claimed = result.claims.role;
+  if (claimed !== "owner" && claimed !== "stylist") {
+    console.warn(`useAppUser: no role for uid ${user.uid} - denying access`);
+    return null;
+  }
+  const stylistId = result.claims.stylistId;
+  return {
+    uid: user.uid,
+    role: claimed,
+    ...(typeof stylistId === "string" && stylistId ? { stylistId } : {}),
+    ...(claimed === "stylist" ? { clientAccess: accessFromClaims(result.claims, typeof stylistId === "string" ? stylistId : undefined) } : {}),
+  };
+};
 
 const useAppUser = (): Result => {
   const { user, loading: authLoading } = useAuth();
@@ -35,27 +59,7 @@ const useAppUser = (): Result => {
     let cancelled = false;
     const uid = user.uid;
 
-    const resolve = async (): Promise<AppUser | null> => {
-      let result = await user.getIdTokenResult();
-      if (result.claims.role !== "owner" && result.claims.role !== "stylist") {
-        result = await user.getIdTokenResult(true);
-      }
-      const claimed = result.claims.role;
-      if (claimed !== "owner" && claimed !== "stylist") {
-        console.warn(
-          `useAppUser: no role for uid ${uid} - denying access`,
-        );
-        return null;
-      }
-      const stylistId = result.claims.stylistId;
-      return {
-        uid,
-        role: claimed,
-        ...(typeof stylistId === "string" && stylistId ? { stylistId } : {}),
-      };
-    };
-
-    resolve()
+    appUserFromClaims(user)
       .then((appUser) => {
         if (!cancelled) setRole({ uid, appUser });
       })
@@ -68,6 +72,37 @@ const useAppUser = (): Result => {
       cancelled = true;
     };
   }, [user, authLoading]);
+
+  // When the owner changes what this stylist may open, the Admin SDK rewrites
+  // users/{uid}; the new claims are then fetched at once instead of at next sign-in.
+  const stylistUid = role?.appUser?.role === "stylist" ? role.uid : null;
+  useEffect(() => {
+    if (!user || !stylistUid || user.uid !== stylistUid) return;
+    let seen: string | null | undefined;
+    let cancelled = false;
+    const stop = onSnapshot(
+      doc(db, "users", stylistUid),
+      (snap) => {
+        const stamp = (snap.get("grantedAt") as string | undefined) ?? null;
+        if (seen === undefined) {
+          seen = stamp;
+          return;
+        }
+        if (stamp === seen) return;
+        seen = stamp;
+        appUserFromClaims(user, true)
+          .then((next) => {
+            if (!cancelled && next) setRole({ uid: stylistUid, appUser: next });
+          })
+          .catch(() => undefined); // the next sign-in will pick it up
+      },
+      () => undefined,
+    );
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [user, stylistUid]);
 
   const appUser = user && role?.uid === user.uid ? role.appUser : null;
   const loading = authLoading || (user != null && role?.uid !== user.uid);

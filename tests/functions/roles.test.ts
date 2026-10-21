@@ -103,3 +103,103 @@ describe("rollback", () => {
     expect((await db.doc(`users/${uid}`).get()).data()).toMatchObject({ role: "owner" });
   });
 });
+
+
+describe("whose clients a stylist may open (FR-025, DEC-051)", () => {
+  const seedColleagues = async () => {
+    await db.doc("stylists/yuto").set({ name: "Yuto", level: "senior", status: "active" });
+    await db.doc("stylists/elly").set({ name: "Elly", level: "senior", status: "active" });
+  };
+
+  it("a stylist starts with their own clients only: no extra claim, an empty record", async () => {
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve" });
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve" });
+    expect((await db.doc(`users/${uid}`).get()).get("clientAccess")).toEqual({ all: false, stylistIds: [] });
+  });
+
+  it("named colleagues become a claim and a record that agree, and verify", async () => {
+    await seedColleagues();
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, {
+      role: "stylist",
+      stylistId: "steve",
+      clientAccess: { all: false, stylistIds: ["yuto", "elly"] },
+    });
+    const check = await verifyRole(auth, db, uid, { role: "stylist" });
+    expect(check.ok).toBe(true);
+    expect(check.claims).toEqual({ role: "stylist", stylistId: "steve", clientStylists: ["yuto", "elly"] });
+    expect(check.record).toMatchObject({ clientAccess: { all: false, stylistIds: ["yuto", "elly"] } });
+  });
+
+  it("'every client' is one flag, and the named list is dropped", async () => {
+    await seedColleagues();
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: true, stylistIds: ["yuto"] } });
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve", clientsAll: true });
+    expect((await db.doc(`users/${uid}`).get()).get("clientAccess")).toEqual({ all: true, stylistIds: [] });
+    expect((await verifyRole(auth, db, uid)).ok).toBe(true);
+  });
+
+  it("cleans the list: duplicates, the stylist's own id and malformed ids are dropped; unknown stylists are refused", async () => {
+    await seedColleagues();
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, {
+      role: "stylist",
+      stylistId: "steve",
+      clientAccess: { all: false, stylistIds: ["yuto", "yuto", "steve", "bad id!", 7 as never] },
+    });
+    expect((await auth.getUser(uid)).customClaims?.clientStylists).toEqual(["yuto"]);
+    await expect(
+      grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: false, stylistIds: ["ghost"] } }),
+    ).rejects.toMatchObject({ code: "no-stylist" });
+    expect((await auth.getUser(uid)).customClaims?.clientStylists).toEqual(["yuto"]); // the refusal changed nothing
+  });
+
+  it("caps the list so the claim stays small", async () => {
+    const ids = Array.from({ length: 15 }, (_, i) => `s${i}`);
+    for (const id of ids) await db.doc(`stylists/${id}`).set({ name: id, level: "junior", status: "active" });
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: false, stylistIds: ids } });
+    expect((await auth.getUser(uid)).customClaims?.clientStylists).toHaveLength(12);
+  });
+
+  it("re-granting the role without saying keeps what they had; changing the stylist or role resets it", async () => {
+    await seedColleagues();
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: false, stylistIds: ["yuto"] } });
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve" }); // e.g. the provisioning script again
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve", clientStylists: ["yuto"] });
+
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "elly" }); // now a different person
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "elly" });
+
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "elly", clientAccess: { all: true, stylistIds: [] } });
+    await grantRole(auth, db, uid, { role: "owner" }); // an owner needs no extra access
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "owner" });
+  });
+
+  it("an owner cannot be given extra access, and narrowing back to own clients removes the claim", async () => {
+    await seedColleagues();
+    const owner = await makeUser("owner@example.test");
+    await expect(
+      grantRole(auth, db, owner, { role: "owner", clientAccess: { all: true, stylistIds: [] } }),
+    ).rejects.toBeInstanceOf(RoleError);
+
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: true, stylistIds: [] } });
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: false, stylistIds: [] } });
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve" });
+    expect((await verifyRole(auth, db, uid)).ok).toBe(true);
+  });
+
+  it("verify catches a claim and a record that disagree about access", async () => {
+    await seedColleagues();
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", clientAccess: { all: false, stylistIds: ["yuto"] } });
+    await auth.setCustomUserClaims(uid, { role: "stylist", stylistId: "steve", clientsAll: true }); // widened behind the record's back
+    const check = await verifyRole(auth, db, uid);
+    expect(check.ok).toBe(false);
+    expect(check.problems.join(" ")).toMatch(/client access differ/);
+  });
+});

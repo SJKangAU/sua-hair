@@ -16,6 +16,7 @@ import { useClientAudit, useClientRecord } from "../../../hooks/useClientData";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
 import type { Actor } from "../../../lib/clientActions";
+import type { ClientAccess } from "../../../lib/clientAccess";
 import type { Client } from "../../../types";
 import ClientHistory from "./ClientHistory";
 import ClientNotes from "./ClientNotes";
@@ -25,6 +26,8 @@ interface Props {
   clientId: string;
   role: "owner" | "stylist";
   stylistId?: string;
+  // whose clients this stylist may open beyond their own (FR-025)
+  access?: ClientAccess;
   onBookAgain?: (name: string, phone: string) => void;
   onNotice: (message: string, kind: "success" | "error") => void;
   // The client has been merged away or anonymised: leave this page
@@ -53,7 +56,7 @@ const pill: React.CSSProperties = {
   fontWeight: 600,
 };
 
-const ClientView = ({ clientId, role, stylistId, onBookAgain, onNotice, onGone }: Props) => {
+const ClientView = ({ clientId, role, stylistId, access, onBookAgain, onNotice, onGone }: Props) => {
   const owner = role === "owner";
   const { client, loading, notFound, error } = useClientRecord(clientId, role);
   const { stylists, services } = useSalonData();
@@ -172,6 +175,7 @@ const ClientView = ({ clientId, role, stylistId, onBookAgain, onNotice, onGone }
         clientId={clientId}
         role={role}
         stylistId={stylistId}
+        access={access}
         version={full ? `${full.updatedAt}|${full.bookingCount}` : client.stylistIds.join(",")}
       />
 

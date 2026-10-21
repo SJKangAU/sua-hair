@@ -8,6 +8,8 @@
 // when present; fall back to the flat fields for admin-created entries
 // (breaks, training, walkin) that don't go through the booking flow.
 
+import type { ClientAccess } from "../lib/clientAccess";
+
 export interface TieredPrice {
   director: number;
   senior: number;
@@ -281,6 +283,8 @@ export interface AppUser {
   uid: string;
   role: "owner" | "stylist";
   stylistId?: string; // only set when role === 'stylist'
+  // Whose clients the stylist may open beyond their own (FR-025); from the sign-in token
+  clientAccess?: ClientAccess;
 }
 
 // ── Waitlist (Phase 12) ───────────────────────────────────────────────────────

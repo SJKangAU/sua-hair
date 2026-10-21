@@ -1,6 +1,6 @@
 // ManagePage.tsx
 // Manage tab — stylists, services, opening hours, per-stylist hours,
-// owner email notifications, (owner only) text messages and the client import
+// owner email notifications, (owner only) team access, text messages and the client import
 
 import { useToastContext } from "../../context/ToastContext";
 import StylistRoster from "../../components/admin/manage/StylistRoster";
@@ -8,6 +8,7 @@ import ServiceRoster from "../../components/admin/manage/ServiceRoster";
 import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor";
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
 import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
+import TeamAccess from "../../components/admin/manage/TeamAccess";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
 import ClientImport from "../../components/admin/manage/ClientImport";
 import ClientBackfill from "../../components/admin/manage/ClientBackfill";
@@ -56,6 +57,14 @@ const ManagePage = ({ isOwner }: Props) => {
           the underlying document is owner-only in firestore.rules. */}
       {isOwner && (
         <>
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* Who can sign in, and whose clients each stylist may open (FR-025) */}
+          <TeamAccess
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
           <hr
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
           />

@@ -2,13 +2,15 @@
 // The client list: a search box, filters, a sort, and 25 clients at a time (a table
 // on a wide screen, cards on a phone). One component for both roles:
 //   owner    name, phone, last visit, next booking, visits, spend, tags, blocked
-//   stylist  name, phone, tags - their own clients only, no spend
+//   stylist  name, phone, tags - their own clients, plus a colleague's or everyone's when
+//            the owner has allowed it (a picker appears), no spend
 // Clicking a client calls onOpen(id) (a drawer, or the full page).
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, Search, Users } from "lucide-react";
 import useClientDirectory from "../../../hooks/useClientDirectory";
 import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
+import { scopeOptions, type ClientAccess } from "../../../lib/clientAccess";
 import {
   LAPSED_DAYS,
   NEW_DAYS,
@@ -20,6 +22,9 @@ import type { Client, ClientCard } from "../../../types";
 interface Props {
   role: "owner" | "stylist";
   stylistId?: string;
+  // whose clients this stylist may open beyond their own (FR-025), and display names
+  access?: ClientAccess;
+  stylistNames?: Record<string, string>;
   onOpen: (clientId: string) => void;
   initialSearch?: string;
 }
@@ -100,8 +105,14 @@ const badge: React.CSSProperties = {
 
 const isFull = (c: Client | ClientCard): c is Client => "totalVisits" in c;
 
-const ClientDirectory = ({ role, stylistId, onOpen, initialSearch = "" }: Props) => {
-  const d = useClientDirectory(role, stylistId);
+const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initialSearch = "" }: Props) => {
+  const options = useMemo(
+    () => (role === "stylist" && stylistId ? scopeOptions(stylistId, access ?? { all: false, stylistIds: [] }, stylistNames) : []),
+    [role, stylistId, access, stylistNames],
+  );
+  const [scopeKey, setScopeKey] = useState("mine");
+  const chosen = options.find((o) => o.key === scopeKey) ?? options[0];
+  const d = useClientDirectory(role, chosen?.scope);
   // /admin/clients?q=... starts a search (the Today page's search sends people here)
   const { setSearch } = d;
   const seeded = useRef(false);
@@ -144,6 +155,25 @@ const ClientDirectory = ({ role, stylistId, onOpen, initialSearch = "" }: Props)
           }}
         />
       </div>
+
+      {options.length > 1 && (
+        <label style={{ fontSize: "var(--text-sm)", color: "var(--ink-muted)" }}>
+          Show{" "}
+          <select
+            aria-label="Whose clients"
+            data-testid="client-scope"
+            value={chosen?.key}
+            onChange={(e) => setScopeKey(e.target.value)}
+            style={{ padding: "0.3rem", border: "1px solid var(--border-strong)", borderRadius: 6, background: "var(--surface)", color: "var(--ink)" }}
+          >
+            {options.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {owner && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
@@ -219,6 +249,8 @@ const ClientDirectory = ({ role, stylistId, onOpen, initialSearch = "" }: Props)
               ? "Try another filter."
               : owner
               ? "Clients appear when someone books. To add the ones you already have, use Manage → Build the client list."
+              : chosen && chosen.key !== "mine"
+              ? "No clients to show here yet."
               : "Clients appear here once they have booked with you."}
           </p>
         </div>

@@ -8,9 +8,12 @@
 //              No search:     the list, sorted by last visit (default), name,
 //                             visits or spend, or one filter (lapsed, new, blocked,
 //                             upcoming, no-shows) in its own order.
-//   Stylist    reads `clientCards` where stylistIds contains their own id: the
-//              list by name, a name prefix, or a phone prefix. (A name WORD search
-//              would need two array queries at once, which Firestore cannot do.)
+//   Stylist    reads `clientCards` where stylistIds contains the chosen stylist's id (their
+//              own, or a colleague the owner has let them open - FR-025): the list by
+//              name, a name prefix, or a phone prefix. (A name WORD search would need two
+//              array queries at once, which Firestore cannot do.) A stylist the owner has
+//              given EVERY client reads the cards with no stylist filter, and then the word
+//              search works too.
 //
 // Search results are merged from up to two queries; each keeps its own cursor, so
 // "load more" fetches the next page of each.
@@ -38,6 +41,7 @@ import {
   type DirectoryFilter,
   type DirectorySort,
 } from "./clients";
+import type { ClientScope } from "./clientAccess";
 import type { Client, ClientCard } from "../types";
 
 export const PAGE_SIZE = 25;
@@ -140,11 +144,13 @@ const ownerListPlan = (q: DirectoryQuery): Plan => {
   }
 };
 
-const plansFor = (q: DirectoryQuery, stylistId?: string): Plan[] => {
+const plansFor = (q: DirectoryQuery, scope?: ClientScope): Plan[] => {
   const typed = searchPlans(q.search);
-  if (!stylistId) return typed ?? [ownerListPlan(q)];
-  // A stylist's own clients only: every query is pinned to their id
-  const mine = where("stylistIds", "array-contains", stylistId);
+  if (!scope) return typed ?? [ownerListPlan(q)];
+  // Every client (the owner gave this stylist all of them): no stylist filter
+  if (scope.kind === "all") return typed ?? [{ key: "list", constraints: [orderBy("nameLower")] }];
+  // One stylist's clients only: every query is pinned to that stylist's id
+  const mine = where("stylistIds", "array-contains", scope.stylistId);
   const prefixed = (typed ?? [{ key: "list", constraints: [orderBy("nameLower")] }])
     .filter((p) => p.key !== "token") // not possible alongside the array-contains above
     .map((p) => ({ key: p.key, constraints: [mine, ...p.constraints] }));
@@ -199,13 +205,13 @@ export const fetchClientPage = async (
   return { ...page, items };
 };
 
-/** A stylist's page of their own clients (cards: no spend). */
+/** A stylist's page of clients (cards: no spend): their own, a colleague's, or everyone's. */
 export const fetchCardPage = async (
   db: Firestore,
   q: Pick<DirectoryQuery, "search">,
-  stylistId: string,
+  scope: ClientScope,
   cursor: Cursor | null,
 ): Promise<DirectoryPage<ClientCard>> => {
   const full: DirectoryQuery = { search: q.search, filter: "all", sort: "name", today: "" };
-  return fetchPlans<Omit<ClientCard, "id">>(db, "clientCards", plansFor(full, stylistId), cursor);
+  return fetchPlans<Omit<ClientCard, "id">>(db, "clientCards", plansFor(full, scope), cursor);
 };
