@@ -11,6 +11,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
 import {
@@ -20,6 +21,8 @@ import {
   type BookingEmailData,
 } from "./email/templates";
 import { SALON } from "./salon";
+import { requireOwner } from "./guards";
+import { RoleError, grantRole, revokeRole, type Role } from "./roles";
 import { bookingInstant, localDateString } from "./time";
 
 initializeApp();
@@ -96,18 +99,7 @@ export const deleteCustomerData = onCall(
   { region: "australia-southeast1" },
   async (request) => {
     // ── Auth: must be signed in AND hold the owner role ──────────────────
-    const auth = request.auth;
-    if (!auth) {
-      throw new HttpsError("unauthenticated", "You must be signed in.");
-    }
-
-    const roleSnap = await db.doc(`users/${auth.uid}`).get();
-    if (!roleSnap.exists || roleSnap.get("role") !== "owner") {
-      throw new HttpsError(
-        "permission-denied",
-        "Only the salon owner can delete customer data.",
-      );
-    }
+    await requireOwner(db, request, "delete customer data");
 
     // ── Input: normalise the phone number server-side ────────────────────
     const rawPhone: unknown = request.data?.phone;
@@ -158,6 +150,57 @@ export const deleteCustomerData = onCall(
       });
 
     return { anonymisedCount: snap.size };
+  },
+);
+
+/**
+ * setUserRole - owner-only, callable. Role management (DEC-033).
+ *
+ * { email, role: "owner" | "stylist" | "none", stylistId? }  -> grants or removes
+ * the role by writing the custom claim and the users/{uid} record together. The
+ * person must sign out and in once to pick up a new claim. Refuses to remove the
+ * last owner or the caller's own owner access.
+ */
+export const setUserRole = onCall(
+  { region: "australia-southeast1" },
+  async (request) => {
+    const caller = await requireOwner(db, request, "manage roles");
+    const { email, role, stylistId } = (request.data ?? {}) as {
+      email?: unknown;
+      role?: unknown;
+      stylistId?: unknown;
+    };
+    if (typeof email !== "string" || !isValidEmail(email)) {
+      throw new HttpsError("invalid-argument", "A valid email address is required.");
+    }
+    if (role !== "owner" && role !== "stylist" && role !== "none") {
+      throw new HttpsError("invalid-argument", "Role must be owner, stylist or none.");
+    }
+    let uid: string;
+    try {
+      uid = (await getAuth().getUserByEmail(email)).uid;
+    } catch {
+      throw new HttpsError("not-found", "No account with that email. Create the login first.");
+    }
+    try {
+      if (role === "none") {
+        await revokeRole(getAuth(), db, uid, { actingUid: caller.uid });
+      } else {
+        await grantRole(
+          getAuth(),
+          db,
+          uid,
+          { role: role as Role, stylistId: typeof stylistId === "string" ? stylistId : undefined },
+          { actingUid: caller.uid },
+        );
+      }
+    } catch (err) {
+      if (err instanceof RoleError) {
+        throw new HttpsError("failed-precondition", err.message);
+      }
+      throw err;
+    }
+    return { ok: true };
   },
 );
 

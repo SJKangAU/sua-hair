@@ -16,7 +16,11 @@ import { collection, doc, getDoc, getDocs, increment, setDoc } from "firebase/fi
 import type { ImportEntry } from "../../src/lib/clientImport";
 import { IMPORT_CHUNK } from "../../src/lib/clientImport";
 import { findExisting, listBatches, rollbackBatch, runImport } from "../../src/lib/clientImportWrites";
-import { createTestEnv } from "./testEnv";
+import {
+  createTestEnv,
+  ownerCtx,
+  stylistCtx,
+} from "./testEnv";
 import { anonDb, staffDb } from "./adminHelpers";
 
 let testEnv: RulesTestEnvironment;
@@ -98,12 +102,17 @@ describe("import: idempotent and safe with existing clients", () => {
     expect(found.has(phone(76))).toBe(false);
   });
 
-  it("an imported client's next online booking still writes (the public three-field rule)", async () => {
+  it("an imported client's next online booking still merges in (written by the booking function), and the public cannot write the record", async () => {
     await runImport(owner(), entries(3), { batchId: "b1", uid: "owner-uid" });
+    // The public can no longer write customerLookups (DEC-033)...
     const anon = anonDb(testEnv);
-    await assertSucceeds(
+    await assertFails(
       setDoc(doc(anon, "customerLookups", phone(2)), { name: "Test Client 2", lastVisit: "2026-12-01", visitCount: increment(1) }, { merge: true }),
     );
+    // ...createBookingRequest does it with the Admin SDK (rules bypassed)
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(2)}`).set({ name: "Test Client 2", lastVisit: "2026-12-01", visitCount: 1 }, { merge: true });
+    });
     expect(await lookup(2)).toEqual({ name: "Test Client 2", lastVisit: "2026-12-01", visitCount: 1 });
   });
 });
@@ -125,7 +134,10 @@ describe("import: rollback", () => {
 
   it("keeps a client who has booked since the import", async () => {
     await runImport(owner(), entries(5), { batchId: "b1", uid: "owner-uid" });
-    await setDoc(doc(anonDb(testEnv), "customerLookups", phone(3)), { name: "Test Client 3", lastVisit: "2026-12-01", visitCount: increment(1) }, { merge: true });
+    // the booking function's merge (Admin SDK; the public cannot write lookups any more)
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(3)}`).set({ name: "Test Client 3", lastVisit: "2026-12-01", visitCount: 1 }, { merge: true });
+    });
     const result = await rollbackBatch(owner(), "b1");
     expect(result).toEqual({ removed: 4, kept: 1 });
     expect(await lookup(3)).toEqual({ name: "Test Client 3", lastVisit: "2026-12-01", visitCount: 1 });
@@ -169,7 +181,7 @@ describe("import: rollback", () => {
 describe("import: only the owner can use the ledger", () => {
   it("a stylist account and the public cannot create, read or delete batches or chunks", async () => {
     await runImport(owner(), entries(3), { batchId: "b1", uid: "owner-uid" });
-    const stylist = testEnv.authenticatedContext("stylist-uid").firestore();
+    const stylist = stylistCtx(testEnv).firestore();
     const anon = testEnv.unauthenticatedContext().firestore();
     for (const db of [stylist, anon]) {
       await assertFails(db.doc("importBatches/b1").get());
@@ -182,7 +194,7 @@ describe("import: only the owner can use the ledger", () => {
   });
 
   it("the owner's ledger writes are validated: known status, phone list of at most 500", async () => {
-    const o = testEnv.authenticatedContext("owner-uid").firestore();
+    const o = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(o.doc("importBatches/b1").set({ status: "running", source: "x" }));
     await assertFails(o.doc("importBatches/b2").set({ status: "weird", source: "x" }));
     await assertFails(o.doc("importBatches/b1/chunks/0").set({ phones: "0400000001" }));

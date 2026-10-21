@@ -28,7 +28,27 @@ export async function createTestEnv(): Promise<RulesTestEnvironment> {
   });
 }
 
-/** A syntactically valid public customer booking matching isValidPublicBooking(). */
+// ── Roles (DEC-033) ──────────────────────────────────────────────────────
+// Roles are custom claims on the ID token, so a test "signs in" as a role by
+// passing the claims the Admin SDK would have set.
+export const OWNER_UID = "owner-uid";
+export const STYLIST_UID = "stylist-uid";
+export const STYLIST_ID = "stylist-1";
+
+export const ownerCtx = (env: RulesTestEnvironment, uid = OWNER_UID) =>
+  env.authenticatedContext(uid, { role: "owner" });
+
+export const stylistCtx = (
+  env: RulesTestEnvironment,
+  stylistId = STYLIST_ID,
+  uid = STYLIST_UID,
+) => env.authenticatedContext(uid, { role: "stylist", stylistId });
+
+/** Signed in, but never given a role. */
+export const unprovisionedCtx = (env: RulesTestEnvironment, uid = "nobody-uid") =>
+  env.authenticatedContext(uid);
+
+/** A customer booking record as the booking function writes it (seed data). */
 export function validPublicBooking(overrides: Record<string, unknown> = {}) {
   return {
     bookingType: "customer",

@@ -56,9 +56,12 @@ beforeEach(async () => {
   });
 });
 
-/** Writes exactly what the public booking form commits: booking + slotBlock +
- *  customerLookups, in one batch, as an anonymous visitor. */
-async function clientBooks(db: Firestore): Promise<string> {
+/** Writes what a client's booking request leaves behind: booking + slotBlock +
+ *  customerLookups. Customers can no longer write these themselves (DEC-033), so
+ *  this stands in for the createBookingRequest function with rules bypassed; the
+ *  real command is exercised in tests/functions. */
+async function clientBooks(_db: Firestore): Promise<string> {
+  void _db;
   const booking = validPublicBooking({
     date: DATE,
     time: "10:00 AM",
@@ -67,17 +70,18 @@ async function clientBooks(db: Firestore): Promise<string> {
     restTime: 0,
     totalTime: 60,
   }) as unknown as Omit<Booking, "id">;
-  const ref = doc(collection(db, "bookings"));
-  const batch = writeBatch(db);
-  batch.set(ref, booking);
-  batch.set(doc(db, "slotBlocks", ref.id), toSlotBlock(booking));
-  batch.set(
-    doc(db, "customerLookups", booking.customerPhone),
-    { name: booking.customerName, lastVisit: booking.date, visitCount: increment(1) },
-    { merge: true },
-  );
-  await batch.commit();
-  return ref.id;
+  let id = "";
+  await testEnv.withSecurityRulesDisabled(async (ctx) => {
+    const adminDb = ctx.firestore();
+    const ref = adminDb.collection("bookings").doc();
+    id = ref.id;
+    await ref.set(booking);
+    await adminDb.doc(`slotBlocks/${ref.id}`).set(toSlotBlock(booking));
+    await adminDb
+      .doc(`customerLookups/${booking.customerPhone}`)
+      .set({ name: booking.customerName, lastVisit: booking.date, visitCount: 1 }, { merge: true });
+  });
+  return id;
 }
 
 describe("smoke: client books -> owner approves -> overlapping walk-in is blocked", () => {

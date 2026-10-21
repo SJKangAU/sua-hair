@@ -15,6 +15,7 @@ import {
   validCustomerLookup,
   validPublicBooking,
   validSlotBlock,
+  ownerCtx,
 } from "./testEnv";
 
 const PII_FIELDS = [
@@ -170,7 +171,7 @@ describe("customer identity requires verified staff access, not just a known pho
   });
 
   it("staff (verified access) can still read customer identity for legitimate service", async () => {
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     const snap = await staff.doc(`customerLookups/${KNOWN_PHONE}`).get();
     expect(snap.exists).toBe(true);
     expect(snap.data()?.name).toBe("Jane Customer");
@@ -179,7 +180,7 @@ describe("customer identity requires verified staff access, not just a known pho
 
 describe("owner/staff access remains fully functional under the tightened rules", () => {
   it("staff can read full booking PII for operational use", async () => {
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     const snap = await staff.doc("bookings/bk-1").get();
     expect(snap.exists).toBe(true);
     expect(snap.data()?.customerPhone).toBe(KNOWN_PHONE);

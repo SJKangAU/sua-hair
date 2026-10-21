@@ -9,10 +9,13 @@ import {
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
+  unprovisionedCtx,
   createTestEnv,
   validCustomerLookup,
   validPublicBooking,
   validSlotBlock,
+  ownerCtx,
+  stylistCtx,
 } from "./testEnv";
 
 let testEnv: RulesTestEnvironment;
@@ -112,9 +115,9 @@ describe("bookings — anonymous access is denied", () => {
     await assertFails(anon.doc("bookings/bk-1").delete());
   });
 
-  it("can create a valid pending customer booking", async () => {
+  it("cannot create a booking, even a well-formed pending one (only createBookingRequest can)", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
-    await assertSucceeds(anon.doc("bookings/bk-new").set(validPublicBooking()));
+    await assertFails(anon.doc("bookings/bk-new").set(validPublicBooking()));
   });
 
   it("cannot create a booking that is pre-confirmed", async () => {
@@ -149,9 +152,9 @@ describe("bookings — anonymous access is denied", () => {
     await assertFails(anon.doc("bookings/bk-new").set(noConsent));
   });
 
-  it("can create a booking with an optional email address", async () => {
+  it("cannot create a booking with an optional email address either", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
-    await assertSucceeds(
+    await assertFails(
       anon
         .doc("bookings/bk-new")
         .set(validPublicBooking({ customerEmail: "jane@example.com" })),
@@ -172,9 +175,9 @@ describe("bookings — anonymous access is denied", () => {
     );
   });
 
-  it("cannot read back the booking it just created", async () => {
+  it("cannot create a booking and so cannot read one back", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
-    await anon.doc("bookings/bk-new").set(validPublicBooking());
+    await assertFails(anon.doc("bookings/bk-new").set(validPublicBooking()));
     await assertFails(anon.doc("bookings/bk-new").get());
   });
 });
@@ -182,7 +185,7 @@ describe("bookings — anonymous access is denied", () => {
 describe("bookings — staff access works", () => {
   it("staff can get, list, update and delete bookings", async () => {
     await seedBooking("bk-1");
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(staff.doc("bookings/bk-1").get());
     await assertSucceeds(
       staff.collection("bookings").where("date", "==", "2026-08-01").get(),
@@ -207,7 +210,7 @@ describe("booking lifecycle statuses", () => {
 
   it("staff can move a booking and its slot block through every status", async () => {
     await seedBooking("bk-1");
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     for (const status of STATUSES) {
       await assertSucceeds(staff.doc("bookings/bk-1").update({ status }));
       await assertSucceeds(staff.doc("slotBlocks/bk-1").update({ status }));
@@ -216,7 +219,7 @@ describe("booking lifecycle statuses", () => {
 
   it("staff can record arrival and restore metadata alongside the status", async () => {
     await seedBooking("bk-1");
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(
       staff.doc("bookings/bk-1").update({
         status: "arrived",
@@ -233,7 +236,7 @@ describe("booking lifecycle statuses", () => {
 
   it("staff cannot write an unknown status to a booking or slot block", async () => {
     await seedBooking("bk-1");
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertFails(staff.doc("bookings/bk-1").update({ status: "banana" }));
     await assertFails(
       staff.doc("slotBlocks/bk-1").update({ status: "banana" }),
@@ -247,7 +250,7 @@ describe("booking lifecycle statuses", () => {
 
   it("unrelated field edits still work on a booking that already has a valid status", async () => {
     await seedBooking("bk-1", { status: "completed" });
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(
       staff.doc("bookings/bk-1").update({ notes: "Left a tip" }),
     );
@@ -273,9 +276,9 @@ describe("slotBlocks — public availability projection", () => {
     );
   });
 
-  it("anonymous can create a well-formed public slot block", async () => {
+  it("anonymous cannot create a slot block, however well-formed (only the booking functions write them)", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
-    await assertSucceeds(anon.doc("slotBlocks/bk-new").set(validSlotBlock()));
+    await assertFails(anon.doc("slotBlocks/bk-new").set(validSlotBlock({ status: "pending" })));
   });
 
   it("rejects an anonymous slot block carrying an extra (potentially PII) field", async () => {
@@ -310,9 +313,9 @@ describe("customerLookups — identity requires staff auth", () => {
     await assertFails(anon.collection("customerLookups").get());
   });
 
-  it("anonymous can still write their own lookup record on booking creation", async () => {
+  it("anonymous can no longer write a lookup record (the booking function does)", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
-    await assertSucceeds(
+    await assertFails(
       anon
         .doc("customerLookups/0412345678")
         .set(validCustomerLookup(), { merge: true }),
@@ -333,7 +336,7 @@ describe("customerLookups — identity requires staff auth", () => {
 
   it("staff can get and list lookups", async () => {
     await seedBooking("bk-1");
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(staff.doc("customerLookups/0412345678").get());
     await assertSucceeds(staff.collection("customerLookups").get());
   });
@@ -377,7 +380,7 @@ describe("privateSettings — owner-only", () => {
   });
 
   it("the owner can read and write", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(owner.doc("privateSettings/notifications").get());
     await assertSucceeds(
       owner.doc("privateSettings/notifications").set({
@@ -388,7 +391,7 @@ describe("privateSettings — owner-only", () => {
   });
 
   it("a stylist account cannot read or write", async () => {
-    const stylist = testEnv.authenticatedContext("stylist-uid").firestore();
+    const stylist = stylistCtx(testEnv).firestore();
     await assertFails(stylist.doc("privateSettings/notifications").get());
     await assertFails(
       stylist.doc("privateSettings/notifications").set(settings),
@@ -402,7 +405,7 @@ describe("privateSettings — owner-only", () => {
   });
 
   it("the owner cannot write unexpected or mistyped fields", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertFails(
       owner
         .doc("privateSettings/notifications")
@@ -417,18 +420,25 @@ describe("privateSettings — owner-only", () => {
 });
 
 describe("users — role documents", () => {
-  it("a signed-in user can read only their own role document", async () => {
+  it("a stylist can read only their own role document; the owner reads all; others none", async () => {
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       await ctx.firestore().doc("users/owner-uid").set({ role: "owner" });
-      await ctx.firestore().doc("users/other-uid").set({ role: "stylist" });
+      await ctx.firestore().doc("users/stylist-uid").set({ role: "stylist", stylistId: "stylist-1" });
+      await ctx.firestore().doc("users/other-uid").set({ role: "stylist", stylistId: "s9" });
     });
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
-    await assertSucceeds(staff.doc("users/owner-uid").get());
-    await assertFails(staff.doc("users/other-uid").get());
+    const stylist = stylistCtx(testEnv).firestore();
+    await assertSucceeds(stylist.doc("users/stylist-uid").get());
+    await assertFails(stylist.doc("users/other-uid").get());
+    await assertFails(stylist.doc("users/owner-uid").get());
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
+    await assertSucceeds(owner.doc("users/owner-uid").get());
+    await assertSucceeds(owner.doc("users/other-uid").get());
+    await assertSucceeds(owner.collection("users").get());
+    await assertFails(unprovisionedCtx(testEnv, "stylist-uid").firestore().doc("users/stylist-uid").get());
   });
 
   it("nobody can write a role document through the client SDK", async () => {
-    const staff = testEnv.authenticatedContext("owner-uid").firestore();
+    const staff = ownerCtx(testEnv, "owner-uid").firestore();
     await assertFails(staff.doc("users/owner-uid").set({ role: "owner" }));
   });
 });
@@ -437,7 +447,7 @@ describe("stylistDayLocks — admin slot-claim lock documents", () => {
   const lock = { version: 1, updatedAt: "2026-12-01T00:00:00.000Z" };
 
   it("staff can create and bump a lock", async () => {
-    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    const staff = ownerCtx(testEnv, "staff-1").firestore();
     await assertSucceeds(staff.doc("stylistDayLocks/2026-12-01_s1").set(lock));
     await assertSucceeds(
       staff.doc("stylistDayLocks/2026-12-01_s1").set({ ...lock, version: 2 }),
@@ -459,7 +469,7 @@ describe("stylistDayLocks — admin slot-claim lock documents", () => {
   });
 
   it("a lock cannot carry anything but version and updatedAt", async () => {
-    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    const staff = ownerCtx(testEnv, "staff-1").firestore();
     await assertFails(
       staff.doc("stylistDayLocks/x").set({ ...lock, customerName: "Jane" }),
     );
@@ -471,7 +481,7 @@ describe("stylistDayLocks — admin slot-claim lock documents", () => {
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       await ctx.firestore().doc("stylistDayLocks/2026-12-01_s1").set(lock);
     });
-    const staff = testEnv.authenticatedContext("staff-1").firestore();
+    const staff = ownerCtx(testEnv, "staff-1").firestore();
     await assertFails(staff.doc("stylistDayLocks/2026-12-01_s1").delete());
   });
 });
@@ -499,26 +509,26 @@ describe("stylists.order — only the owner can write the display order", () => 
   });
 
   it("the owner can write order (update and create)", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(owner.doc("stylists/s1").update({ order: 5 }));
     await assertSucceeds(owner.doc("stylists/s2").update({ order: 1 }));
     await assertSucceeds(owner.doc("stylists/s3").set({ ...stylist, order: 2 }));
   });
 
   it("the owner cannot write a non-numeric order", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertFails(owner.doc("stylists/s1").update({ order: "first" }));
   });
 
   it("a stylist account cannot add or change order", async () => {
-    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    const staff = stylistCtx(testEnv).firestore();
     await assertFails(staff.doc("stylists/s1").update({ order: 3 }));
     await assertFails(staff.doc("stylists/s2").update({ order: 0 }));
     await assertFails(staff.doc("stylists/s3").set({ ...stylist, order: 0 }));
   });
 
   it("a stylist account cannot remove order by overwriting the document without it", async () => {
-    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
+    const staff = stylistCtx(testEnv).firestore();
     await assertFails(staff.doc("stylists/s1").set(stylist));
   });
 
@@ -528,15 +538,22 @@ describe("stylists.order — only the owner can write the display order", () => 
     await assertFails(anon.doc("stylists/s9").set({ ...stylist, order: 0 }));
   });
 
-  it("other staff writes to a stylist are unchanged (edit fields, add without order)", async () => {
-    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
-    await assertSucceeds(staff.doc("stylists/s1").update({ role: "Director" }));
-    await assertSucceeds(staff.doc("stylists/s4").set(stylist));
+  it("a stylist account can no longer edit or add stylists at all (stylist management is the owner's)", async () => {
+    const staff = stylistCtx(testEnv).firestore();
+    await assertFails(staff.doc("stylists/s1").update({ role: "Director" }));
+    await assertFails(staff.doc("stylists/s4").set(stylist));
+    await assertFails(staff.doc("stylists/s1").delete());
   });
 
-  it("a staff edit that leaves order as it was is allowed", async () => {
-    const staff = testEnv.authenticatedContext("stylist-uid").firestore();
-    await assertSucceeds(staff.doc("stylists/s1").set({ ...stylist, order: 0 }));
+  it("the owner can edit and add stylists without touching order", async () => {
+    const owner = ownerCtx(testEnv).firestore();
+    await assertSucceeds(owner.doc("stylists/s1").update({ role: "Director" }));
+    await assertSucceeds(owner.doc("stylists/s4").set(stylist));
+  });
+
+  it("a stylist account cannot rewrite a stylist even leaving order as it was", async () => {
+    const staff = stylistCtx(testEnv).firestore();
+    await assertFails(staff.doc("stylists/s1").set({ ...stylist, order: 0 }));
   });
 });
 
@@ -555,26 +572,26 @@ describe("phase fields (DEC-026) - bookings and slotBlocks", () => {
   const tooMany = Array.from({ length: 9 }, () => ({ start: 1, end: 2 }));
 
   describe("the public slotBlocks projection", () => {
-    it("accepts busy blocks and a return point", async () => {
-      const anon = testEnv.unauthenticatedContext().firestore();
+    it("the owner's write accepts busy blocks and a return point", async () => {
+      const owner = ownerCtx(testEnv).firestore();
       await assertSucceeds(
-        anon.doc("slotBlocks/new-1").set(validSlotBlock({ busy, returnAt: 690 })),
+        owner.doc("slotBlocks/new-1").set(validSlotBlock({ busy, returnAt: 690 })),
       );
       await assertSucceeds(
-        anon.doc("slotBlocks/new-2").set(validSlotBlock({ busy, returnAt: null })),
+        owner.doc("slotBlocks/new-2").set(validSlotBlock({ busy, returnAt: null })),
       );
     });
 
     it("still accepts the projection without them (records from before phases)", async () => {
-      const anon = testEnv.unauthenticatedContext().firestore();
-      await assertSucceeds(anon.doc("slotBlocks/old-1").set(validSlotBlock()));
+      const owner = ownerCtx(testEnv).firestore();
+      await assertSucceeds(owner.doc("slotBlocks/old-1").set(validSlotBlock()));
     });
 
     it("rejects busy that is not a list, has too many blocks, or a non-numeric return point", async () => {
-      const anon = testEnv.unauthenticatedContext().firestore();
-      await assertFails(anon.doc("slotBlocks/bad-1").set(validSlotBlock({ busy: "all day" })));
-      await assertFails(anon.doc("slotBlocks/bad-2").set(validSlotBlock({ busy: tooMany })));
-      await assertFails(anon.doc("slotBlocks/bad-3").set(validSlotBlock({ busy, returnAt: "noon" })));
+      const owner = ownerCtx(testEnv).firestore();
+      await assertFails(owner.doc("slotBlocks/bad-1").set(validSlotBlock({ busy: "all day" })));
+      await assertFails(owner.doc("slotBlocks/bad-2").set(validSlotBlock({ busy: tooMany })));
+      await assertFails(owner.doc("slotBlocks/bad-3").set(validSlotBlock({ busy, returnAt: "noon" })));
     });
 
     it("cannot smuggle identity in through the new fields' neighbours", async () => {
@@ -594,7 +611,7 @@ describe("phase fields (DEC-026) - bookings and slotBlocks", () => {
 
     it("staff can update the busy blocks; a malformed update is refused", async () => {
       await seedBooking("bk-q");
-      const staff = testEnv.authenticatedContext("staff-1").firestore();
+      const staff = ownerCtx(testEnv, "staff-1").firestore();
       await assertSucceeds(staff.doc("slotBlocks/bk-q").update({ busy, returnAt: 690 }));
       await assertFails(staff.doc("slotBlocks/bk-q").update({ busy: tooMany }));
       await assertFails(staff.doc("slotBlocks/bk-q").update({ returnAt: "later" }));
@@ -602,22 +619,22 @@ describe("phase fields (DEC-026) - bookings and slotBlocks", () => {
   });
 
   describe("bookings", () => {
-    it("a public booking may carry its phases and segments", async () => {
-      const anon = testEnv.unauthenticatedContext().firestore();
+    it("an owner-written booking may carry its phases and segments", async () => {
+      const owner = ownerCtx(testEnv).firestore();
       await assertSucceeds(
-        anon.doc("bookings/ph-1").set(validPublicBooking({ phases, segments })),
+        owner.doc("bookings/ph-1").set(validPublicBooking({ phases, segments })),
       );
     });
 
-    it("a public booking with phases that are not a list, or too many, is refused", async () => {
-      const anon = testEnv.unauthenticatedContext().firestore();
-      await assertFails(anon.doc("bookings/ph-2").set(validPublicBooking({ phases: "long" })));
-      await assertFails(anon.doc("bookings/ph-3").set(validPublicBooking({ segments: tooMany })));
+    it("a booking with phases that are not a list, or too many, is refused", async () => {
+      const owner = ownerCtx(testEnv).firestore();
+      await assertFails(owner.doc("bookings/ph-2").set(validPublicBooking({ phases: "long" })));
+      await assertFails(owner.doc("bookings/ph-3").set(validPublicBooking({ segments: tooMany })));
     });
 
     it("staff can save new phases; an oversized list is refused", async () => {
       await seedBooking("bk-r");
-      const staff = testEnv.authenticatedContext("staff-1").firestore();
+      const staff = ownerCtx(testEnv, "staff-1").firestore();
       await assertSucceeds(staff.doc("bookings/bk-r").update({ phases, segments }));
       await assertFails(staff.doc("bookings/bk-r").update({ phases: tooMany }));
     });
@@ -643,7 +660,7 @@ describe("importBatches — the client import's ledger is owner-only", () => {
   });
 
   it("the owner can read, create, update and delete batches and chunks", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertSucceeds(owner.doc("importBatches/b1").get());
     await assertSucceeds(owner.collection("importBatches/b1/chunks").get());
     await assertSucceeds(owner.doc("importBatches/b2").set({ status: "running", source: "fresha-client-list" }));
@@ -653,7 +670,7 @@ describe("importBatches — the client import's ledger is owner-only", () => {
   });
 
   it("a stylist account cannot see or write any of it", async () => {
-    const stylist = testEnv.authenticatedContext("stylist-uid").firestore();
+    const stylist = stylistCtx(testEnv).firestore();
     await assertFails(stylist.doc("importBatches/b1").get());
     await assertFails(stylist.collection("importBatches").get());
     await assertFails(stylist.doc("importBatches/b1/chunks/00000").get());
@@ -670,20 +687,24 @@ describe("importBatches — the client import's ledger is owner-only", () => {
   });
 
   it("rejects an unknown status, a non-list or oversize phone list and extra chunk fields", async () => {
-    const owner = testEnv.authenticatedContext("owner-uid").firestore();
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
     await assertFails(owner.doc("importBatches/b4").set({ status: "odd", source: "x" }));
     await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: "0400000001" }));
     await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: Array.from({ length: 501 }, (_, i) => `04${String(i).padStart(8, "0")}`) }));
     await assertFails(owner.doc("importBatches/b1/chunks/0").set({ phones: [], note: "x" }));
   });
 
-  it("an imported lookup (name, empty lastVisit, 0 visits) is accepted by the public booking merge", async () => {
+  it("an imported lookup (name, empty lastVisit, 0 visits) can be merged by the owner but not the public", async () => {
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       await ctx.firestore().doc("customerLookups/0400000001").set({ name: "Test Client 1", lastVisit: "", visitCount: 0 });
     });
     const anon = testEnv.unauthenticatedContext().firestore();
-    await assertSucceeds(
+    await assertFails(
       anon.doc("customerLookups/0400000001").set(validCustomerLookup({ name: "Test Client 1", visitCount: 1 }), { merge: true }),
+    );
+    const owner = ownerCtx(testEnv).firestore();
+    await assertSucceeds(
+      owner.doc("customerLookups/0400000001").set(validCustomerLookup({ name: "Test Client 1", visitCount: 1 }), { merge: true }),
     );
   });
 });

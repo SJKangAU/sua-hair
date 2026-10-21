@@ -1,7 +1,7 @@
 // ProtectedRoute.tsx
 // Wraps admin and stylist routes — redirects unauthenticated users to the
 // appropriate login page. Optionally enforces a required role from the
-// Firestore users collection. When requiredRole is set, access is denied
+// ID-token role claim. When requiredRole is set, access is denied
 // (fail closed) unless the signed-in account has a role document AND that
 // document's role matches — a missing/unreadable role document is never
 // treated as an implicit grant.
@@ -67,9 +67,9 @@ const NoAccess = ({ user }: { user: User }) => (
       >
         You are signed in
         {user.email ? ` as ${user.email}` : ""}, but this account has not been
-        given a role. An owner needs to add a <code>users</code> document for
-        it in Firestore with the field <code>role</code> set to{" "}
-        <code>owner</code> or <code>stylist</code>.
+        given a role. An owner needs to give it the <code>owner</code> or{" "}
+        <code>stylist</code> role (docs/DEPLOYMENT.md), then you sign out and
+        back in.
       </p>
       <p
         style={{
@@ -79,7 +79,7 @@ const NoAccess = ({ user }: { user: User }) => (
           wordBreak: "break-all",
         }}
       >
-        Document ID to use (your account UID):
+        Your account UID:
         <br />
         <code style={{ color: "var(--ink)" }}>{user.uid}</code>
       </p>

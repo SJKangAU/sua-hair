@@ -1,47 +1,83 @@
 // Firestore Security Rules
 //
-// This is the authoritative fix for the "public availability queries return
-// full booking PII" finding. Firestore Rules cannot redact individual
-// fields from an authorized read — a rule can only authorize or deny a
-// whole document/query. That means restricting client code alone is not
-// enough: anyone with the project's public Firebase Web config can replay
-// any query the rules permit, directly against the SDK, regardless of what
-// the app's own UI sends. Locking down `bookings` here is what actually
-// closes the hole; see src/lib/slotBlocks.ts and src/hooks/useBookingAvailability.ts
-// for the matching app-side change (the public calendar now reads a
-// PII-free `slotBlocks` projection instead of `bookings`).
+// TRUST MODEL (DEC-033 to DEC-040)
+//
+//   anonymous customer   reads reference data (stylists, services, hours) and
+//                        slotBlocks (the PII-free availability projection) and
+//                        NOTHING else. Customers never write directly: a booking
+//                        request, a waitlist entry and every notification are
+//                        created by Cloud Functions (functions/src/), which
+//                        validate, price, conflict-check and rate-limit them.
+//   owner                a signed-in account whose ID token carries the custom
+//                        claim role == 'owner'. Everything.
+//   stylist              role == 'stylist' with a stylistId claim. Reads and
+//                        updates only their own stylist's bookings (and their own
+//                        notifications); never deletes; no settings, prices or
+//                        client lists.
+//   unprovisioned        signed in but no role claim. No access at all - the old
+//                        rule "any signed-in account is staff" is gone.
+//
+// Roles live in CUSTOM CLAIMS on the ID token (request.auth.token), set only by
+// the Admin SDK (functions/src/roles.ts, functions/scripts/provision-roles.ts).
+// A claim costs zero document reads per rule evaluation; the earlier
+// get(users/{uid}) approach billed one read for every owner check and made every
+// list query pay for it. The users/{uid} document is kept as the readable record
+// of the grant (and is what the functions check, so a revoked role stops working
+// in functions at once; rules honour the claim until the token refreshes, up to
+// an hour - revoking also calls revokeRefreshTokens).
+//
+// Firestore Rules cannot redact individual fields from an authorized read - a
+// rule can only authorize or deny a whole document - so customer PII (bookings,
+// customerLookups, waitlist) is never readable by the public, and the public
+// calendar reads the PII-free `slotBlocks` projection instead.
 //
 // Deploy with: firebase deploy --only firestore:rules
-// (requires `firebase use <project-id>` once, using the Firebase project
-// backing this app's VITE_FIREBASE_PROJECT_ID).
+// BUT ONLY AFTER the owner has been provisioned and the new app and functions are
+// live - see docs/DEPLOYMENT.md for the order and the rollback.
 
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Any signed-in account in this app is a staff account (owner or
-    // stylist) — customers never authenticate. See src/hooks/useAppUser.ts.
-    function isStaff() {
-      return request.auth != null;
-    }
-
-    // The owner is distinguished by the role on their users/{uid} document,
-    // which is provisioned out-of-band (see `users` below).
+    // ── Roles (custom claims; no document reads) ─────────────────────────
     function isOwner() {
       return request.auth != null
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+        && request.auth.token.get('role', '') == 'owner';
     }
 
-    // Booking lifecycle statuses (src/lib/bookingStatus.ts). Staff writes to
+    function isStylist() {
+      return request.auth != null
+        && request.auth.token.get('role', '') == 'stylist'
+        && request.auth.token.get('stylistId', '') is string
+        && request.auth.token.get('stylistId', '') != '';
+    }
+
+    // Owner or stylist. NOT "any signed-in account".
+    function isStaff() {
+      return isOwner() || isStylist();
+    }
+
+    // The signed-in stylist, for the stylist whose id is `id`.
+    function ownStylist(id) {
+      return isStylist() && request.auth.token.stylistId == id;
+    }
+
+    // Booking lifecycle statuses (src/lib/bookingStatus.ts). Owner writes to
     // bookings and slotBlocks must use one of these so a typo can't strand a
-    // booking in a state the app doesn't understand. Public creates are
-    // separately pinned to 'pending'. A document without a status field
-    // (hand-edited / pre-migration) is left alone.
+    // booking in a state the app doesn't understand. A document without a status
+    // field (hand-edited / pre-migration) is left alone.
     function hasValidStatus(d) {
       return !('status' in d)
         || d.status in ['pending', 'confirmed', 'arrived', 'in_service',
                         'completed', 'no_show', 'cancelled'];
+    }
+
+    // The statuses a stylist may move their own booking through: the day-of
+    // lifecycle only. Approving, declining, cancelling and restoring are the
+    // owner's, and run through the booking commands (they re-check the slot).
+    function isStylistStatus(s) {
+      return s in ['arrived', 'in_service', 'completed', 'no_show'];
     }
 
     // Phase fields (DEC-026). A booking carries `phases` and `segments` (lists of
@@ -58,90 +94,71 @@ service cloud.firestore {
 
     // ── bookings ────────────────────────────────────────────────────────
     // Full booking records, including customer PII (name, phone, notes).
-    // Reads/list/updates/deletes require a staff account. Anonymous
-    // customers may only *create* their own pending booking — never read
-    // any booking back, including the one they just created — and the
-    // shape is validated so a public write can't masquerade as an
-    // admin-only booking type or arrive pre-confirmed.
+    // Customers never read or write them. Online requests are created by the
+    // createBookingRequest function (Admin SDK, which bypasses these rules);
+    // approve / decline / cancel / restore / assign go through their own
+    // functions, which re-check the slot under the stylist-day lock. The owner's
+    // direct writes remain for walk-ins, breaks, training, phase edits and
+    // reschedules (src/lib/adminBookingWrites.ts, same lock).
     match /bookings/{bookingId} {
-      allow read, list, delete: if isStaff();
+      allow get: if isOwner() || ownStylist(resource.data.stylistId);
+      allow list: if isOwner() || ownStylist(resource.data.stylistId);
 
-      allow update: if isStaff() && hasValidStatus(request.resource.data)
+      allow create: if isOwner() && hasValidStatus(request.resource.data)
         && hasValidPhases(request.resource.data);
 
-      allow create: if (isStaff() && hasValidStatus(request.resource.data)
+      allow update: if (isOwner() && hasValidStatus(request.resource.data)
                         && hasValidPhases(request.resource.data))
-        || isValidPublicBooking();
+        || stylistMayUpdateBooking();
 
-      function isValidPublicBooking() {
-        let b = request.resource.data;
-        return b.bookingType == 'customer'
-          && b.status == 'pending'
-          && b.customerName is string && b.customerName.size() > 0
-          && b.customerPhone is string && b.customerPhone.size() > 0
-          && b.stylistId is string
-          && b.date is string
-          && b.time is string
-          && b.activeTime is number
-          && b.totalTime is number
-          && b.restTime is number
-          && hasValidPhases(b)
-          // Privacy consent must be recorded — the public form can't submit
-          // without the consent box ticked (see BookingForm / DetailsStep).
-          && b.consentGivenAt is string
-          // Optional confirmation-email address. Bounded so the public form
-          // can't store arbitrarily large junk; format is validated in the
-          // client and again before sending (functions/src/index.ts).
-          && (!('customerEmail' in b)
-              || (b.customerEmail is string && b.customerEmail.size() <= 254));
+      allow delete: if isOwner();
+
+      // A stylist may add a note, flag a booking, or move it through the day's
+      // lifecycle - on their own bookings, and nothing else: not the stylist,
+      // date, time, price or phases, and not out of pending / into cancelled.
+      function stylistMayUpdateBooking() {
+        let changed = request.resource.data.diff(resource.data).affectedKeys();
+        return ownStylist(resource.data.stylistId)
+          && changed.hasOnly(['status', 'arrivedAt', 'history', 'flagged',
+                              'flagReason', 'notes', 'restoreStatus'])
+          && (!changed.hasAny(['status'])
+              || (resource.data.status in ['confirmed', 'arrived', 'in_service']
+                  && isStylistStatus(request.resource.data.status)));
       }
     }
 
     // ── slotBlocks ──────────────────────────────────────────────────────
     // PII-free projection of `bookings` (stylistId/date/time/activeTime/
-    // totalTime/restTime/status only) used solely to compute public
-    // availability. Safe to read publicly — it never carries a customer
-    // name, phone number, or note. Writes are staff-only except the
-    // paired create a public customer booking performs alongside its
-    // `bookings` write (see src/lib/slotBlocks.ts).
+    // totalTime/restTime/status/busy/returnAt only) used solely to compute public
+    // availability. Safe to read publicly - it never carries a customer name,
+    // phone number, or note. Nothing anonymous can write it: the booking
+    // functions write it together with the booking in one transaction.
     match /slotBlocks/{bookingId} {
       allow read, list: if true;
-      allow delete: if isStaff();
 
-      allow update: if isStaff() && hasValidStatus(request.resource.data)
+      allow create: if isOwner() && hasValidStatus(request.resource.data)
         && hasValidPhases(request.resource.data);
 
-      allow create: if (isStaff() && hasValidStatus(request.resource.data)
+      allow update: if (isOwner() && hasValidStatus(request.resource.data)
                         && hasValidPhases(request.resource.data))
-        || isValidPublicSlotBlock();
+        || (ownStylist(resource.data.stylistId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && isStylistStatus(request.resource.data.status)
+            && resource.data.status in ['confirmed', 'arrived', 'in_service']);
 
-      function isValidPublicSlotBlock() {
-        let s = request.resource.data;
-        return s.keys().hasOnly(
-            ['stylistId', 'date', 'time', 'activeTime', 'totalTime', 'restTime', 'status',
-             'busy', 'returnAt']
-          )
-          && hasValidPhases(s)
-          && s.status == 'pending'
-          && s.stylistId is string
-          && s.date is string
-          && s.time is string
-          && s.activeTime is number
-          && s.totalTime is number
-          && s.restTime is number;
-      }
+      allow delete: if isOwner();
     }
 
     // ── stylistDayLocks ─────────────────────────────────────────────────
-    // One tiny document per stylist per day ({date}_{stylistId}). Every admin
-    // write that claims a slot (walk-in, break, restore, reschedule) reads and
-    // bumps it inside the same transaction as its conflict check, so two admins
-    // saving the same slot at once cannot both succeed — see
-    // src/lib/adminBookingWrites.ts. Holds no customer data. Staff only;
-    // anonymous customers never touch it.
+    // One tiny document per stylist per day ({date}_{stylistId}). Every write that
+    // claims a slot (walk-in, break, restore, reschedule, and the booking
+    // functions) reads and bumps it inside the same transaction as its conflict
+    // check, so two writers cannot both take the same slot - see
+    // src/lib/adminBookingWrites.ts and functions/src/bookingCommands.ts. Holds no
+    // customer data. Owner only; the functions use the Admin SDK.
     match /stylistDayLocks/{lockId} {
-      allow read: if isStaff();
-      allow create, update: if isStaff()
+      allow read: if isOwner();
+      allow create, update: if isOwner()
         && request.resource.data.keys().hasOnly(['version', 'updatedAt'])
         && request.resource.data.version is number
         && request.resource.data.updatedAt is string;
@@ -149,36 +166,29 @@ service cloud.firestore {
     }
 
     // ── Reference data used by the public booking flow ─────────────────
-    // Publicly readable so the calendar can show stylists/services/hours;
-    // writes are staff-only (Manage → Stylists/Services/Hours screens).
-    //
-    // `order` (the owner-chosen display order of stylists, set from Manage ->
-    // Stylists) is the one field only the owner may write: any other staff
-    // account can still edit a stylist but cannot add or change `order`.
+    // Publicly readable so the calendar can show stylists/services/hours.
+    // Writes are OWNER-only: prices, services, stylist management (including the
+    // display `order`), salon settings and opening hours.
     match /stylists/{stylistId} {
       allow read: if true;
-      allow create: if isStaff()
-        && (!('order' in request.resource.data)
-            || (isOwner() && request.resource.data.order is number));
-      allow update: if isStaff()
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['order'])
-            || (isOwner() && request.resource.data.order is number));
-      allow delete: if isStaff();
+      allow create, update: if isOwner()
+        && (!('order' in request.resource.data) || request.resource.data.order is number);
+      allow delete: if isOwner();
     }
 
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if isStaff();
+      allow write: if isOwner();
     }
 
     match /salonSettings/{settingsId} {
       allow read: if true;
-      allow write: if isStaff();
+      allow write: if isOwner();
     }
 
     // ── privateSettings ─────────────────────────────────────────────────
     // Owner-only configuration that must not be world-readable the way
-    // salonSettings is — currently the owner's notification email address
+    // salonSettings is - currently the owner's notification email address
     // (privateSettings/notifications). Cloud Functions read it with the
     // Admin SDK, which bypasses these rules.
     match /privateSettings/{docId} {
@@ -191,58 +201,42 @@ service cloud.firestore {
     }
 
     // ── notifications ───────────────────────────────────────────────────
-    // Never read by anonymous clients (only the staff notification bell
-    // reads this collection), but the public booking flow and admin
-    // booking flows both create notification records for staff to see.
+    // The staff notification bell. Created only by the booking functions (Admin
+    // SDK). The owner reads everything; a stylist reads and marks read only the
+    // notifications addressed to their own stylistId.
     match /notifications/{notificationId} {
-      allow read, delete: if isStaff();
-      allow update: if isStaff();
-      allow create: if true;
+      allow read: if isOwner()
+        || (isStylist() && resource.data.recipientId == request.auth.token.stylistId);
+      allow update: if isOwner()
+        || (isStylist() && resource.data.recipientId == request.auth.token.stylistId
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']));
+      allow delete: if isOwner();
+      allow create: if false;
     }
 
     // ── waitlist ─────────────────────────────────────────────────────────
-    // Same shape as notifications: customers submit entries anonymously
-    // through the public waitlist form, but only staff ever list/read them
-    // back.
+    // Entries are created by the joinWaitlist function (validated and rate
+    // limited). Only the owner lists, reads, updates or deletes them.
     match /waitlist/{waitlistId} {
-      allow read, update, delete: if isStaff();
-      allow create: if true;
+      allow read, update, delete: if isOwner();
+      allow create: if false;
     }
 
     // ── customerLookups ─────────────────────────────────────────────────
-    // Customer identity + visit history, keyed by cleaned phone number.
-    // Even a get-by-document-ID lookup exposes the account holder's name
-    // and visit count to anyone who merely *knows* (or enumerates) a
-    // phone number — that is not proof the requester owns the number, so
-    // this can never be anonymously readable. Reads are staff-only.
-    // Anonymous customers may still create/update their own record when
-    // they submit a booking (see isValidLookupWrite below) — a write of
-    // your own data isn't a disclosure — but the public booking form no
-    // longer reads it back for a "welcome back" greeting; see
-    // src/components/booking/BookingForm.tsx.
+    // Customer identity + visit history keyed by cleaned phone number, plus the
+    // `blocked` flag the Fresha import sets (DEC-039). Even a get-by-document-ID
+    // lookup exposes the account holder's name and block status to anyone who
+    // merely knows a phone number, so it is owner-only. The booking function
+    // reads and merges it with the Admin SDK.
     match /customerLookups/{phone} {
-      allow get, list: if isStaff();
-      allow delete: if isStaff();
-
-      allow create, update: if isStaff() || isValidLookupWrite();
-
-      function isValidLookupWrite() {
-        let l = request.resource.data;
-        return l.keys().hasOnly(['name', 'lastVisit', 'visitCount'])
-          && l.name is string && l.name.size() > 0
-          && l.lastVisit is string
-          && l.visitCount is number;
-      }
+      allow get, list, create, update, delete: if isOwner();
     }
 
     // ── importBatches ────────────────────────────────────────────────────
-    // The owner's client-list import (Manage → Import clients): one document per
-    // run, and under it the phone numbers each committed chunk created, which is
-    // what a rollback walks. Phone numbers are personal data, so the ledger is
-    // owner-only, never readable by a stylist account or the public. (The
-    // customerLookups records the import creates are written by the same rule as
-    // any walk-in's, i.e. any signed-in account can write them; the import
-    // screen itself is owner-only in the app.)
+    // The owner's client-list import (Manage -> Import clients): one document per
+    // run, and under it the phone numbers each committed chunk created (and the
+    // ones it marked blocked), which is what a rollback walks. Phone numbers are
+    // personal data, so the ledger is owner-only.
     match /importBatches/{batchId} {
       allow read, delete: if isOwner();
       allow create, update: if isOwner()
@@ -252,20 +246,27 @@ service cloud.firestore {
       match /chunks/{chunkId} {
         allow read, delete: if isOwner();
         allow create, update: if isOwner()
-          && request.resource.data.keys().hasOnly(['phones'])
+          && request.resource.data.keys().hasOnly(['phones', 'blocked'])
           && request.resource.data.phones is list
-          && request.resource.data.phones.size() <= 500;
+          && request.resource.data.phones.size() <= 500
+          && (!('blocked' in request.resource.data)
+              || (request.resource.data.blocked is list
+                  && request.resource.data.blocked.size() <= 500));
       }
     }
 
     // ── users ────────────────────────────────────────────────────────────
-    // Role documents (owner/stylist). Provisioned out-of-band (Firebase
-    // console/admin SDK) — the app never writes this collection. A signed
-    // in user may only read their own role document.
+    // The readable record of each role grant ({role, stylistId?, email?}),
+    // written ONLY by the Admin SDK (roles.ts). A provisioned user reads their own;
+    // the owner reads all (role management). An unprovisioned account has no
+    // access, not even to its own (non-existent) document.
     match /users/{userId} {
-      allow read: if isStaff() && request.auth.uid == userId;
+      allow read: if isOwner() || (isStaff() && request.auth.uid == userId);
       allow write: if false;
     }
+
+    // rateLimits and phoneLimits (functions' abuse counters) have no rule, so
+    // they are denied to every client and used only through the Admin SDK.
 
     // Deny everything else by default.
   }

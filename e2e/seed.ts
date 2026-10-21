@@ -47,6 +47,24 @@ export const SERVICES = [
   },
 ] as const;
 
+/** Gives an Auth-emulator account custom claims, as the Admin SDK's
+ *  setCustomUserClaims would in production (roles are claims, DEC-033). The
+ *  next sign-in carries them in the ID token the rules read. */
+export async function setClaims(
+  uid: string,
+  claims: Record<string, string>,
+): Promise<void> {
+  const res = await fetch(
+    `${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}/accounts:update`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer owner" },
+      body: JSON.stringify({ localId: uid, customAttributes: JSON.stringify(claims) }),
+    },
+  );
+  if (!res.ok) throw new Error(`Auth emulator setClaims failed: ${res.status}`);
+}
+
 async function createOwnerLogin(): Promise<string> {
   await fetch(`${AUTH}/emulator/v1/projects/${PROJECT_ID}/accounts`, {
     method: "DELETE",
@@ -78,6 +96,7 @@ export async function connectEnv(): Promise<RulesTestEnvironment> {
 export async function seedEmulator(env?: RulesTestEnvironment): Promise<void> {
   const testEnv = env ?? (await connectEnv());
   const ownerUid = await createOwnerLogin();
+  await setClaims(ownerUid, { role: "owner" });
   await testEnv.clearFirestore();
   const now = new Date().toISOString();
   await testEnv.withSecurityRulesDisabled(async (ctx) => {

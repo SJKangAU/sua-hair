@@ -5,7 +5,7 @@
 import type { RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import type { Firestore } from "firebase/firestore";
 import type { Booking } from "../../src/types";
-import { validSlotBlock } from "./testEnv";
+import { ownerCtx, validSlotBlock } from "./testEnv";
 
 export const DATE = "2026-12-01"; // a Tuesday
 export const STYLIST = "stylist-steve";
@@ -15,7 +15,7 @@ type CompatDb = { _delegate: Firestore };
 /** The rules-unit-testing context hands out a compat Firestore; its
  *  `_delegate` is the modular one the app code is written against. */
 export function staffDb(env: RulesTestEnvironment, uid = "staff-1"): Firestore {
-  return (env.authenticatedContext(uid).firestore() as unknown as CompatDb)
+  return (ownerCtx(env, uid).firestore() as unknown as CompatDb)
     ._delegate;
 }
 

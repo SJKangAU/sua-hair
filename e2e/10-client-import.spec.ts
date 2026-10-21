@@ -54,9 +54,10 @@ test("TC-078 the owner sees Import clients in Manage; a stylist account does not
   const uid = ((await signUp.json()) as { localId: string }).localId;
   const env = await connectEnv();
   await env.withSecurityRulesDisabled(async (ctx) => {
-    await ctx.firestore().doc(`users/${uid}`).set({ role: "stylist" });
+    await ctx.firestore().doc(`users/${uid}`).set({ role: "stylist", stylistId: "steve" });
   });
   await env.cleanup();
+  await setClaims(uid, { role: "stylist", stylistId: "steve" });
 
   const context = await browser.newContext({ baseURL: BASE_URL, locale: "en-AU", timezoneId: "Australia/Melbourne", viewport: { width: 1400, height: 1400 } });
   const stylist = await context.newPage();
