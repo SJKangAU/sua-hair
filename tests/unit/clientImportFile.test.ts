@@ -38,12 +38,13 @@ describe("reading the synthetic fixtures", () => {
 
   it("the synthetic plan: 9 clients, 4 skipped rows, 1 merged, the newer of two sharing a number wins", async () => {
     const plan = buildPlan((await parseClientFile(fixture("clients-synthetic.csv", "text/csv"))).rows);
-    expect(plan.summary).toEqual({ rows: 14, importable: 9, skipped: 4, collapsed: 1 });
+    expect(plan.summary).toEqual({ rows: 14, importable: 9, skipped: 4, collapsed: 1, blocked: 1, blockedUnusable: 0 });
     expect(plan.problems.map((p) => p.row)).toEqual([9, 10, 11, 13]);
     expect(plan.entries.find((e) => e.phone === "0400000005")?.name).toBe("Shared Newer");
     expect(plan.entries.find((e) => e.phone === "0400000008")?.name).toBe("Test Ünïcöde Client");
     expect(plan.entries.find((e) => e.phone === "0400000006")?.name).toBe("Test Split");
-    expect(plan.notImported).toMatchObject({ emails: 1, "blocked clients": 1, "staff alerts": 1 });
+    expect(plan.notImported).toMatchObject({ emails: 1, "staff alerts": 1 });
+    expect(plan.entries.find((e) => e.phone === "0400000004")?.blocked).toBe(true); // the Blocked: Yes client
   });
 });
 

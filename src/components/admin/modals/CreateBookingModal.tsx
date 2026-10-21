@@ -235,6 +235,7 @@ const CreateBookingModal = ({
     | { status: "loading" }
     | { status: "new" }
     | { status: "found"; visits: number; lastVisit?: string }
+    | { status: "blocked" }
     | null
   >(null);
   const lookupId = useRef(0);
@@ -263,7 +264,14 @@ const CreateBookingModal = ({
           name?: string;
           lastVisit?: string;
           visitCount?: number;
+          blocked?: boolean;
         };
+        // A client Fresha blocked is never presented as an ordinary returning client:
+        // the warning replaces the friendly label (online they are told to call)
+        if (data.blocked === true) {
+          setLookup({ status: "blocked" });
+          return;
+        }
         setLookup({
           status: "found",
           visits: data.visitCount ?? 0,
@@ -553,7 +561,23 @@ const CreateBookingModal = ({
                   ? "Looking up…"
                   : lookup.status === "new"
                   ? "New client"
+                  : lookup.status === "blocked"
+                  ? null
                   : returningClientLabel(lookup.visits, lookup.lastVisit)}
+                {lookup.status === "blocked" && (
+                  <strong
+                    data-testid="blocked-client-warning"
+                    style={{
+                      color: "var(--ink)",
+                      border: "2px solid var(--ink)",
+                      borderRadius: "4px",
+                      padding: "0.15rem 0.5rem",
+                    }}
+                  >
+                    BLOCKED CLIENT — blocked in Fresha. They cannot book online; check
+                    before booking them in.
+                  </strong>
+                )}
               </span>
             )}
           </label>

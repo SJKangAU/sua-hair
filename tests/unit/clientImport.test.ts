@@ -65,6 +65,81 @@ describe("addedAsIso", () => {
   });
 });
 
+describe("blocked clients (DEC-039)", () => {
+  const plan = (rows: RawRow[]) => buildPlan(rows);
+
+  it("the Blocked column's 'Yes' (any case, any spacing) makes the entry blocked; anything else does not", () => {
+    const p = plan([
+      row({ "Full Name": "A", "Mobile Number": "61 400 000 001", Blocked: "Yes" }),
+      row({ "Full Name": "B", "Mobile Number": "61 400 000 002", Blocked: " yes " }),
+      row({ "Full Name": "C", "Mobile Number": "61 400 000 003", Blocked: "YES" }),
+      row({ "Full Name": "D", "Mobile Number": "61 400 000 004", Blocked: "No" }),
+      row({ "Full Name": "E", "Mobile Number": "61 400 000 005", Blocked: "" }),
+      row({ "Full Name": "F", "Mobile Number": "61 400 000 006", Blocked: "maybe" }),
+      { "Full Name": "G", "Mobile Number": "61 400 000 007" }, // no Blocked column at all
+    ]);
+    expect(p.entries.map((e) => [e.name, e.blocked === true])).toEqual([
+      ["A", true], ["B", true], ["C", true], ["D", false], ["E", false], ["F", false], ["G", false],
+    ]);
+    expect(p.summary.blocked).toBe(3);
+  });
+
+  it("two clients sharing a number: the number is blocked if EITHER row is, whichever is newer", () => {
+    const older = plan([
+      row({ "Full Name": "Older Blocked", "Mobile Number": "61 400 000 005", Added: "2026-01-01", Blocked: "Yes" }),
+      row({ "Full Name": "Newer Fine", "Mobile Number": "61 400 000 005", Added: "2026-03-01" }),
+    ]);
+    expect(older.entries).toHaveLength(1);
+    expect(older.entries[0]).toMatchObject({ name: "Newer Fine", blocked: true });
+    const newer = plan([
+      row({ "Full Name": "Newer Blocked", "Mobile Number": "61 400 000 005", Added: "2026-03-01", Blocked: "Yes" }),
+      row({ "Full Name": "Older Fine", "Mobile Number": "61 400 000 005", Added: "2026-01-01" }),
+    ]);
+    expect(newer.entries[0]).toMatchObject({ name: "Newer Blocked", blocked: true });
+    expect(newer.summary.blocked).toBe(1);
+  });
+
+  it("a Blocked row with no usable number cannot be enforced: it is counted, not lost silently", () => {
+    const p = plan([
+      row({ "Full Name": "No Phone", "Mobile Number": "", Blocked: "Yes" }),
+      row({ "Full Name": "Overseas", "Mobile Number": "44 7700 900123", Blocked: "Yes" }),
+      row({ "Full Name": "", "Mobile Number": "61 400 000 001", Blocked: "Yes" }),
+    ]);
+    expect(p.entries).toEqual([]);
+    expect(p.summary).toMatchObject({ blocked: 0, blockedUnusable: 3 });
+  });
+
+  it("the dry run counts blocked clients, those to flag on existing records and those already blocked", () => {
+    const p = plan([
+      row({ "Full Name": "New Blocked", "Mobile Number": "61 400 000 001", Blocked: "Yes" }),
+      row({ "Full Name": "Existing To Flag", "Mobile Number": "61 400 000 002", Blocked: "Yes" }),
+      row({ "Full Name": "Existing Already", "Mobile Number": "61 400 000 003", Blocked: "Yes" }),
+      row({ "Full Name": "Existing Fine", "Mobile Number": "61 400 000 004" }),
+      row({ "Full Name": "New Fine", "Mobile Number": "61 400 000 005" }),
+    ]);
+    const existing = new Map([
+      ["0400000002", { blocked: false }],
+      ["0400000003", { blocked: true }],
+      ["0400000004", { blocked: false }],
+    ]);
+    const d = dryRun(p, existing);
+    expect(d.toCreate.map((e) => e.phone)).toEqual(["0400000001", "0400000005"]);
+    expect(d.toFlag.map((e) => e.phone)).toEqual(["0400000002"]);
+    expect(d.alreadyExist).toBe(3);
+    expect(d.blocked).toBe(3); // new blocked + existing to flag + existing already blocked
+    expect(d.alreadyBlocked).toBe(1);
+    // a plain Set (no block information) still works: nobody is known to be blocked yet
+    const plain = dryRun(p, new Set(["0400000002"]));
+    expect(plain.toFlag.map((e) => e.phone)).toEqual(["0400000002"]);
+  });
+
+  it("blocked is a flag only: no name, number or reason from the row goes anywhere new", () => {
+    const p = plan([row({ "Full Name": "Test Client 4", "Mobile Number": "61 400 000 004", Blocked: "Yes", "Block Reason": "Rude to staff" })]);
+    expect(JSON.stringify(p.entries)).not.toMatch(/Rude/);
+    expect(p.entries[0]).toEqual({ phone: "0400000004", name: "Test Client 4", row: 2, blocked: true });
+  });
+});
+
 describe("buildPlan", () => {
   const rows: RawRow[] = [
     row({ "Full Name": "Test Client 1", "Mobile Number": "61 400 000 001", Added: "2026-01-10" }),
@@ -83,7 +158,8 @@ describe("buildPlan", () => {
       ["0400000005", "Shared Newer"],
       ["0400000002", "Test Client 2"],
     ]);
-    expect(plan.summary).toEqual({ rows: 7, importable: 3, skipped: 3, collapsed: 1 });
+    // Test Client 2 is Blocked in Fresha (DEC-039): counted in the summary, not "left out"
+    expect(plan.summary).toEqual({ rows: 7, importable: 3, skipped: 3, collapsed: 1, blocked: 1, blockedUnusable: 0 });
   });
 
   it("the older row can come later in the file and still loses", () => {
@@ -122,7 +198,7 @@ describe("buildPlan", () => {
       genders: 1,
       "birth dates": 1,
       "staff alerts": 1,
-      "blocked clients": 1,
+      // "blocked clients" is no longer here: blocked clients are imported as blocked
     });
     // and none of it is in what would be written
     expect(JSON.stringify(plan.entries)).not.toMatch(/example\.test|Female|9000/);

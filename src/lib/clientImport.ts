@@ -5,10 +5,14 @@
 //
 // What is imported: a client's name and mobile number, as
 //   customerLookups/{04xxxxxxxx} = { name, lastVisit: "", visitCount: 0 }
-// exactly the three fields the public booking rule allows (a later online
-// booking by that client merges into the record). Everything else in the export
-// (email, gender, birth date, marketing flags, Staff alert, Blocked...) has no
-// home in the app and is NOT imported; the dry run only reports counts.
+// (a later online booking by that client merges into the record), plus ONE flag:
+//   blocked: true     for a client Fresha has Blocked (DEC-039)
+// The flag is what keeps a blocked client from booking online (the booking function
+// refuses them with "Please call the salon to book") and what the walk-in form warns
+// about; customerLookups is owner-only, so it is never readable by the public.
+// Everything else in the export (email, gender, birth date, marketing flags, Staff
+// alert, Block Reason...) has no home in the app and is NOT imported; the dry run only
+// reports counts.
 //
 // Row numbers are spreadsheet rows: the header is row 1, the first client row 2.
 
@@ -31,6 +35,8 @@ export interface ImportEntry {
   phone: string; // 04xxxxxxxx, the document ID
   name: string;
   row: number; // the row that won, for the error report
+  // Fresha's Blocked column said "Yes" (for any row sharing this number)
+  blocked?: boolean;
 }
 
 export interface RowProblem {
@@ -46,6 +52,8 @@ export interface ImportPlan {
     importable: number; // distinct phones that can be written
     skipped: number;
     collapsed: number; // rows dropped because another client has the same number
+    blocked: number; // distinct importable phones Fresha has Blocked
+    blockedUnusable: number; // Blocked rows with no usable number: nothing to enforce
   };
   // Columns with data that the import deliberately leaves out
   notImported: Record<string, number>;
@@ -59,8 +67,11 @@ const LEFT_OUT: { header: string; label: string; counts: (v: string) => boolean 
   { header: "Gender", label: "genders", counts: (v) => v.trim() !== "" },
   { header: "Date of Birth", label: "birth dates", counts: (v) => v.trim() !== "" },
   { header: "Staff alert", label: "staff alerts", counts: (v) => v.trim() !== "" },
-  { header: "Blocked", label: "blocked clients", counts: (v) => v.trim().toLowerCase() === "yes" },
 ];
+
+// Fresha's Blocked column: "Yes" (any case) is blocked; "No", empty and anything else is not.
+export const isBlockedRow = (row: RawRow): boolean =>
+  (row["Blocked"] ?? "").trim().toLowerCase() === "yes";
 
 // A number as Fresha exports it ("61 412 345 678", no plus) or already local
 // ("0412 345 678") -> "0412345678". Anything else is null: a number is never
@@ -108,6 +119,7 @@ export const buildPlan = (rows: RawRow[]): ImportPlan => {
   const byPhone = new Map<string, { entry: ImportEntry; added: string }>();
   const notImported: Record<string, number> = {};
   let collapsed = 0;
+  let blockedUnusable = 0;
 
   rows.forEach((row, i) => {
     const rowNumber = i + 2;
@@ -118,26 +130,38 @@ export const buildPlan = (rows: RawRow[]): ImportPlan => {
     }
     const name = cleanClientName(row);
     const phone = normaliseMobile(row["Mobile Number"] ?? "");
+    const blocked = isBlockedRow(row);
     if (!name) {
       problems.push({ row: rowNumber, reason: "No name" });
+      if (blocked) blockedUnusable += 1;
       return;
     }
     if (!(row["Mobile Number"] ?? "").trim()) {
       problems.push({ row: rowNumber, reason: "No mobile number" });
+      if (blocked) blockedUnusable += 1;
       return;
     }
     if (!phone) {
       problems.push({ row: rowNumber, reason: "Not an Australian mobile number" });
+      if (blocked) blockedUnusable += 1;
       return;
     }
     const added = addedAsIso(row["Added"] ?? "");
     const seen = byPhone.get(phone);
     if (seen) {
       collapsed += 1;
-      if (added >= seen.added) byPhone.set(phone, { entry: { phone, name, row: rowNumber }, added });
+      // Two clients share this number: the newer one's name wins, but if EITHER is
+      // blocked the number is (the safer reading: one person's block must not be
+      // lost because another client at the same number was added later)
+      const either = blocked || seen.entry.blocked === true;
+      if (added >= seen.added) {
+        byPhone.set(phone, { entry: { phone, name, row: rowNumber, ...(either ? { blocked: true } : {}) }, added });
+      } else if (either) {
+        seen.entry.blocked = true;
+      }
       return;
     }
-    byPhone.set(phone, { entry: { phone, name, row: rowNumber }, added });
+    byPhone.set(phone, { entry: { phone, name, row: rowNumber, ...(blocked ? { blocked: true } : {}) }, added });
   });
 
   const entries = [...byPhone.values()].map((v) => v.entry).sort((a, b) => a.row - b.row);
@@ -149,6 +173,8 @@ export const buildPlan = (rows: RawRow[]): ImportPlan => {
       importable: entries.length,
       skipped: problems.length,
       collapsed,
+      blocked: entries.filter((e) => e.blocked).length,
+      blockedUnusable,
     },
     notImported,
   };
@@ -158,22 +184,50 @@ export const buildPlan = (rows: RawRow[]): ImportPlan => {
 export interface DryRun {
   rows: number;
   toCreate: ImportEntry[];
-  alreadyExist: number; // phone already has a customerLookups record: left untouched
+  alreadyExist: number; // phone already has a customerLookups record: left untouched...
+  // ...except that a client Fresha has Blocked who is not yet blocked here gets the
+  // flag (and nothing else on their record changes)
+  toFlag: ImportEntry[];
   skipped: number;
   collapsed: number;
   problems: RowProblem[];
   notImported: Record<string, number>;
+  // Blocked clients (DEC-039): distinct numbers that will be blocked after the import
+  // (new ones, existing ones to flag, and existing ones already blocked) ...
+  blocked: number;
+  // ... how many of those are already blocked in the app, and how many Blocked rows
+  // have no usable mobile number (nothing to enforce)
+  alreadyBlocked: number;
+  blockedUnusable: number;
 }
 
-export const dryRun = (plan: ImportPlan, existing: ReadonlySet<string>): DryRun => ({
-  rows: plan.summary.rows,
-  toCreate: plan.entries.filter((e) => !existing.has(e.phone)),
-  alreadyExist: plan.entries.filter((e) => existing.has(e.phone)).length,
-  skipped: plan.summary.skipped,
-  collapsed: plan.summary.collapsed,
-  problems: plan.problems,
-  notImported: plan.notImported,
-});
+// What the dry run needs to know about a number that already has a record
+export interface ExistingRecord {
+  blocked: boolean;
+}
+
+export const dryRun = (
+  plan: ImportPlan,
+  existing: ReadonlySet<string> | ReadonlyMap<string, ExistingRecord>,
+): DryRun => {
+  const exists = (phone: string) => existing.has(phone);
+  const isBlockedHere = (phone: string) =>
+    existing instanceof Map ? existing.get(phone)?.blocked === true : false;
+  const present = plan.entries.filter((e) => exists(e.phone));
+  return {
+    rows: plan.summary.rows,
+    toCreate: plan.entries.filter((e) => !exists(e.phone)),
+    alreadyExist: present.length,
+    toFlag: present.filter((e) => e.blocked && !isBlockedHere(e.phone)),
+    skipped: plan.summary.skipped,
+    collapsed: plan.summary.collapsed,
+    problems: plan.problems,
+    notImported: plan.notImported,
+    blocked: plan.summary.blocked,
+    alreadyBlocked: present.filter((e) => e.blocked && isBlockedHere(e.phone)).length,
+    blockedUnusable: plan.summary.blockedUnusable,
+  };
+};
 
 export const chunkEntries = <T,>(items: T[], size = IMPORT_CHUNK): T[][] => {
   const out: T[][] = [];

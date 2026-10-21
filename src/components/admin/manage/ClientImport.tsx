@@ -25,7 +25,7 @@ import {
 } from "../../../lib/clientImport";
 import { ImportFileError, parseClientFile } from "../../../lib/clientImportFile";
 import {
-  findExisting,
+  findExistingRecords,
   listBatches,
   rollbackBatch,
   runImport,
@@ -43,7 +43,7 @@ type Stage =
   | { name: "checking"; done: number; total: number }
   | { name: "ready"; fileName: string; result: DryRun }
   | { name: "importing"; done: number; total: number }
-  | { name: "done"; created: number; existed: number; batchId: string };
+  | { name: "done"; created: number; existed: number; flagged: number; batchId: string };
 
 const card: React.CSSProperties = {
   background: "var(--surface)",
@@ -118,7 +118,7 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
       planRef.current = plan;
       const phones = plan.entries.map((e) => e.phone);
       setStage({ name: "checking", done: 0, total: phones.length });
-      const existing = await findExisting(db, phones, (done, total) =>
+      const existing = await findExistingRecords(db, phones, (done, total) =>
         setStage({ name: "checking", done, total }),
       );
       const result = dryRun(plan, existing);
@@ -141,12 +141,18 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
     const batchId = newBatchId();
     setStage({ name: "importing", done: 0, total: result.toCreate.length });
     try {
-      const done = await runImport(db, result.toCreate, {
+      const done = await runImport(db, [...result.toCreate, ...result.toFlag], {
         batchId,
         uid,
         onProgress: (d, total) => setStage({ name: "importing", done: d, total }),
       });
-      setStage({ name: "done", created: done.created, existed: done.existed, batchId });
+      setStage({
+        name: "done",
+        created: done.created,
+        existed: done.existed,
+        flagged: done.flagged ?? 0,
+        batchId,
+      });
       onSuccess(`Imported ${done.created} clients.`);
     } catch {
       onError("The import stopped part-way. Nothing already added is lost: you can roll it back below, or run it again.");
@@ -161,7 +167,9 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
     try {
       const done = await rollbackBatch(db, id);
       onSuccess(
-        `Rolled back: ${done.removed} removed${done.kept ? `, ${done.kept} kept because they have booked since` : ""}.`,
+        `Rolled back: ${done.removed} removed${done.kept ? `, ${done.kept} kept because they have booked since` : ""}${
+          done.unblocked ? `, ${done.unblocked} unblocked` : ""
+        }.`,
       );
     } catch {
       onError("The rollback didn't finish. Run it again to continue.");
@@ -180,7 +188,8 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
       <p style={{ fontSize: "0.8rem", color: "var(--grey-muted)", margin: "0.2rem 0 1rem" }}>
         Add clients from a Fresha client list (.csv or .xlsx) so they are recognised as
         returning clients when you enter their number. The file is read in this
-        browser and not uploaded. Only names and mobile numbers are imported.
+        browser and not uploaded. Only names and mobile numbers are imported, and
+        clients Fresha has blocked are imported as blocked.
       </p>
 
       <div style={card}>
@@ -225,6 +234,7 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
                   ["Already in the app (left as they are)", result.alreadyExist, "exist"],
                   ["Skipped (no valid mobile number or name)", result.skipped, "skipped"],
                   ["Sharing a number with another client (merged)", result.collapsed, "merged"],
+                  ["Blocked in Fresha (imported as BLOCKED)", result.blocked, "blocked"],
                 ].map(([label, n, key]) => (
                   <tr key={String(key)}>
                     <td style={{ padding: "0.2rem 1.5rem 0.2rem 0" }}>{label}</td>
@@ -235,6 +245,36 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
                 ))}
               </tbody>
             </table>
+            {(result.blocked > 0 || result.blockedUnusable > 0) && (
+              <div
+                role="alert"
+                data-testid="dryrun-blocked-warning"
+                style={{
+                  margin: "0.75rem 0 0",
+                  padding: "0.75rem 1rem",
+                  border: "2px solid var(--ink)",
+                  borderRadius: "6px",
+                  fontSize: "0.85rem",
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong>
+                  Warning: {result.blocked.toLocaleString()} blocked client
+                  {result.blocked === 1 ? "" : "s"} in this file.
+                </strong>{" "}
+                {result.blocked > 0 &&
+                  "They will be imported as BLOCKED: they cannot book online (they are told to call the salon), and the walk-in form shows a blocked warning for them. "}
+                {result.toFlag.length > 0 &&
+                  `${result.toFlag.length.toLocaleString()} of them already have a record here and will have only the blocked flag added. `}
+                {result.alreadyBlocked > 0 &&
+                  `${result.alreadyBlocked.toLocaleString()} are already blocked here. `}
+                {result.blockedUnusable > 0 &&
+                  `${result.blockedUnusable.toLocaleString()} blocked row${
+                    result.blockedUnusable === 1 ? " has" : "s have"
+                  } no usable mobile number, so cannot be blocked here. `}
+                Rolling the import back removes the blocked flag it set.
+              </div>
+            )}
             {leftOut.length > 0 && (
               <p style={{ fontSize: "0.8rem", color: "var(--ink-muted)", margin: "0.75rem 0 0" }}>
                 Not imported (nothing in the app uses them):{" "}
@@ -244,11 +284,14 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
             <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>
               <button
                 type="button"
-                style={button(true, result.toCreate.length === 0)}
-                disabled={result.toCreate.length === 0}
+                style={button(true, result.toCreate.length === 0 && result.toFlag.length === 0)}
+                disabled={result.toCreate.length === 0 && result.toFlag.length === 0}
                 onClick={() => void handleImport()}
               >
                 Import {result.toCreate.length.toLocaleString()} clients
+                {result.toFlag.length > 0
+                  ? ` and mark ${result.toFlag.length.toLocaleString()} existing as blocked`
+                  : ""}
               </button>
               {result.problems.length > 0 && (
                 <button type="button" style={button(false)} onClick={() => downloadReport(result)}>
@@ -271,7 +314,8 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
           <div data-testid="client-import-done">
             <p style={{ margin: 0, fontWeight: 600 }}>
               Imported {stage.created.toLocaleString()} clients
-              {stage.existed > 0 ? ` (${stage.existed.toLocaleString()} had been added meanwhile and were left alone)` : ""}.
+              {stage.existed > 0 ? ` (${stage.existed.toLocaleString()} already had a record and were left alone)` : ""}
+              {stage.flagged > 0 ? `; ${stage.flagged.toLocaleString()} marked blocked` : ""}.
             </p>
             <p style={{ fontSize: "0.8rem", color: "var(--ink-muted)", margin: "0.25rem 0 0.75rem" }}>
               Batch {stage.batchId}. You can roll it back below. Delete the file from this
@@ -297,9 +341,9 @@ const ClientImport = ({ onSuccess, onError }: Props) => {
                 <span style={{ fontSize: "0.85rem" }}>
                   <strong>{new Date(b.createdAt).toLocaleString("en-AU")}</strong> ·{" "}
                   {b.status === "rolled_back"
-                    ? `rolled back (${b.removed ?? 0} removed${b.kept ? `, ${b.kept} kept` : ""})`
+                    ? `rolled back (${b.removed ?? 0} removed${b.kept ? `, ${b.kept} kept` : ""}${b.unblocked ? `, ${b.unblocked} unblocked` : ""})`
                     : b.status === "complete"
-                    ? `${b.created.toLocaleString()} clients added`
+                    ? `${b.created.toLocaleString()} clients added${b.flagged ? `, ${b.flagged.toLocaleString()} marked blocked` : ""}`
                     : b.status === "failed"
                     ? `stopped after ${b.created.toLocaleString()}`
                     : "running"}

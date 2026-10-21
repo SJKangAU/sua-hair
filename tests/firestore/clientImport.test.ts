@@ -15,7 +15,7 @@ import { assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebas
 import { collection, doc, getDoc, getDocs, increment, setDoc } from "firebase/firestore";
 import type { ImportEntry } from "../../src/lib/clientImport";
 import { IMPORT_CHUNK } from "../../src/lib/clientImport";
-import { findExisting, listBatches, rollbackBatch, runImport } from "../../src/lib/clientImportWrites";
+import { findExisting, findExistingRecords, listBatches, rollbackBatch, runImport } from "../../src/lib/clientImportWrites";
 import {
   createTestEnv,
   ownerCtx,
@@ -201,5 +201,105 @@ describe("import: only the owner can use the ledger", () => {
     await assertFails(o.doc("importBatches/b1/chunks/0").set({ phones: Array.from({ length: 501 }, (_, i) => phone(i)) }));
     await assertFails(o.doc("importBatches/b1/chunks/0").set({ phones: [], extra: 1 }));
     await assertSucceeds(o.doc("importBatches/b1/chunks/0").set({ phones: Array.from({ length: 500 }, (_, i) => phone(i)) }));
+  });
+});
+
+// ── Blocked clients (DEC-039) ────────────────────────────────────────────────
+describe("import: blocked clients", () => {
+  const blockedEntries = (nums: number[]): ImportEntry[] =>
+    nums.map((n) => ({ phone: phone(n), name: `Test Client ${n}`, row: n + 1, blocked: true }));
+  const flag = async (n: number) =>
+    (await getDoc(doc(owner(), "customerLookups", phone(n)))).get("blocked");
+  const ledgerBlocked = async (batchId: string) =>
+    (await getDocs(collection(owner(), "importBatches", batchId, "chunks"))).docs.flatMap(
+      (d) => (d.data().blocked ?? []) as string[],
+    );
+
+  it("stores blocked: true on a new blocked client and nothing on the others; nothing else is added", async () => {
+    const all = [...entries(3, 1), ...blockedEntries([4])];
+    const result = await runImport(owner(), all, { batchId: "b1", uid: "owner-uid" });
+    expect(result).toMatchObject({ created: 4, existed: 0, flagged: 1 });
+    expect(await lookup(4)).toEqual({ name: "Test Client 4", lastVisit: "", visitCount: 0, blocked: true });
+    expect(await lookup(1)).toEqual({ name: "Test Client 1", lastVisit: "", visitCount: 0 }); // no blocked field at all
+    expect(await ledgerBlocked("b1")).toEqual([phone(4)]);
+    expect((await getDoc(doc(owner(), "importBatches", "b1"))).data()).toMatchObject({ status: "complete", flagged: 1 });
+  });
+
+  it("an EXISTING client Fresha has blocked gets the flag and nothing else changes", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(7)}`).set({ name: "Real Visitor", lastVisit: "2026-09-01", visitCount: 5 });
+    });
+    const result = await runImport(owner(), blockedEntries([7]), { batchId: "b1", uid: "owner-uid" });
+    expect(result).toMatchObject({ created: 0, existed: 1, flagged: 1 });
+    expect(await lookup(7)).toEqual({ name: "Real Visitor", lastVisit: "2026-09-01", visitCount: 5, blocked: true });
+    expect(await ledgerBlocked("b1")).toEqual([phone(7)]);
+  });
+
+  it("an existing client who is already blocked is not counted or recorded again", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(8)}`).set({ name: "Already", lastVisit: "", visitCount: 0, blocked: true });
+    });
+    const result = await runImport(owner(), blockedEntries([8]), { batchId: "b1", uid: "owner-uid" });
+    expect(result.flagged).toBeUndefined();
+    expect(await ledgerBlocked("b1")).toEqual([]);
+  });
+
+  it("findExistingRecords reports whether an existing record is already blocked", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(1)}`).set({ name: "A", lastVisit: "", visitCount: 0, blocked: true });
+      await ctx.firestore().doc(`customerLookups/${phone(2)}`).set({ name: "B", lastVisit: "", visitCount: 0 });
+    });
+    const found = await findExistingRecords(owner(), [phone(1), phone(2), phone(3)]);
+    expect([...found.entries()]).toEqual([
+      [phone(1), { blocked: true }],
+      [phone(2), { blocked: false }],
+    ]);
+  });
+
+  it("rollback removes a created blocked client's record, and removes ONLY the flag it set on an existing one", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(7)}`).set({ name: "Real Visitor", lastVisit: "2026-09-01", visitCount: 5 });
+      await ctx.firestore().doc(`customerLookups/${phone(8)}`).set({ name: "Blocked Before", lastVisit: "", visitCount: 0, blocked: true });
+    });
+    await runImport(owner(), [...entries(2, 1), ...blockedEntries([4, 7, 8])], { batchId: "b1", uid: "owner-uid" });
+    expect(await flag(7)).toBe(true);
+
+    const result = await rollbackBatch(owner(), "b1");
+    expect(result).toMatchObject({ removed: 3, kept: 0, unblocked: 1 }); // 1,2,4 removed; 7's flag removed
+    expect(await lookup(4)).toBeUndefined(); // created blocked: gone entirely
+    expect(await lookup(7)).toEqual({ name: "Real Visitor", lastVisit: "2026-09-01", visitCount: 5 }); // flag gone, record intact
+    expect(await lookup(8)).toEqual({ name: "Blocked Before", lastVisit: "", visitCount: 0, blocked: true }); // was blocked before: untouched
+    expect(await ledgerChunks("b1")).toEqual([]);
+    expect((await getDoc(doc(owner(), "importBatches", "b1"))).data()).toMatchObject({ status: "rolled_back", unblocked: 1 });
+  });
+
+  it("rollback keeps a created client who has booked since, but still removes the flag the import set", async () => {
+    await runImport(owner(), blockedEntries([5]), { batchId: "b1", uid: "owner-uid" });
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`customerLookups/${phone(5)}`).set({ lastVisit: "2026-12-01", visitCount: 1 }, { merge: true });
+    });
+    const result = await rollbackBatch(owner(), "b1");
+    expect(result).toMatchObject({ removed: 0, kept: 1, unblocked: 1 });
+    expect(await lookup(5)).toEqual({ name: "Test Client 5", lastVisit: "2026-12-01", visitCount: 1 });
+  });
+
+  it("is idempotent: importing the same blocked list twice flags and creates nothing the second time; rolling back twice is harmless", async () => {
+    const list = [...entries(3, 1), ...blockedEntries([4])];
+    await runImport(owner(), list, { batchId: "b1", uid: "owner-uid" });
+    const again = await runImport(owner(), list, { batchId: "b2", uid: "owner-uid" });
+    expect(again).toMatchObject({ created: 0, existed: 4 });
+    expect(again.flagged).toBeUndefined();
+    await rollbackBatch(owner(), "b1");
+    expect(await rollbackBatch(owner(), "b1")).toEqual({ removed: 0, kept: 0 });
+  });
+
+  it("the blocked flag lives in an owner-only collection: stylists and the public cannot read it", async () => {
+    await runImport(owner(), blockedEntries([4]), { batchId: "b1", uid: "owner-uid" });
+    const stylist = stylistCtx(testEnv).firestore();
+    const anon = testEnv.unauthenticatedContext().firestore();
+    for (const db of [stylist, anon]) {
+      await assertFails(db.doc(`customerLookups/${phone(4)}`).get());
+      await assertFails(db.collection("customerLookups").get());
+    }
   });
 });

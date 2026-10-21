@@ -7,8 +7,9 @@
 // stylist account never sees the section. TC-078 .. TC-084.
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { connectEnv, readCollection, seedEmulator } from "./seed";
+import { connectEnv, readCollection, seedEmulator, setClaims } from "./seed";
 import { BASE_URL, dialog, newAdminPage, openNewBooking } from "./admin";
+import { submitDetails, toDetailsStep, upcoming } from "./helpers";
 
 test.use({ viewport: { width: 1400, height: 1400 } });
 
@@ -84,7 +85,11 @@ test("TC-079 the dry run reports counts and the error report has row numbers onl
   await expect(count(page, "skipped")).toHaveText("4");
   await expect(count(page, "merged")).toHaveText("1");
   await expect(page.getByTestId("client-import-dryrun")).toContainText("1 emails");
-  await expect(page.getByTestId("client-import-dryrun")).toContainText("1 blocked clients");
+  // blocked clients are no longer "left out" (DEC-039): they are counted, with a warning
+  await expect(count(page, "blocked")).toHaveText("1");
+  await expect(page.getByTestId("dryrun-blocked-warning")).toContainText("1 blocked client in this file");
+  await expect(page.getByTestId("dryrun-blocked-warning")).toContainText("imported as BLOCKED");
+  await expect(page.getByTestId("client-import-dryrun")).not.toContainText("blocked clients (nothing");
   await expect(page.getByTestId("client-import-dryrun")).toContainText(/nothing has been written yet/i);
   expect(await phones()).toEqual(["0400000009"]); // a dry run writes nothing
 
@@ -121,7 +126,9 @@ test("TC-080 confirming imports the clients as name + phone only; an existing cl
   expect(by["0400000006"].name).toBe("Test Split"); // first + last when Full Name is empty
   expect(by["0400000008"].name).toBe("Test Ünïcöde Client"); // spaces collapsed, any script kept
   expect(by["0400000009"]).toEqual({ id: "0400000009", name: "Existing Client", lastVisit: "2026-09-01", visitCount: 5 });
-  await expect(page.getByTestId("client-import-batch")).toContainText("8 clients added");
+  // the one client Fresha has Blocked is imported as blocked (and only that field is extra)
+  expect(by["0400000004"]).toEqual({ id: "0400000004", name: "Test Client 4", lastVisit: "", visitCount: 0, blocked: true });
+  await expect(page.getByTestId("client-import-batch")).toContainText("8 clients added, 1 marked blocked");
   await page.context().close();
 });
 
@@ -203,5 +210,59 @@ test("TC-085 a wrong file is refused with a message, nothing is written", async 
   await expect(page.getByText(/doesn't look like a client list: missing Full Name and Mobile Number/)).toBeVisible();
   await expect(page.getByTestId("client-import-dryrun")).toHaveCount(0);
   expect(await phones()).toEqual(["0400000009"]);
+  await page.context().close();
+});
+
+test("TC-095 a client Fresha has blocked cannot book online; rolling the import back lets them book again", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await openImport(page);
+  await dryRunWith(page, CSV);
+  await page.getByRole("button", { name: "Import 8 clients" }).click();
+  await expect(page.getByTestId("client-import-done")).toContainText("1 marked blocked");
+
+  // the blocked client (0400 000 004) tries to book online
+  const context = await browser.newContext({ baseURL: BASE_URL, locale: "en-AU", timezoneId: "Australia/Melbourne", viewport: { width: 1200, height: 1000 } });
+  const customer = await context.newPage();
+  const day = upcoming(3, 4);
+  const who = { services: ["Men's Cut"], stylist: "Steve", date: day, time: "11:00 AM", phone: "0400 000 004", name: "Test Client" };
+  await toDetailsStep(customer, who);
+  await submitDetails(customer, who);
+  await expect(customer.getByText("Please call the salon to book")).toBeVisible();
+  expect(await readCollection("bookings")).toHaveLength(0);
+  // an ordinary imported client (not blocked) can
+  await toDetailsStep(customer, { ...who, phone: "0400 000 001" });
+  await submitDetails(customer, { ...who, phone: "0400 000 001", name: "Test Client" });
+  await expect(customer.getByRole("heading", { name: /Request received/ })).toBeVisible();
+
+  // rolling the import back removes the blocked flag it set (the created record goes entirely)
+  await page.getByRole("button", { name: "Roll back" }).click();
+  await page.getByRole("button", { name: "Yes, roll back" }).click();
+  await expect(page.getByTestId("client-import-batch")).toContainText("rolled back");
+  expect((await lookups()).find((l) => l.id === "0400000004")).toBeUndefined();
+  // (the ordinary client's request holds 11:00, so the formerly blocked client takes 1:00 PM)
+  const again = { ...who, time: "1:00 PM" };
+  await toDetailsStep(customer, again);
+  await submitDetails(customer, again);
+  await expect(customer.getByRole("heading", { name: /Request received/ })).toBeVisible();
+  await context.close();
+  await page.context().close();
+});
+
+test("TC-096 the walk-in form warns about a blocked client instead of calling them a returning client", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await openImport(page);
+  await dryRunWith(page, CSV);
+  await page.getByRole("button", { name: "Import 8 clients" }).click();
+  await expect(page.getByTestId("client-import-done")).toBeVisible();
+
+  await page.goto("/admin/today");
+  await openNewBooking(page);
+  const d = dialog(page);
+  await d.getByRole("button", { name: "Walk-in", exact: true }).click();
+  await d.getByPlaceholder("e.g. 0412 345 678").fill("0400 000 004");
+  await expect(d.getByTestId("blocked-client-warning")).toContainText("BLOCKED CLIENT");
+  await expect(d.getByText("Returning client")).toHaveCount(0);
+  // a blocked client's name is not filled in as if they were an ordinary returning client
+  await expect(d.getByPlaceholder("e.g. Jane Smith")).toHaveValue("");
   await page.context().close();
 });
