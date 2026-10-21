@@ -164,7 +164,7 @@ Each requirement lists the test that verifies it. `TC-nnn` are the browser scena
 **Acceptance criteria:**
 
 - [x] Session appears under Upcoming with a toast (TC-025)
-- [x] Not shown on the Today timeline; the grid does not grow to include it (TC-026)
+- [x] Shown on the Today timeline of its day (the stylist is busy then); the grid stretches in whole hours to include it (TC-026). Not on the customer-facing page
 - [x] A session dated in the past appears under Past Sessions (TC-027)
 - [x] A second session overlapping the trainer's is refused (`admin` suite)
 

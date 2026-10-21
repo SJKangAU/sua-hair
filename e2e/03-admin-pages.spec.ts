@@ -217,12 +217,16 @@ test("TC-025 create a training session: appears under upcoming sessions with a t
   expect(t[0]).toMatchObject({ stylistId: "steve", traineeName: "Elly Lee", time: "7:00 PM", date: day, totalTime: 60 });
 });
 
-test("TC-026 a training session does not appear on the main timeline", async () => {
+// A training session IS on the Today timeline of its day (the owner chose this: the stylist is busy
+// then), and the grid stretches in whole hours to hold it. This test used to assert the opposite and
+// only passed because it looked before the day's bookings had loaded.
+test("TC-026 a training session is on the Today timeline of its day; the grid stretches to cover it", async () => {
   const day = upcoming(3, 10);
   await page.goto(`/admin/today?date=${day}`);
   await expect(page.getByText("Steve · Director").first()).toBeVisible();
-  await expect(page.getByText("Colour application")).toHaveCount(0);
-  await expect(page.getByText("7:00 PM", { exact: true })).toHaveCount(0); // grid is still 10-6
+  await expect(page.getByText("Colour application").first()).toBeVisible(); // waits for the bookings to load
+  await expect(page.getByText("7:00 PM", { exact: true })).toHaveCount(1); // the 7-8 pm session
+  await expect(page.getByText("8:00 PM", { exact: true })).toHaveCount(1); // the grid runs to 8 pm
 });
 
 test("TC-027 a session dated yesterday appears under Past Sessions", async () => {

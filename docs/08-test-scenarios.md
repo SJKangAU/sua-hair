@@ -70,7 +70,7 @@ Conventions: "the salon" is open Tuesday–Sunday 10:00–18:00 and closed Monda
 | ID     | Scenario                      | Steps                                                                  | Expected Result                                            | Automated by   |
 | ------ | ----------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------- | -------------- |
 | TC-025 | Create training session       | Choose trainer, trainee, date, start time, topic, duration → Create    | Session appears under Upcoming. Toast shown.               | 03-admin-pages |
-| TC-026 | Training not on main timeline | Create a training session. Open Today for the same date                | Session does not appear; the grid is still the trading hours | 03-admin-pages |
+| TC-026 | Training on the Today timeline | Create a training session (7:00 PM, 1 hour). Open Today for the same date | The session appears under its stylist; the grid stretches to 8:00 PM to hold it (it was previously written, and wrongly passed, as "does not appear") | 03-admin-pages |
 | TC-027 | Past sessions                 | Create a session with yesterday's date                                 | Session appears under Past Sessions                        | 03-admin-pages |
 
 ---
