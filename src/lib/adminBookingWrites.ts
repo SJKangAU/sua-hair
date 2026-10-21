@@ -6,7 +6,9 @@
 //  - The document ID is always auto-generated, so a new booking can never
 //    replace an existing one (the readable reference lives in `bookingRef`).
 //  - The booking, its PII-free slotBlocks projection and (for a named client)
-//    the customerLookups visit record are written together or not at all.
+//    the customerLookups visit record are written together or not at all; the
+//    booking also carries its clientId (the client's document is kept in step by
+//    the onBookingWritten trigger - a browser transaction cannot query).
 //  - The stylist's day is checked with the customer flow's own rest-aware
 //    overlap rules; a clash throws BookingConflictError and writes nothing.
 //  - Two admins cannot race. The Firestore client SDK cannot query inside a
@@ -41,6 +43,7 @@ import { isSlotFreeing } from "./bookingStatus";
 import { slotBlockSchedulePatch, toSlotBlock } from "./slotBlockData";
 import { phaseWriteFields } from "./phaseFields";
 import { cleanPhone } from "./validation";
+import { clientIdFromPhone } from "./clients";
 import { slotLockId } from "./slotLockId";
 import type { ConflictProbe } from "./scheduling";
 import type { Booking, BookingHistoryEntry, Phase } from "../types";
@@ -96,7 +99,15 @@ export const createAdminBooking = (
       phases: booking.phases,
     },
     (tx) => {
-      tx.set(ref, booking);
+      // The booking belongs to a client when it has a valid phone (DEC-044). The client's
+      // document and figures are then made by the onBookingWritten trigger within seconds:
+      // a browser transaction cannot query the client's other bookings, so it cannot work
+      // them out here.
+      const clientId =
+        booking.bookingType === "customer" || booking.bookingType === "walkin"
+          ? clientIdFromPhone(booking.customerPhone)
+          : null;
+      tx.set(ref, clientId ? { ...booking, clientId } : booking);
       tx.set(doc(firestore, "slotBlocks", ref.id), toSlotBlock(booking));
       if (booking.customerPhone.trim()) {
         tx.set(

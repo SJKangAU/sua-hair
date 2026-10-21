@@ -339,3 +339,19 @@ describe("security — the write path still needs a staff login", () => {
     await assertFails(createAdminBooking(anonDb(), walkin()));
   });
 });
+
+describe("a booking belongs to its client (DEC-044)", () => {
+  it("a walk-in with a valid phone carries the client id, however the number was typed", async () => {
+    const id = await createAdminBooking(staffDb(), walkin({ customerPhone: "0400 000 001" }));
+    expect((await getDoc(doc(staffDb(), "bookings", id))).get("clientId")).toBe("0400000001");
+  });
+
+  it("a walk-in with no phone, an invalid phone, and a break carry none", async () => {
+    const none = await createAdminBooking(staffDb(), walkin({ customerPhone: "", time: "11:00 AM" }));
+    const bad = await createAdminBooking(staffDb(), walkin({ customerPhone: "12345", time: "12:00 PM" }));
+    const brk = await createAdminBooking(staffDb(), breakBlock({ time: "2:00 PM" }));
+    for (const id of [none, bad, brk]) {
+      expect((await getDoc(doc(staffDb(), "bookings", id))).get("clientId")).toBeUndefined();
+    }
+  });
+});
