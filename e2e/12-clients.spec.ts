@@ -62,25 +62,23 @@ interface ClientSeed {
   email?: string;
 }
 
-/** Writes a client (and its card) as the server would, plus their bookings. Rules bypassed. */
+/**
+ * Writes a client (and its card) as the server would, plus their bookings. Rules bypassed.
+ * The client and card go in FIRST: each booking write fires the onBookingWritten trigger,
+ * which rebuilds the client from its bookings and keeps what the owner set (blocked, tags)
+ * from the stored record. A trigger that ran before the record existed could write a
+ * client without "blocked" over the seed on a slow machine (CI), so it never gets the chance.
+ */
 async function seedClients(list: ClientSeed[]): Promise<void> {
   const env = await connectEnv();
   try {
     await env.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      const bookingsOf = (c: ClientSeed) => (c.visits ?? []).map((v) => ({ id: v.id, ...bookingDoc(c.phone, c.name, v) }));
       for (const c of list) {
-        const bookings = (c.visits ?? []).map((v) => ({ id: v.id, ...bookingDoc(c.phone, c.name, v) }));
-        for (const b of bookings) {
-          const { id, ...data } = b;
-          await db.doc(`bookings/${id}`).set(data);
-          await db.doc(`slotBlocks/${id}`).set({
-            stylistId: data.stylistId, date: data.date, time: data.time, activeTime: 45, totalTime: 45,
-            restTime: 0, status: data.status,
-          });
-        }
         const client = buildClient(
           c.phone,
-          bookings as never,
+          bookingsOf(c) as never,
           {
             tags: c.tags ?? [],
             blocked: c.blocked === true,
@@ -95,6 +93,16 @@ async function seedClients(list: ClientSeed[]): Promise<void> {
         );
         await db.doc(`clients/${c.phone}`).set(client);
         await db.doc(`clientCards/${c.phone}`).set(clientCardOf(client, c.phone));
+      }
+      for (const c of list) {
+        for (const b of bookingsOf(c)) {
+          const { id, ...data } = b;
+          await db.doc(`bookings/${id}`).set(data);
+          await db.doc(`slotBlocks/${id}`).set({
+            stylistId: data.stylistId, date: data.date, time: data.time, activeTime: 45, totalTime: 45,
+            restTime: 0, status: data.status,
+          });
+        }
       }
     });
   } finally {
