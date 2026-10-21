@@ -257,6 +257,72 @@ service cloud.firestore {
       }
     }
 
+    // ── clients, clientCards, notes, audit (DEC-044 to DEC-049) ──────────────
+    // clients/{phone}: one document per client, OWNER ONLY - it holds total spend,
+    // the blocked reason and the email, and a rule cannot hide a field from an
+    // authorised read. The owner writes it from the browser (details, tags, block,
+    // the Fresha import) and the functions write it with the Admin SDK (recompute).
+    //
+    // clientCards/{phone} is the slim copy a STYLIST may read, and only for a client
+    // who has a booking with them (stylistIds): name, phone, tags, blocked yes/no. No
+    // spend, no email, no reason. Their own bookings with the client are read from
+    // `bookings` (the booking rules already limit them to their own).
+    //
+    // Notes are append-only: created with the author's own uid, never rewritten
+    // except to pin or unpin; the owner deletes any, a stylist only their own.
+    // The audit trail is owner-only and write-once.
+    function cardAllowsMe(clientId) {
+      return isStylist()
+        && get(/databases/$(database)/documents/clientCards/$(clientId)).data.stylistIds
+             .hasAny([request.auth.token.stylistId]);
+    }
+
+    function validNote(n) {
+      return n.keys().hasOnly(['text', 'authorUid', 'authorName', 'createdAt', 'pinned'])
+        && n.text is string && n.text.size() > 0 && n.text.size() <= 2000
+        && n.authorUid == request.auth.uid
+        && n.authorName is string && n.authorName.size() <= 100
+        && n.createdAt is string
+        && n.pinned is bool;
+    }
+
+    match /clients/{clientId} {
+      allow read, write: if isOwner();
+
+      match /notes/{noteId} {
+        allow read: if isOwner() || cardAllowsMe(clientId);
+        allow create: if (isOwner() || cardAllowsMe(clientId)) && validNote(request.resource.data);
+        // pin / unpin only - the text and the author never change
+        allow update: if (isOwner() || (isStylist() && resource.data.authorUid == request.auth.uid))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']);
+        allow delete: if isOwner() || (isStylist() && resource.data.authorUid == request.auth.uid);
+      }
+
+      match /audit/{entryId} {
+        allow read: if isOwner();
+        allow create: if isOwner()
+          && request.resource.data.keys().hasOnly(['action', 'byUid', 'byName', 'at', 'detail'])
+          && request.resource.data.byUid == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    match /clientCards/{clientId} {
+      allow get, list: if isOwner()
+        || (isStylist() && request.auth.token.stylistId in resource.data.stylistIds);
+      allow write: if isOwner();
+    }
+
+    // The build-the-client-list ledger (owner only, written by the function).
+    match /clientBackfills/{batchId} {
+      allow read: if isOwner();
+      allow write: if false;
+      match /chunks/{chunkId} {
+        allow read: if isOwner();
+        allow write: if false;
+      }
+    }
+
     // ── users ────────────────────────────────────────────────────────────
     // The readable record of each role grant ({role, stylistId?, email?}),
     // written ONLY by the Admin SDK (roles.ts). A provisioned user reads their own;

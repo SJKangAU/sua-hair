@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test:unit": "vitest run tests/unit",
     "test:unit:tz": "node scripts/unit-tz.mjs",
-    "test:rules": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts\"",
+    "test:rules": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts tests/firestore/clientsRules.test.ts\"",
     "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\"",
     "test:admin": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts\"",
     "test:functions": "firebase emulators:exec --project demo-sua-functions --only firestore,auth \"vitest run tests/functions\"",
