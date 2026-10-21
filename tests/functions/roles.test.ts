@@ -8,6 +8,7 @@ import {
   grantRole,
   ownerUids,
   revokeRole,
+  setStylistDefaults,
   verifyRole,
 } from "../../functions/src/roles";
 import { adminAuth, adminDb, resetEmulators } from "./adminEnv";
@@ -201,5 +202,94 @@ describe("whose clients a stylist may open (FR-025, DEC-051)", () => {
     const check = await verifyRole(auth, db, uid);
     expect(check.ok).toBe(false);
     expect(check.problems.join(" ")).toMatch(/client access differ/);
+  });
+});
+
+
+describe("what a stylist may do (FR-026, DEC-052)", () => {
+  const caps = async (uid: string) => (await auth.getUser(uid)).customClaims?.caps;
+  const record = async (uid: string) => (await db.doc(`users/${uid}`).get()).data()!;
+  const defaultsDoc = () => db.doc("privateSettings/permissions");
+
+  it("a stylist with nothing granted has no caps claim and an empty effective list", async () => {
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve" });
+    expect(await caps(uid)).toBeUndefined();
+    expect(await record(uid)).toMatchObject({ permissions: { grant: [], deny: [] }, effectiveCaps: [] });
+  });
+
+  it("an individual grant becomes a claim (short code) and a record that agree, and verifies", async () => {
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", permissions: { grant: ["editMessages", "approveTimeOff"], deny: [] } });
+    expect(await caps(uid)).toEqual(["msg", "timeoff"]);
+    expect(await record(uid)).toMatchObject({ effectiveCaps: ["editMessages", "approveTimeOff"] });
+    expect((await verifyRole(auth, db, uid, { role: "stylist" })).ok).toBe(true);
+  });
+
+  it("the role defaults apply to a new stylist, and an individual denial beats them", async () => {
+    await defaultsDoc().set({ stylistDefaults: ["editMessages", "sendWinBack"] });
+    const a = await makeUser("a@example.test");
+    const b = await makeUser("b@example.test");
+    await db.doc("stylists/harry").set({ name: "Harry", level: "junior", status: "active" });
+    await grantRole(auth, db, a, { role: "stylist", stylistId: "steve" });
+    await grantRole(auth, db, b, { role: "stylist", stylistId: "harry", permissions: { grant: [], deny: ["sendWinBack"] } });
+    expect(await caps(a)).toEqual(["msg", "winback"]);
+    expect(await caps(b)).toEqual(["msg"]);
+  });
+
+  it("changing the role defaults re-works every stylist, keeps their overrides and tells their screens (grantedAt)", async () => {
+    await db.doc("stylists/harry").set({ name: "Harry", level: "junior", status: "active" });
+    const a = await makeUser("a@example.test");
+    const b = await makeUser("b@example.test");
+    await grantRole(auth, db, a, { role: "stylist", stylistId: "steve" });
+    await grantRole(auth, db, b, { role: "stylist", stylistId: "harry", permissions: { grant: ["approveTimeOff"], deny: ["sendWinBack"] } });
+    const before = (await record(b)).grantedAt;
+
+    await new Promise((r) => setTimeout(r, 5));
+    const changed = await setStylistDefaults(auth, db, ["editMessages", "sendWinBack"]);
+    expect(changed).toBe(2);
+    expect(await caps(a)).toEqual(["msg", "winback"]);
+    expect(await caps(b)).toEqual(["msg", "timeoff"]); // the denial of win-back and the grant of time off survive
+    expect((await record(b)).grantedAt > before).toBe(true);
+    expect((await verifyRole(auth, db, a)).ok).toBe(true);
+    expect((await verifyRole(auth, db, b)).ok).toBe(true);
+
+    // a change that alters nothing for anyone rewrites nothing
+    expect(await setStylistDefaults(auth, db, ["sendWinBack", "editMessages", "bogus"])).toBe(0);
+  });
+
+  it("re-granting the role without saying keeps their permissions; changing the stylist resets them", async () => {
+    const uid = await makeUser("steve@example.test");
+    await db.doc("stylists/elly").set({ name: "Elly", level: "senior", status: "active" });
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", permissions: { grant: ["editClientRecords"], deny: [] } });
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve" }); // e.g. the provisioning script again
+    expect(await caps(uid)).toEqual(["records"]);
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "elly" }); // now a different person
+    expect(await caps(uid)).toBeUndefined();
+    await grantRole(auth, db, uid, { role: "owner" });
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "owner" });
+  });
+
+  it("keeps the client access and the capabilities side by side in one claim set", async () => {
+    await db.doc("stylists/yuto").set({ name: "Yuto", level: "senior", status: "active" });
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, {
+      role: "stylist",
+      stylistId: "steve",
+      clientAccess: { all: false, stylistIds: ["yuto"] },
+      permissions: { grant: ["editMessages"], deny: [] },
+    });
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve", clientStylists: ["yuto"], caps: ["msg"] });
+    await setStylistDefaults(auth, db, ["sendWinBack"]); // re-working capabilities leaves the access alone
+    expect((await auth.getUser(uid)).customClaims).toEqual({ role: "stylist", stylistId: "steve", clientStylists: ["yuto"], caps: ["msg", "winback"] });
+  });
+
+  it("verify catches a claim and a record that disagree about permissions", async () => {
+    const uid = await makeUser("steve@example.test");
+    await grantRole(auth, db, uid, { role: "stylist", stylistId: "steve", permissions: { grant: ["editMessages"], deny: [] } });
+    await auth.setCustomUserClaims(uid, { role: "stylist", stylistId: "steve", caps: ["msg", "winback", "timeoff"] }); // widened behind the record's back
+    const check = await verifyRole(auth, db, uid);
+    expect(check.ok).toBe(false);
+    expect(check.problems.join(" ")).toMatch(/permissions differ/);
   });
 });

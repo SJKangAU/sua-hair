@@ -8,6 +8,7 @@ import { signOut } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import useAppUser from "../hooks/useAppUser";
+import { can } from "../lib/permissions";
 import { useSalonData } from "../context/SalonDataContext";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 import { NotificationProvider } from "../context/NotificationProvider";
@@ -118,6 +119,11 @@ const ScheduleInner = () => {
           >
             My clients
           </Link>
+          {can(appUser, "editMessages") && (
+            <Link to="/stylist/messages" style={{ color: "var(--admin-dimmer)", fontSize: "0.8rem" }}>
+              Messages
+            </Link>
+          )}
           <button
             onClick={handleSignOut}
             style={{

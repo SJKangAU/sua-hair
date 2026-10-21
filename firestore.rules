@@ -99,6 +99,13 @@ service cloud.firestore {
         || (isStylist() && id in request.auth.token.get('clientStylists', []));
     }
 
+    // Something the owner has let this stylist do (FR-026): a short code in the `caps`
+    // claim, written only by the Admin SDK ('msg' edit wording, 'winback' send win-back
+    // messages, 'timeoff' approve time off, 'records' edit client records).
+    function hasCap(code) {
+      return isStylist() && code in request.auth.token.get('caps', []);
+    }
+
     // A client card (its stylistIds list) this stylist may open.
     function viewableCard(stylistIds) {
       return isStylist()
@@ -238,16 +245,19 @@ service cloud.firestore {
     // (privateSettings/notifications) and the text-message switches and wording
     // (privateSettings/sms, FR-024). Cloud Functions read them with the Admin SDK,
     // which bypasses these rules.
+    //
+    // The text-message wording (`sms`) may also be read and written by a stylist the
+    // owner has given the 'edit message wording' permission (FR-026).
     match /privateSettings/{docId} {
-      allow read: if isOwner();
-      allow write: if isOwner() && (
+      allow read: if isOwner() || (hasCap('msg') && docId == 'sms');
+      allow write: if (isOwner() && (
         (docId == 'notifications'
           && request.resource.data.keys().hasOnly(['notifyOwnerByEmail', 'ownerEmail'])
           && request.resource.data.notifyOwnerByEmail is bool
           && request.resource.data.ownerEmail is string
           && request.resource.data.ownerEmail.size() <= 254)
         || (docId == 'sms' && validSmsSettings(request.resource.data))
-      );
+      )) || (hasCap('msg') && docId == 'sms' && validSmsSettings(request.resource.data));
     }
 
     // ── smsLog ──────────────────────────────────────────────────────────
@@ -255,7 +265,7 @@ service cloud.firestore {
     // last three digits of the number. No message text and no full number. Written
     // only by the booking functions; the owner reads it on the Manage page.
     match /smsLog/{logId} {
-      allow read: if isOwner();
+      allow read: if isOwner() || hasCap('msg');
       allow write: if false;
     }
 

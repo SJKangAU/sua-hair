@@ -96,6 +96,21 @@ const router = createBrowserRouter([
     },
     HydrateFallback: PageLoading,
   },
+  {
+    // Message wording for a stylist the owner has allowed to edit it (FR-026)
+    path: "/stylist/messages",
+    lazy: async () => {
+      const StylistMessagesPage = (await import("../pages/StylistMessagesPage")).default;
+      return {
+        Component: () => (
+          <ProtectedRoute requiredRole="stylist" loginPath="/stylist/login">
+            <StylistMessagesPage />
+          </ProtectedRoute>
+        ),
+      };
+    },
+    HydrateFallback: PageLoading,
+  },
   ...["/stylist/clients", "/stylist/clients/:clientId"].map((path) => ({
     // A stylist's own clients (and one client's page) - requires stylist role
     path,

@@ -15,6 +15,7 @@ import type { User } from "firebase/auth";
 import useAuth from "./useAuth";
 import { db } from "../lib/firebase";
 import { accessFromClaims } from "../lib/clientAccess";
+import { capabilitiesFromClaims } from "../lib/permissions";
 import type { AppUser } from "../types";
 
 interface Result {
@@ -38,7 +39,12 @@ const appUserFromClaims = async (user: User, forceRefresh = false): Promise<AppU
     uid: user.uid,
     role: claimed,
     ...(typeof stylistId === "string" && stylistId ? { stylistId } : {}),
-    ...(claimed === "stylist" ? { clientAccess: accessFromClaims(result.claims, typeof stylistId === "string" ? stylistId : undefined) } : {}),
+    ...(claimed === "stylist"
+      ? {
+          clientAccess: accessFromClaims(result.claims, typeof stylistId === "string" ? stylistId : undefined),
+          capabilities: capabilitiesFromClaims(result.claims),
+        }
+      : {}),
   };
 };
 

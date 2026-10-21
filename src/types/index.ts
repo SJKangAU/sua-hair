@@ -9,6 +9,7 @@
 // (breaks, training, walkin) that don't go through the booking flow.
 
 import type { ClientAccess } from "../lib/clientAccess";
+import type { Capability } from "../lib/permissions";
 
 export interface TieredPrice {
   director: number;
@@ -285,6 +286,8 @@ export interface AppUser {
   stylistId?: string; // only set when role === 'stylist'
   // Whose clients the stylist may open beyond their own (FR-025); from the sign-in token
   clientAccess?: ClientAccess;
+  // What else the owner lets this person do (FR-026); an owner can do everything
+  capabilities?: Capability[];
 }
 
 // ── Waitlist (Phase 12) ───────────────────────────────────────────────────────

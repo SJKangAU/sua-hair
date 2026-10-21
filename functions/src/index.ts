@@ -56,9 +56,10 @@ import { backfillClientsCore } from "./clientBackfill";
 import { SALON } from "./salon";
 import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } from "./sms/provider";
 import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
-import { requireOwner } from "./guards";
+import { requireCapability, requireOwner } from "./guards";
 import { normaliseAccess } from "../../src/lib/clientAccess";
-import { RoleError, grantRole, revokeRole, type Role } from "./roles";
+import { normalisePermissions } from "../../src/lib/permissions";
+import { RoleError, grantRole, revokeRole, setStylistDefaults, type Role } from "./roles";
 import { bookingInstant, localDateString } from "./time";
 
 initializeApp();
@@ -219,11 +220,12 @@ export const setUserRole = onCall(
   { region: "australia-southeast1" },
   async (request) => {
     const caller = await requireOwner(db, request, "manage roles");
-    const { email, role, stylistId, clientAccess } = (request.data ?? {}) as {
+    const { email, role, stylistId, clientAccess, permissions } = (request.data ?? {}) as {
       email?: unknown;
       role?: unknown;
       stylistId?: unknown;
       clientAccess?: unknown;
+      permissions?: unknown;
     };
     if (typeof email !== "string" || !isValidEmail(email)) {
       throw new HttpsError("invalid-argument", "A valid email address is required.");
@@ -256,6 +258,7 @@ export const setUserRole = onCall(
                   ),
                 }
               : {}),
+            ...(permissions !== undefined ? { permissions: normalisePermissions(permissions) } : {}),
           },
           { actingUid: caller.uid },
         );
@@ -269,6 +272,18 @@ export const setUserRole = onCall(
     return { ok: true };
   },
 );
+
+/**
+ * setStylistDefaults - owner-only. { capabilities: [...] }: what EVERY stylist may do (FR-026).
+ * Every stylist's claims are worked out again, so a change reaches their open screens
+ * without signing out.
+ */
+export const setPermissionDefaults = onCall({ region: "australia-southeast1", timeoutSeconds: 120 }, async (request) => {
+  await requireOwner(db, request, "change what stylists can do");
+  const raw = (request.data ?? {}) as { capabilities?: unknown };
+  const changed = await setStylistDefaults(getAuth(), db, raw.capabilities);
+  return { ok: true, changed };
+});
 
 // ── Booking commands (DEC-035 to DEC-040) ───────────────────────────────────
 // Thin callables around functions/src/bookingCommands.ts (which holds, and is
@@ -382,14 +397,14 @@ const ownerClientCommand = <R>(
   );
 
 /**
- * sendTestSms - owner. { kind, to }: texts the owner's current wording for one
+ * sendTestSms - owner, or a stylist allowed to edit message wording. { kind, to }: texts the owner's current wording for one
  * message, filled in with a sample booking, to a number they choose. For checking
  * the sender name and the wording before switching texts on (FR-024).
  */
 export const sendTestSms = onCall(
   { region: REGION, maxInstances: 3, secrets: SMS_SECRETS },
   async (request) => {
-    const owner = await requireOwner(db, request, "send a test text");
+    const owner = await requireCapability(db, request, "editMessages", "send a test text");
     return run(() => sendTestSmsCore(db, smsTransport(), request.data, owner.uid, Date.now()));
   },
 );

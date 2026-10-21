@@ -1,5 +1,7 @@
 // TeamAccess.tsx
-// Manage tab section (owner only) - who can sign in to the admin, as what, and whose
+// Manage tab section (owner only): "Team & permissions" - who can sign in to the admin, as what,
+// what else each stylist may do (FR-026, DEC-052: edit message wording, send win-back
+// messages, approve time off, edit client records - for every stylist, or one), and whose
 // clients each stylist may open (FR-025, DEC-051). A stylist starts with only the
 // clients who have a booking with them; here the owner can widen that to named
 // colleagues' clients or to every client, give someone a role, or take it away.
@@ -9,11 +11,18 @@
 // moments, without signing out.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { normaliseAccess, type ClientAccess } from "../../../lib/clientAccess";
-import { TeamCommandError, setUserRole } from "../../../lib/teamCommands";
+import {
+  CAPABILITIES,
+  CAPABILITY_INFO,
+  normaliseDefaults,
+  overridesFor,
+  type Capability,
+} from "../../../lib/permissions";
+import { TeamCommandError, setPermissionDefaults, setUserRole } from "../../../lib/teamCommands";
 import { validateEmail } from "../../../lib/validation";
 
 interface Props {
@@ -27,6 +36,7 @@ interface Member {
   role: "owner" | "stylist";
   stylistId?: string;
   access: ClientAccess;
+  caps: Capability[]; // what they can do now (the role defaults with their own overrides)
 }
 
 type Mode = "own" | "some" | "all";
@@ -126,11 +136,49 @@ const AccessPicker = ({ testId, ownId, value, others, onChange }: PickerProps) =
   );
 };
 
+interface CapabilityBoxesProps {
+  testId: string;
+  value: Capability[];
+  /** When given, a tick that differs from the role default is marked */
+  defaults?: Capability[];
+  onChange: (next: Capability[]) => void;
+}
+
+// One tick-box per capability, with what it lets them do
+const CapabilityBoxes = ({ testId, value, defaults, onChange }: CapabilityBoxesProps) => (
+  <div role="group" aria-label="What they can do" style={{ display: "flex", flexDirection: "column", gap: "0.35rem", marginTop: "0.4rem" }}>
+    {CAPABILITIES.map((c) => {
+      const on = value.includes(c);
+      const differs = defaults !== undefined && on !== defaults.includes(c);
+      return (
+        <label key={c} style={{ display: "flex", alignItems: "flex-start", gap: "0.45rem", fontSize: "0.85rem", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            data-testid={`${testId}-cap-${c}`}
+            checked={on}
+            onChange={(e) => onChange(CAPABILITIES.filter((x) => (x === c ? e.target.checked : value.includes(x))))}
+            style={{ accentColor: "var(--ink)", marginTop: 3 }}
+          />
+          <span>
+            {CAPABILITY_INFO[c].label}
+            {differs && <em style={{ color: "var(--ink-muted)", fontStyle: "normal" }}> (differs from every stylist)</em>}
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--ink-muted)" }}>{CAPABILITY_INFO[c].help}</span>
+          </span>
+        </label>
+      );
+    })}
+  </div>
+);
+
 const TeamAccess = ({ onSuccess, onError }: Props) => {
   const { stylists } = useSalonData();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Record<string, ClientAccess>>({});
+  const [capsDraft, setCapsDraft] = useState<Record<string, Capability[]>>({});
+  const [defaults, setDefaults] = useState<Capability[]>([]);
+  const [defaultsDraft, setDefaultsDraft] = useState<Capability[] | null>(null);
+  const [newCaps, setNewCaps] = useState<Capability[] | null>(null); // null: the role defaults
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
 
@@ -149,11 +197,16 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
           role: data.role,
           ...(typeof data.stylistId === "string" ? { stylistId: data.stylistId } : {}),
           access: normaliseAccess(data.clientAccess, data.stylistId),
+          caps: normaliseDefaults(data.effectiveCaps),
         });
       }
       list.sort((a, b) => (a.role === b.role ? a.email.localeCompare(b.email) : a.role === "owner" ? -1 : 1));
       setMembers(list);
       setDraft({});
+      setCapsDraft({});
+      const saved = normaliseDefaults((await getDoc(doc(db, "privateSettings", "permissions"))).get("stylistDefaults"));
+      setDefaults(saved);
+      setDefaultsDraft(null);
     } catch (err) {
       console.error("TeamAccess load:", err);
       onError("Failed to load the team.");
@@ -198,17 +251,28 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
         await setUserRole(
           role === "owner"
             ? { email: email.trim(), role: "owner" }
-            : { email: email.trim(), role: "stylist", stylistId, clientAccess: normaliseAccess(access, stylistId) },
+            : {
+                email: email.trim(),
+                role: "stylist",
+                stylistId,
+                clientAccess: normaliseAccess(access, stylistId),
+                permissions: overridesFor(defaults, newCaps ?? defaults),
+              },
         );
         setEmail("");
         setStylistId("");
         setAccess({ all: false, stylistIds: [] });
+        setNewCaps(null);
         setAdded((n) => n + 1);
       },
       role === "owner" ? "Owner access given." : "Stylist access given.",
     );
 
-  const dirtyOf = (m: Member) => draft[m.uid] !== undefined && JSON.stringify(draft[m.uid]) !== JSON.stringify(m.access);
+  const accessDirty = (m: Member) => draft[m.uid] !== undefined && JSON.stringify(draft[m.uid]) !== JSON.stringify(m.access);
+  const capsDirty = (m: Member) => capsDraft[m.uid] !== undefined && JSON.stringify(normaliseDefaults(capsDraft[m.uid])) !== JSON.stringify(m.caps);
+  const dirtyOf = (m: Member) => accessDirty(m) || capsDirty(m);
+  const defaultsValue = defaultsDraft ?? defaults;
+  const defaultsDirty = defaultsDraft !== null && JSON.stringify(normaliseDefaults(defaultsDraft)) !== JSON.stringify(defaults);
 
   const groups = useMemo(
     () => ({ owners: members.filter((m) => m.role === "owner"), staff: members.filter((m) => m.role === "stylist") }),
@@ -218,9 +282,9 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
   return (
     <div data-testid="team-access">
       <div style={{ marginBottom: "1rem" }}>
-        <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Team access</h3>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Team &amp; permissions</h3>
         <p style={{ fontSize: "0.8rem", color: "var(--grey-muted)", margin: "0.2rem 0 0" }}>
-          Who can sign in, and whose clients each stylist can open. By default a stylist sees only the clients who have booked with them.
+          Who can sign in, what each stylist can do, and whose clients they can open. The owner can always do everything. By default a stylist sees only the clients who have booked with them.
         </p>
       </div>
 
@@ -230,6 +294,27 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
         </p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div style={card} data-testid="team-defaults">
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+              <div>
+                <strong style={{ fontSize: "0.9rem" }}>Every stylist can</strong>
+                <p style={{ margin: "0.15rem 0 0", fontSize: "0.78rem", color: "var(--ink-muted)" }}>
+                  The starting point for all stylists. You can still allow or stop one person below.
+                </p>
+              </div>
+              <button
+                type="button"
+                style={button(true)}
+                disabled={!defaultsDirty || busy !== null}
+                data-testid="team-defaults-save"
+                onClick={() => void run("defaults", () => setPermissionDefaults(defaultsValue), "Saved. Every stylist's screens update in a moment.")}
+              >
+                {busy === "defaults" ? "Saving..." : "Save"}
+              </button>
+            </div>
+            <CapabilityBoxes testId="team-defaults" value={defaultsValue} onChange={setDefaultsDraft} />
+          </div>
+
           {groups.owners.map((m) => (
             <div key={m.uid} style={{ ...card, display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }} data-testid={`team-row-${m.uid}`}>
               <div>
@@ -258,6 +343,7 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
 
           {groups.staff.map((m) => {
             const value = draft[m.uid] ?? m.access;
+            const capsValue = capsDraft[m.uid] ?? m.caps;
             return (
               <div key={m.uid} style={card} data-testid={`team-row-${m.uid}`}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
@@ -274,7 +360,14 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
                       onClick={() =>
                         void run(
                           m.uid,
-                          () => setUserRole({ email: m.email, role: "stylist", stylistId: m.stylistId ?? "", clientAccess: normaliseAccess(value, m.stylistId) }),
+                          () =>
+                            setUserRole({
+                              email: m.email,
+                              role: "stylist",
+                              stylistId: m.stylistId ?? "",
+                              clientAccess: normaliseAccess(value, m.stylistId),
+                              permissions: overridesFor(defaults, capsValue),
+                            }),
                           "Saved. Their screens update in a moment.",
                         )
                       }
@@ -300,6 +393,15 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
                   others={others(m.stylistId)}
                   onChange={(next) => setDraft((d) => ({ ...d, [m.uid]: next }))}
                 />
+                <div style={{ marginTop: "0.75rem" }}>
+                  <strong style={{ fontSize: "0.82rem" }}>What they can do</strong>
+                  <CapabilityBoxes
+                    testId={`team-${m.uid}`}
+                    value={capsValue}
+                    defaults={defaults}
+                    onChange={(next) => setCapsDraft((d) => ({ ...d, [m.uid]: next }))}
+                  />
+                </div>
               </div>
             );
           })}
@@ -336,6 +438,12 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
             </div>
             {role === "stylist" && (
               <AccessPicker key={`add-${added}`} testId="team-add" ownId={stylistId} value={access} others={others(stylistId)} onChange={setAccess} />
+            )}
+            {role === "stylist" && (
+              <div>
+                <strong style={{ fontSize: "0.82rem" }}>What they can do</strong>
+                <CapabilityBoxes testId="team-add" value={newCaps ?? defaults} defaults={defaults} onChange={setNewCaps} />
+              </div>
             )}
             {role === "owner" && (
               <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--ink-muted)" }}>An owner can do everything and sees every client.</p>
