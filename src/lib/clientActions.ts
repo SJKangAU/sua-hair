@@ -109,6 +109,27 @@ export const setClientBlocked = async (
   });
 };
 
+// Texts on or off for one client (FR-024). Only the client record carries the flag:
+// the booking functions read it before every text, and it is not part of the card a
+// stylist can see.
+export const setClientSmsOptOut = async (
+  db: Firestore,
+  clientId: string,
+  optOut: boolean,
+  actor: Actor,
+): Promise<void> => {
+  const batch = writeBatch(db);
+  batch.update(doc(db, "clients", clientId), {
+    smsOptOut: optOut ? true : deleteField(),
+    updatedAt: new Date().toISOString(),
+  });
+  batch.set(
+    doc(collection(db, "clients", clientId, "audit")),
+    auditEntry("edit", actor, optOut ? "stopped booking texts" : "allowed booking texts"),
+  );
+  await batch.commit();
+};
+
 export const MAX_NOTE_LENGTH = 2000;
 
 export const addNote = async (

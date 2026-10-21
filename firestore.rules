@@ -41,6 +41,25 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── Roles (custom claims; no document reads) ─────────────────────────
+    function validSmsSettings(d) {
+      return d.keys().hasOnly(['enabled', 'senderName', 'kinds', 'templates'])
+        && d.enabled is bool
+        && d.senderName is string
+        && d.senderName.matches('^[A-Za-z0-9 ]{3,11}$')
+        && d.kinds is map
+        && d.kinds.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder'])
+        && d.templates is map
+        && d.templates.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder'])
+        && smsTemplatesOk(d.templates);
+    }
+
+    function smsTemplatesOk(t) {
+      return (!('received' in t) || (t.received is string && t.received.size() > 0 && t.received.size() <= 320))
+        && (!('confirmed' in t) || (t.confirmed is string && t.confirmed.size() > 0 && t.confirmed.size() <= 320))
+        && (!('not_confirmed' in t) || (t.not_confirmed is string && t.not_confirmed.size() > 0 && t.not_confirmed.size() <= 320))
+        && (!('reminder' in t) || (t.reminder is string && t.reminder.size() > 0 && t.reminder.size() <= 320));
+    }
+
     function isOwner() {
       return request.auth != null
         && request.auth.token.get('role', '') == 'owner';
@@ -188,16 +207,29 @@ service cloud.firestore {
 
     // ── privateSettings ─────────────────────────────────────────────────
     // Owner-only configuration that must not be world-readable the way
-    // salonSettings is - currently the owner's notification email address
-    // (privateSettings/notifications). Cloud Functions read it with the
-    // Admin SDK, which bypasses these rules.
+    // salonSettings is: the owner's notification email address
+    // (privateSettings/notifications) and the text-message switches and wording
+    // (privateSettings/sms, FR-024). Cloud Functions read them with the Admin SDK,
+    // which bypasses these rules.
     match /privateSettings/{docId} {
       allow read: if isOwner();
-      allow write: if isOwner()
-        && request.resource.data.keys().hasOnly(['notifyOwnerByEmail', 'ownerEmail'])
-        && request.resource.data.notifyOwnerByEmail is bool
-        && request.resource.data.ownerEmail is string
-        && request.resource.data.ownerEmail.size() <= 254;
+      allow write: if isOwner() && (
+        (docId == 'notifications'
+          && request.resource.data.keys().hasOnly(['notifyOwnerByEmail', 'ownerEmail'])
+          && request.resource.data.notifyOwnerByEmail is bool
+          && request.resource.data.ownerEmail is string
+          && request.resource.data.ownerEmail.size() <= 254)
+        || (docId == 'sms' && validSmsSettings(request.resource.data))
+      );
+    }
+
+    // ── smsLog ──────────────────────────────────────────────────────────
+    // One record per text sent (or refused, capped or failed): kind, status, the
+    // last three digits of the number. No message text and no full number. Written
+    // only by the booking functions; the owner reads it on the Manage page.
+    match /smsLog/{logId} {
+      allow read: if isOwner();
+      allow write: if false;
     }
 
     // ── notifications ───────────────────────────────────────────────────

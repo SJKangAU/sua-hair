@@ -30,6 +30,13 @@ export const LIMITS = {
   bookingPerPhone: { max: 8, windowMs: HOUR },
   waitlistPerIp: { max: 20, windowMs: HOUR },
   waitlistPerPhone: { max: 5, windowMs: 24 * HOUR },
+  // Texts cost money. A number gets a handful a day (a request, a confirmation, a
+  // reminder, and room for a rebooking), the salon as a whole a ceiling that a
+  // runaway loop or a flood of fake requests cannot get past, and the owner's
+  // "send a test" button a few an hour.
+  smsPerPhone: { max: 6, windowMs: 24 * HOUR },
+  smsPerDay: { max: 400, windowMs: 24 * HOUR },
+  smsTestPerHour: { max: 10, windowMs: HOUR },
 } as const satisfies Record<string, Limit>;
 
 export const hashKey = (value: string): string =>

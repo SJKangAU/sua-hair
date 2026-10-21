@@ -99,6 +99,7 @@ const manualOf = (data: FirebaseFirestore.DocumentData | undefined, lookupBlocke
   tags: Array.isArray(data?.tags) ? (data!.tags as string[]) : [],
   blocked: data ? data.blocked === true : lookupBlocked,
   ...(data?.blockReason ? { blockReason: data.blockReason as string } : {}),
+  ...(data?.smsOptOut === true ? { smsOptOut: true } : {}),
   ...(data?.email ? { email: data.email as string } : {}),
   ...(data?.name ? { name: data.name as string } : {}),
   ...(data?.nameOverride ? { nameOverride: true } : {}),
@@ -360,6 +361,8 @@ export const mergeClientsCore = async (
     aliases: aliases.slice(0, 10),
     tags: [...new Set([...(kept.tags ?? []), ...(gone.tags ?? [])])],
     blocked: kept.blocked === true || gone.blocked === true,
+    // not wanting texts wins too
+    ...(kept.smsOptOut === true || gone.smsOptOut === true ? { smsOptOut: true } : {}),
     ...(gone.blocked === true && !kept.blockReason && gone.blockReason ? { blockReason: gone.blockReason } : {}),
   });
   await db.doc(`customerLookups/${mergeId}`).delete().catch(() => undefined);

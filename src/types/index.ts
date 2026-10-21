@@ -336,6 +336,7 @@ export interface Client extends ClientSummary {
   tags: string[];
   blocked: boolean;
   blockReason?: string;
+  smsOptOut?: boolean; // asked not to be texted: no booking texts are sent (FR-024)
   source: ClientSource;
   createdAt: string;
   updatedAt: string;

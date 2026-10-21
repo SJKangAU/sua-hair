@@ -243,6 +243,7 @@ export interface ClientManual {
   tags: string[];
   blocked: boolean;
   blockReason?: string;
+  smsOptOut?: boolean;
   name?: string;
   nameOverride?: boolean;
   source?: ClientSource;
@@ -303,6 +304,7 @@ export const buildClient = (
     ...summary,
   };
   if (manual.nameOverride) client.nameOverride = true;
+  if (manual.smsOptOut) client.smsOptOut = true;
   if (email) client.email = email;
   if (manual.blocked && manual.blockReason) client.blockReason = manual.blockReason;
   return client;

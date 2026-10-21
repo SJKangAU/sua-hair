@@ -54,6 +54,8 @@ import {
 } from "./clients";
 import { backfillClientsCore } from "./clientBackfill";
 import { SALON } from "./salon";
+import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } from "./sms/provider";
+import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
 import { requireOwner } from "./guards";
 import { RoleError, grantRole, revokeRole, type Role } from "./roles";
 import { bookingInstant, localDateString } from "./time";
@@ -69,6 +71,22 @@ const db = getFirestore();
 // must be verified in Resend before mail to real customers will send.
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const EMAIL_FROM = defineString("EMAIL_FROM");
+
+// ── Text message configuration (FR-024) ─────────────────────────────────────
+// ClickSend credentials, both Secret Manager secrets:
+//   firebase functions:secrets:set CLICKSEND_USERNAME
+//   firebase functions:secrets:set CLICKSEND_API_KEY
+// Which messages go out, and their wording, is the owner's: privateSettings/sms
+// (Manage -> Text messages). In the Functions emulator nothing is sent - the text
+// is written to smsOutbox instead.
+const CLICKSEND_USERNAME = defineSecret("CLICKSEND_USERNAME");
+const CLICKSEND_API_KEY = defineSecret("CLICKSEND_API_KEY");
+const SMS_SECRETS = [CLICKSEND_USERNAME, CLICKSEND_API_KEY];
+
+const smsTransport = (): SmsTransport =>
+  inEmulator()
+    ? outboxTransport(db)
+    : clickSendTransport({ username: CLICKSEND_USERNAME.value(), apiKey: CLICKSEND_API_KEY.value() });
 
 // Firestore triggers must run in the same location as the database. This
 // project's (default) database is in australia-southeast2 (Melbourne), unlike
@@ -348,6 +366,19 @@ const ownerClientCommand = <R>(
     },
   );
 
+/**
+ * sendTestSms - owner. { kind, to }: texts the owner's current wording for one
+ * message, filled in with a sample booking, to a number they choose. For checking
+ * the sender name and the wording before switching texts on (FR-024).
+ */
+export const sendTestSms = onCall(
+  { region: REGION, maxInstances: 3, secrets: SMS_SECRETS },
+  async (request) => {
+    const owner = await requireOwner(db, request, "send a test text");
+    return run(() => sendTestSmsCore(db, smsTransport(), request.data, owner.uid, Date.now()));
+  },
+);
+
 /** recomputeClients - owner. { clientId? }: repair one client's figures, or every client's. */
 export const recomputeClients = ownerClientCommand(
   "recompute clients",
@@ -470,7 +501,7 @@ export const onBookingCreated = onDocumentCreated(
   {
     document: "bookings/{bookingId}",
     region: FIRESTORE_REGION,
-    secrets: [RESEND_API_KEY],
+    secrets: [RESEND_API_KEY, ...SMS_SECRETS],
   },
   async (event) => {
     const snap = event.data;
@@ -483,6 +514,7 @@ export const onBookingCreated = onDocumentCreated(
 
     const kind = emailKindOnCreate(booking);
     if (kind) await sendBookingEmail(kind, bookingId, booking);
+    if (kind) await sendBookingSmsCore(db, smsTransport(), kind, bookingId, booking, Date.now());
 
     // Owner heads-up: online requests only (walk-ins are entered by staff who
     // already know about them). Independent of the customer email above.
@@ -529,14 +561,17 @@ export const onBookingUpdated = onDocumentUpdated(
   {
     document: "bookings/{bookingId}",
     region: FIRESTORE_REGION,
-    secrets: [RESEND_API_KEY],
+    secrets: [RESEND_API_KEY, ...SMS_SECRETS],
   },
   async (event) => {
     const before = event.data?.before.data() as BookingDoc | undefined;
     const after = event.data?.after.data() as BookingDoc | undefined;
     if (!before || !after) return;
     const kind = emailKindOnUpdate(before, after);
-    if (kind) await sendBookingEmail(kind, event.params.bookingId, after);
+    if (kind) {
+      await sendBookingEmail(kind, event.params.bookingId, after);
+      await sendBookingSmsCore(db, smsTransport(), kind, event.params.bookingId, after, Date.now());
+    }
   },
 );
 
@@ -564,7 +599,7 @@ export const sendBookingReminders = onSchedule(
     schedule: "0 * * * *",
     timeZone: SALON.timeZone,
     region: "australia-southeast1",
-    secrets: [RESEND_API_KEY],
+    secrets: [RESEND_API_KEY, ...SMS_SECRETS],
     timeoutSeconds: 300,
   },
   async () => {
@@ -595,8 +630,6 @@ export const sendBookingReminders = onSchedule(
       if (booking.bookingType === "break" || booking.bookingType === "training") {
         continue;
       }
-      if (booking.reminderSentAt) continue;
-      if (!isValidEmail(booking.customerEmail)) continue;
 
       const startsAt = bookingInstant(
         booking.date ?? "",
@@ -606,6 +639,12 @@ export const sendBookingReminders = onSchedule(
       if (startsAt === null || startsAt < windowStart || startsAt >= windowEnd) {
         continue;
       }
+
+      // The text first: it has its own once-only record (smsLog), independent of
+      // whether this customer gave an email address.
+      await sendBookingSmsCore(db, smsTransport(), "reminder", docSnap.id, booking, now);
+
+      if (booking.reminderSentAt || !isValidEmail(booking.customerEmail)) continue;
 
       try {
         const email = buildReminderEmail(toEmailData(booking));
