@@ -107,8 +107,10 @@ test("TC-088 'Any Available Stylist' shows 'from $X' before sending, then the as
   const price = { director: 75, senior: 65, junior: 55 }[String(b.stylistLevel) as "director" | "senior" | "junior"];
   await expect(page.getByTestId("confirmation-total")).toHaveText(`$${price}`);
   expect(b.servicePrice).toBe(price);
-  // with nothing else booked, the tie-break picks the lowest order: Steve (the director)
-  expect(b.stylistId).toBe("steve");
+  // with nothing else booked everyone ties on bookings that day; the e2e stylists have no
+  // `order`, so the last tie-break is the id, alphabetically: Elly (the lowest `order` is covered
+  // by tests/functions with an ordered roster)
+  expect(b.stylistId).toBe("elly");
 });
 
 test("TC-089 the owner approves a request and the booking is confirmed (with its availability projection)", async ({ page, browser }) => {
