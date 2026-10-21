@@ -102,6 +102,7 @@ ID = the client's **normalised mobile** `04XXXXXXXX` (a Fresha number `61 4..` b
 | `aliases[]` | string[] | Earlier spellings of the name (at most 10) |
 | `tags[]` | string[] | Owner's tags (at most 10) |
 | `blocked`, `blockReason?` | bool, string | Blocked clients are refused by the booking command. The reason is private to the owner |
+| `smsOptOut?` | `true` | Present only when the owner has chosen **Stop texts** for this client; no booking texts are sent (FR-024) |
 | `source` | `online` / `walk-in` / `fresha-import` | Where the client first came from |
 | `createdAt`, `updatedAt` | ISO strings | `createdAt` is when Fresha added an imported client |
 | `totalVisits`, `totalSpend` | numbers | Visits (customer or walk-in bookings that happened) and their prices |
@@ -186,6 +187,25 @@ A date override wins over the weekly schedule. If the document is missing, `SALO
 ## Collection: `privateSettings` (document `notifications`)
 
 `{ notifyOwnerByEmail: boolean, ownerEmail: string }` — owner-only. Kept out of `salonSettings` because that document is world-readable.
+
+## Collection: `privateSettings` (document `sms`) (FR-024, DEC-050)
+
+Owner-only (rules check the shape). Missing fields mean the defaults in `src/lib/sms.ts`; a missing document means texts are off.
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `enabled` | bool | Texts on or off as a whole. Off by default |
+| `senderName` | string | 3–11 letters, digits or spaces; what the client sees instead of a number |
+| `kinds` | map of bool | `received`, `confirmed`, `not_confirmed`, `reminder`: which messages are sent (missing = on) |
+| `templates` | map of string | The wording of each message, 1–320 characters, with `{name} {service} {stylist} {date} {time} {salon} {phone} {ref}`; missing, empty or invalid = the default |
+
+## Collection: `smsLog` (functions write, owner reads)
+
+ID `{bookingId}_{kind}`: the once-only record. `{ bookingId, bookingRef, kind, status ('sending' / 'sent' / 'failed' / 'capped'), toEnding (last three digits), segments, encoding, createdAt, sentAt?, providerId?, error? }`. No message text and no full number. No browser can write it.
+
+## Collection: `smsOutbox` (Functions emulator only)
+
+What would have been sent: `{ to, from, body, reference, createdAt }`. Only the emulator stand-in writes it; no rule allows any browser to read or write it.
 
 ## Collection: `notifications`
 

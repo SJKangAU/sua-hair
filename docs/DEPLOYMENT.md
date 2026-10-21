@@ -75,6 +75,8 @@ The new claim reaches a browser on its next token refresh (the app forces one if
 ```bash
 # one-time config the functions need
 firebase functions:secrets:set RESEND_API_KEY          # the Resend API key
+firebase functions:secrets:set CLICKSEND_USERNAME      # texts: see "Text messages" below - set BEFORE deploying
+firebase functions:secrets:set CLICKSEND_API_KEY       # (the booking triggers and reminder job declare both secrets)
 #   EMAIL_FROM is prompted at deploy, or put it in functions/.env:
 #   EMAIL_FROM="Sua Hair Studio <bookings@your-verified-domain.com.au>"
 #   (the domain must be verified in Resend, or no mail is delivered)
@@ -92,7 +94,7 @@ Turn on automatic clean-up of the rate-limit counters (one-time, harmless to ski
 gcloud firestore fields ttls update expireAt --collection-group=rateLimits --enable-ttl --project=sua-hair-ae353
 ```
 
-*Check:* console → Functions lists `createBookingRequest`, `joinWaitlist`, `approveBooking`, `declineBooking`, `cancelBooking`, `restoreBooking`, `assignStylist`, `setUserRole`, `deleteCustomerData`, `releaseExpiredRequests`, `sendBookingReminders`, `onBookingCreated`, `onBookingUpdated`. A harmless reachability test (it is refused, nothing is written):
+*Check:* console → Functions lists `createBookingRequest`, `joinWaitlist`, `approveBooking`, `declineBooking`, `cancelBooking`, `restoreBooking`, `assignStylist`, `setUserRole`, `deleteCustomerData`, `releaseExpiredRequests`, `sendBookingReminders`, `onBookingCreated`, `onBookingUpdated`, `sendTestSms`. A harmless reachability test (it is refused, nothing is written):
 
 ```bash
 curl -s -X POST https://australia-southeast1-sua-hair-ae353.cloudfunctions.net/createBookingRequest \
@@ -187,6 +189,25 @@ Email has only been exercised through templates and unit tests; the Functions em
 5. Make a second request and **Decline** it → expect **"We couldn't confirm your booking request"**.
 6. Resend dashboard → Emails shows each message and its delivery status. Check the spam folder too.
 7. The 24-hour reminder only goes to **confirmed** bookings starting 24–25 hours from now.
+
+## Text messages (FR-024, DEC-050): what to add to the order above
+
+This release adds `sendTestSms` (owner callable), SMS sending inside `onBookingCreated`, `onBookingUpdated` and `sendBookingReminders`, the `privateSettings/sms` and `smsLog` rules, and a Manage section. **Texts stay off until the owner switches them on**, so deploying changes nothing for clients.
+
+1. **Create a ClickSend account** (clicksend.com, Australian pay-as-you-go), add some credit, and create an **API key** (Dashboard, Developers, API Credentials). The username is your account username.
+2. **Register the sender name** you want clients to see (Dashboard, SMS, Alpha Tags / Sender IDs; 3–11 letters or numbers, e.g. `SuaHair`). Australian carriers can block an unregistered alphanumeric sender, and a registered one takes a few days: do this first. Clients cannot reply to a sender name (the default wording tells them to call the salon). Replies would need a dedicated ClickSend number, which this version does not support.
+3. **Set the secrets before deploying functions** (a deploy that declares a secret with no value stops):
+   ```bash
+   firebase functions:secrets:set CLICKSEND_USERNAME
+   firebase functions:secrets:set CLICKSEND_API_KEY
+   ```
+4. Deploy functions (step 2), the app (step 3) and the rules (step 4, last) as usual. The rules now also contain `privateSettings/sms` and `smsLog`.
+5. **In Manage, Text messages (as the owner):** read the four messages, change the wording if you like, set the sender name to the registered one, **Save**. Leave "Send text messages to clients" off for now.
+6. **Verify delivery (never tested):** enter your own mobile under "Send tests to my mobile" and press **Send me a test** on each message: four texts should arrive from your sender name within a minute. A failure shows as a red message here and in the Cloud Functions log (`sendTestSms`): check the sender name is registered, the username and key are right, and the account has credit.
+7. Switch on **Send text messages to clients**, Save. Make a request on the public site with **your own number** → "request received" text; approve it → "confirmed"; decline another → "not confirmed". The reminder goes to a confirmed booking 24–25 hours before it. Manage shows each under **Recent texts**; ClickSend's dashboard (SMS History) shows delivery.
+8. **Watch the cost** in ClickSend for the first week. One text is one part up to 160 characters; the editor shows the parts. The salon-wide cap is 400 texts a day (`functions/src/limits.ts`, `smsPerDay`).
+
+*Turning texts off:* untick the switch in Manage and Save (takes effect on the next booking). *Rollback:* the functions work without the section; `firebase functions:delete sendTestSms --region australia-southeast1` removes the test callable. Nothing else depends on `smsLog`.
 
 ## Everything else to know
 

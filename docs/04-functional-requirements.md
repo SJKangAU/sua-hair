@@ -519,3 +519,36 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] The trigger repairs the owner's browser writes: a walk-in, a move, a delete, a no-show (`functions` clients)
 - [x] Backfill: dry run writes nothing; apply; idempotent; never overwrites the owner's edits; rollback; more than one batch (`functions` clients; TC-109)
 - [x] The import makes and removes client records and never overwrites an existing one (`admin` clientImport; TC-108)
+
+---
+
+## FR-024 — Text messages about a booking
+
+**Description:** The salon can text a client about their booking, in wording the owner controls. Four messages mirror the emails (DEC-038): **request received** (says it is not confirmed yet), **confirmed**, **not confirmed** and a **24-hour reminder**. They are sent by the same booking triggers as the emails, through ClickSend. Decision: DEC-050.
+
+**Requirements:**
+
+- **Owner controls (Manage → Text messages, owner only):** a switch for texts as a whole (off until the owner turns it on); a switch for each of the four messages; the **sender name** (3–11 letters or numbers); and the **wording** of each message, written with placeholders `{name} {service} {stylist} {date} {time} {salon} {phone} {ref}`. The wording is up to 320 characters; an unknown placeholder or stray brace is named and blocks saving
+- **Editor aids:** placeholder buttons that insert at the cursor; a live preview filled in with a sample booking ("What the client sees"); a character count and the number of text messages it will cost (160 characters in one, 153 per part after that; 70 / 67 if it contains a curly quote, dash or emoji, which is flagged); **Reset to default** per message
+- **Send me a test:** texts the *saved* wording, filled in with a made-up booking, to a mobile number the owner enters; works while texts are switched off; limited to 10 an hour
+- **Recent texts:** the last eight (message, last three digits of the number, sent / failed / not sent because of the daily limit, time). The log holds no message text and no full number
+- **Who is texted:** a booking with a valid Australian mobile (`04XXXXXXXX`, however it was typed); customer and walk-in bookings only (never breaks or training); not a client the owner has marked **Stop texts** on their page (a "No texts" badge shows; **Allow texts** reverses it; merging two clients keeps the stop)
+- **When:** on a request (received), on approval or a confirmed walk-in (confirmed), on decline or expiry (not confirmed) and 24–25 hours before a confirmed appointment (reminder) — the same events as the emails, whether or not the client gave an email address
+- **Exactly once:** one record per booking and message (`smsLog/{bookingId}_{kind}`) is created before sending, so a trigger delivered twice or two overlapping reminder runs send one text. A failed send is recorded and **not** retried automatically
+- **Caps:** 6 texts a day to one number and 400 a day for the whole salon; further texts are recorded as "not sent (daily limit)"
+- **Never in the way of a booking:** every failure is caught and logged; a booking is already saved before any text is attempted
+- The booking form tells the customer "We may text you about this booking."
+- Nothing is ever sent from the Functions emulator (local runs and the browser tests): the message is written to `smsOutbox` instead
+
+**Acceptance criteria:**
+
+- [x] Default wording is plain GSM-7 and at most two parts filled in; the request-received text says it is not confirmed yet (unit `sms`)
+- [x] Placeholders, validation, sanitising of customer-supplied values, segment counting, sender-name rules (unit `sms`)
+- [x] Off by default; each message can be switched off; the owner's wording is what is sent; a bad stored template falls back to the default (`functions` sms)
+- [x] No valid mobile, or an opted-out client: nothing sent; once-only under a repeated or simultaneous trigger; daily caps; a failing provider never throws and is recorded; the log keeps no message and no full number (`functions` sms)
+- [x] Only the owner reads or writes the settings and the log; only well-formed settings are accepted; nobody writes the log from a browser (`rules` smsRules)
+- [x] Manage shows the section, edits with a live preview and validation, saves and reloads (TC-111 to TC-113)
+- [x] A real booking trigger produces a text in the owner's wording, nothing while off, nothing for "Stop texts" (TC-114); the test text (TC-115)
+- [ ] Delivery to a real phone — **not verified**; needs a ClickSend account and a registered sender name (`docs/DEPLOYMENT.md`)
+
+**Privacy and law (for the owner):** these are service messages about a booking the client made, with the salon's name and number in them. Under the Spam Act, messages like that are generally exempt from the consent and unsubscribe rules but must still identify the sender (the salon's name is in every default message); confirm this with your own adviser. The **Stop texts** switch is there to honour a client who asks. A sender name cannot be replied to, so the default wording says to call the salon to change a booking.

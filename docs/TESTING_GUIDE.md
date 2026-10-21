@@ -42,7 +42,7 @@ Run one part only (while changing code):
 | Security | `npm run test:security` | no personal data leaks to the public |
 | Lockdown | `npm run test:lockdown` | the public cannot write bookings, slots, waitlist, notifications |
 | Admin writes | `npm run test:admin` | locking, phases, import write and rollback |
-| Cloud Functions | `npm run test:functions` | booking commands, pending limit and expiry, blocked clients, rate limits |
+| Cloud Functions | `npm run test:functions` | booking commands, pending limit and expiry, blocked clients, rate limits, text-message sending |
 | Smoke | `npm run test:smoke` | end-to-end data flow through the rules |
 | Browser (e2e) | `npm run test:e2e` | the real screens against the emulators (about 108 tests) |
 | One browser spec | `node scripts/e2e.mjs e2e/11-booking-commands.spec.ts` | just that file |
@@ -155,6 +155,13 @@ Tick each line. Anything that fails: stop, note exactly what you saw, and use th
 
 - [ ] Follow the **Email** section of `DEPLOYMENT.md`; check each message in Resend and in a real inbox (and spam).
 - [ ] Follow the **App Check** section; confirm "Verified requests" in the console before turning enforcement on.
+
+### G2. Text messages (only when you set them up)
+
+- [ ] Follow the **Text messages** section of `DEPLOYMENT.md`; every message's **Send me a test** arrives on your phone from your sender name.
+- [ ] With texts switched on, a request from your own number gets the "request received" text; approving it gets "confirmed"; declining another gets "not confirmed". Recent texts lists them with the last three digits only.
+- [ ] Open that client, press **Stop texts**, make another request: no text. **Allow texts** again.
+- [ ] Change a message's wording (use a placeholder button, watch the preview and count), Save, send a test: it uses the new wording.
 
 ### H. Things that need time or other devices
 
