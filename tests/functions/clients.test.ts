@@ -388,6 +388,19 @@ describe("merge, anonymise and export", () => {
     expect(await client("0400000001")).toMatchObject({ totalVisits: 2 });
   });
 
+  it("a recompute that overlaps the client's deletion never writes the record back", async () => {
+    // an imported client: a record and no bookings. A late trigger reads it just before a
+    // merge or anonymise deletes it; the read and the write are one transaction, so the
+    // deleted client stays deleted whichever lands first.
+    for (let i = 0; i < 25; i++) {
+      const id = `04000010${String(i).padStart(2, "0")}`;
+      await db.doc(`clients/${id}`).set({ phone: id, name: "Imported Person", tags: [], blocked: false, source: "fresha-import", createdAt: "2025-01-01T00:00:00.000Z" });
+      await Promise.all([recomputeClient(db, id, NOW), db.doc(`clients/${id}`).delete()]);
+      expect((await db.doc(`clients/${id}`).get()).exists, `client ${id}`).toBe(false);
+      expect((await db.doc(`clientCards/${id}`).get()).exists, `card ${id}`).toBe(false);
+    }
+  });
+
   it("merge refuses the same client twice, an unknown client and a tombstone", async () => {
     await twoClients();
     expect(await codeOf(mergeClientsCore(db, { keepId: "0400000001", mergeId: "0400000001" }, actor, NOW))).toBe("invalid");

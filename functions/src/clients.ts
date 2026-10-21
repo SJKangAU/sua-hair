@@ -41,6 +41,7 @@ import {
 } from "../../src/lib/clients";
 import type { Booking, Client, ClientAuditAction, ClientSource } from "../../src/types";
 import { CommandError } from "./commandErrors";
+import { runTx } from "./tx";
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
@@ -190,35 +191,43 @@ export const planClientWrite = async (
   };
 };
 
-/** Recompute one client outside a transaction (the trigger, the owner's repair, merge). */
+/**
+ * Recompute one client (the trigger, the owner's repair, merge). The reads and the write
+ * are ONE transaction: a trigger that arrives late, after a merge or an anonymise has
+ * deleted the client, must not write back the record it read a moment earlier. With the
+ * read inside the transaction, the delete either lands first (the retry finds nothing to
+ * build) or after (it removes what was written).
+ */
 export const recomputeClient = async (
   db: Firestore,
   clientId: string,
   nowMs: number,
 ): Promise<{ changed: boolean; exists: boolean }> => {
   if (isTombstone(clientId)) return { changed: false, exists: false };
-  const [existing, lookup, ...snaps] = await Promise.all([
-    clientRef(db, clientId).get(),
-    db.doc(`customerLookups/${clientId}`).get(),
-    ...bookingQueries(db, clientId).map((q) => q.get()),
-  ]);
-  const bookings = [...mergeSnapshots(snaps, clientId).values()];
-  const data = existing.exists ? existing.data() : undefined;
-  // a client with no bookings and no record is nothing (an unknown number)
-  if (!data && bookings.length === 0 && lookup.exists === false) return { changed: false, exists: false };
-  const { client, card } = clientDocuments(clientId, bookings, data, lookup.get("blocked") === true, nowMs);
-  // keep the stored createdAt/updatedAt stable when nothing else changed
-  const stable = (c: Record<string, unknown>) => {
-    const { updatedAt: _u, ...rest } = c;
-    void _u;
-    return JSON.stringify(rest, Object.keys(rest).sort());
-  };
-  const unchanged = !!data && stable(data) === stable(client as unknown as Record<string, unknown>);
-  if (!unchanged) {
-    await clientRef(db, clientId).set(client);
-    await cardRef(db, clientId).set(card);
-  }
-  return { changed: !unchanged, exists: true };
+  return runTx(db, async (tx) => {
+    const [existing, lookup, ...snaps] = await Promise.all([
+      tx.get(clientRef(db, clientId)),
+      tx.get(db.doc(`customerLookups/${clientId}`)),
+      ...bookingQueries(db, clientId).map((q) => tx.get(q)),
+    ]);
+    const bookings = [...mergeSnapshots(snaps, clientId).values()];
+    const data = existing.exists ? existing.data() : undefined;
+    // a client with no bookings and no record is nothing (an unknown number)
+    if (!data && bookings.length === 0 && lookup.exists === false) return { changed: false, exists: false };
+    const { client, card } = clientDocuments(clientId, bookings, data, lookup.get("blocked") === true, nowMs);
+    // keep the stored createdAt/updatedAt stable when nothing else changed
+    const stable = (c: Record<string, unknown>) => {
+      const { updatedAt: _u, ...rest } = c;
+      void _u;
+      return JSON.stringify(rest, Object.keys(rest).sort());
+    };
+    const unchanged = !!data && stable(data) === stable(client as unknown as Record<string, unknown>);
+    if (!unchanged) {
+      tx.set(clientRef(db, clientId), client);
+      tx.set(cardRef(db, clientId), card);
+    }
+    return { changed: !unchanged, exists: true };
+  });
 };
 
 /** Recompute every client (owner repair, nightly settle). Returns counts only. */
