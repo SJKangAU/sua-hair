@@ -6,12 +6,12 @@
 // an audit entry (who, what, when).
 
 import { useState } from "react";
-import { Ban, Download, GitMerge, Pencil, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
+import { Ban, Download, GitMerge, MessageSquareOff, MessageSquareText, Pencil, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
 import Modal from "../../ui/Modal";
 import { db } from "../../../lib/firebase";
 import { fetchClientPage } from "../../../lib/clientDirectory";
 import { businessToday } from "../../../lib/businessTime";
-import { cleanTags, saveClientDetails, setClientBlocked, type Actor } from "../../../lib/clientActions";
+import { cleanTags, saveClientDetails, setClientBlocked, setClientSmsOptOut, type Actor } from "../../../lib/clientActions";
 import {
   ClientCommandError,
   anonymiseClient,
@@ -112,6 +112,18 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
     setBusy(false);
   };
 
+  // ── texts on / off ─────────────────────────────────────────────────────────
+  const toggleTexts = async () => {
+    setBusy(true);
+    try {
+      await setClientSmsOptOut(db, client.id, client.smsOptOut !== true, actor);
+      onDone(client.smsOptOut ? "They'll get booking texts again." : "No more booking texts for this client.");
+    } catch {
+      onError("Couldn't change the text setting.");
+    }
+    setBusy(false);
+  };
+
   // ── merge ──────────────────────────────────────────────────────────────────
   const [mergeSearch, setMergeSearch] = useState("");
   const [candidates, setCandidates] = useState<Client[]>([]);
@@ -206,6 +218,10 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
         <button type="button" style={button()} data-testid="hk-block" onClick={() => { setReason(client.blockReason ?? ""); setDialog("block"); }}>
           {client.blocked ? <ShieldOff size={14} aria-hidden="true" /> : <Ban size={14} aria-hidden="true" />}
           {client.blocked ? "Unblock" : "Block"}
+        </button>
+        <button type="button" style={button()} data-testid="hk-texts" disabled={busy} onClick={() => void toggleTexts()}>
+          {client.smsOptOut ? <MessageSquareText size={14} aria-hidden="true" /> : <MessageSquareOff size={14} aria-hidden="true" />}
+          {client.smsOptOut ? "Allow texts" : "Stop texts"}
         </button>
         <button type="button" style={button()} data-testid="hk-merge" onClick={() => setDialog("merge")}>
           <GitMerge size={14} aria-hidden="true" /> Merge duplicate

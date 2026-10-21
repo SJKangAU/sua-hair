@@ -10,7 +10,7 @@
 // "Book again" opens the create-booking form with the client filled in.
 
 import { useState } from "react";
-import { Ban, CalendarPlus, Mail, Phone } from "lucide-react";
+import { Ban, CalendarPlus, Mail, MessageSquareOff, Phone } from "lucide-react";
 import { auth } from "../../../lib/firebase";
 import { useClientAudit, useClientRecord } from "../../../hooks/useClientData";
 import { useSalonData } from "../../../context/SalonDataContext";
@@ -114,6 +114,11 @@ const ClientView = ({ clientId, role, stylistId, onBookAgain, onNotice, onGone }
               {client.blocked && (
                 <span style={pill} data-testid="blocked-badge">
                   <Ban size={11} aria-hidden="true" /> Blocked
+                </span>
+              )}
+              {full?.smsOptOut && (
+                <span style={pill} data-testid="no-texts-badge">
+                  <MessageSquareOff size={11} aria-hidden="true" /> No texts
                 </span>
               )}
               {client.tags.map((t) => (

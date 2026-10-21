@@ -252,6 +252,11 @@ const DetailsStep = ({
               borderColor: errors.phone ? "var(--error)" : "var(--border)",
             }}
           />
+          {!errors.phone && (
+            <p style={{ color: "var(--ink-muted)", fontSize: "0.75rem", marginTop: "0.375rem" }}>
+              We may text you about this booking.
+            </p>
+          )}
           {errors.phone && (
             <p
               id="booking-phone-error"
