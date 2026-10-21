@@ -1,130 +1,139 @@
 # Pilot Readiness Report
 
-Branch `pilot-readiness` (off `main` at b7d4be7). Written 2026-10-20.
+Branch `trust-boundary`, written 2026-10-21 against commit `24b3f7e` (based on `main` at `a7f9d73`). It replaces the earlier report for `pilot-readiness` (b7d4be7); that report's history is in git and `docs/test-runs/`.
 
-**Bottom line.** The platform is in much better shape than the brief assumed, and I could prove a lot more of it, but it is **not yet proven for real salon use** and **nothing has been deployed**. Everything below was tested on a developer machine against Firebase *emulators*. No real user has used it. See "What is NOT done" and "Before the pilot starts".
+**Bottom line.** The code now enforces on the server what it used to leave to the browser: who is staff, what an online booking request may contain, who gets a slot when two people want it, and how long an unapproved request holds one. All of that is **tested against Firebase emulators** and passes under UTC and Australia/Melbourne. **None of it has been deployed, and nothing here has been tried with a real user, a real inbox, or the real Firebase project.** Read section 2 before treating any of it as proven.
+
+The two kinds of evidence are kept apart on purpose:
+
+1. **Test evidence** — automated tests on a developer machine against emulators (section 1).
+2. **Deployment and user evidence** — what only the real project and real people can show (section 2). There is none yet.
 
 ---
 
-## 1. What I found versus what the brief assumed
+## 1. Test evidence (emulators only)
 
-The brief listed five defects (D1–D5). On inspection **most of them were already fixed on `main`** before this pass started — the audit that produced the list appears to have been written against an older version of the code (and the stale docs). For each, I verified the claim against the code first, then either fixed the real remaining gap or added tests so the earlier fix can't regress.
+Run on one Windows machine with `node scripts/run-suite.mjs`, which writes the full output to `docs/test-runs/trust-boundary-utc.txt` and `docs/test-runs/trust-boundary-melbourne.txt`. Browser tests ran in Edge.
 
-| Brief said                                                              | What was actually true on `main` (b7d4be7)                                                                                                       |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| D1: admin IDs overwrite; no conflict check                              | IDs were already auto-generated and a rest-aware check already existed (commit 233da18). **But it was check-then-write, so two admins could still both succeed.** That race was real. |
-| D2: cancelled hidden, cannot be undone                                  | Cancelled bookings were already visible (list, status filter, timeline toggle) with Undo and Restore (aff67f6). **But Undo silently did nothing when cancelling from the timeline** (found by the browser run), and a restore could race. |
-| D3: timeline uses fixed hours                                           | Already follows the configured hours per date (ff9c412).                                                                                          |
-| D4: toast per booking, oldest-first sort, deprecated persistence call   | Already fixed: one summary toast, upcoming-first list, `persistentLocalCache` (aff67f6, a157dce, 43140c0).                                        |
-| D5: TS6133 build error                                                  | Does **not** reproduce: `npm run build` passed on the baseline. (I did produce and fix one myself mid-refactor; it never reached a commit.)      |
+| Step                                                            | TZ=UTC            | TZ=Australia/Melbourne |
+| --------------------------------------------------------------- | ----------------- | ---------------------- |
+| `npm run build` (tsc -b and vite build)                         | pass              | pass                   |
+| `npm run lint`                                                  | pass, 0 warnings  | pass, 0 warnings       |
+| `npm run test:unit`                                             | 354 tests, 24 files | 354 tests, 24 files  |
+| `npm run test:rules` (rules matrix + owner/stylist/unprovisioned/anonymous matrix) | 99 tests | 99 tests          |
+| `npm run test:security` (no PII reaches the public)             | 11 tests          | 11 tests               |
+| `npm run test:lockdown` (anonymous probes against the rules)    | 16 checks pass    | 16 checks pass         |
+| `npm run test:admin` (admin writes, races, client import)       | 74 tests          | 74 tests               |
+| `npm run test:functions` (booking commands, roles, limits, races) | 111 tests       | 111 tests              |
+| `npm run test:smoke`                                            | 5 tests           | 5 tests                |
+| `npm run test:e2e` (Playwright, Auth + Firestore + **Functions** emulators) | 108 tests | 108 tests         |
 
-## 2. What was fixed (with commits)
+Also run by hand: `npm run test:unit:tz` earlier in the work (UTC, America/Los_Angeles via `PST8PDT`, Australia/Melbourne: 338 tests then, all passing; unit count has since grown to 354 and was run under UTC and Melbourne only).
 
-| Commit    | Change                                                                                                                                                                                  |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ab56901` | Baseline recorded (`docs/test-runs/baseline.txt`): everything already green.                                                                                                            |
-| `392f7e1` | **D1.** Walk-ins, breaks, training, restore and reschedule now run in a Firestore transaction on a per-stylist-day lock (`stylistDayLocks`). Two admins saving the same slot at once: exactly one wins. New rule `stylistDayLocks` in `firestore.rules`. |
-| `463e2fe` | D2/D3/D4/D5: +14 unit tests locking in behaviour that had already shipped.                                                                                                              |
-| `2378dc2` | **D6 (new).** A customer's chosen date was overwritten by the async "next available" suggestion if they clicked quickly (chose 28 Oct, booking saved for 21 Oct).                       |
-| `0139ac9` | **D2b (new).** Undo after cancelling from the timeline did nothing (stale booking copy in an unmounted popover).                                                                        |
-| `951b008` | **D7 (new).** Opening or refreshing `/admin/analytics` bounced the owner to Today.                                                                                                      |
-| `2e2bb9a` | **D8 (new, serious).** Searching clients **by name** returned nothing (an invisible character lost from the query in an earlier refactor). Phone search still worked, so it was easy to miss. |
-| `7707c0b`, `c397aea`, `79c9eaf` | Playwright scenario runner against the Auth + Firestore emulators (45 browser tests), smoke test, CI wiring, saved evidence.                                          |
-| `fe2dd8e` | Docs 01–08 rewritten to match the code; 02 and 05 were copies of 01 and 04 and are now real documents.                                                                                  |
+**What the new tests prove**
 
-Every new test that targets a bug was shown **failing against the old behaviour** first; the output is saved:
+- **Roles (`roles.test.ts`, `tests/functions/roles.test.ts`).** For every collection, an owner, a stylist, a signed-in-but-unprovisioned account and an anonymous visitor get exactly the access in FR-019. Provisioning writes the claim and the record together, verifies, refuses to remove the last owner, and can be rolled back.
+- **Authoritative booking commands (`tests/functions/*`, TC-087 to TC-094).** Every bad input is refused; price and phases come from the records, not the request; "Any Available Stylist" picks correctly and fails cleanly when nobody is free; **eight simultaneous requests for one slot create exactly one booking; seven "any" requests make five bookings on five stylists; an owner walk-in written from the browser SDK racing an online request leaves exactly one winner, twelve rounds in a row**; approval re-checks the slot and refuses a stale one; the 24-hour release works; the pending limit holds under concurrency; rate limits work and store no phone number or address.
+- **Blocked clients (TC-093, TC-095, TC-096; `admin` clientImport).** Flag stored, enforced by the booking and waitlist commands, shown in the walk-in form, and removed exactly by rollback.
+- **Melbourne clock (`businessTime.test.ts`).** Daylight-saving start and end, 23- and 25-hour days, the 5 pm cutoff and 2-hour notice — identical results under UTC, Los Angeles and Melbourne.
+- **Public lockdown (`test:lockdown`).** An anonymous visitor can read stylists, services, hours and `slotBlocks`, and every write (booking, slot block, waitlist, notification, client record, price, settings) and every read of private data is denied.
 
-| Evidence file                                  | Shows                                                                                          |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `docs/test-runs/d1-red-before-transaction.txt` | 4 failed / 19 passed against the old check-then-write (the race tests fail; the ID and conflict tests already passed) |
-| `docs/test-runs/d2-red-restore-unchecked.txt`  | 4 restore tests fail with the restore-time lock removed                                        |
-| `docs/test-runs/d2b-red-undo-noop.txt`         | Undo test fails against the old code                                                           |
-| `docs/test-runs/d6-red-date-overwritten.txt`   | TC-001 saved the wrong date before the fix                                                     |
-| `docs/test-runs/d7-red-analytics-redirect.txt` | Deep link redirected to Today                                                                  |
-| `docs/test-runs/d8-red-client-name-search.txt` | Name search returned no results                                                                |
+**Existing tests that had to change, and why** (none was weakened or deleted)
 
-The D2/D3/D4 behaviour that was already on `main` has no "failing before" run — there was nothing to fail against — so those tests prove it works now, not that it ever failed.
+- Tests that asserted the old open behaviour (a customer creating a booking, slot block or client record directly; any signed-in account being staff; a stylist editing stylists) now assert the new rule instead, in `rules.test.ts`, `clientImport.test.ts` and `smoke.test.ts`. Where a customer's write used to seed data, the test seeds it as the server would (rules bypassed).
+- Three unit tests built "now" from the machine's local zone; they now build it from Melbourne's wall clock. Two display-time tests use fixed instants.
+- Browser: "Confirm Booking" is now "Request Booking" and the screen says "Request received"; a notification's wording changed ("New booking request"); TC-079/080 and two import unit tests now count blocked clients instead of listing them as "left out".
+- **TC-007** only ever passed before about 08:30 Melbourne time (choosing a stylist resets the date to today). It fails on `main` too when run later in the day; it now re-picks the date.
 
-## 3. Test results (from the saved outputs)
+**Import size.** A 10,000-row synthetic import measured **2 min 54 s** end to end in the emulator: one existing-client lookup pass about 40 s, importing 9,000 records 3.8 s, rolling them back 3.3 s; raising lookup concurrency from 1 to 10 gained only about 15% there. A **50,000-row run was stopped at the 30-minute test limit without finishing**, so that size is not demonstrated. The supported maximum was lowered from 50,000 to **20,000 rows** (DEC-042); the real export is 12,286 clients. The emulator has no network latency, so these are local floors, not production timings.
 
-Baseline (`docs/test-runs/baseline.txt`) vs after (`docs/test-runs/after-fixes.txt`), same machine, `npm ci` first:
+**Bundle.** The customer entry bundle fell from 1,123 kB (328 kB gzip) to about 811 kB (about 248 kB gzip) because the admin and stylist screens are now lazy-loaded; the admin code is a separate 237 kB chunk plus a 42 kB dashboard chunk that a customer never downloads.
 
-| Check                                                       | Baseline            | After fixes                       |
-| ----------------------------------------------------------- | ------------------- | --------------------------------- |
-| `npm run build`                                             | pass                | pass                              |
-| `npm run lint`                                              | (not in brief)      | 0 errors, 4 warnings (pre-existing) |
-| `npm run test:unit`                                         | 183 tests, 12 files | **200 tests, 14 files**           |
-| `npm run test:rules`                                        | 37 tests            | **41 tests**                      |
-| `npm run test:security`                                     | 11 tests            | 11 tests                          |
-| `npm run test:admin` (new: admin writes, real rules)        | —                   | **36 tests, 2 files**             |
-| `npm run test:smoke` (new)                                  | —                   | **5 tests**                       |
-| `npm run test:e2e` (new: Playwright, real UI, emulators)    | —                   | **45 tests**                      |
+**Test gaps inside the test evidence**
 
-All passed on the full run, and `test:admin`, `test:smoke` and `test:e2e` passed on two further re-runs with no flakes (`docs/test-runs/stability-reruns.txt`).
+- **TC-097** (a stylist sees only their own bookings, in the browser) is written but **has not been run**; the same access is proved in the rules tests.
+- `test:unit:tz` was not re-run on the final commit.
+- The scale test is opt-in (`npm run test:scale`) and is not in the suite.
 
-**Scenario results** (`docs/test-runs/manual-results.md`): 37 scenarios from `docs/08-test-scenarios.md` — **36 PASS (two with caveats below), 0 FAIL, 1 NOT RUN** (TC-037, email). Every PASS was produced by a browser test that performed the steps and asserted the result; none is marked on inspection.
+---
 
-Caveats on those scenarios, not buried:
+## 2. NOT yet verified (deployment, email and user evidence)
 
-- **TC-002** as originally written (greet a returning customer) **fails by design** — that feature was removed for privacy. I rewrote the scenario to the real behaviour and that passes.
-- **TC-006**'s original test data was self-contradictory (a 45-minute cut cannot fit a 30-minute rest window). Fixed in `08`; the corrected scenario passes.
-- TC-004 and TC-009 use a fixed browser clock (6:00 pm / 2:20 pm).
-- The smoke test (client books → owner approves → overlapping walk-in blocked) is `e2e/04-smoke.spec.ts` (through the UI) and `tests/firestore/smoke.test.ts` (through the real rules).
+Everything below needs the real project or real people. **None of it has been done.**
 
-## 4. What is NOT done
+| Not verified                                  | Why it matters                                                                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Deployed rules and functions**              | Nothing was published. The live rules' state is unknown to the repo. Deploy order matters: `docs/DEPLOYMENT.md` (provision, functions, app, rules last). |
+| **The owner can still reach the admin after the rules change** | Roles are now custom claims. The lock-out check (`provision-roles verify`) is the guard; it has only run against emulators. |
+| **Real email delivery**                       | Confirmation, request-received, not-confirmed, reminder and owner emails are built and unit-tested; the Functions emulator logs "email not sent". Needs a Resend key, a verified domain and a real inbox (TC-037 is still not run). |
+| **App Check (reCAPTCHA)**                     | Wired but off. The console steps are in `DEPLOYMENT.md`; enforcement is a flag.                                              |
+| **The 24-hour release job and the reminder job** | Scheduled functions do not run in the emulator; only their logic is tested. Needs the real scheduler and the new `(status, holdExpiresAt)` index built. |
+| **User acceptance testing**                   | No customer, stylist or owner has used this. Every result above is a script following written steps.                          |
+| **CI**                                        | The new workflow (matrix over time zones, functions emulator in e2e, current action versions) has not run on GitHub. Action versions were taken from the releases API on the day; confirm the first run goes green. |
+| **Browsers and devices**                      | Only Chromium-based Edge. Not tried: Safari / iOS Safari (most customers), Firefox, real phones, screen readers.             |
+| **The client import on the real file**        | Tested only on synthetic fixtures and sizes up to 10,000 rows. Not run against the real Fresha export or production.         |
+| **Operations**                                | No error monitoring or alerting, no documented backup / restore drill, no uptime target. Fallback if the site misbehaves is the phone. |
+| **Dependencies**                              | `npm ci` reports 44 advisories at the root (2 critical, 23 high) and 9 in `functions/`. Not triaged. `firebase-functions` is flagged outdated.   |
 
-- **No UAT has been run. No real user — customer, stylist or owner — has used this system.** Every result above is a script following written steps, on a developer machine, against emulators.
-- **Nothing is deployed.** No rules, indexes, functions or site were published by me. The live system's state is not visible from the repo.
-- **Email has never been sent.** Confirmation, reminder and owner emails are built and their templates are unit-tested, but delivery was not exercised (needs deployed Functions, a Resend key and a verified domain). TC-037 is NOT RUN.
-- **Not tested at all:** the stylist login/schedule page, the customer-data erasure function, Safari / iOS Safari / Firefox / real phones (only Chromium-based Edge), screen readers / a WCAG audit, load, behaviour offline.
-- The updated **CI workflow (`.github/workflows/ci.yml`) has not been run** (it adds the admin, smoke and Playwright jobs; the Playwright job installs Chromium, which I could not try).
-- The customer-flow "under 3 minutes" and page-load targets have **not been measured**.
-- Visual design (the black/white theme) was not asserted by any test.
+---
 
-## 5. Remaining known risks
+## 3. Risks from the previous report: what changed
 
-Ordered by how much they could hurt the pilot.
+| Earlier risk                                              | Now                                                                                                                  |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 1. Rules must be deployed before the code                 | The order is now **provision, functions, app, rules last** (`DEPLOYMENT.md`); every intermediate state works.           |
+| 2. An online booking is not protected by the lock         | **Closed in code.** Online requests take the same stylist-day lock as admin writes; races are tested (section 1).        |
+| 3. Any signed-in account is "staff"                       | **Closed in code.** Owner / stylist / unprovisioned / anonymous are enforced by the rules. A revoked role still works in the rules until the token refreshes (up to an hour; functions stop honouring it at once). |
+| 4. "Confirmed" wording for a pending booking              | **Closed.** "Request received"; "confirmed" only on approval; a "we couldn't confirm" email on decline or expiry.        |
+| 5. Email is unverified                                    | **Still open** (section 2).                                                                                           |
+| 6. Time zone follows the browser                          | **Closed.** One Melbourne clock in the page and the functions.                                                        |
+| 7. Operations gaps                                        | **Still open.**                                                                                                       |
+| 8. Browser coverage                                       | **Still open.**                                                                                                       |
+| 9. Dependencies                                           | **Still open.**                                                                                                       |
+| 10. Smaller items (bundle size, long-polling...)          | The bundle risk is reduced (section 1). The rest is unchanged: slot-claiming writes need a connection; Firestore is forced onto long-polling. |
 
-1. **Production rules must be deployed BEFORE this code — otherwise admin booking breaks.** Walk-ins, breaks, training, restore and reschedule now write `stylistDayLocks`. If the code goes live before the updated `firestore.rules`, every one of those fails with permission-denied. The live rules' state is unknown to the repo (it has drifted before). Deploy rules first, then the site.
-2. **An online booking is not protected by the lock.** Two customers choosing the same slot at the same moment can both succeed (both `pending`), and an online booking landing in the same second as an admin booking for that slot can too. The customer flow only *filters* by availability. Approving a pending booking does not re-check. Mitigation for the pilot: the owner reviews every pending booking on the timeline (overlaps are visible) — and daily reconciliation will show any. Proper fix: a Cloud Function that owns all booking writes (DEC-017 explains the trade-off).
-3. **Any signed-in account is "staff" in the rules.** A stylist's login (or anyone given an account) can, through the SDK rather than the UI, read all customer data and write bookings, prices, services, hours and even delete bookings — only `privateSettings` is owner-only. The UI hides this; the rules do not enforce it. Acceptable only if every account holder is trusted.
-4. **Confirmation wording.** The customer is told "Your booking is confirmed" (screen and email) while the booking is `pending` until approved. A declined or rescheduled booking will look like a broken promise. Needs a decision (see §7).
-5. **Email is unverified** (above). If you enable it, test with a real inbox first.
-6. **Time zone.** "Today", the 5 pm cutoff and the 2-hour notice use the *browser's* clock. Correct for people in Melbourne; wrong for anyone elsewhere. Emails use Melbourne time.
-7. **Operations gaps:** no error monitoring or alerting, no documented backup / point-in-time recovery, no uptime target. If the site or Firebase is down, the fallback is the phone — say so.
-8. **Browser coverage:** most customers will be on iPhones; Safari has not been tried.
-9. **Dependencies:** `npm ci` reports 44 advisories (2 critical, 23 high). Not triaged; many are probably dev tooling.
-10. **Smaller:** slot-claiming writes need a connection (they fail with an error rather than queue offline); resizing a booking's length checks against the in-browser copy of the data rather than the server; a cancelled booking sitting under a newer booking can't be clicked on the timeline (restore it from the Bookings list); the JavaScript bundle is one 1 MB file; Firestore is forced onto long-polling.
+**New things to know**
 
-## 6. Recommended one-week pilot
+- A customer who leaves the **old** page open across the rules deployment gets an error on submit (the form says to call the salon). Deploy the rules at a quiet time.
+- A request that is not approved within 24 hours is released and the customer is emailed; the owner should approve or decline promptly. Legacy pending bookings have no hold and are never auto-released.
+- Existing bookings made with stylist "any" appear in Approvals as **Needs stylist**; each needs one click to assign a stylist before it can be approved.
+- A role removed from a stylist keeps working in the rules for up to an hour.
+
+---
+
+## 4. Recommended one-week pilot
 
 **Principle: run alongside the current process, compare daily. The platform is not yet the system of record.**
 
-**Before day 1 (half a day, needs you):**
+**Before day 1 (needs you; `DEPLOYMENT.md` has the commands):**
 
-1. Deploy `firestore.rules` and `firestore.indexes.json` to production **first**, then the site. Verify by making one booking and one walk-in on the live site.
-2. Decide the confirmation wording (§7) and make that change.
-3. Decide whether to switch email on. If yes, set the Resend key and a verified sender domain and send yourself a test.
-4. Take a Firestore export (backup) and write down how to restore it. Agree the fallback: *if the site misbehaves, go back to phone and SMS, and tell customers.*
-5. Check every account holder is someone you trust with full access (risk 3). Confirm the owner and stylist `users/{uid}` role documents exist.
-6. Check the live stylists, services, prices, opening hours and Monday-closed against reality.
+1. Save the live rules text and take a Firestore export.
+2. Provision the owner and every stylist account; run `verify`; have the owner sign out and in once.
+3. Deploy indexes and functions; deploy the app; make a test request and approve it; then deploy the rules; run `node scripts/verify-lockdown.mjs` against the live project.
+4. Verify email delivery with your own address (request received, confirmed, declined).
+5. Check the live stylists, services, prices, hours and Monday-closed against reality.
+6. Decide when to switch App Check enforcement on (after the site has been seen sending valid tokens).
 
 **Days 1–7:**
 
-- Keep taking phone/SMS bookings exactly as today. **As well**, whoever takes one enters it as a walk-in in the dashboard (it takes seconds and is clash-checked). Staff are not asked to *rely* on the platform yet.
-- Share the booking link with a **small group** (a handful of regulars, or one channel), not the whole client list.
-- Owner approves pending bookings once or twice a day and looks for overlapping pending bookings (risk 2).
-- **Each evening, 10 minutes:** compare the day in the platform with the day as it actually happened (old record, stylists' recollection). Log in a sheet: bookings in each; any booking in one but not the other; any double-booking or clash (either system); wrong price, duration or stylist; any booking a customer made that the salon didn't expect; any error or confusion staff mention; how many calls/texts staff handled during service hours.
-- Count, once, how long a real customer takes to book on their own phone.
+- Keep taking phone and SMS bookings exactly as today, and also enter each as a walk-in (it is clash-checked and takes seconds).
+- Share the booking link with a small group, not the whole client list.
+- The owner approves or declines requests at least twice a day (the hold lapses after 24 hours) and assigns a stylist to any "Needs stylist" booking.
+- Each evening, compare the day in the platform with the day as it happened: bookings in one and not the other; any double booking or clash; a wrong price, duration or stylist; a request that expired unnoticed; any error staff mention; whether the emails arrived.
+- Time one real customer booking on their own phone, on an iPhone.
 
-**End of week — go / no-go.** Continue to a wider rollout only if: zero double-bookings that reached a customer; every discrepancy explained and none caused by the platform losing or corrupting a booking; staff say it reduced interruptions; no unresolved clash from risk 2; emails (if on) arrived. Any lost or corrupted booking, or any double booking the platform caused, is a stop.
+**End of week, go / no-go.** Continue only if: zero double bookings that reached a customer; every discrepancy explained and none caused by the platform losing or corrupting a booking; no request expired unseen; emails arrived; staff say it reduced interruptions. Any lost or corrupted booking, or any double booking the platform caused, is a stop.
 
-## 7. Decisions needed from you
+---
 
-1. **Deploy order.** Will you deploy the rules (and indexes) before the site? I did not deploy anything.
-2. **Confirmation wording / auto-confirm** — "request received, we'll confirm" or auto-confirm online bookings?
-3. **Online-booking race (risk 2)** — accept for the pilot with manual checking, or build a Cloud Function so customers are covered too?
-4. **Rules (risk 3)** — tighten so only the owner can write prices, services, hours and delete bookings?
-5. **Email for the pilot** — on or off?
-6. **Time zone** — pin all date logic to Melbourne?
-7. **Merge** — this branch is not merged or pushed; review and merge when ready.
+## 5. Decisions already made, and what is still the owner's
+
+Made (recorded in `docs/07-decision-log.md`): Melbourne time everywhere (DEC-034); "Any Available Stylist" assigned by the server with the stated tie-breaks and the price recalculated (DEC-037); a pending request holds its slot, 2 per phone, released after 24 hours (DEC-036); blocked clients imported as blocked and refused with a generic message (DEC-039); pending means request received (DEC-038); roles as claims (DEC-033); commands as Cloud Functions (DEC-035); abuse limits and App Check behind a flag (DEC-041); import limit 20,000 rows (DEC-042).
+
+Still yours:
+
+1. Who is provisioned as owner and as each stylist (every account not provisioned loses access when the rules go live).
+2. Whether to switch email on for the pilot, and the sending domain.
+3. When to enable App Check enforcement.
+4. Whether to ask for a measured 50,000-row import before raising the 20,000 limit.
+5. Merge: this branch is not pushed or merged.
