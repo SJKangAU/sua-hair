@@ -373,6 +373,21 @@ describe("merge, anonymise and export", () => {
     expect((await recomputeClient(db, "0400000001", NOW)).changed).toBe(false);
   });
 
+  it("a trigger that runs AFTER a merge does not bring the merged-away client back", async () => {
+    await twoClients();
+    const moved = { ...(await bookingOf("m1")) };
+    await mergeClientsCore(db, { keepId: "0400000001", mergeId: "0400000002" }, actor, NOW);
+    expect(await client("0400000002")).toBeUndefined();
+    // the booking moved, but still carries the old phone; the trigger for that update is late
+    // (a loaded machine) and rebuilds the OLD client from it: it must find nothing to build
+    await clientSyncCore(db, moved, await bookingOf("m1"), "m1", NOW);
+    expect(await client("0400000002")).toBeUndefined();
+    expect(await card("0400000002")).toBeUndefined();
+    expect((await recomputeClient(db, "0400000002", NOW)).exists).toBe(false);
+    // and the kept client still has the booking
+    expect(await client("0400000001")).toMatchObject({ totalVisits: 2 });
+  });
+
   it("merge refuses the same client twice, an unknown client and a tombstone", async () => {
     await twoClients();
     expect(await codeOf(mergeClientsCore(db, { keepId: "0400000001", mergeId: "0400000001" }, actor, NOW))).toBe("invalid");

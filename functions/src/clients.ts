@@ -87,9 +87,19 @@ const bookingQueries = (db: Firestore, clientId: string): Query[] => [
 
 const mergeSnapshots = (
   snaps: FirebaseFirestore.QuerySnapshot[],
+  clientId: string,
 ): Map<string, ProfileBooking & ClientBooking> => {
   const out = new Map<string, ProfileBooking & ClientBooking>();
-  for (const snap of snaps) for (const d of snap.docs) out.set(d.id, toProfileBooking(d.id, d.data()));
+  for (const snap of snaps) {
+    for (const d of snap.docs) {
+      // A booking the phone query finds but that is linked to ANOTHER client (it was merged
+      // into them) is not this client's. Without this, a trigger that runs after a merge
+      // has deleted the old record would build it again from the moved booking.
+      const linked = d.get("clientId");
+      if (typeof linked === "string" && linked !== "" && linked !== clientId) continue;
+      out.set(d.id, toProfileBooking(d.id, d.data()));
+    }
+  }
   return out;
 };
 
@@ -158,7 +168,7 @@ export const planClientWrite = async (
     tx.get(db.doc(`customerLookups/${clientId}`)),
     ...bookingQueries(db, clientId).map((q) => tx.get(q)),
   ]);
-  const bookings = mergeSnapshots(snaps);
+  const bookings = mergeSnapshots(snaps, clientId);
   if (overlay.removeId) bookings.delete(overlay.removeId);
   if (overlay.booking) bookings.set(overlay.booking.id, overlay.booking);
 
@@ -192,7 +202,7 @@ export const recomputeClient = async (
     db.doc(`customerLookups/${clientId}`).get(),
     ...bookingQueries(db, clientId).map((q) => q.get()),
   ]);
-  const bookings = [...mergeSnapshots(snaps).values()];
+  const bookings = [...mergeSnapshots(snaps, clientId).values()];
   const data = existing.exists ? existing.data() : undefined;
   // a client with no bookings and no record is nothing (an unknown number)
   if (!data && bookings.length === 0 && lookup.exists === false) return { changed: false, exists: false };
