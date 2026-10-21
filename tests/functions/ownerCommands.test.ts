@@ -316,7 +316,10 @@ describe("releasing unapproved requests after 24 hours (DEC-036)", () => {
     ]);
     expect([...a, ...b]).toEqual([r.bookingId]);
     expect((await bookingOf("old-pending")).status).toBe("pending");
-  });
+    // Two runs on the same request now also contend for the client's document (DEC-044), so
+    // under load the loser's retries can take longer than vitest's default 5 seconds; what
+    // is asserted (exactly one release, the legacy booking untouched) is unchanged.
+  }, 30_000);
 });
 
 describe("joinWaitlist", () => {

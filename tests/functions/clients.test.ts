@@ -194,6 +194,25 @@ describe("the trigger repairs what the owner's browser wrote", () => {
     expect((await client("0400000002"))!.bookingCount).toBe(1);
   });
 
+  it("a reschedule moves the next booking, and a no-show (a stylist's status change) updates the counts", async () => {
+    await seedBooking(db, "w1", { bookingType: "walkin", customerPhone: PHONE, status: "confirmed", date: "2026-12-10" });
+    let before = undefined as FirebaseFirestore.DocumentData | undefined;
+    await clientSyncCore(db, before, await bookingOf("w1"), "w1", NOW);
+    expect(await client(PHONE)).toMatchObject({ nextBookingDate: "2026-12-10", hasUpcoming: true, noShowCount: 0 });
+
+    before = await bookingOf("w1");
+    await db.doc("bookings/w1").update({ date: "2026-12-12", time: "2:00 PM" });
+    await clientSyncCore(db, before, await bookingOf("w1"), "w1", NOW);
+    expect(await client(PHONE)).toMatchObject({ nextBookingDate: "2026-12-12", nextBookingTime: "2:00 PM" });
+
+    before = await bookingOf("w1");
+    await db.doc("bookings/w1").update({ status: "no_show" });
+    await clientSyncCore(db, before, await bookingOf("w1"), "w1", NOW);
+    expect(await client(PHONE)).toMatchObject({ noShowCount: 1, hasNoShows: true, hasUpcoming: false, totalVisits: 0, totalSpend: 0 });
+    expect((await card(PHONE))!.stylistIds).toEqual(["steve"]); // a no-show still ties the stylist to them
+    expect((await recomputeClient(db, PHONE, NOW)).changed).toBe(false);
+  });
+
   it("settleClients turns a booking whose day has arrived from 'next' into a visit", async () => {
     await seedBooking(db, "w1", { bookingType: "walkin", customerPhone: PHONE, status: "confirmed", date: "2026-12-03" });
     await clientSyncCore(db, undefined, await bookingOf("w1"), "w1", at("2026-12-02", "09:00"));
