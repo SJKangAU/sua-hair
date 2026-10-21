@@ -357,7 +357,7 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 **Requirements:**
 
 - **Owner only.** The section is not shown to stylist accounts; its ledger (`importBatches`) is owner-only in `firestore.rules`
-- **Read in the browser.** The file is parsed in the page (papaparse for csv, read-excel-file for xlsx, loaded on demand), size-limited (10 MB, 50,000 rows) and never uploaded
+- **Read in the browser.** The file is parsed in the page (papaparse for csv, read-excel-file for xlsx, loaded on demand), size-limited (10 MB, 20,000 rows; lowered from 50,000, DEC-042) and never uploaded
 - **Dry run first.** Counts of rows, new clients, clients already in the app (left exactly as they are, except that a blocked one gets the flag), skipped rows, clients merged because they share a number, and **blocked clients with a clear warning**; what the import leaves out (emails, landlines, genders, birth dates, staff alerts); a downloadable error report with **row numbers and reasons only**. Nothing is written until the owner confirms
 - **Normalising.** `61 4xx xxx xxx` and `04xx xxx xxx` become `04xxxxxxxx` (`^04\d{8}$`); anything else (missing, landline, overseas) is skipped and reported, never guessed. Names are trimmed and space-collapsed (Full Name, else First + Last) and may be in any script. Two clients sharing a number become one record with the most recently added name
 - **Existing clients are never overwritten.** A number that already has a record (real visit history) is left alone, even if it was created while the import was running — the only change is the blocked flag on one Fresha has blocked

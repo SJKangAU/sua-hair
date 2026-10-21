@@ -25,7 +25,11 @@ export type RawRow = Record<string, string>;
 export const REQUIRED_HEADERS = ["Full Name", "Mobile Number"] as const;
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-export const MAX_ROWS = 50_000;
+// Lowered from 50,000 (DEC-042): a 10,000-row import measured 2m54s end to end in the emulator
+// (one lookup pass ~40 s, import 3.8 s, rollback 3.3 s), but a 50,000-row run was stopped at
+// 30 minutes without finishing, so that size is not demonstrated. 20,000 is well above the real
+// export (12,286 clients) and comfortably inside what was measured.
+export const MAX_ROWS = 20_000;
 // Lookups written per transaction: 400 + 1 ledger document stays well under
 // Firestore's 500-write limit
 export const IMPORT_CHUNK = 400;

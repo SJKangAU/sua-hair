@@ -71,7 +71,7 @@ export interface ImportBatch {
 // Firestore's `in` takes at most 30 values
 const IN_LIMIT = 30;
 
-// How many of those lookups are in flight at once. One at a time made a 50,000-row
+// How many of those lookups are in flight at once. One at a time made a large
 // file wait on ~1,700 round trips in a row; a bounded pool keeps the browser and the
 // connection comfortable while finishing several times faster (measured in
 // tests/firestore/clientImportScale.test.ts, docs/PILOT_READINESS.md).
