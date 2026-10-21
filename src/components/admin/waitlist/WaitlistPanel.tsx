@@ -6,6 +6,7 @@
 import { useState } from "react";
 import useWaitlist from "../../../hooks/useWaitlist";
 import type { WaitlistEntry } from "../../../types";
+import { BUSINESS_TIME_ZONE } from "../../../lib/businessTime";
 
 interface Props {
   onSuccess: (msg: string) => void;
@@ -66,6 +67,7 @@ const WaitlistPanel = ({ onSuccess, onError }: Props) => {
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString("en-AU", {
+      timeZone: BUSINESS_TIME_ZONE,
       day: "numeric",
       month: "short",
       year: "numeric",

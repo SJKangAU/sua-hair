@@ -23,6 +23,7 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
+import { todayString } from "../../../lib/dates";
 import useServices from "../../../hooks/useServices";
 import type { FirestoreService } from "../../../hooks/useServices";
 
@@ -149,7 +150,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
         if (priceChanged) {
           updates.priceHistory = arrayUnion({
             price: newPrice,
-            effectiveFrom: new Date().toISOString().split("T")[0],
+            effectiveFrom: todayString(),
             recordedAt: new Date().toISOString(),
           });
         }
@@ -180,7 +181,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           priceHistory: [
             {
               price: newPrice,
-              effectiveFrom: new Date().toISOString().split("T")[0],
+              effectiveFrom: todayString(),
               recordedAt: new Date().toISOString(),
             },
           ],

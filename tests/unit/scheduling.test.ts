@@ -21,6 +21,7 @@ import {
   buildBookingRef,
 } from "../../src/lib/scheduling";
 import { SALON_CONFIG } from "../../src/lib/config";
+import { businessInstant } from "../../src/lib/businessTime";
 import type {
   Booking,
   SalonSettings,
@@ -61,10 +62,15 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** Freeze "now" at a local date+time so today-dependent rules are exact. */
+/** Freeze "now" at a Melbourne date+time so today-dependent rules are exact.
+ *  The salon's rules run on Melbourne's clock whatever TZ the tests run in
+ *  (DEC-034), so the instant is built from the Melbourne wall clock - not from
+ *  the machine's local zone, which made these tests pass only in one zone. */
 const freezeAt = (isoLocal: string) => {
+  const [date, clock] = isoLocal.split("T");
+  const [h, m] = clock.split(":").map(Number);
   vi.useFakeTimers();
-  vi.setSystemTime(new Date(isoLocal));
+  vi.setSystemTime(businessInstant(date, h * 60 + m) as number);
 };
 
 // ── Time conversions ─────────────────────────────────────────────────────

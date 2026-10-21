@@ -9,6 +9,7 @@ import { GraduationCap } from "lucide-react";
 import { useBookingContext } from "../../../context/BookingContext";
 import Badge from "../../ui/Badge";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
+import { todayString } from "../../../lib/dates";
 
 // Inline styles can't express media queries, so the row's grid layout lives
 // in a class that collapses to a single column on phones.
@@ -46,7 +47,7 @@ const SectionLabel = ({ text, count }: { text: string; count: number }) => (
 
 const TrainingList = () => {
   const { bookings, loading } = useBookingContext();
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayString();
 
   // Filter to training sessions only
   const trainingSessions = useMemo(

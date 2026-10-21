@@ -85,7 +85,8 @@ describe("buildHistoryView", () => {
 
 describe("formatHistoryTime", () => {
   it("formats day and 12-hour time, or nothing for a bad timestamp", () => {
-    const iso = new Date(2026, 7, 5, 14, 5).toISOString();
+    // 14:05 on 5 Aug in Melbourne (UTC+10 in winter), whatever the machine's zone
+    const iso = new Date(Date.UTC(2026, 7, 5, 4, 5)).toISOString();
     expect(formatHistoryTime(iso)).toMatch(/^5 Aug, 2:05 PM$/);
     expect(formatHistoryTime("garbage")).toBe("");
   });

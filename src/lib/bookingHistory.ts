@@ -9,6 +9,7 @@
 
 import { formatClockTime, isSlotFreeing, STATUS_LABELS } from "./bookingStatus";
 import { parseLocalDate } from "./dates";
+import { clockParts } from "./businessTime";
 import { phaseLabels } from "./bookingPhases";
 import type {
   Booking,
@@ -144,10 +145,11 @@ export const buildHistoryView = (booking: Booking): HistoryViewEntry[] => {
   );
 };
 
-// "19 Oct, 10:12 AM" in local time; empty if the timestamp is unusable.
+// "19 Oct, 10:12 AM" on the salon's (Melbourne) clock; empty if the timestamp is
+// unusable.
 export const formatHistoryTime = (iso: string): string => {
   const clock = formatClockTime(iso);
   if (!clock) return "";
-  const d = new Date(iso);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${clock}`;
+  const p = clockParts(new Date(iso));
+  return `${p.day} ${MONTHS[p.month - 1]}, ${clock}`;
 };

@@ -7,6 +7,7 @@
 
 import { useMemo } from "react";
 import { countsAsRevenue } from "../lib/bookingStatus";
+import { todayString } from "../lib/dates";
 import type { Booking } from "../types";
 
 export interface MonthlyRevenue {
@@ -54,7 +55,7 @@ const useAnalytics = (bookings: Booking[]): AnalyticsData => {
       0,
     );
 
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonth = todayString().slice(0, 7);
     const monthRevenue = confirmed
       .filter((b) => b.date.startsWith(thisMonth))
       .reduce((sum, b) => sum + (b.servicePrice ?? 0), 0);
@@ -96,9 +97,9 @@ const useAnalytics = (bookings: Booking[]): AnalyticsData => {
 
     // Monthly revenue for the last 6 months
     const monthMap: Record<string, number> = {};
-    const now = new Date();
+    const [nowYear, nowMonth] = todayString().split("-").map(Number);
     for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const d = new Date(nowYear, nowMonth - 1 - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
         2,
         "0",

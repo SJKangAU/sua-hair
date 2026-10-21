@@ -13,6 +13,7 @@
 
 import { SALON_CONFIG } from "./config";
 import { todayString, parseLocalDate } from "./dates";
+import { businessNowMinutes } from "./businessTime";
 import { blocksSlot } from "./bookingStatus";
 import {
   footprintFor,
@@ -32,11 +33,9 @@ import type {
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
-// Get current time in minutes from midnight (consistent across all functions)
-export const getCurrentMinutes = (): number => {
-  const now = new Date();
-  return now.getHours() * 60 + now.getMinutes();
-};
+// Get the current time at the salon in minutes from midnight (consistent across
+// all functions). Melbourne's clock, not the browser's (businessTime.ts, DEC-034).
+export const getCurrentMinutes = (): number => businessNowMinutes();
 
 // With allowBookingsDuringRestPeriod off, processing time blocks the stylist
 // like hands-on time does

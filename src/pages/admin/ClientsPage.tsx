@@ -7,6 +7,7 @@ import { useState, useCallback } from "react";
 import { Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useToastContext } from "../../context/ToastContext";
+import { todayString } from "../../lib/dates";
 import ClientSearch from "../../components/admin/clients/ClientSearch";
 import ClientCard from "../../components/admin/clients/ClientCard";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
@@ -132,7 +133,7 @@ const ClientsPage = () => {
         <CreateBookingModal
           prefillStylistId=""
           prefillTime=""
-          prefillDate={new Date().toISOString().split("T")[0]}
+          prefillDate={todayString()}
           prefillCustomerName={bookAgainClient.name}
           prefillCustomerPhone={bookAgainClient.phone}
           onClose={() => setBookAgainClient(null)}

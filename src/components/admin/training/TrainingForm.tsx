@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { GraduationCap } from "lucide-react";
 import { db } from "../../../lib/firebase";
+import { todayString } from "../../../lib/dates";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { createAdminBooking } from "../../../lib/adminBookingWrites";
 import { BookingConflictError } from "../../../lib/bookingConflicts";
@@ -249,7 +250,7 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
             style={inputStyle}
             type="date"
             value={form.date}
-            min={new Date().toISOString().split("T")[0]}
+            min={todayString()}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, date: e.target.value }))
             }

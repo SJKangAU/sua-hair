@@ -3,18 +3,20 @@
 // Called from BookingConfirmation after a successful booking
 
 import { SALON_CONFIG } from "./config";
-import {
-  parseBookingDateTime,
-  formatGoogleCalendarDate,
-  formatICSDate,
-} from "./dates";
+import { formatGoogleCalendarDate, formatICSDate } from "./dates";
+import { BUSINESS_TIME_ZONE, bookingStartInstant } from "./businessTime";
 import type { Booking } from "../types";
 
 // Generate a Google Calendar event link
+// The booking's start as a real instant: its date + time are Melbourne wall-clock
+// strings, whatever zone the customer's browser is in (DEC-034).
+const startOf = (booking: Omit<Booking, "id">): number =>
+  bookingStartInstant(booking.date, booking.time) ?? Date.now();
+
 export const getGoogleCalendarLink = (booking: Omit<Booking, "id">): string => {
   const { salonName, salonAddress, salonPhone } = SALON_CONFIG;
-  const start = parseBookingDateTime(booking.date, booking.time);
-  const end = new Date(start.getTime() + booking.totalTime * 60000);
+  const start = startOf(booking);
+  const end = start + booking.totalTime * 60000;
 
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -24,6 +26,7 @@ export const getGoogleCalendarLink = (booking: Omit<Booking, "id">): string => {
     )}`,
     details: `Stylist: ${booking.stylistName}\nService: ${booking.serviceName}\nPrice: from $${booking.servicePrice}\nPhone: ${salonPhone}`,
     location: salonAddress,
+    ctz: BUSINESS_TIME_ZONE,
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -32,7 +35,7 @@ export const getGoogleCalendarLink = (booking: Omit<Booking, "id">): string => {
 // Generate and trigger download of an ICS file for Apple Calendar / Outlook
 export const downloadICSFile = (booking: Omit<Booking, "id">): void => {
   const { salonName, salonAddress, salonPhone } = SALON_CONFIG;
-  const start = parseBookingDateTime(booking.date, booking.time);
+  const start = new Date(startOf(booking));
   const end = new Date(start.getTime() + booking.totalTime * 60000);
 
   const ics = [

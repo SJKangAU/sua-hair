@@ -1,6 +1,8 @@
 // dates.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED DATE UTILITIES
+// "Today" is the SALON's today (Australia/Melbourne, businessTime.ts, DEC-034),
+// not the browser's.
 // ─────────────────────────────────────────────────────────────────────────────
 // Centralises all date parsing and formatting so timezone-safe logic
 // isn't reimplemented across TodayPage, DashboardStats, scheduling.ts,
@@ -10,6 +12,8 @@
 // without an explicit timezone — both are ambiguous and shift by a day in
 // UTC+ timezones like Melbourne (AEST/AEDT). Always use the local constructor.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { businessToday, clockParts } from "./businessTime";
 
 // ── Parsing ───────────────────────────────────────────────────────────────────
 
@@ -49,11 +53,12 @@ export const toDateString = (date: Date): string => {
 };
 
 /**
- * Get today's date as a YYYY-MM-DD string in local time.
- * Replaces the scattered `new Date().toISOString().split('T')[0]` pattern
- * which is UTC-based and can return yesterday's date in UTC+ timezones.
+ * Get today's date at the salon as a YYYY-MM-DD string (Australia/Melbourne,
+ * whatever zone the browser is in). Replaces the scattered
+ * `new Date().toISOString().split('T')[0]` pattern, which is UTC-based and returns
+ * yesterday's date for the first 10-11 hours of a Melbourne day.
  */
-export const todayString = (): string => toDateString(new Date());
+export const todayString = (): string => businessToday();
 
 /**
  * Format a YYYY-MM-DD string for display, e.g. "Wednesday, 15 April 2026".
@@ -69,14 +74,14 @@ export const formatDisplayDate = (
 ): string => parseLocalDate(dateStr).toLocaleDateString("en-AU", options);
 
 /**
- * Format a Date as YYYYMMDDTHHmmss for Google Calendar URLs.
+ * Format an instant as the salon's wall clock, YYYYMMDDTHHmmss, for Google
+ * Calendar URLs (sent with ctz=Australia/Melbourne).
  */
-export const formatGoogleCalendarDate = (d: Date): string =>
-  `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
-    d.getDate(),
-  ).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}${String(
-    d.getMinutes(),
-  ).padStart(2, "0")}00`;
+export const formatGoogleCalendarDate = (instant: number | Date): string => {
+  const p = clockParts(instant);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${p.year}${two(p.month)}${two(p.day)}T${two(p.hour)}${two(p.minute)}00`;
+};
 
 /**
  * Format a Date as a UTC timestamp string for ICS files.

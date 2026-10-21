@@ -1,4 +1,6 @@
 // bookingStatus.ts
+import { formatBusinessClock } from "./businessTime";
+
 // Single source of truth for the booking lifecycle:
 //
 //   pending -> confirmed -> arrived -> in_service -> completed
@@ -144,12 +146,11 @@ export const describeStatusChange = (
   }
 };
 
-// "10:12 AM" in the viewer's local time, from an ISO timestamp (arrivedAt).
+// "10:12 AM" on the salon's clock (Australia/Melbourne), from an ISO timestamp
+// (arrivedAt).
 export const formatClockTime = (iso?: string): string | null => {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  const h = d.getHours();
-  const m = String(d.getMinutes()).padStart(2, "0");
-  return `${h % 12 || 12}:${m} ${h >= 12 ? "PM" : "AM"}`;
+  return formatBusinessClock(d);
 };

@@ -35,6 +35,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db } from "../../../lib/firebase";
+import { todayString } from "../../../lib/dates";
 import { useSalonData } from "../../../context/SalonDataContext";
 import useStylists, { clearStylistCaches } from "../../../hooks/useStylists";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
@@ -311,7 +312,7 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
           instagram: form.instagram.trim() || null,
           isTrainer: form.isTrainer,
           status: "active",
-          startDate: new Date().toISOString().split("T")[0],
+          startDate: todayString(),
           createdAt: new Date().toISOString(),
         });
         onSuccess(`${form.name} added to the roster`);

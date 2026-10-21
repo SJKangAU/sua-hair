@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { UserCheck } from "lucide-react";
 import { db } from "../../../lib/firebase";
+import { todayString } from "../../../lib/dates";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { writeBookingNotifications } from "../../../lib/notifications";
 import { cleanPhone, validatePhone } from "../../../lib/validation";
@@ -143,14 +144,14 @@ const CreateBookingModal = ({
     customerPhone: prefillCustomerPhone,
     stylistId: prefillStylistId,
     serviceIds: [] as string[],
-    date: prefillDate || new Date().toISOString().split("T")[0],
+    date: prefillDate || todayString(),
     time: prefillTime,
     notes: "",
   });
   // ── Break form state ──────────────────────────────────────────────────────
   const [breakForm, setBreakForm] = useState({
     stylistId: prefillStylistId,
-    date: prefillDate || new Date().toISOString().split("T")[0],
+    date: prefillDate || todayString(),
     time: prefillTime,
     duration: prefillDuration ?? 30,
     reason: "",
@@ -799,7 +800,7 @@ const CreateBookingModal = ({
                 type="date"
                 value={walkin.date}
                 disabled={Boolean(gap)}
-                min={new Date().toISOString().split("T")[0]}
+                min={todayString()}
                 onChange={(e) =>
                   setWalkin((prev) => ({ ...prev, date: e.target.value }))
                 }
@@ -911,7 +912,7 @@ const CreateBookingModal = ({
                 style={inputStyle}
                 type="date"
                 value={breakForm.date}
-                min={new Date().toISOString().split("T")[0]}
+                min={todayString()}
                 onChange={(e) =>
                   setBreakForm((prev) => ({ ...prev, date: e.target.value }))
                 }

@@ -67,7 +67,7 @@ const exportToCSV = (bookings: Booking[]) => {
   const a = document.createElement("a");
   a.href = url;
   a.download = `sua-hair-bookings-${
-    new Date().toISOString().split("T")[0]
+    todayString()
   }.csv`;
   a.click();
   URL.revokeObjectURL(url);

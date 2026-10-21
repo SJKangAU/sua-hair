@@ -112,12 +112,13 @@ describe("describeStatusChange", () => {
 });
 
 describe("formatClockTime", () => {
-  it("formats an ISO timestamp as a local 12-hour clock time", () => {
-    const iso = new Date(2026, 7, 1, 14, 5).toISOString();
+  it("formats an ISO timestamp as a 12-hour clock time on the salon's (Melbourne) clock", () => {
+    // 14:05 and 00:30 in Melbourne (AEST, UTC+10), however the test machine is set
+    const iso = new Date(Date.UTC(2026, 7, 1, 4, 5)).toISOString();
     expect(formatClockTime(iso)).toBe("2:05 PM");
-    expect(formatClockTime(new Date(2026, 7, 1, 0, 30).toISOString())).toBe(
-      "12:30 AM",
-    );
+    expect(
+      formatClockTime(new Date(Date.UTC(2026, 6, 31, 14, 30)).toISOString()),
+    ).toBe("12:30 AM");
   });
 
   it("returns null for missing or invalid input", () => {
