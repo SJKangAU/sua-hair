@@ -1,7 +1,12 @@
-# CI — typecheck, lint, unit tests, emulator-backed Firestore tests, and the
-# Playwright browser scenarios.
+# CI - build (app and functions), lint, unit tests under several time zones,
+# emulator-backed Firestore / Functions tests, and the Playwright browser scenarios
+# with the Functions emulator running the real booking callables.
 # Runs on every push and pull request so "committed but never ran" states
 # (missing installs, stale rules, lint regressions) get caught immediately.
+#
+# The salon runs on Melbourne time (DEC-034): unit tests run under UTC,
+# America/Los_Angeles and Australia/Melbourne; the browser scenarios under UTC
+# and Australia/Melbourne.
 name: CI
 
 on:
@@ -11,98 +16,146 @@ on:
 
 jobs:
   checks:
-    name: Typecheck, lint, unit tests
-    runs-on: ubuntu-latest
+    name: Build, lint, unit tests (TZ ${{ matrix.tz }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tz: [UTC, America/Los_Angeles, Australia/Melbourne]
+    env:
+      TZ: ${{ matrix.tz }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix functions ci
 
-      - name: Typecheck
-        run: npx tsc -b
+      # The real build: tsc -b AND vite build (a type error or a bundling error fails here)
+      - name: Build the app
+        run: npm run build
+
+      - name: Build the functions package
+        run: npm --prefix functions run build
 
       - name: Lint
         run: npm run lint
 
-      - name: Unit tests (scheduling engine, date utils)
+      - name: Unit tests (scheduling, dates, business time, email, import)
         run: npm run test:unit
 
-  rules-tests:
-    name: Firestore rules tests (emulator)
-    runs-on: ubuntu-latest
+  rules-and-functions:
+    name: Firestore rules and Functions logic (emulator)
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
 
       # firebase-tools v15+ requires Java 21 for the Firestore emulator
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix functions ci
 
-      - name: Cache Firestore emulator
-        uses: actions/cache@v4
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
         with:
           path: ~/.cache/firebase/emulators
-          key: firebase-emulators-${{ runner.os }}
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: firebase-emulators-${{ runner.os }}-
 
-      - name: Rules permission matrix
+      - name: Rules permission matrix (owner / stylist / unprovisioned / anonymous)
         run: npm run test:rules
 
       - name: Security / PII-leak tests
         run: npm run test:security
 
-      - name: Admin write path (walk-ins, breaks, restore, reschedule, races)
+      - name: The public site's door is shut (anonymous writes denied)
+        run: npm run test:lockdown
+
+      - name: Admin write path (walk-ins, breaks, restore, reschedule, import, races)
         run: npm run test:admin
+
+      - name: Functions - booking commands, roles, rate limits, races
+        run: npm run test:functions
 
       - name: Smoke - client books, owner approves, overlapping walk-in blocked
         run: npm run test:smoke
 
   e2e:
-    name: Browser scenarios (Playwright + emulators)
-    runs-on: ubuntu-latest
-    # The salon runs on Melbourne time. The tests build every date and clock from
-    # explicit Melbourne instants (e2e/helpers.ts), so this is belt and braces,
-    # but it keeps Node's own "local" time the same as the browser's.
+    name: Browser scenarios (Playwright + Auth, Firestore and Functions emulators, TZ ${{ matrix.tz }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tz: [UTC, Australia/Melbourne]
+    # The browsers are pinned to Melbourne (e2e/playwright.config.ts) and the tests build
+    # every date and clock from explicit Melbourne instants (e2e/helpers.ts); TZ sets the
+    # zone Node, the emulators and the Functions run in, so a server in UTC is exercised
+    # as well as one in Melbourne.
     env:
-      TZ: Australia/Melbourne
+      TZ: ${{ matrix.tz }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix functions ci
 
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
 
-      - name: Cache Firestore emulator
-        uses: actions/cache@v4
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
         with:
           path: ~/.cache/firebase/emulators
-          key: firebase-emulators-${{ runner.os }}
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: firebase-emulators-${{ runner.os }}-
 
+      # Builds functions/ first, then runs Playwright inside `firebase emulators:exec
+      # --only firestore,auth,functions`, so the booking callables run for real
       - name: Scenarios from docs/08-test-scenarios.md
         run: npm run test:e2e
+
+      - name: Keep the failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-failures-${{ strategy.job-index }}
+          path: test-results
+          if-no-files-found: ignore

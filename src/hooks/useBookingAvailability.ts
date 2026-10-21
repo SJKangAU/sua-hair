@@ -79,7 +79,6 @@ const useBookingAvailability = ({
     salonSettingsRef.current = salonSettings;
   });
 
-  const today = todayString();
   const effTotal = totalTime > 0 ? totalTime : 30;
   const effActive = activeTime > 0 ? activeTime : 30;
 
@@ -136,7 +135,8 @@ const useBookingAvailability = ({
       setSlots([]);
       return;
     }
-    if (date === today && isPastSameDayCutoff(date)) {
+    // today is read when the effect runs, not at render, so it is not a dependency
+    if (date === todayString() && isPastSameDayCutoff(date)) {
       setSlots([]);
       return;
     }
@@ -310,8 +310,11 @@ const useBookingAvailability = ({
   // an outdated date/time selection.
   const findGeneration = useRef(0);
   useEffect(() => {
+    // the same counter object, named so the cleanup does not read a ref's .current
+    // off a possibly-replaced node (it is a plain counter, never a DOM ref)
+    const generation = findGeneration;
     return () => {
-      findGeneration.current++; // invalidate in-flight searches on unmount
+      generation.current++; // invalidate in-flight searches on unmount
     };
   }, []);
 

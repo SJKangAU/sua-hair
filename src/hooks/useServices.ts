@@ -4,7 +4,7 @@
 // Uses getDocs (not onSnapshot) — service changes are infrequent
 // refetch() clears cache and re-fetches from Firestore
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Phase } from "../types";
@@ -55,14 +55,14 @@ const useServices = (activeOnly = true): UseServices => {
     : "sua_hair_services_all";
 
   // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
-  const getCached = (): FirestoreService[] => {
+  const getCached = useCallback((): FirestoreService[] => {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY);
       return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
     }
-  };
+  }, [CACHE_KEY]);
 
   const initialData = getCached();
 
@@ -84,7 +84,8 @@ const useServices = (activeOnly = true): UseServices => {
   useEffect(() => {
     // Skip fetch if we have cached data and haven't been asked to refetch.
     // loading already initialised to false in this case (see useState above).
-    if (initialData.length > 0 && trigger === 0) {
+    // (read now: the render-time copy would make this effect depend on every render)
+    if (trigger === 0 && getCached().length > 0) {
       return;
     }
 
@@ -129,7 +130,7 @@ const useServices = (activeOnly = true): UseServices => {
     };
 
     fetch();
-  }, [activeOnly, trigger]);
+  }, [activeOnly, trigger, CACHE_KEY, getCached]);
 
   return { services, loading, error, refetch };
 };

@@ -4,7 +4,7 @@
 // Uses getDocs (not onSnapshot) — stylist changes are infrequent
 // refetch() clears cache and re-fetches from Firestore
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { sortByOrder } from "../lib/stylistOrder";
@@ -57,14 +57,14 @@ const useStylists = (activeOnly = true): UseStylists => {
     : "sua_hair_stylists_all";
 
   // Try to load from sessionStorage immediately — avoids loading flash on repeat visits
-  const getCached = (): FirestoreStylist[] => {
+  const getCached = useCallback((): FirestoreStylist[] => {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY);
       return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
     }
-  };
+  }, [CACHE_KEY]);
 
   const initialData = getCached();
 
@@ -86,7 +86,8 @@ const useStylists = (activeOnly = true): UseStylists => {
   useEffect(() => {
     // Skip fetch if we have cached data and haven't been asked to refetch.
     // loading already initialised to false in this case (see useState above).
-    if (initialData.length > 0 && trigger === 0) {
+    // (read now: the render-time copy would make this effect depend on every render)
+    if (trigger === 0 && getCached().length > 0) {
       return;
     }
 
@@ -126,7 +127,7 @@ const useStylists = (activeOnly = true): UseStylists => {
     };
 
     fetch();
-  }, [activeOnly, trigger]);
+  }, [activeOnly, trigger, CACHE_KEY, getCached]);
 
   // Everything that lists stylists (booking page, timeline, Manage) gets them
   // in the owner's saved order
