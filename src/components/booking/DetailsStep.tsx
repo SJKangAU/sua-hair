@@ -313,7 +313,7 @@ const DetailsStep = ({
                 color: "var(--grey-muted)",
               }}
             >
-              — for your booking confirmation (optional)
+              — for updates about your booking (optional)
             </span>
           </label>
           <input

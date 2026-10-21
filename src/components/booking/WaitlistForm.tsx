@@ -1,13 +1,12 @@
 // WaitlistForm.tsx
 // Shown in the booking flow when no time slots are available for the chosen
 // date and stylist. Lets the client join the waitlist with their name, phone,
-// and preferred date. On submit writes to the Firestore waitlist collection
-// and notifies the owner.
+// and preferred date. On submit it calls the joinWaitlist function, which
+// validates and rate-limits the entry and creates it (and the owner's
+// notification) - customers cannot write to Firestore themselves (DEC-035).
 
 import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../../lib/firebase";
-import { writeBookingNotifications } from "../../lib/notifications";
+import { BookingCommandError, joinWaitlist } from "../../lib/bookingApi";
 import { cleanPhone, validatePhone, validateName } from "../../lib/validation";
 
 interface Props {
@@ -22,6 +21,7 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const [failure, setFailure] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     const newErrors: { name?: string; phone?: string } = {};
@@ -34,33 +34,24 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
     }
 
     setSubmitting(true);
+    setFailure(null);
     try {
-      const entry = {
+      await joinWaitlist({
         customerName: name.trim(),
         customerPhone: cleanPhone(phone),
         requestedDate,
         ...(requestedStylistId && requestedStylistId !== "any"
           ? { requestedStylistId }
           : {}),
-        status: "pending" as const,
-        createdAt: new Date().toISOString(),
-      };
-      const docRef = await addDoc(collection(db, "waitlist"), entry);
-
-      // Notify the owner
-      writeBookingNotifications({
-        bookingId: docRef.id,
-        customerName: name.trim(),
-        stylistId: requestedStylistId ?? "any",
-        stylistName: "Any available",
-        date: requestedDate,
-        time: "TBD",
-        serviceName: "Waitlist request",
-      }).catch(console.error);
-
+      });
       setSubmitted(true);
     } catch (err) {
       console.error("WaitlistForm submit:", err);
+      setFailure(
+        err instanceof BookingCommandError
+          ? err.message
+          : "Something went wrong. Please try again, or call us on (03) 9569 0840.",
+      );
     }
     setSubmitting(false);
   };
@@ -204,6 +195,20 @@ const WaitlistForm = ({ requestedDate, requestedStylistId, onDone }: Props) => {
             </p>
           )}
         </div>
+
+        {failure && (
+          <p
+            role="alert"
+            style={{
+              margin: 0,
+              fontSize: "0.82rem",
+              lineHeight: 1.5,
+              color: "var(--error)",
+            }}
+          >
+            {failure}
+          </p>
+        )}
 
         <button
           className="bk-cta"

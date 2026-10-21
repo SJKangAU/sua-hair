@@ -20,11 +20,9 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment,
   limit,
   query,
   where,
-  writeBatch,
   type Firestore,
 } from "firebase/firestore";
 import {

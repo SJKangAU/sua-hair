@@ -205,6 +205,19 @@ export interface Booking {
   // reminder email has been sent — guards against double-sending.
   reminderSentAt?: string | null;
   createdAt: string;
+  // ── Online requests (DEC-035 to DEC-038), set by the booking functions ──
+  // A pending request holds its slot until this ISO time; if the owner has not
+  // approved it by then the scheduled function releases it (cancelReason
+  // "expired"). Removed on approval.
+  holdExpiresAt?: string;
+  // ISO timestamp of the owner's approval
+  confirmedAt?: string;
+  // Why a booking is cancelled: the owner declined the request, it expired
+  // unapproved, or it was cancelled after being confirmed
+  cancelReason?: "declined" | "expired" | "cancelled";
+  // True when the customer chose "Any Available Stylist" and the server picked
+  // the stylist; stylistId is always a real stylist
+  assignedAutomatically?: boolean;
 }
 
 // Minimal, PII-free projection of a Booking used to compute public
@@ -214,7 +227,7 @@ export interface Booking {
 // which never contains customerName/customerPhone/notes — instead of the
 // full `bookings` collection, which requires staff auth to read. Kept in
 // sync with `bookings` on every create/status/time-edit write; see
-// src/lib/slotBlocks.ts.
+// src/lib/slotBlockData.ts.
 export type SlotBlock = Pick<
   Booking,
   | "id"

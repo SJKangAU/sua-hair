@@ -42,6 +42,21 @@ export const SALON_CONFIG = {
   // e.g. 17 = no same-day bookings after 5:00 PM
   sameDayCutoffHour: 17,
 
+  // ── Online booking requests (DEC-035 / DEC-036) ───────────────────────────
+  // A request holds its slot straight away. If the owner has not approved it
+  // after this many hours the hold is released (scheduled function), the slot
+  // opens up again and the customer is told it was not confirmed. The owner can
+  // approve or decline at any time before then.
+  pendingHoldHours: 24,
+  // Open (pending) requests one phone number may have at a time
+  maxPendingPerPhone: 2,
+  // Services in one request, how far ahead a date may be, and text limits - all
+  // enforced again on the server (createBookingRequest)
+  maxServicesPerBooking: 6,
+  maxAdvanceDays: 365,
+  notesMaxLength: 500,
+  nameMaxLength: 100,
+
   // ── Phone Validation ───────────────────────────────────────────────────────
   // Australian mobile numbers: 10 digits, starting with 04
   phoneRegex: /^04\d{8}$/,

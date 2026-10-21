@@ -213,6 +213,32 @@ export const buildConfirmationEmail = (b: BookingEmailData): BuiltEmail =>
     bookingRef: b.bookingRef,
   });
 
+/** Sent when a request is received. NOT a confirmation: the salon still has to approve it. */
+export const buildRequestReceivedEmail = (b: BookingEmailData): BuiltEmail =>
+  build({
+    subject: `We have your booking request — ${SALON.name}`,
+    preheader: `${formatLongDate(b.date)} at ${b.time} with ${b.stylistName} — we'll confirm it soon.`,
+    headline: `Thank you, ${firstName(b.customerName)} — we have your request`,
+    intro:
+      "This is not a confirmation yet. We are holding this time for you and will email you as soon as the salon confirms it.",
+    rows: detailRows(b),
+    closing: CLOSING_LINE,
+    bookingRef: b.bookingRef,
+  });
+
+/** Sent when a request was declined or lapsed without being approved. */
+export const buildNotConfirmedEmail = (b: BookingEmailData): BuiltEmail =>
+  build({
+    subject: `We couldn't confirm your booking request — ${SALON.name}`,
+    preheader: `Your request for ${formatLongDate(b.date)} at ${b.time} was not confirmed.`,
+    headline: `Sorry, ${firstName(b.customerName)} — we couldn't confirm this one`,
+    intro:
+      "We weren't able to confirm the booking request below, so the time is no longer being held for you. Please call us or choose another time on our website.",
+    rows: detailRows(b),
+    closing: CLOSING_LINE,
+    bookingRef: b.bookingRef,
+  });
+
 export const buildReminderEmail = (b: BookingEmailData): BuiltEmail =>
   build({
     subject: `A reminder of your appointment tomorrow — ${SALON.name}`,
@@ -230,7 +256,7 @@ export const buildOwnerNotification = (
 ): { subject: string; text: string } => {
   const price = formatPrice(b);
   const lines = [
-    "A new booking has been made online.",
+    "A new booking REQUEST has arrived online. It holds the time until you approve or decline it (Approvals tab).",
     "",
     `Customer: ${oneLine(b.customerName)}`,
     b.customerPhone ? `Phone: ${b.customerPhone}` : "",

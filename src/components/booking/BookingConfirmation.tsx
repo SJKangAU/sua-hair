@@ -1,21 +1,21 @@
 // BookingConfirmation.tsx
-// Confirmation screen shown after a successful booking — B&W luxury theme
+// "Request received" screen shown after the server accepts a booking request —
+// B&W luxury theme. It is NOT a confirmation: the booking is confirmed only when
+// the salon approves it (DEC-038). It shows what the SERVER decided: the stylist
+// who was assigned (which matters for "Any Available Stylist") and the exact price.
 //
-// Renders booking.services[] when present (new multi-service bookings) and
-// falls back to the legacy booking.serviceName field for older single-service
-// records and admin-created entries.
-//
-// Calendar export buttons:
+// Calendar export buttons (marked "requested"/tentative until confirmed):
 //   Google Calendar — opens a pre-filled URL in a new tab (getGoogleCalendarLink)
 //   Apple / Outlook — downloads an .ics file (downloadICSFile)
-// Both helpers live in lib/calendar.ts and accept the full Booking object.
 
 import { getGoogleCalendarLink, downloadICSFile } from "../../lib/calendar";
 import { parseLocalDate } from "../../lib/dates";
-import type { Booking } from "../../types";
+import { SALON_CONFIG } from "../../lib/config";
+import type { BookingRequestResult } from "../../lib/bookingApi";
 
 interface Props {
-  booking: Omit<Booking, "id">;
+  result: BookingRequestResult;
+  customerName: string;
   onReset: () => void;
 }
 
@@ -26,13 +26,22 @@ const CONFIRM_CSS = `
   }
 `;
 
-const BookingConfirmation = ({ booking, onReset }: Props) => {
-  const formattedDate = parseLocalDate(booking.date).toLocaleDateString(
+const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
+  const formattedDate = parseLocalDate(result.date).toLocaleDateString(
     "en-AU",
     { weekday: "long", day: "numeric", month: "long" },
   );
 
-  const hasMultipleServices = booking.services && booking.services.length > 0;
+  // What the calendar links need: the request, with the service names joined
+  const calendar = {
+    date: result.date,
+    time: result.time,
+    totalTime: result.totalTime,
+    stylistName: result.stylistName,
+    serviceName: result.services.map((s) => s.name).join(" + "),
+    servicePrice: result.total,
+  };
+  const holdsFor = SALON_CONFIG.pendingHoldHours;
 
   return (
     <>
@@ -80,16 +89,19 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             lineHeight: 1.15,
           }}
         >
-          We can't wait to see you, {booking.customerName.split(" ")[0]}.
+          Request received, {customerName.split(" ")[0]}.
         </h2>
         <p
           style={{
             fontSize: "0.82rem",
             color: "var(--grey-muted)",
             marginBottom: "2rem",
+            lineHeight: 1.6,
           }}
         >
-          Your booking is confirmed — details below.
+          This is not confirmed yet. We are holding this time for you and the
+          salon will confirm your booking within {holdsFor} hours — we will
+          email you if you gave us an address.
         </p>
 
         {/* Booking details */}
@@ -113,15 +125,19 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               borderBottom: `1px solid var(--border)`,
             }}
           >
-            <span style={{ color: "var(--ink-soft)" }}>Stylist</span>
-            <span style={{ fontWeight: 500, color: "var(--ink)" }}>
-              {booking.stylistName}
+            <span style={{ color: "var(--ink-soft)" }}>
+              {result.assignedAutomatically ? "Your stylist" : "Stylist"}
+            </span>
+            <span
+              style={{ fontWeight: 500, color: "var(--ink)" }}
+              data-testid="confirmation-stylist"
+            >
+              {result.stylistName}
             </span>
           </div>
 
           {/* Services rows */}
-          {hasMultipleServices ? (
-            booking.services!.map((s, i) => (
+          {result.services.map((s, i) => (
               <div
                 key={s.id}
                 style={{
@@ -136,26 +152,10 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
                   {i === 0 ? "Service" : ""}
                 </span>
                 <span style={{ fontWeight: 500, color: "var(--ink)" }}>
-                  {s.name}
+                  {s.name} · ${s.price}
                 </span>
               </div>
-            ))
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "0.875rem",
-                padding: "0.4rem 0",
-                borderBottom: `1px solid var(--border)`,
-              }}
-            >
-              <span style={{ color: "var(--ink-soft)" }}>Service</span>
-              <span style={{ fontWeight: 500, color: "var(--ink)" }}>
-                {booking.serviceName}
-              </span>
-            </div>
-          )}
+            ))}
 
           {/* Date */}
           <div
@@ -185,7 +185,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
           >
             <span style={{ color: "var(--ink-soft)" }}>Time</span>
             <span style={{ fontWeight: 500, color: "var(--ink)" }}>
-              {booking.time}
+              {result.time}
             </span>
           </div>
 
@@ -198,15 +198,16 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
               padding: "0.5rem 0 0",
             }}
           >
-            <span style={{ color: "var(--ink-soft)" }}>Estimated Total</span>
-            <span style={{ fontWeight: 700, color: "var(--ink)" }}>
-              {booking.stylistId === "any"
-                ? `from $${booking.servicePrice}`
-                : `$${booking.servicePrice}`}
+            <span style={{ color: "var(--ink-soft)" }}>Total</span>
+            <span
+              style={{ fontWeight: 700, color: "var(--ink)" }}
+              data-testid="confirmation-total"
+            >
+              ${result.total}
             </span>
           </div>
 
-          {booking.restTime > 0 && (
+          {result.restTime > 0 && (
             <p
               style={{
                 fontSize: "0.75rem",
@@ -215,13 +216,13 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
                 marginBottom: 0,
               }}
             >
-              {booking.activeTime} min active + {booking.restTime} min setting
+              {result.activeTime} min active + {result.restTime} min setting
               time
-              {booking.returnTime && (
+              {result.returnTime && (
                 <>
                   {" — "}
                   <strong style={{ color: "var(--ink)" }}>
-                    back with you by {booking.returnTime}
+                    back with you by {result.returnTime}
                   </strong>
                 </>
               )}
@@ -252,7 +253,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
           }}
         >
           <a
-            href={getGoogleCalendarLink(booking)}
+            href={getGoogleCalendarLink(calendar)}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -277,7 +278,7 @@ const BookingConfirmation = ({ booking, onReset }: Props) => {
             Google Calendar
           </a>
           <button
-            onClick={() => downloadICSFile(booking)}
+            onClick={() => downloadICSFile(calendar)}
             style={{
               padding: "0.65rem 1.25rem",
               background: "var(--surface)",

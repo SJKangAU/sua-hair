@@ -7,24 +7,30 @@ import { formatGoogleCalendarDate, formatICSDate } from "./dates";
 import { BUSINESS_TIME_ZONE, bookingStartInstant } from "./businessTime";
 import type { Booking } from "../types";
 
+// What the calendar links need - a stored booking or a fresh request's result
+export type CalendarBooking = Pick<
+  Booking,
+  "date" | "time" | "totalTime" | "serviceName" | "stylistName" | "servicePrice"
+>;
+
 // Generate a Google Calendar event link
 // The booking's start as a real instant: its date + time are Melbourne wall-clock
 // strings, whatever zone the customer's browser is in (DEC-034).
-const startOf = (booking: Omit<Booking, "id">): number =>
+const startOf = (booking: CalendarBooking): number =>
   bookingStartInstant(booking.date, booking.time) ?? Date.now();
 
-export const getGoogleCalendarLink = (booking: Omit<Booking, "id">): string => {
+export const getGoogleCalendarLink = (booking: CalendarBooking): string => {
   const { salonName, salonAddress, salonPhone } = SALON_CONFIG;
   const start = startOf(booking);
   const end = start + booking.totalTime * 60000;
 
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: `${booking.serviceName} at ${salonName}`,
+    text: `${booking.serviceName} at ${salonName} (requested)`,
     dates: `${formatGoogleCalendarDate(start)}/${formatGoogleCalendarDate(
       end,
     )}`,
-    details: `Stylist: ${booking.stylistName}\nService: ${booking.serviceName}\nPrice: from $${booking.servicePrice}\nPhone: ${salonPhone}`,
+    details: `Stylist: ${booking.stylistName}\nService: ${booking.serviceName}\nPrice: $${booking.servicePrice}\nPhone: ${salonPhone}`,
     location: salonAddress,
     ctz: BUSINESS_TIME_ZONE,
   });
@@ -33,7 +39,7 @@ export const getGoogleCalendarLink = (booking: Omit<Booking, "id">): string => {
 };
 
 // Generate and trigger download of an ICS file for Apple Calendar / Outlook
-export const downloadICSFile = (booking: Omit<Booking, "id">): void => {
+export const downloadICSFile = (booking: CalendarBooking): void => {
   const { salonName, salonAddress, salonPhone } = SALON_CONFIG;
   const start = new Date(startOf(booking));
   const end = new Date(start.getTime() + booking.totalTime * 60000);
@@ -45,10 +51,10 @@ export const downloadICSFile = (booking: Omit<Booking, "id">): void => {
     "BEGIN:VEVENT",
     `DTSTART:${formatICSDate(start)}`,
     `DTEND:${formatICSDate(end)}`,
-    `SUMMARY:${booking.serviceName} at ${salonName}`,
-    `DESCRIPTION:Stylist: ${booking.stylistName}\\nService: ${booking.serviceName}\\nPrice: from $${booking.servicePrice}\\nPhone: ${salonPhone}`,
+    `SUMMARY:${booking.serviceName} at ${salonName} (requested)`,
+    `DESCRIPTION:Stylist: ${booking.stylistName}\\nService: ${booking.serviceName}\\nPrice: $${booking.servicePrice}\\nPhone: ${salonPhone}`,
     `LOCATION:${salonAddress}`,
-    "STATUS:CONFIRMED",
+    "STATUS:TENTATIVE", // a request until the salon confirms it
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");

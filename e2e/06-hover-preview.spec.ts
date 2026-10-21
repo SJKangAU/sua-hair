@@ -154,8 +154,8 @@ test("clicking selects the time and the existing flow continues to a pending boo
   await page.getByPlaceholder("e.g. 0412 345 678").fill("0455 123 456");
   await page.getByPlaceholder("Your full name").fill("Hover Tester");
   await page.locator("#booking-consent").evaluate((el: HTMLInputElement) => el.click());
-  await tap(page.getByRole("button", { name: "Confirm Booking" }));
-  await expect(page.getByText(/Your booking is confirmed/)).toBeVisible();
+  await tap(page.getByRole("button", { name: "Request Booking" }));
+  await expect(page.getByRole("heading", { name: /Request received/ })).toBeVisible();
 
   const mine = (await readCollection("bookings")).find((b) => b.customerName === "Hover Tester");
   expect(mine).toMatchObject({ status: "pending", stylistId: "yuto", date: DAY, time: "2:00 PM", totalTime: 60 });

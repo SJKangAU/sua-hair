@@ -6,20 +6,43 @@
 // matching region — see src/lib/firebase.ts (getFunctions(app, "australia-
 // southeast1")).
 
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onCall, HttpsError, type CallableRequest } from "firebase-functions/v2/https";
+import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { defineSecret, defineString } from "firebase-functions/params";
+import { defineBoolean, defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getFirestore, FieldValue, type Firestore } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
 import {
   buildConfirmationEmail,
+  buildNotConfirmedEmail,
   buildOwnerNotification,
   buildReminderEmail,
+  buildRequestReceivedEmail,
   type BookingEmailData,
 } from "./email/templates";
+import {
+  emailKindOnCreate,
+  emailKindOnUpdate,
+  idempotencyKey,
+  type BookingEmailKind,
+} from "./emailEvents";
+import {
+  CommandError,
+  type CommandErrorCode,
+} from "./commandErrors";
+import {
+  approveBookingCore,
+  assignStylistCore,
+  cancelBookingCore,
+  createBookingRequestCore,
+  declineBookingCore,
+  joinWaitlistCore,
+  releaseExpiredPendingCore,
+  restoreBookingCore,
+  type OwnerContext,
+} from "./bookingCommands";
 import { SALON } from "./salon";
 import { requireOwner } from "./guards";
 import { RoleError, grantRole, revokeRole, type Role } from "./roles";
@@ -49,7 +72,7 @@ const isValidEmail = (value: unknown): value is string =>
 /** The subset of a bookings/{id} document the email code reads. */
 interface BookingDoc {
   bookingType?: "customer" | "walkin" | "break" | "training";
-  status?: "pending" | "confirmed" | "cancelled";
+  status?: string;
   bookingRef?: string;
   customerName?: string;
   customerPhone?: string | null;
@@ -204,19 +227,162 @@ export const setUserRole = onCall(
   },
 );
 
+// ── Booking commands (DEC-035 to DEC-040) ───────────────────────────────────
+// Thin callables around functions/src/bookingCommands.ts (which holds, and is
+// tested for, all the logic). Customers never write bookings themselves: they call
+// createBookingRequest / joinWaitlist; the owner calls approve / decline / cancel /
+// restore / assign.
+
+const REGION = "australia-southeast1";
+
+// App Check (reCAPTCHA) enforcement is OFF until the keys are set up. To turn it on:
+// create the reCAPTCHA site in the console, set VITE_RECAPTCHA_SITE_KEY for the
+// site, register the app, then set ENFORCE_APP_CHECK=true in functions/.env and
+// redeploy the functions (docs/DEPLOYMENT.md has the exact console steps). While it
+// is off, valid App Check tokens are still verified when sent but not required.
+const ENFORCE_APP_CHECK = defineBoolean("ENFORCE_APP_CHECK", { default: false });
+
+const HTTPS_CODE: Record<CommandErrorCode, HttpsError["code"]> = {
+  invalid: "invalid-argument",
+  closed: "failed-precondition",
+  blocked: "failed-precondition",
+  limit: "resource-exhausted",
+  "rate-limited": "resource-exhausted",
+  "slot-taken": "aborted",
+  "not-found": "not-found",
+  precondition: "failed-precondition",
+  "needs-stylist": "failed-precondition",
+};
+
+/** Run a command, turning its refusals into the HttpsError the app shows. */
+const run = async <T>(work: () => Promise<T>): Promise<T> => {
+  try {
+    return await work();
+  } catch (err) {
+    if (err instanceof CommandError) {
+      throw new HttpsError(HTTPS_CODE[err.code], err.message, { reason: err.code });
+    }
+    console.error("Booking command failed:", err);
+    throw new HttpsError("internal", "Something went wrong. Please try again, or call the salon.");
+  }
+};
+
+const requireAppCheck = (request: CallableRequest): void => {
+  if (ENFORCE_APP_CHECK.value() && !request.app) {
+    throw new HttpsError("failed-precondition", "This request could not be verified. Please reload the page and try again.");
+  }
+};
+
+const callerIp = (request: CallableRequest): string | undefined => {
+  const forwarded = request.rawRequest?.headers?.["x-forwarded-for"];
+  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim();
+  return first || request.rawRequest?.ip || undefined;
+};
+
+/** createBookingRequest - public. Validates, prices, assigns and holds a slot. */
+export const createBookingRequest = onCall(
+  { region: REGION, maxInstances: 20 },
+  async (request) => {
+    requireAppCheck(request);
+    return run(() =>
+      createBookingRequestCore(db, request.data, { now: Date.now(), ip: callerIp(request) }),
+    );
+  },
+);
+
+/** joinWaitlist - public. Validated and rate limited; creates the entry and the owner's notification. */
+export const joinWaitlist = onCall(
+  { region: REGION, maxInstances: 10 },
+  async (request) => {
+    requireAppCheck(request);
+    return run(() =>
+      joinWaitlistCore(db, request.data, { now: Date.now(), ip: callerIp(request) }),
+    );
+  },
+);
+
+const ownerCommand = <R>(
+  action: string,
+  core: (db: Firestore, raw: unknown, ctx: OwnerContext) => Promise<R>,
+) =>
+  onCall({ region: REGION, maxInstances: 10 }, async (request) => {
+    const owner = await requireOwner(db, request, action);
+    return run(() => core(db, request.data, { now: Date.now(), actorUid: owner.uid }));
+  });
+
+/** approveBooking - owner. pending -> confirmed, after re-checking the slot under the lock. */
+export const approveBooking = ownerCommand("approve bookings", approveBookingCore);
+/** declineBooking - owner. pending -> cancelled; the slot is released. */
+export const declineBooking = ownerCommand("decline bookings", declineBookingCore);
+/** cancelBooking - owner. Any open booking -> cancelled. */
+export const cancelBooking = ownerCommand("cancel bookings", cancelBookingCore);
+/** restoreBooking - owner. cancelled / no-show -> back, re-checking the slot. */
+export const restoreBooking = ownerCommand("restore bookings", restoreBookingCore);
+/** assignStylist - owner. Gives a legacy "any" booking a real stylist (conflict-checked, re-priced). */
+export const assignStylist = ownerCommand("assign stylists", assignStylistCore);
+
 /**
- * onBookingCreated — Firestore trigger on bookings/{bookingId}.
+ * releaseExpiredRequests - runs every 15 minutes. Pending requests the owner has not
+ * approved within SALON_CONFIG.pendingHoldHours (24) are cancelled and their slot
+ * released (booking and slotBlocks together). The Firestore trigger then emails the
+ * customer that it was not confirmed.
+ */
+export const releaseExpiredRequests = onSchedule(
+  {
+    schedule: "*/15 * * * *",
+    timeZone: SALON.timeZone,
+    region: REGION,
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const released = await releaseExpiredPendingCore(db, Date.now());
+    console.log(`Released ${released.length} expired booking request(s).`);
+  },
+);
+
+// ── Emails (DEC-038) ────────────────────────────────────────────────────────
+
+const sendBookingEmail = async (
+  kind: BookingEmailKind,
+  bookingId: string,
+  booking: BookingDoc,
+): Promise<void> => {
+  if (!isValidEmail(booking.customerEmail)) return;
+  try {
+    const data = toEmailData(booking);
+    const email =
+      kind === "received"
+        ? buildRequestReceivedEmail(data)
+        : kind === "confirmed"
+        ? buildConfirmationEmail(data)
+        : buildNotConfirmedEmail(data);
+    await sendEmail(RESEND_API_KEY.value(), {
+      from: EMAIL_FROM.value(),
+      to: booking.customerEmail,
+      replyTo: SALON.replyTo,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+      idempotencyKey: idempotencyKey(kind, bookingId),
+    });
+  } catch (err) {
+    console.error(`${kind} email failed for booking ${bookingId}:`, err);
+  }
+};
+
+/**
+ * onBookingCreated - Firestore trigger on bookings/{bookingId}.
  *
- * Sends the customer a confirmation email when the booking carries a
- * customerEmail. Breaks and training blocks are staff calendar entries, not
- * customer bookings, so they are skipped.
+ * An online request gets a "we have your request" email - explicitly NOT a
+ * confirmation. A confirmed booking created directly (a walk-in) gets the
+ * confirmation. Breaks and training blocks are staff calendar entries, skipped.
  *
  * When the owner has switched on notifyOwnerByEmail (privateSettings/
- * notifications) it also sends them a plain-text heads-up about each new
- * online booking, whether or not the customer supplied an email.
+ * notifications) they also get a plain-text heads-up about each new online
+ * request, whether or not the customer supplied an email.
  *
  * Email is strictly best-effort: the booking is already committed by the time
- * this runs, and every failure is caught and logged — it never throws.
+ * this runs, and every failure is caught and logged - it never throws.
  */
 export const onBookingCreated = onDocumentCreated(
   {
@@ -233,27 +399,10 @@ export const onBookingCreated = onDocumentCreated(
     }
     const bookingId = event.params.bookingId;
 
-    if (isValidEmail(booking.customerEmail)) {
-      try {
-        const email = buildConfirmationEmail(toEmailData(booking));
-        await sendEmail(RESEND_API_KEY.value(), {
-          from: EMAIL_FROM.value(),
-          to: booking.customerEmail,
-          replyTo: SALON.replyTo,
-          subject: email.subject,
-          html: email.html,
-          text: email.text,
-          idempotencyKey: `confirmation-${bookingId}`,
-        });
-      } catch (err) {
-        console.error(
-          `Confirmation email failed for booking ${bookingId}:`,
-          err,
-        );
-      }
-    }
+    const kind = emailKindOnCreate(booking);
+    if (kind) await sendBookingEmail(kind, bookingId, booking);
 
-    // Owner heads-up: online bookings only (walk-ins are entered by staff who
+    // Owner heads-up: online requests only (walk-ins are entered by staff who
     // already know about them). Independent of the customer email above.
     if (booking.bookingType === "customer") {
       try {
@@ -288,13 +437,35 @@ export const onBookingCreated = onDocumentCreated(
   },
 );
 
+/**
+ * onBookingUpdated - the "confirmed" email goes out ONLY when the owner approves
+ * (pending -> confirmed); a request that is declined or lapses gets the "we
+ * couldn't confirm" email. Resend de-duplicates by idempotency key, so the
+ * trigger's at-least-once delivery cannot send twice.
+ */
+export const onBookingUpdated = onDocumentUpdated(
+  {
+    document: "bookings/{bookingId}",
+    region: FIRESTORE_REGION,
+    secrets: [RESEND_API_KEY],
+  },
+  async (event) => {
+    const before = event.data?.before.data() as BookingDoc | undefined;
+    const after = event.data?.after.data() as BookingDoc | undefined;
+    if (!before || !after) return;
+    const kind = emailKindOnUpdate(before, after);
+    if (kind) await sendBookingEmail(kind, event.params.bookingId, after);
+  },
+);
+
 // ── Reminder emails ─────────────────────────────────────────────────────────
 const HOUR_MS = 60 * 60 * 1000;
 
 /**
  * sendBookingReminders — runs at the top of every hour.
  *
- * Emails customers whose appointment starts 24–25 hours from now. Bookings
+ * Emails customers whose CONFIRMED appointment starts 24–25 hours from now (a
+ * request still waiting for approval is not an appointment, so gets no reminder). Bookings
  * store date + time as salon-local strings, so the query narrows by date (and
  * status) in Firestore and the exact 24–25h window is then applied in memory
  * after converting each booking to a real instant in Australia/Melbourne.
@@ -327,7 +498,7 @@ export const sendBookingReminders = onSchedule(
     try {
       snap = await db
         .collection("bookings")
-        .where("status", "in", ["pending", "confirmed"])
+        .where("status", "==", "confirmed")
         .where("date", ">=", fromDate)
         .where("date", "<=", toDate)
         .get();

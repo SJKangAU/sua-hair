@@ -99,7 +99,7 @@ describe("public availability never leaks customer identity", () => {
   });
 
   it("does not expose the underlying booking document id as a queryable link to PII", async () => {
-    // The slotBlock id matches the booking id by design (see slotBlocks.ts),
+    // The slotBlock id matches the booking id by design (see slotBlockData.ts),
     // but that id alone is not PII and — critically — cannot be used by an
     // anonymous client to pivot into the bookings collection.
     const anon = testEnv.unauthenticatedContext().firestore();

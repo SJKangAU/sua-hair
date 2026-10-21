@@ -31,6 +31,13 @@ import {
   writeStatusChange,
 } from "../lib/adminBookingWrites";
 import {
+  approveBooking,
+  cancelBooking,
+  commandForStatusChange,
+  declineBooking,
+  restoreBooking,
+} from "../lib/bookingApi";
+import {
   BookingConflictError,
   fetchBookingConflict,
 } from "../lib/bookingConflicts";
@@ -143,11 +150,18 @@ const useBookings = (salon: SalonLookup): UseBookings => {
       );
 
       try {
-        // Bringing a cancelled / no-show booking back re-checks the slot
-        // under the stylist-day lock and throws BookingConflictError if it
-        // was taken meanwhile; everything else is a plain batch (see
-        // adminBookingWrites.writeStatusChange).
-        await writeStatusChange(db, previous, status, patch);
+        // Approve, decline, cancel and restore are SERVER commands: they re-check
+        // the slot under the stylist-day lock, and write the booking and its
+        // slotBlocks together (functions/src/bookingCommands.ts). They throw a
+        // BookingCommandError (with a message fit to show) if the slot no longer
+        // fits. Everything else moves a booking along its day and stays a plain
+        // batch (adminBookingWrites.writeStatusChange).
+        const command = commandForStatusChange(previous.status, status);
+        if (command === "approve") await approveBooking(id);
+        else if (command === "decline") await declineBooking(id);
+        else if (command === "cancel") await cancelBooking(id);
+        else if (command === "restore") await restoreBooking(id, status);
+        else await writeStatusChange(db, previous, status, patch);
       } catch (err) {
         console.error("Error updating booking status:", err);
 

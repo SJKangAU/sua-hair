@@ -45,3 +45,7 @@ exports/
 # ...except the synthetic test fixtures (fake people only; see tests/fixtures/make-clients-fixture.py)
 !tests/fixtures/clients-synthetic.csv
 !tests/fixtures/clients-synthetic.xlsx
+
+# Fake values the Functions emulator needs for the browser tests (no real secrets)
+!functions/.env.demo-sua-e2e
+!functions/.secret.local

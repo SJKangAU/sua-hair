@@ -6,21 +6,29 @@
 // Step 2  StylistDateStep  — choose stylist, date and time (merged)
 // Step 3  DetailsStep      — customer phone, name, optional email, notes
 // Sheet   BookingSummarySheet — slide-up review before going to step 3
+//
+// Submitting does NOT write to Firestore. It sends the customer's CHOICES (service
+// ids, stylist or "any", date, time, contact details) to the createBookingRequest
+// function, which validates them, recomputes price and phases from the records,
+// picks a real stylist for "any", holds the slot and returns what it decided
+// (DEC-035). The screen after is "request received": a request is only confirmed
+// when the salon approves it (DEC-038).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { collection, doc, writeBatch, increment } from "firebase/firestore";
-import { db } from "../../lib/firebase";
-import { queueSlotBlockCreate } from "../../lib/slotBlocks";
+import { useRef, useState } from "react";
 import {
   cleanPhone,
   validatePhone,
   validateName,
   validateEmail,
 } from "../../lib/validation";
-import { writeBookingNotifications } from "../../lib/notifications";
 import { combinePhases, phaseTotals } from "../../lib/bookingPhases";
-import { phaseWriteFields } from "../../lib/phaseFields";
+import {
+  BookingCommandError,
+  createBookingRequest,
+  newRequestId,
+  type BookingRequestResult,
+} from "../../lib/bookingApi";
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
@@ -28,7 +36,6 @@ import StylistDateStep from "./StylistDateStep";
 import DetailsStep from "./DetailsStep";
 import BookingSummarySheet from "./BookingSummarySheet";
 import BookingConfirmation from "./BookingConfirmation";
-import type { Booking, BookedService } from "../../types";
 import type { FirestoreService } from "../../hooks/useServices";
 
 const ANIM_CSS = `
@@ -115,11 +122,13 @@ const BookingForm = () => {
   // ── Submit state ───────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [confirmedBooking, setConfirmedBooking] = useState<Omit<
-    Booking,
-    "id"
-  > | null>(null);
+  // What the server decided (stylist, exact price...) once the request is accepted
+  const [received, setReceived] = useState<{
+    result: BookingRequestResult;
+    customerName: string;
+  } | null>(null);
+  // One id per attempt, so a retried tap returns the same booking instead of a second
+  const requestIdRef = useRef(newRequestId());
 
   // ── Derived values ─────────────────────────────────────────────────────────
   const selectedServices: FirestoreService[] = services.filter((s) =>
@@ -143,37 +152,19 @@ const BookingForm = () => {
     return stylist ? service.price[stylist.level] : service.price.junior;
   };
 
-  // Max tier price — used to show a min–max range when no stylist is chosen
-  const getMaxPrice = (service: FirestoreService): number =>
-    Math.max(
-      service.price.director,
-      service.price.senior,
-      service.price.junior,
-    );
-
-  // Display string per service: exact price for a chosen stylist,
-  // "$min – $max" range for "First Available" (any tier may take the booking)
-  const getPriceDisplay = (service: FirestoreService): string => {
-    const min = getPrice(service);
-    if (stylistId !== "any") return `$${min}`;
-    const max = getMaxPrice(service);
-    return min === max ? `$${min}` : `$${min} – $${max}`;
-  };
+  // Display string per service: the exact price for a chosen stylist; "from $X"
+  // (the lowest tier) for "Any Available Stylist", because the server picks the
+  // stylist when the request is received and the exact price is shown THEN.
+  const getPriceDisplay = (service: FirestoreService): string =>
+    stylistId === "any" ? `from $${getPrice(service)}` : `$${getPrice(service)}`;
 
   const estimatedTotal = selectedServices.reduce(
     (sum, s) => sum + getPrice(s),
     0,
   );
 
-  const estimatedTotalMax = selectedServices.reduce(
-    (sum, s) => sum + (stylistId === "any" ? getMaxPrice(s) : getPrice(s)),
-    0,
-  );
-
   const estimatedTotalDisplay =
-    stylistId === "any" && estimatedTotalMax !== estimatedTotal
-      ? `$${estimatedTotal} – $${estimatedTotalMax}`
-      : `$${estimatedTotal}`;
+    stylistId === "any" ? `from $${estimatedTotal}` : `$${estimatedTotal}`;
 
   const stylist = stylists.find((s) => s.id === stylistId);
   const stylistName =
@@ -230,117 +221,42 @@ const BookingForm = () => {
     // is given, but guard here too so consentGivenAt is never omitted.
     if (!consent) return;
 
-    const bookedServices: BookedService[] = selectedServices.map((s) => ({
-      id: s.id,
-      name: s.name,
-      price: getPrice(s),
-      activeTime: s.activeTime,
-      restTime: s.restTime,
-      totalTime: s.totalTime,
-      ...(s.phases && s.phases.length > 0 ? { phases: s.phases } : {}),
-    }));
-
-    const finalStylistName =
-      stylistId === "any" ? "Any available stylist" : stylist?.name ?? "";
-    const finalStylistLevel =
-      stylistId === "any" ? "junior" : stylist?.level ?? "junior";
-    // phases, absolute segments, legacy totals and the return time - one
-    // consistent set (phaseFields.ts)
-    const timing = phaseWriteFields(time, phases);
-
     setSubmitting(true);
     setSubmitError(null);
     try {
-      // Human-readable reference stored as a field — the doc ID itself is
-      // auto-generated by addDoc so two customers racing for the same slot
-      // can never silently overwrite each other's booking.
-      const safeDate = date.replace(/-/g, "");
-      const [tp, period] = time.split(" ");
-      const [h, m] = tp.split(":").map(Number);
-      const hour24 =
-        period === "PM" && h !== 12
-          ? h + 12
-          : period === "AM" && h === 12
-          ? 0
-          : h;
-      const hhmm = `${String(hour24).padStart(2, "0")}${String(m).padStart(
-        2,
-        "0",
-      )}`;
-      const stylistSlug = stylistId === "any" ? "any" : stylistId;
-      const bookingRef = `BK-${safeDate}-${stylistSlug}-${hhmm}`;
-
-      const booking: Omit<Booking, "id"> = {
-        bookingType: "customer",
-        status: "pending",
-        bookingRef,
+      // Choices only. The server reads the services and stylists from its own
+      // records and works out price, duration and phases itself.
+      const result = await createBookingRequest({
+        serviceIds: selectedServiceIds,
+        stylistId,
+        date,
+        time,
         customerName: customerName.trim(),
-        customerNameLower: customerName.trim().toLowerCase(),
         customerPhone: cleanPhone(customerPhone),
-        // Optional — only stored when provided (lowercased for consistency)
-        ...(customerEmail.trim()
-          ? { customerEmail: customerEmail.trim().toLowerCase() }
-          : {}),
-        stylistId,
-        stylistName: finalStylistName,
-        stylistLevel: finalStylistLevel,
-        // Multi-service fields
-        services: bookedServices,
-        // Legacy single-service fields for admin backward compat
-        serviceId: bookedServices[0]?.id ?? "",
-        serviceName: bookedServices.map((s) => s.name).join(" + "),
-        servicePrice: estimatedTotal,
-        ...timing,
-        date,
-        time,
+        ...(customerEmail.trim() ? { customerEmail: customerEmail.trim() } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
-        // Records that the customer agreed to the privacy terms, and when.
-        consentGivenAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      };
-
-      // Pre-generate the doc ID so the booking and its PII-free public
-      // slotBlocks projection (used by the public availability calendar —
-      // see src/lib/slotBlocks.ts) commit atomically in one batch.
-      const bookingRefDoc = doc(collection(db, "bookings"));
-      const batch = writeBatch(db);
-      batch.set(bookingRefDoc, booking);
-      queueSlotBlockCreate(batch, bookingRefDoc.id, booking);
-      // Keep the customer visit-history record in sync for staff use — a
-      // get-by-ID doc, never a listable query, but reads are staff-only
-      // (see firestore.rules `customerLookups`). This write never leaks
-      // data back to the anonymous submitter; it's staff who benefit from
-      // it (e.g. admin walk-in creation).
-      batch.set(
-        doc(db, "customerLookups", cleanPhone(booking.customerPhone)),
-        {
-          name: booking.customerName,
-          lastVisit: booking.date,
-          visitCount: increment(1),
-        },
-        { merge: true },
-      );
-      await batch.commit();
-      const docRef = bookingRefDoc;
-
-      // Fire-and-forget — don't block confirmation on notification write
-      writeBookingNotifications({
-        bookingId: docRef.id,
-        customerName: customerName.trim(),
-        stylistId,
-        stylistName: finalStylistName,
-        date,
-        time,
-        serviceName: booking.serviceName,
-      }).catch(console.error);
-
-      setConfirmedBooking(booking);
-      setConfirmed(true);
+        consent: true,
+        requestId: requestIdRef.current,
+      });
+      setReceived({ result, customerName: customerName.trim() });
     } catch (err) {
-      console.error("Booking submission error:", err);
-      setSubmitError(
-        "Something went wrong while confirming your booking. Please try again, or call us on (03) 9569 0840.",
-      );
+      console.error("Booking request error:", err);
+      const message =
+        err instanceof BookingCommandError
+          ? err.message
+          : "Something went wrong while sending your request. Please try again, or call us on (03) 9569 0840.";
+      setSubmitError(message);
+      if (err instanceof BookingCommandError && err.reason === "slot-taken") {
+        // someone took the time first: back to choosing a time
+        requestIdRef.current = newRequestId();
+        setTime("");
+        goTo(2);
+      } else if (
+        err instanceof BookingCommandError &&
+        (err.reason === "closed" || err.reason === "invalid")
+      ) {
+        requestIdRef.current = newRequestId();
+      }
     }
     setSubmitting(false);
   };
@@ -348,8 +264,8 @@ const BookingForm = () => {
   // ── Reset ──────────────────────────────────────────────────────────────────
   const resetForm = () => {
     setSubmitError(null);
-    setConfirmed(false);
-    setConfirmedBooking(null);
+    setReceived(null);
+    requestIdRef.current = newRequestId();
     setStep(1);
     setDirection("forward");
     setShowSummarySheet(false);
@@ -366,9 +282,13 @@ const BookingForm = () => {
   };
 
   // ── Confirmation screen ───────────────────────────────────────────────────
-  if (confirmed && confirmedBooking) {
+  if (received) {
     return (
-      <BookingConfirmation booking={confirmedBooking} onReset={resetForm} />
+      <BookingConfirmation
+        result={received.result}
+        customerName={received.customerName}
+        onReset={resetForm}
+      />
     );
   }
 
@@ -517,13 +437,13 @@ const BookingForm = () => {
             disabled={!canSubmit}
             style={canSubmit ? PRIMARY_BTN : DISABLED_BTN}
           >
-            {submitting ? "Confirming..." : "Confirm Booking"}
+            {submitting ? "Sending..." : "Request Booking"}
           </button>
         )}
       </div>
 
       {/* Submit failure — inline error (the client flow has no toast provider) */}
-      {submitError && step === 3 && (
+      {submitError && (step === 3 || step === 2) && (
         <div
           style={{
             margin: "0 1.5rem 1.25rem",

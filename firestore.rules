@@ -201,8 +201,10 @@ service cloud.firestore {
     }
 
     // ── notifications ───────────────────────────────────────────────────
-    // The staff notification bell. Created only by the booking functions (Admin
-    // SDK). The owner reads everything; a stylist reads and marks read only the
+    // The staff notification bell. Online requests, waitlist entries and expiries
+    // are written by the booking functions (Admin SDK); the owner's own admin
+    // screens (walk-ins, the processing countdown) may add one too. Customers never
+    // can. The owner reads everything; a stylist reads and marks read only the
     // notifications addressed to their own stylistId.
     match /notifications/{notificationId} {
       allow read: if isOwner()
@@ -211,7 +213,7 @@ service cloud.firestore {
         || (isStylist() && resource.data.recipientId == request.auth.token.stylistId
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']));
       allow delete: if isOwner();
-      allow create: if false;
+      allow create: if isOwner();
     }
 
     // ── waitlist ─────────────────────────────────────────────────────────

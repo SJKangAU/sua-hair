@@ -159,9 +159,11 @@ export async function toDetailsStep(page: Page, b: OnlineBooking): Promise<void>
   await tap(page.getByRole("button", { name: /Confirm & Continue/ }));
 }
 
-/** The whole customer flow through to the confirmation screen. */
-export async function bookOnline(page: Page, b: OnlineBooking): Promise<void> {
-  await toDetailsStep(page, b);
+/** Fills the details form and presses "Request Booking", without waiting for an outcome. */
+export async function submitDetails(
+  page: Page,
+  b: Pick<OnlineBooking, "phone" | "name" | "email" | "notes">,
+): Promise<void> {
   await page.getByPlaceholder("e.g. 0412 345 678").fill(b.phone);
   await page.getByPlaceholder("Your full name").fill(b.name);
   if (b.email) await page.getByPlaceholder("you@example.com").fill(b.email);
@@ -173,8 +175,15 @@ export async function bookOnline(page: Page, b: OnlineBooking): Promise<void> {
   await page
     .locator("#booking-consent")
     .evaluate((el: HTMLInputElement) => el.click());
-  await tap(page.getByRole("button", { name: "Confirm Booking" }));
-  await expect(page.getByText(/Your booking is confirmed/)).toBeVisible();
+  await tap(page.getByRole("button", { name: "Request Booking" }));
+}
+
+/** The whole customer flow through to the "request received" screen. */
+export async function bookOnline(page: Page, b: OnlineBooking): Promise<void> {
+  await toDetailsStep(page, b);
+  await submitDetails(page, b);
+  // "Request received" - NOT a confirmation: only the owner's approval confirms (DEC-038)
+  await expect(page.getByRole("heading", { name: /Request received/ })).toBeVisible();
 }
 
 export async function adminLogin(page: Page): Promise<void> {

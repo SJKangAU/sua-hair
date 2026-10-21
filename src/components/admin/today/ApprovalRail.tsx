@@ -1,14 +1,17 @@
 // ApprovalRail.tsx
 // "Awaiting approval" on the Today page: the oldest online bookings still
 // pending, each with Approve, Decline and Suggest time.
-//   Approve / Decline go through useBookingActions (decline is a cancel, so it
-//   gets the Undo toast).
+//   Approve / Decline go through useBookingActions -> the approveBooking /
+//   declineBooking commands (decline is a cancel, so it gets the Undo toast). A
+//   legacy booking with no real stylist shows "Needs stylist" and an assign control
+//   instead of Approve.
 //   Suggest time opens the owner's messaging app with a text offering the
 //   nearest free time for the same stylist — nothing is sent from here.
 
 import { Link } from "react-router-dom";
 import { Check, MessageSquare, X } from "lucide-react";
 import RailCard, { EmptyNote } from "./RailCard";
+import NeedsStylist from "../NeedsStylist";
 import { useSalonData } from "../../../context/SalonDataContext";
 import useBookingActions from "../../../hooks/useBookingActions";
 import { formatWhen } from "../../../lib/bookingHistory";
@@ -153,19 +156,23 @@ const ApprovalRail = ({
                     marginTop: "0.6rem",
                   }}
                 >
-                  <button
-                    className="bk-cta"
-                    onClick={() => void changeStatus(b.id, "confirmed")}
-                    style={{
-                      ...smallButton,
-                      background: "var(--accent)",
-                      color: "var(--surface)",
-                      border: "1px solid var(--accent)",
-                    }}
-                  >
-                    <Check size={13} strokeWidth={2.25} aria-hidden="true" />
-                    Approve
-                  </button>
+                  {b.stylistId === "any" ? (
+                    <NeedsStylist booking={b} compact />
+                  ) : (
+                    <button
+                      className="bk-cta"
+                      onClick={() => void changeStatus(b.id, "confirmed")}
+                      style={{
+                        ...smallButton,
+                        background: "var(--accent)",
+                        color: "var(--surface)",
+                        border: "1px solid var(--accent)",
+                      }}
+                    >
+                      <Check size={13} strokeWidth={2.25} aria-hidden="true" />
+                      Approve
+                    </button>
+                  )}
                   <button
                     className="bk-ghost"
                     onClick={() => void changeStatus(b.id, "cancelled")}

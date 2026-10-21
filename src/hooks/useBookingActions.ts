@@ -20,6 +20,7 @@ import {
   fetchBookingConflict,
 } from "../lib/bookingConflicts";
 import { describeConflict } from "../lib/scheduling";
+import { BookingCommandError } from "../lib/bookingApi";
 import {
   UNDO_TOAST_MS,
   describeStatusChange,
@@ -55,6 +56,8 @@ const useBookingActions = (): UseBookingActions => {
       const applied: { id: string; from: BookingStatus; to: BookingStatus }[] =
         [];
       const clashes: string[] = [];
+      // refusals from the booking commands, worded by the server
+      const refusals: string[] = [];
       let failed = 0;
 
       for (const { id, status } of changes) {
@@ -95,6 +98,16 @@ const useBookingActions = (): UseBookingActions => {
             );
             continue;
           }
+          // The server refused (the slot no longer fits, or the booking changed):
+          // its message says why and is fit to show as it is
+          if (
+            err instanceof BookingCommandError &&
+            err.reason !== "unknown" &&
+            err.reason !== "network"
+          ) {
+            refusals.push(err.message);
+            continue;
+          }
           console.error("Booking status change failed:", err);
           failed++;
         }
@@ -104,6 +117,9 @@ const useBookingActions = (): UseBookingActions => {
         addToast(`Not restored: ${clashes.join("; ")}.`, "error", {
           durationMs: UNDO_TOAST_MS,
         });
+      }
+      if (refusals.length > 0) {
+        addToast(refusals.join(" "), "error", { durationMs: UNDO_TOAST_MS });
       }
       if (failed > 0) {
         addToast("Failed to update booking. Please try again.", "error");

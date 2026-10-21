@@ -268,12 +268,13 @@ describe("waitlist", () => {
 });
 
 describe("notifications", () => {
-  it("owner reads, marks read and deletes; nobody creates", async () => {
+  it("owner reads, marks read, deletes and may add one (admin screens); nobody else creates", async () => {
     const db = owner();
     await assertSucceeds(db.collection("notifications").where("recipientId", "==", "owner").get());
     await assertSucceeds(db.doc("notifications/n-owner").update({ read: true }));
     await assertSucceeds(db.doc("notifications/n-owner").delete());
-    for (const c of [owner(), stylist(), nobody(), anon()]) {
+    await assertSucceeds(db.doc("notifications/n-new").set({ recipientId: "owner", read: false, message: "x" }));
+    for (const c of [stylist(), nobody(), anon()]) {
       await assertFails(c.doc("notifications/new").set({ recipientId: "owner", read: false, message: "x" }));
     }
   });

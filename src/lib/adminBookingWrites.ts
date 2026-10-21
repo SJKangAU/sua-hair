@@ -17,10 +17,10 @@
 //    Firestore aborts this transaction and it re-runs — re-querying, and now
 //    seeing the other booking. Every admin write path must go through here.
 //
-// This serialises ADMIN writes only. A customer's online booking still writes
-// directly (the public rules do not let anonymous visitors touch the lock), so
-// an online booking landing in the same instant as an admin walk-in is not
-// prevented — see docs/PILOT_READINESS.md "Remaining risks".
+// The booking functions (createBookingRequest, approve, restore, assign) take the
+// SAME lock in their own transactions (functions/src/bookingCommands.ts), so an
+// online request landing in the same instant as an admin walk-in is serialised
+// with it too (DEC-035). Customers cannot write bookings directly any more.
 //
 // Takes the Firestore instance as an argument so tests can run it against the
 // emulator with real security rules.
@@ -41,6 +41,7 @@ import { isSlotFreeing } from "./bookingStatus";
 import { slotBlockSchedulePatch, toSlotBlock } from "./slotBlockData";
 import { phaseWriteFields } from "./phaseFields";
 import { cleanPhone } from "./validation";
+import { slotLockId } from "./slotLockId";
 import type { ConflictProbe } from "./scheduling";
 import type { Booking, BookingHistoryEntry, Phase } from "../types";
 
@@ -49,8 +50,7 @@ import type { Booking, BookingHistoryEntry, Phase } from "../types";
 // confusing "aborted" error instead of a clean result.
 const LOCK_TRANSACTION_ATTEMPTS = 10;
 
-export const slotLockId = (stylistId: string, date: string): string =>
-  `${date}_${stylistId}`;
+export { slotLockId };
 
 // Runs `write` inside a transaction that holds the stylist-day lock and has
 // just confirmed the probe's slot is free. Throws BookingConflictError (and

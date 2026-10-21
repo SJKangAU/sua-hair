@@ -14,9 +14,11 @@
     "test:security": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/security.test.ts\"",
     "test:admin": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts\"",
     "test:functions": "firebase emulators:exec --project demo-sua-functions --only firestore,auth \"vitest run tests/functions\"",
+    "test:lockdown": "firebase emulators:exec --project demo-sua-lockdown --only firestore \"node scripts/verify-lockdown.mjs\"",
+    "test:scale": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"node scripts/run-scale.mjs\"",
     "test:smoke": "firebase emulators:exec --project sua-hair-rules-test --only firestore \"vitest run tests/firestore/smoke.test.ts\"",
     "test:all": "npm run build && npm run test:unit && npm run test:rules && npm run test:security && npm run test:admin && npm run test:smoke && npm run test:e2e",
-    "test:e2e": "firebase emulators:exec --project demo-sua-e2e --only firestore,auth \"playwright test -c e2e/playwright.config.ts\""
+    "test:e2e": "node scripts/e2e.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -43,7 +45,6 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "firebase-admin": "^12.7.0",
     "firebase-tools": "^15.24.0",
     "globals": "^17.4.0",
     "tsx": "^4.21.0",

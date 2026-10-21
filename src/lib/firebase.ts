@@ -9,7 +9,8 @@ import {
   persistentMultipleTabManager,
 } from "firebase/firestore";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { getFunctions } from "firebase/functions";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // When the project hasn't been wired up with real Firebase credentials yet
 // (no .env / VITE_FIREBASE_* vars configured), fall back to a syntactically
@@ -51,6 +52,23 @@ const firebaseConfig = hasRealFirebaseConfig
     };
 
 const app = initializeApp(firebaseConfig);
+
+// App Check (reCAPTCHA v3): proves a call comes from this site, not a script. It is
+// OFF until the reCAPTCHA site key is configured - set VITE_RECAPTCHA_SITE_KEY for
+// the build - and the callables only REQUIRE it once ENFORCE_APP_CHECK is switched
+// on in the functions (docs/DEPLOYMENT.md lists the console steps). Never in the
+// emulator runs.
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+if (recaptchaSiteKey && import.meta.env.VITE_USE_EMULATORS !== "true") {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (err) {
+    console.error("[firebase] App Check could not start:", err);
+  }
+}
 
 // `useFetchStreams` is an internal/experimental Firestore setting not part
 // of the public `FirestoreSettings` type, even though the SDK accepts it at
@@ -96,3 +114,7 @@ if (import.meta.env.VITE_USE_EMULATORS === "true") {
 // Callable Cloud Functions. Region must match the functions' deployed region
 // (see functions/src/index.ts — australia-southeast1, Sydney).
 export const functions = getFunctions(app, "australia-southeast1");
+
+if (import.meta.env.VITE_USE_EMULATORS === "true") {
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}

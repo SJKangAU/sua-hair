@@ -21,6 +21,13 @@ export const sendEmail = async (
   apiKey: string,
   email: OutboundEmail,
 ): Promise<void> => {
+  // Never send from the Functions emulator (local runs and the browser tests): the
+  // message is logged instead, so nothing can reach a real inbox from a test.
+  if (process.env.FUNCTIONS_EMULATOR === "true") {
+    console.log(`[emulator] email not sent: "${email.subject}"`);
+    return;
+  }
+  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",

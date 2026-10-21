@@ -8,6 +8,7 @@
 
 import { RotateCcw } from "lucide-react";
 import StatusIcon from "../../ui/StatusIcon";
+import NeedsStylist from "../NeedsStylist";
 import {
   getRestoreStatus,
   getStatusActions,
@@ -44,7 +45,12 @@ const StatusActionButtons = ({ booking, onChange, compact = false }: Props) => {
   };
   const iconSize = compact ? 12 : 15;
 
+  // A booking with no real stylist (made before the server assigned them) cannot be
+  // approved or restored until the owner gives it one (DEC-040)
+  const needsStylist = booking.stylistId === "any";
+
   if (isSlotFreeing(booking.status)) {
+    if (needsStylist) return <NeedsStylist booking={booking} compact={compact} />;
     return (
       <button
         className="bk-ghost"
@@ -57,12 +63,15 @@ const StatusActionButtons = ({ booking, onChange, compact = false }: Props) => {
     );
   }
 
-  const actions = getStatusActions(booking.status);
+  const actions = getStatusActions(booking.status).filter(
+    (a) => !(needsStylist && booking.status === "pending" && a.status === "confirmed"),
+  );
   // The forward step is the first action that isn't a cancel
   const primary = actions.find((a) => a.status !== "cancelled");
 
   return (
     <>
+      {needsStylist && <NeedsStylist booking={booking} compact={compact} />}
       {actions.map((action) => {
         const isPrimary = action === primary;
         return (

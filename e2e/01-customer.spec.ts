@@ -251,7 +251,11 @@ test("TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not h
   );
   // 11:00 is free
   await expect(slotButton(page, "11:00 AM")).toHaveAttribute("aria-disabled", "false");
-  // a different stylist is unaffected at the same time
+  // a different stylist is unaffected at the same time. Choosing a stylist resets the
+  // chosen date to today, so pick the same day again first - without that the grid is
+  // TODAY's, and its 10:30 AM is unavailable simply because it is already past
+  // (this assertion only passed before about 8:30 am Melbourne time).
   await tap(page.getByRole("button", { name: /Yuto/ }).first());
+  await pickDate(page, THU);
   await expect(slotButton(page, "10:30 AM")).toHaveAttribute("aria-disabled", "false");
 });

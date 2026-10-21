@@ -55,7 +55,7 @@ test("TC-035 the owner is notified of a new online booking, and the notification
   const bell = owner.getByTitle(/unread notifications/).first();
   await expect(bell).toBeVisible();
   await bell.click();
-  const item = owner.getByText(/New booking: Nora Notify/);
+  const item = owner.getByText(/New booking request: Nora Notify/);
   await expect(item).toBeVisible();
   await item.click();
   await expect(owner).toHaveURL(/booking=/);
