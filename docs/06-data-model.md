@@ -12,6 +12,8 @@ Roles come from **custom claims** on the sign-in token (DEC-033): `owner`, or `s
 | `slotBlocks`              | **public**                                     | functions; owner; a stylist: own slot's status only        | PII-free projection of `bookings` used for public availability |
 | `stylistDayLocks`         | owner                                          | functions and owner (`version`, `updatedAt` only; no delete) | Per-stylist-per-day lock that serialises **every** slot-claiming write |
 | `customerLookups`         | **owner only**                                 | functions (visit record); owner (walk-ins, client import)  | Per-phone identity, visit history and the `blocked` flag     |
+| `clients`                 | **owner only**                                 | owner (details, block, import); functions (figures, merge, anonymise) | One document per client, keyed by normalised mobile: profile, blocked flag and reason, and every figure derived from their bookings |
+| `clientCards`             | owner; a stylist for **their own clients** only | owner; functions                                           | The slim copy a stylist may read: name, mobile, tags, blocked yes/no, `stylistIds`; no spend, email or reason |
 | `importBatches`           | owner only                                     | owner only                                                 | Ledger of each client-list import and, in `chunks`, the phones it created and the ones it blocked (for rollback) |
 | `stylists`                | public                                         | **owner only**                                             | Roster, tiers, working hours, display order                  |
 | `services`                | public                                         | **owner only**                                             | Catalogue, tiered prices, price history                      |
@@ -89,9 +91,44 @@ ID = cleaned phone number. `{ name, lastVisit, visitCount, blocked? }`. Updated 
 
 `blocked: true` is set by the Fresha client import for a client Fresha has Blocked (FR-017, DEC-039); it is the only way a record gets it. A blocked client's booking request and waitlist entry are refused with "Please call the salon to book", and the walk-in form shows a blocked warning instead of "Returning client". An absent flag means not blocked. A record created by the import is otherwise `{ name, lastVisit: "", visitCount: 0 }`: indistinguishable from a client with no visits yet, which is why a later online booking merges into it normally. Which records an import created or flagged is kept in `importBatches`, not on the record.
 
+## Collection: `clients` (DEC-044)
+
+ID = the client's **normalised mobile** `04XXXXXXXX` (a Fresha number `61 4..` becomes `04..`). **Owner only**: it holds spend, the blocked reason and the email, and a rule cannot hide a field from an authorised read.
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `phone`, `name`, `email?` | strings | Identity. `name` is the most recent booking's, unless the owner set it (`nameOverride: true`) |
+| `nameLower`, `searchTokens[]` | string, string[] | Search keys: the name lower-cased with accents removed (prefix search) and its words, plus the words of earlier names (`aliases`) |
+| `aliases[]` | string[] | Earlier spellings of the name (at most 10) |
+| `tags[]` | string[] | Owner's tags (at most 10) |
+| `blocked`, `blockReason?` | bool, string | Blocked clients are refused by the booking command. The reason is private to the owner |
+| `source` | `online` / `walk-in` / `fresha-import` | Where the client first came from |
+| `createdAt`, `updatedAt` | ISO strings | `createdAt` is when Fresha added an imported client |
+| `totalVisits`, `totalSpend` | numbers | Visits (customer or walk-in bookings that happened) and their prices |
+| `firstVisit`, `lastVisit` | `YYYY-MM-DD` or `""` | `""` when none, so a client with no visit still sorts last |
+| `hasUpcoming`, `nextBookingDate/Time/Id` | bool, strings | The earliest pending or confirmed booking after today |
+| `cancelCount`, `noShowCount`, `hasNoShows` | numbers, bool | Counts from the bookings; the bool exists for an indexed filter |
+| `favouriteStylistId`, `favouriteServiceIds[]` | string, string[] | The most visited stylist (ties: most recent) and the top 3 services |
+| `stylistIds[]` | string[] | Every stylist with a non-cancelled booking with them (never `any`); what lets a stylist open the client |
+| `avgDaysBetweenVisits` | number or `null` | Mean gap between distinct visit days |
+| `bookingCount` | number | Customer and walk-in bookings, any status |
+| `anonymised?` | bool | Never set on a live client: anonymising removes the document |
+
+Every derived field is a function of the client's bookings alone (`src/lib/clients.ts`), so it can always be recomputed and compared. Subcollections: `notes/{noteId}` `{ text, authorUid, authorName, createdAt, pinned }` (append-only; at most 2,000 characters) and `audit/{entryId}` `{ action, byUid, byName, at, detail? }` (owner only, write-once).
+
+## Collection: `clientCards` (DEC-044, DEC-047)
+
+Same ID as the client. `{ id, phone, name, nameLower, searchTokens, stylistIds, blocked, tags }` and nothing else. A stylist may read the cards whose `stylistIds` contains their own stylist id (and run searches pinned to it); only the owner and the functions write them. They are rewritten together with the client in every transaction that changes it.
+
+`bookings.clientId` is the link: the client's mobile, set when a booking is made (the commands and the owner's walk-in form) or by the build-the-client-list tool or trigger for older ones; a "deleted-..." tombstone once the client is anonymised. A client's history is `bookings where clientId == id` (indexed: `clientId + date`, and `clientId + stylistId + date` for a stylist).
+
+## Collection: `clientBackfills` (functions only, owner-readable)
+
+One document per "build the client list" run `{ status, createdAt, createdBy, counts, created?, linked?, removed?, kept?, unlinked? }` and `chunks/{n}` `{ created: clientId[], linked: "bookingId:clientId"[] }`, which a rollback walks (deleted once handled).
+
 ## Collection: `importBatches`
 
-Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'complete' | 'failed' | 'rolled_back', source, createdBy (uid), createdAt, planned, created, existed, flagged?, finishedAt?, rolledBackAt?, removed?, kept?, unblocked? }`. Subcollection `chunks/{00000...}`: `{ phones: string[], blocked?: string[] }` (each at most 500): the numbers a committed chunk created, and the ones it marked blocked (new or existing), written in the same transaction as those records. Rolling back deletes a chunk once its clients are handled, so the ledger holds no phone numbers afterwards; it removes the blocked flag **it** set and never one that was already there. Personal data: owner-readable only.
+Owner-only (DEC-032). One document per import run: `{ status: 'running' | 'complete' | 'failed' | 'rolled_back', source, createdBy (uid), createdAt, planned, created, existed, flagged?, finishedAt?, rolledBackAt?, removed?, kept?, unblocked? }`. Subcollection `chunks/{00000...}`: `{ phones: string[], clients?: string[], blocked?: string[] }` (each at most 500): the numbers a committed chunk created, the client documents it created (DEC-049) and the ones it marked blocked (new or existing), written in the same transaction as those records. A chunk is at most 150 clients, because each is three writes (visit record, client, card). Rolling back deletes a chunk once its clients are handled, so the ledger holds no phone numbers afterwards; it removes the blocked flag **it** set and never one that was already there. Personal data: owner-readable only.
 
 ## Collections: `rateLimits` and `phoneLimits` (functions only)
 

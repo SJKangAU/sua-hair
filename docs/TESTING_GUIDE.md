@@ -130,6 +130,16 @@ Tick each line. Anything that fails: stop, note exactly what you saw, and use th
 - [ ] A **stylist account** signs in and sees only their own schedule, and cannot open Manage or Analytics.
 - [ ] A signed-in account that was **never provisioned** sees nothing.
 
+### E2. Clients (after the indexes, functions and rules are live, and Build the client list has been run)
+
+- [ ] **Clients** lists people (most recent visit first); the search box finds a client by a word of their name, by the start of their name, and by the start of their mobile number.
+- [ ] Open a client you know: their visits, last visit and spend match your memory; the history shows each booking with the stylist and price.
+- [ ] Add a note and pin it; it shows who wrote it. Sign in as a stylist: only their own clients are listed, there is no spend anywhere, and they can add a note but not delete the owner's.
+- [ ] Make a test booking request with a made-up name and your own number: a client appears for that number within seconds, and approving it changes their next appointment.
+- [ ] Block that test client; try to book again with the same number: "Please call the salon to book". Unblock.
+- [ ] Make a second test client with a slightly different name and merge it into the first; the history joins up and the old name is shown as "also seen as".
+- [ ] Export one test client's data (a JSON file downloads) and anonymise a test client: their bookings stay as "Deleted Customer" and they no longer appear.
+
 ### F. Client import (Manage -> Import clients, owner only)
 
 - [ ] Choose the real Fresha client list. Read the **dry run**: rows, new, already in the app, skipped, merged, and the **blocked

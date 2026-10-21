@@ -59,6 +59,14 @@ Also run by hand: `npm run test:unit:tz` earlier in the work (UTC, America/Los_A
 
 After the full runs above, one change was made on `main` (commit `ccba1ce`, DEC-043): the customer page lists times as **buttons** again and the day-column **hover preview was removed**, with its code (`DayTimeGrid`, `slotPreview`), 24 unit tests and the 7 browser tests in `e2e/06-hover-preview.spec.ts` (TC-038 to TC-044), plus one browser test in `08-phases` that repeated TC-068. Unit tests now number **330** (not 354); the browser count falls by the removed tests. Run on this change: the customer, phases and booking-command browser specs (24 passed). **The full suite has not been re-run on `main` since** (an attempted run was spoiled by two suites using the emulator ports at once); do that before relying on the totals above.
 
+### Clients (branch `client-directory`)
+
+The client directory, client page, notes, merge, anonymise, export, the trigger and the client records the import makes were added after the runs above. Run on this change, on their own: unit `clients` (34), functions `clients` (24; the whole functions suite 135 passed, four times in a row after one test's timeout was raised, see its commit), rules `clientsRules` (24; `test:rules` 149 including them), the import's emulator tests (31) and the browser specs `12-clients` (12 passed) and `03-admin-pages` (19 passed, TC-021 to TC-024 rewritten). **The full suite under both time zones is recorded separately once run (`docs/test-runs/clients-*.txt`).** The test counts quoted above for the earlier work are not repeated here.
+
+Deliberately different from what was asked, and written down: (1) summaries are updated in the same transaction by the booking commands, but by the `onBookingWritten` trigger for the owner's browser writes, because a browser transaction cannot query (DEC-045); (2) the import's chunk is 150 clients, not 400, because a client is now three writes (DEC-049).
+
+**Not verified for clients:** the index build on the real project; the backfill on the real bookings and visit records (only synthetic data); the trigger and the nightly job in production (scheduled jobs and triggers run only in the emulator here); a client page with thousands of bookings; Safari and a phone for the new screens.
+
 ---
 
 ## 2. NOT yet verified (deployment, email and user evidence)

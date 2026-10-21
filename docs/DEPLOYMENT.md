@@ -138,6 +138,25 @@ firebase deploy --only firestore:rules
 
 *Lock-out safeguard:* if the owner cannot reach the admin after step 4, in order: (1) sign out and in; (2) re-run `verify`; (3) restore the previous rules as above — the owner's `users/{uid}` record is untouched, so it works immediately.
 
+## The client directory (DEC-044 to DEC-049): what to add to the order above
+
+This release adds `clients` and `clientCards` (and their rules), seven composite indexes, five owner callables (`recomputeClients`, `backfillClients`, `mergeClients`, `anonymiseClient`, `exportClientData`), a trigger (`onBookingWritten`) and a nightly job (`settleClientSummaries`). The order is the same as above, with two additions:
+
+1. **Indexes first, and wait.** `firebase deploy --only firestore:indexes` adds the client and booking-history indexes. They take minutes to build (console, Firestore, Indexes: wait for every one to say "Enabled"). A directory filter or a client's history shows an error until its index exists.
+2. **Functions** (step 2) deploys the callables, the trigger and the nightly job. From this moment every booking write also makes or updates a client, so the clients start to exist on their own, one booking at a time.
+3. **Rules** (step 4, last) now also contains the `clients`, `clientCards`, notes, audit and `clientBackfills` rules.
+4. **Then build the client list, once, from Manage as the owner:**
+   1. Manage, **Build the client list**, press **Check first (dry run)**. Nothing is written.
+   2. Read the counts. "Bookings looked at" should be close to the number of bookings you expect; "Clients found" should be about the number of different people; "Skipped: no phone" and "not a valid mobile" are bookings that will not belong to a client; "Old bookings with no stylist yet" are the legacy `any` bookings (they still count for the client).
+   3. Press **Download report** and look at the rows: each is a row number and a reason, with no names or numbers.
+   4. If it looks right, press **Build**. It runs in batches and can take a few minutes for a large history; do not close the page.
+   5. Spot-check in Clients: search for three people you know, open them, and check their visits, last visit and spend against what you remember.
+   6. **Keep the batch** listed under the button; its **Roll back** removes the clients that run created (a client with a note is kept) and the links it set. Running Build again later is safe: it creates nothing twice and never changes a client you have edited.
+5. Then run the Fresha import (Manage, Import clients) if you have not: it now creates the clients too, and its rollback removes them.
+6. **Check:** open Clients as the owner (the list loads, a search works, a client page shows history and notes); sign in as a stylist and open **My clients** from their schedule (only their clients, no spend).
+
+*Rollback of this part:* roll back the Build batch (and the import batch) from Manage; the app without `clients` still works because nothing else depends on them except the Clients page (which then shows "No clients yet"). The trigger can be turned off by deleting `onBookingWritten` (`firebase functions:delete onBookingWritten --region australia-southeast2`), after which only the booking commands keep clients current and **Recalculate every client's figures** repairs the rest.
+
 ## Existing data
 
 - **Legacy bookings with stylist "any"** (made before this release) appear in **Approvals** with a **Needs stylist** badge and an assign control instead of Approve. Choosing a stylist runs `assignStylist`: it checks that stylist is free for every busy part of the booking, re-prices from their tier and the current service prices, and moves the booking. Until then such a booking blocks nobody, as before.

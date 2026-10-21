@@ -451,3 +451,71 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] A blocked client's request and waitlist entry are refused with the generic message (`functions`; TC-093, TC-095)
 - [x] Import → blocked client refused → rollback → can book (TC-095); walk-in warning (TC-096)
 
+---
+
+## FR-021 — Client directory
+
+**Description:** The owner can find ANY client and see who needs attention, without loading every client or every booking. A stylist can find their own clients. Location: Clients (owner), My clients (stylist). Decisions: DEC-044, DEC-046, DEC-047.
+
+**Requirements:**
+
+- **Search** (300 ms after typing stops, 2 characters minimum): by a **word of the name** ("lee" finds "Jade Lee"), by the **start of the name**, or by the **start of the mobile number** (any way it is written: `0412`, `61 412`, `+61412`). Accents are ignored. Results come 25 at a time with **Show more**
+- **List:** name, mobile, last visit, next booking, visits, spend (owner only), tags and a **Blocked** badge. Sorted by **last visit** (default), name, visits or spend. A table on a wide screen, cards on a phone
+- **Filters** (owner): **lapsed** (visited before, none in 90 days; the number of days is configurable in `src/lib/clients.ts`), **new** (added in the last 30 days), **blocked**, **has a booking**, **has no-shows**. A filter has its own order (the index each one needs); with a typed search the filters apply to the results
+- **States:** loading, an error with Try again, and "No clients yet / No clients match" with what to do. Keyboard accessible (every row is a button; the filter chips and sort are labelled)
+- **Stylist:** the same list for **their own clients only** (clients who have a booking with them): name, mobile, tags. No spend, no filters. A stylist's search is by name start or number; a whole-word search is not available to them (Firestore cannot combine two array queries)
+- The Today page's search sends the owner here with the search filled in (`/admin/clients?q=`)
+
+**Acceptance criteria:**
+
+- [x] Search by name word, name start and number; under 2 characters is not a search (TC-098, TC-099; `unit` clients)
+- [x] Filters and sorts (TC-105); paging of the list and of a search (TC-106)
+- [x] A stylist sees only their own clients and no spend (TC-107; `rules` clientsRules)
+- [x] Never loads all clients or all bookings: 25 per query with a cursor (`unit` and the code in `src/lib/clientDirectory.ts`)
+
+---
+
+## FR-022 — Client page, notes and housekeeping
+
+**Description:** Everything staff need about one person. Route `/admin/clients/:clientId`, also as a drawer from the list; stylists have `/stylist/clients/:clientId`. Decisions: DEC-044, DEC-047, DEC-048.
+
+**Requirements:**
+
+- **Header:** name, mobile, email, client since, tags, **Blocked** badge (with the private reason, owner only), other names seen (aliases), and **Book again** (opens the create-booking form with the client filled in)
+- **Key numbers (owner):** visits, total spend, average spend, first and last visit, next appointment, average days between visits, favourite stylist and services, cancellations, no-shows. A visit is a customer or walk-in booking that has happened (completed, arrived, in service, or confirmed and dated today or earlier); spend is the price of visits only, so cancelled, pending, future bookings, breaks and training never count
+- **Booking history:** upcoming then past, newest first: date, time, services, stylist, price, status and source (online or walk-in), 25 at a time, **only this client's bookings** (an indexed query). A row opens the booking. A stylist sees only their own bookings with the client
+- **Notes:** pinned first, then newest, each with its author and date; add, pin and unpin; delete: the owner any note, a stylist only their own. Notes are never edited (append-only)
+- **Housekeeping (owner):** edit name, email and tags (a name set by hand is kept even if a later booking spells it differently); **block / unblock** with a private reason; **merge** a duplicate (choose which record to keep; bookings and notes move over, the other name becomes an alias, tags carry over, **blocked wins**); **export** everything held about the client as JSON (for a privacy request); **anonymise** (see below); **recalculate figures**
+- **Anonymise** removes the name, mobile, email and notes. The bookings stay for the accounts, with price, date, status and services but no longer linked to a person (`clientId` becomes a "deleted-..." id). The dialog shows how many bookings are affected and needs a tick; it cannot be undone
+- **Audit trail (owner):** who did what and when for edit, block, unblock, merge, anonymise and export
+- A stylist sees none of: total spend or the key numbers, other stylists' bookings, the blocked reason, housekeeping, Book again
+
+**Acceptance criteria:**
+
+- [x] History, last visit and key numbers, in a drawer and on the full page (TC-100; TC-021 to TC-024 on the same data)
+- [x] Notes: add, pin, authors, delete (TC-101)
+- [x] Block shows a badge and an audit entry, and the booking command refuses the client (TC-102)
+- [x] Merge moves bookings and keeps an alias (TC-103; `functions` clients); anonymise keeps the bookings (TC-104; `functions` clients)
+- [x] Export records an audit entry (`functions` clients); the stylist's view has no spend, housekeeping or reason (TC-107; `rules`)
+
+---
+
+## FR-023 — Client records and the figures on them
+
+**Description:** `clients/{phone}` exists for every person with a valid mobile number who has booked or been imported, and its figures always follow their bookings. Decisions: DEC-044, DEC-045, DEC-049.
+
+**Requirements:**
+
+- **Every booking stores `clientId`** (the normalised mobile) when it has a valid number; breaks, training and bookings with no valid number have none
+- **The figures are kept current** by: the booking commands (request, approve, decline, cancel, restore, assign a stylist, the 24-hour release), which update the client **in the same transaction** as the booking; and a trigger after **any** booking write (the owner's walk-ins, edits and deletes, a stylist's status change), which recomputes the client within seconds. A nightly job refreshes clients whose next booking has become a visit as its day arrives. The owner can **recalculate** one client or all
+- **Build the client list** (Manage, owner only): creates clients from every booking with a valid number and from the clients the Fresha import added, and links the bookings. **Dry run first** (counts and a downloadable report of rows to look at: a row number and a reason only), then apply; idempotent; batched; **rollback by batch** removes the clients it made (one with a note is kept) and the links
+- Edge cases: the same number under different spellings keeps the most recent name and the others as aliases; a missing or invalid number is reported and never guessed; an old booking with stylist "any" counts for the client but ties no stylist to them; breaks and training are not clients' bookings
+- **The Fresha import** also creates a client record (source `fresha-import`, dated when Fresha added them) in the same transaction as the visit record; an existing client is never recreated or overwritten; its rollback removes the client records it made while they are untouched (FR-017)
+- **Blocked** lives on the client record (and the visit record the import set); the booking command refuses either
+
+**Acceptance criteria:**
+
+- [x] A client and card are made and updated in the booking transaction; a recompute finds nothing to change (`functions` clients)
+- [x] The trigger repairs the owner's browser writes: a walk-in, a move, a delete, a no-show (`functions` clients)
+- [x] Backfill: dry run writes nothing; apply; idempotent; never overwrites the owner's edits; rollback; more than one batch (`functions` clients; TC-109)
+- [x] The import makes and removes client records and never overwrites an existing one (`admin` clientImport; TC-108)

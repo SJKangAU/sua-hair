@@ -1,0 +1,1587 @@
+TZ=Australia/Melbourne
+=== npm run build ===
+
+> sua-hair@0.0.0 build
+> tsc -b && vite build
+
+vite v8.0.2 building client environment for production...
+[2Ktransforming...✓ 2008 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                1.15 kB │ gzip:   0.56 kB
+dist/assets/index-CMwZ6i2P.css                 3.06 kB │ gzip:   1.22 kB
+dist/assets/chunk-B3K2TuZy.js                  0.55 kB │ gzip:   0.35 kB
+dist/assets/createLucideIcon-Dcut5IBj.js       1.41 kB │ gzip:   0.79 kB
+dist/assets/AdminLoginPage-CFnOtag3.js         2.54 kB │ gzip:   1.12 kB
+dist/assets/StylistLoginPage-CRyASQgl.js       2.56 kB │ gzip:   1.13 kB
+dist/assets/NotificationBell-4F5Y4OI8.js       4.55 kB │ gzip:   1.89 kB
+dist/assets/StylistSchedulePage-BnEHmJX_.js    4.88 kB │ gzip:   1.63 kB
+dist/assets/useAppUser-BAud7mKT.js             7.93 kB │ gzip:   3.22 kB
+dist/assets/phaseEdit-BNFnBezh.js             15.78 kB │ gzip:   5.91 kB
+dist/assets/papaparse.min-Cbe136t_.js         18.66 kB │ gzip:   6.78 kB
+dist/assets/AdminDashboardPage-pNk7mK4o.js    42.37 kB │ gzip:  12.14 kB
+dist/assets/browser-e3Y8TP6a.js               66.34 kB │ gzip:  18.73 kB
+dist/assets/AdminRoutes-otwC36wF.js          237.52 kB │ gzip:  62.99 kB
+dist/assets/index-4EVGkfIb.js                260.36 kB │ gzip:  79.09 kB
+dist/assets/useAuth-j2Ipr2CZ.js              548.45 kB │ gzip: 167.69 kB
+
+✓ built in 934ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+EXIT 0
+=== npm run lint ===
+
+> sua-hair@0.0.0 lint
+> eslint .
+
+
+EXIT 0
+=== npm run test:unit ===
+
+> sua-hair@0.0.0 test:unit
+> vitest run tests/unit
+
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/unit/bookingPhases.test.ts (42 tests) 190ms
+ ✓ tests/unit/clientImportFile.test.ts (6 tests) 98ms
+ ✓ tests/unit/clientImport.test.ts (23 tests) 53ms
+ ✓ tests/unit/scheduling.test.ts (43 tests) 40ms
+ ✓ tests/unit/businessTime.test.ts (19 tests) 34ms
+ ✓ tests/unit/slotPreview.test.ts (24 tests) 31ms
+ ✓ tests/unit/todayPage.test.ts (23 tests) 31ms
+ ✓ tests/unit/bookingStatus.test.ts (13 tests) 27ms
+ ✓ tests/unit/bookingHistory.test.ts (8 tests) 24ms
+ ✓ tests/unit/time.test.ts (8 tests) 22ms
+ ✓ tests/unit/timelineLayout.test.ts (20 tests) 10ms
+ ✓ tests/unit/phaseResize.test.ts (9 tests) 11ms
+ ✓ tests/unit/timelineCreate.test.ts (20 tests) 11ms
+ ✓ tests/unit/createBooking.test.ts (10 tests) 10ms
+ ✓ tests/unit/agenda.test.ts (10 tests) 9ms
+ ✓ tests/unit/emailEvents.test.ts (11 tests) 8ms
+ ✓ tests/unit/emailTemplates.test.ts (12 tests) 8ms
+ ✓ tests/unit/adminLifecycle.test.ts (14 tests) 10ms
+ ✓ tests/unit/stylistOrder.test.ts (12 tests) 8ms
+ ✓ tests/unit/reschedule.test.ts (8 tests) 7ms
+ ✓ tests/unit/dates.test.ts (8 tests) 8ms
+ ✓ tests/unit/validation.test.ts (4 tests) 6ms
+ ✓ tests/unit/previewContrast.test.ts (4 tests) 5ms
+ ✓ tests/unit/nameRange.test.ts (3 tests) 7ms
+
+ Test Files  24 passed (24)
+      Tests  354 passed (354)
+   Start at  16:42:33
+   Duration  6.62s (transform 425ms, setup 0ms, import 1.25s, tests 670ms, environment 3ms)
+
+
+EXIT 0
+=== npm run test:rules ===
+
+> sua-hair@0.0.0 test:rules
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/rules.test.ts tests/firestore/roles.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/firestore/rules.test.ts (65 tests) 6357ms
+     ✓ cannot get a booking document by id  667ms
+ ✓ tests/firestore/roles.test.ts (34 tests) 5571ms
+     ✓ stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours  359ms
+
+ Test Files  2 passed (2)
+      Tests  99 passed (99)
+   Start at  16:42:45
+   Duration  13.07s (transform 111ms, setup 0ms, import 668ms, tests 11.93s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot update or delete a booking
+[2026-10-21T05:42:48.628Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot update or delete a booking
+[2026-10-21T05:42:48.639Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L114
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking, even a well-formed pending one (only createBookingRequest can)
+[2026-10-21T05:42:48.680Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking that is pre-confirmed
+[2026-10-21T05:42:48.721Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a walk-in/break/training booking type
+[2026-10-21T05:42:48.769Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking missing a required field
+[2026-10-21T05:42:48.812Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2996f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking without recorded privacy consent
+[2026-10-21T05:42:48.861Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29970 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking with an optional email address either
+[2026-10-21T05:42:48.905Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29971 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking with a non-string or oversized email
+[2026-10-21T05:42:48.938Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29972 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking with a non-string or oversized email
+[2026-10-21T05:42:48.951Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29973 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > bookings — anonymous access is denied > cannot create a booking and so cannot read one back
+[2026-10-21T05:42:48.994Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29974 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > staff cannot write an unknown status to a booking or slot block
+[2026-10-21T05:42:49.511Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2997e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > staff cannot write an unknown status to a booking or slot block
+[2026-10-21T05:42:49.526Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2997f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > staff cannot write an unknown status to a booking or slot block
+[2026-10-21T05:42:49.535Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29980 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.632Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29983 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.642Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29984 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.650Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29985 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.663Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29986 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.670Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29987 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > booking lifecycle statuses > an anonymous customer still cannot create a booking in any status but pending
+[2026-10-21T05:42:49.678Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29988 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > slotBlocks — public availability projection > anonymous cannot create a slot block, however well-formed (only the booking functions write them)
+[2026-10-21T05:42:49.789Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2998b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > slotBlocks — public availability projection > rejects an anonymous slot block carrying an extra (potentially PII) field
+[2026-10-21T05:42:49.816Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2998c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > slotBlocks — public availability projection > anonymous cannot update or delete a slot block
+[2026-10-21T05:42:49.866Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2998e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > slotBlocks — public availability projection > anonymous cannot update or delete a slot block
+[2026-10-21T05:42:49.879Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2998f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L149
+
+stderr | tests/firestore/rules.test.ts > customerLookups — identity requires staff auth > anonymous can no longer write a lookup record (the booking function does)
+[2026-10-21T05:42:50.025Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29994 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/rules.test.ts > customerLookups — identity requires staff auth > rejects an anonymous lookup write with an unexpected field
+[2026-10-21T05:42:50.056Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c29995 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/rules.test.ts > reference data — public read, staff write > anonymous cannot write stylists, services or salon settings
+[2026-10-21T05:42:50.236Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2999a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > reference data — public read, staff write > anonymous cannot write stylists, services or salon settings
+[2026-10-21T05:42:50.256Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2999b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+
+stderr | tests/firestore/rules.test.ts > reference data — public read, staff write > anonymous cannot write stylists, services or salon settings
+[2026-10-21T05:42:50.271Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c2999c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+stderr | tests/firestore/rules.test.ts > privateSettings — owner-only > a stylist account cannot read or write
+[2026-10-21T05:42:50.382Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299a2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/rules.test.ts > privateSettings — owner-only > an anonymous visitor cannot read or write
+[2026-10-21T05:42:50.459Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299a5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/rules.test.ts > privateSettings — owner-only > the owner cannot write unexpected or mistyped fields
+[2026-10-21T05:42:50.501Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299a7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/rules.test.ts > privateSettings — owner-only > the owner cannot write unexpected or mistyped fields
+[2026-10-21T05:42:50.523Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299a8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/rules.test.ts > users — role documents > nobody can write a role document through the client SDK
+[2026-10-21T05:42:50.711Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299ad error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > anonymous visitors cannot read, create or change a lock
+[2026-10-21T05:42:50.833Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > anonymous visitors cannot read, create or change a lock
+[2026-10-21T05:42:50.848Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > a lock cannot carry anything but version and updatedAt
+[2026-10-21T05:42:50.879Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > a lock cannot carry anything but version and updatedAt
+[2026-10-21T05:42:50.894Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > a lock cannot carry anything but version and updatedAt
+[2026-10-21T05:42:50.903Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+Property updatedAt is undefined on object. for 'create' @ L161, Property updatedAt is undefined on object. for 'update' @ L161, Property updatedAt is undefined on object. for 'create' @ L161
+
+stderr | tests/firestore/rules.test.ts > stylistDayLocks — admin slot-claim lock documents > nobody can delete a lock
+[2026-10-21T05:42:50.940Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299b8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L165
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > the owner cannot write a non-numeric order
+[2026-10-21T05:42:51.108Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299be error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L174:32 for 'update' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot add or change order
+[2026-10-21T05:42:51.151Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot add or change order
+[2026-10-21T05:42:51.160Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot add or change order
+[2026-10-21T05:42:51.166Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot remove order by overwriting the document without it
+[2026-10-21T05:42:51.214Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > anonymous visitors cannot write order
+[2026-10-21T05:42:51.261Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > anonymous visitors cannot write order
+[2026-10-21T05:42:51.268Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account can no longer edit or add stylists at all (stylist management is the owner's)
+[2026-10-21T05:42:51.310Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299c9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account can no longer edit or add stylists at all (stylist management is the owner's)
+[2026-10-21T05:42:51.318Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299ca error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account can no longer edit or add stylists at all (stylist management is the owner's)
+[2026-10-21T05:42:51.323Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299cb error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L176
+
+stderr | tests/firestore/rules.test.ts > stylists.order — only the owner can write the display order > a stylist account cannot rewrite a stylist even leaving order as it was
+[2026-10-21T05:42:51.415Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299cf error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > rejects busy that is not a list, has too many blocks, or a non-numeric return point
+[2026-10-21T05:42:51.509Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299d2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > rejects busy that is not a list, has too many blocks, or a non-numeric return point
+[2026-10-21T05:42:51.518Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299d3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > rejects busy that is not a list, has too many blocks, or a non-numeric return point
+[2026-10-21T05:42:51.525Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299d4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > cannot smuggle identity in through the new fields' neighbours
+[2026-10-21T05:42:51.566Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299d5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > cannot smuggle identity in through the new fields' neighbours
+[2026-10-21T05:42:51.582Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299d6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > staff can update the busy blocks; a malformed update is refused
+[2026-10-21T05:42:51.683Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299da error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > the public slotBlocks projection > staff can update the busy blocks; a malformed update is refused
+[2026-10-21T05:42:51.707Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299db error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > bookings > a booking with phases that are not a list, or too many, is refused
+[2026-10-21T05:42:51.767Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299dd error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > bookings > a booking with phases that are not a list, or too many, is refused
+[2026-10-21T05:42:51.787Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299de error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > phase fields (DEC-026) - bookings and slotBlocks > bookings > staff can save new phases; an oversized list is refused
+[2026-10-21T05:42:51.849Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299e0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > a stylist account cannot see or write any of it
+[2026-10-21T05:42:52.065Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299e8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > a stylist account cannot see or write any of it
+[2026-10-21T05:42:52.079Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299e9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > a stylist account cannot see or write any of it
+[2026-10-21T05:42:52.091Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299ea error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L243
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > the public cannot see or write any of it
+[2026-10-21T05:42:52.174Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299ed error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > rejects an unknown status, a non-list or oversize phone list and extra chunk fields
+[2026-10-21T05:42:52.235Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299ef error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > rejects an unknown status, a non-list or oversize phone list and extra chunk fields
+[2026-10-21T05:42:52.249Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299f0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > rejects an unknown status, a non-list or oversize phone list and extra chunk fields
+[2026-10-21T05:42:52.258Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299f1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > rejects an unknown status, a non-list or oversize phone list and extra chunk fields
+[2026-10-21T05:42:52.264Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299f2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/rules.test.ts > importBatches — the client import's ledger is owner-only > an imported lookup (name, empty lastVisit, 0 visits) can be merged by the owner but not the public
+[2026-10-21T05:42:52.316Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x69c299f5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.567Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678bd error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.576Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678be error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.598Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678bf error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.606Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.618Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.627Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.647Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot approve, cancel, restore, move, re-price or re-assign a booking
+[2026-10-21T05:42:53.662Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot touch another stylist's booking, create or delete any
+[2026-10-21T05:42:53.747Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot touch another stylist's booking, create or delete any
+[2026-10-21T05:42:53.767Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L114
+
+stderr | tests/firestore/roles.test.ts > bookings > stylist: cannot touch another stylist's booking, create or delete any
+[2026-10-21T05:42:53.784Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678c8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, evaluation error at L110:24 for 'update' @ L110, false for 'create' @ L107
+
+stderr | tests/firestore/roles.test.ts > bookings > a cancelled booking cannot be revived by a stylist
+[2026-10-21T05:42:53.882Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678cb error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L110:24 for 'update' @ L110, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > unprovisioned: no read, list, create, update or delete
+[2026-10-21T05:42:53.985Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678ce error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > unprovisioned: no read, list, create, update or delete
+[2026-10-21T05:42:53.999Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678cf error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > unprovisioned: no read, list, create, update or delete
+[2026-10-21T05:42:54.004Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678d0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L114
+
+stderr | tests/firestore/roles.test.ts > bookings > anonymous: no read, list, create, update or delete
+[2026-10-21T05:42:54.108Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678d3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107, false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > anonymous: no read, list, create, update or delete
+[2026-10-21T05:42:54.122Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678d4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L110
+
+stderr | tests/firestore/roles.test.ts > bookings > anonymous: no read, list, create, update or delete
+[2026-10-21T05:42:54.138Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678d5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L114
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > stylist: may only move their own slot's status through the day's lifecycle
+[2026-10-21T05:42:54.497Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678de error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > stylist: may only move their own slot's status through the day's lifecycle
+[2026-10-21T05:42:54.503Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678df error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > stylist: may only move their own slot's status through the day's lifecycle
+[2026-10-21T05:42:54.510Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L142:24 for 'update' @ L142, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > stylist: may only move their own slot's status through the day's lifecycle
+[2026-10-21T05:42:54.527Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L149
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > stylist: may only move their own slot's status through the day's lifecycle
+[2026-10-21T05:42:54.543Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > unprovisioned: cannot create, update or delete
+[2026-10-21T05:42:54.601Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > unprovisioned: cannot create, update or delete
+[2026-10-21T05:42:54.607Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > unprovisioned: cannot create, update or delete
+[2026-10-21T05:42:54.621Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L149
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > anonymous: cannot create, update or delete
+[2026-10-21T05:42:54.676Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > anonymous: cannot create, update or delete
+[2026-10-21T05:42:54.683Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678e9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L142
+
+stderr | tests/firestore/roles.test.ts > slotBlocks > anonymous: cannot create, update or delete
+[2026-10-21T05:42:54.698Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678ea error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L149
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.140Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.145Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.154Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.169Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.173Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.184Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.189Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678f9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.200Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678fa error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.216Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678fb error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L176
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.220Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678fc error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.238Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678fd error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.248Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678fe error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.264Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d678ff error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.280Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67900 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.297Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67901 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.301Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67902 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.306Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67903 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.312Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67904 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.316Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67905 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L176
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.321Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67906 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.344Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67907 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L174, false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.359Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67908 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.364Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67909 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.375Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.391Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.407Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L186
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.412Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.422Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L181
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.426Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6790f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L176
+
+stderr | tests/firestore/roles.test.ts > stylists, services, salonSettings (public read, owner-only write) > stylist, unprovisioned and anonymous cannot change services, prices, stylists, settings or hours
+[2026-10-21T05:42:55.437Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67910 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L174
+
+stderr | tests/firestore/roles.test.ts > privateSettings > owner only
+[2026-10-21T05:42:55.563Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67915 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/roles.test.ts > privateSettings > owner only
+[2026-10-21T05:42:55.596Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67917 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/roles.test.ts > privateSettings > owner only
+[2026-10-21T05:42:55.642Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67919 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L196, false for 'update' @ L196
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:55.847Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6791f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:55.851Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67920 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L234
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:55.915Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67922 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:55.920Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67923 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L234
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:56.003Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67925 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/roles.test.ts > customerLookups (client list, blocked flag) > stylist, unprovisioned and anonymous: no access at all
+[2026-10-21T05:42:56.016Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67926 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L234
+
+stderr | tests/firestore/roles.test.ts > waitlist > nobody can create an entry directly - not even the owner
+[2026-10-21T05:42:56.155Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6792b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224, false for 'update' @ L223, false for 'create' @ L224
+
+stderr | tests/firestore/roles.test.ts > waitlist > nobody can create an entry directly - not even the owner
+[2026-10-21T05:42:56.174Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6792c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224, false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > nobody can create an entry directly - not even the owner
+[2026-10-21T05:42:56.191Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6792d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224, false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > nobody can create an entry directly - not even the owner
+[2026-10-21T05:42:56.214Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6792e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224, false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.317Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67931 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.330Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67932 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.395Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67934 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.409Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67935 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.487Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67937 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L223
+
+stderr | tests/firestore/roles.test.ts > waitlist > stylist, unprovisioned and anonymous cannot read, update or delete
+[2026-10-21T05:42:56.491Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67938 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L223
+
+stderr | tests/firestore/roles.test.ts > notifications > owner reads, marks read, deletes and may add one (admin screens); nobody else creates
+[2026-10-21T05:42:56.586Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6793c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L216, evaluation error at L212:24 for 'update' @ L212, false for 'create' @ L216
+
+stderr | tests/firestore/roles.test.ts > notifications > owner reads, marks read, deletes and may add one (admin screens); nobody else creates
+[2026-10-21T05:42:56.611Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6793d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L216, false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > notifications > owner reads, marks read, deletes and may add one (admin screens); nobody else creates
+[2026-10-21T05:42:56.624Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6793e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L216, false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > notifications > stylist reads and marks read only their own notifications
+[2026-10-21T05:42:56.750Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67941 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L212:24 for 'update' @ L212, false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > notifications > stylist reads and marks read only their own notifications
+[2026-10-21T05:42:56.756Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67942 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+evaluation error at L212:24 for 'update' @ L212, false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > notifications > stylist reads and marks read only their own notifications
+[2026-10-21T05:42:56.760Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67943 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L215
+
+stderr | tests/firestore/roles.test.ts > notifications > unprovisioned and anonymous have no access
+[2026-10-21T05:42:56.844Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67946 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > notifications > unprovisioned and anonymous have no access
+[2026-10-21T05:42:56.904Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67948 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L212
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > owner can use the day locks; no one else can read or write them
+[2026-10-21T05:42:57.107Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6794f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > owner can use the day locks; no one else can read or write them
+[2026-10-21T05:42:57.138Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67951 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > owner can use the day locks; no one else can read or write them
+[2026-10-21T05:42:57.202Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67953 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L161, false for 'update' @ L161
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > the import ledger is owner-only
+[2026-10-21T05:42:57.312Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67958 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > the import ledger is owner-only
+[2026-10-21T05:42:57.358Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6795a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > the import ledger is owner-only
+[2026-10-21T05:42:57.391Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6795c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > the import ledger chunk can record the phones it blocked
+[2026-10-21T05:42:57.483Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6795f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.553Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67962 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.559Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67963 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.573Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67964 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.591Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67965 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.608Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67966 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.612Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67967 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.638Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67968 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > users: owner reads all, role documents are never writable by anyone
+[2026-10-21T05:42:57.654Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67969 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L267, false for 'update' @ L267
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.780Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6796e error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.795Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6796f error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.843Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67971 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.873Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67972 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.921Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67974 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.936Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67975 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.968Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67977 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > rateLimits and phoneLimits (functions' counters) are closed to every client
+[2026-10-21T05:42:57.997Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67978 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > an unknown collection is denied to everyone
+[2026-10-21T05:42:58.078Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6797b error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > an unknown collection is denied to everyone
+[2026-10-21T05:42:58.109Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6797d error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > an unknown collection is denied to everyone
+[2026-10-21T05:42:58.154Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d6797f error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > stylistDayLocks, importBatches, users, server-only collections > an unknown collection is denied to everyone
+[2026-10-21T05:42:58.216Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67981 error. Code: 7 Message: 7 PERMISSION_DENIED: No matching allow statements
+
+stderr | tests/firestore/roles.test.ts > claims > an unknown role value is not staff
+[2026-10-21T05:42:58.372Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x63d67986 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L181
+
+
+EXIT 0
+=== npm run test:security ===
+
+> sua-hair@0.0.0 test:security
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/security.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/security.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/firestore/security.test.ts (11 tests) 2991ms
+     ✓ returns only the 7 allow-listed, PII-free fields from slotBlocks  749ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  16:43:04
+   Duration  3.52s (transform 43ms, setup 0ms, import 319ms, tests 2.99s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:lockdown ===
+
+> sua-hair@0.0.0 test:lockdown
+> firebase emulators:exec --project demo-sua-lockdown --only firestore "node scripts/verify-lockdown.mjs"
+
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-sua-lockdown", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: node scripts/verify-lockdown.mjs
+Project: demo-sua-lockdown (emulator), anonymous visitor
+
+PASS  read stylists  (allowed)
+PASS  read services  (allowed)
+PASS  read salonSettings  (allowed)
+PASS  read slotBlocks  (allowed)
+PASS  read bookings  (denied)
+PASS  read customerLookups  (denied)
+PASS  read waitlist  (denied)
+PASS  read notifications  (denied)
+PASS  read users  (denied)
+PASS  create a booking  (denied)
+PASS  create a slotBlock  (denied)
+PASS  create a waitlist entry  (denied)
+PASS  create a notification  (denied)
+PASS  write a customerLookups record  (denied)
+PASS  write a service price  (denied)
+PASS  write salonSettings  (denied)
+
+All checks passed: the public site can read what it needs and nothing else.
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+[2026-10-21T05:43:14.785Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L107
+[2026-10-21T05:43:14.804Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L139, false for 'update' @ L142
+[2026-10-21T05:43:14.817Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L224
+[2026-10-21T05:43:14.828Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L216
+[2026-10-21T05:43:14.858Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+[2026-10-21T05:43:14.885Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L181, false for 'update' @ L181
+[2026-10-21T05:43:14.897Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x625d59a9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L186, false for 'update' @ L186
+
+EXIT 0
+=== npm run test:admin ===
+
+> sua-hair@0.0.0 test:admin
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/adminBookings.test.ts tests/firestore/adminSlotClaims.test.ts tests/firestore/adminPhases.test.ts tests/firestore/clientImport.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/firestore/clientImport.test.ts (21 tests) 12833ms
+     ✓ writes 1,250 clients in chunks of 400, each chunk with one ledger entry  4089ms
+     ✓ reports progress as it goes  1459ms
+     ✓ importing the same file again creates nothing  519ms
+     ✓ findExisting sees which numbers already have a record, past Firestore's 30-value limit  313ms
+     ✓ removes what the batch created and nothing else  1136ms
+     ✓ a stopped import leaves a ledger of exactly what it wrote, and can be rolled back  1213ms
+     ✓ rollback removes a created blocked client's record, and removes ONLY the flag it set on an existing one  326ms
+ ✓ tests/firestore/adminBookings.test.ts (23 tests) 10364ms
+     ✓ 50 bookings produce 50 distinct IDs, none derived from date/stylist/time  1491ms
+     ✓ two simultaneous creates for the same slot: exactly one succeeds  1425ms
+     ✓ overlapping (not identical) simultaneous creates: still exactly one wins  779ms
+     ✓ a walk-in and a break racing for the same slot: exactly one wins  965ms
+     ✓ five admins racing, repeated: never more than one booking per slot  3824ms
+ ✓ tests/firestore/adminSlotClaims.test.ts (13 tests) 5782ms
+     ✓ cancel then restore puts the booking and its slotBlock back  402ms
+     ✓ two cancelled bookings for the same slot restored at once: exactly one comes back  1364ms
+     ✓ a move racing a walk-in for the same slot: exactly one wins  732ms
+     ✓ five admins saving five different non-overlapping times all succeed  1948ms
+ ✓ tests/firestore/adminPhases.test.ts (17 tests) 3242ms
+     ✓ an edit and a new booking racing for the same stretch of the day cannot both win  975ms
+
+ Test Files  4 passed (4)
+      Tests  74 passed (74)
+   Start at  16:43:20
+   Duration  34.48s (transform 268ms, setup 0ms, import 1.37s, tests 32.22s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+stderr | tests/firestore/clientImport.test.ts > import: idempotent and safe with existing clients > an imported client's next online booking still merges in (written by the booking function), and the public cannot write the record
+[2026-10-21T05:43:29.656Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b251c29 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L234, false for 'update' @ L234
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.742Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b252675 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.771Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b252676 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.786Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b252677 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L243
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.835Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b252679 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.848Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b25267a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > a stylist account and the public cannot create, read or delete batches or chunks
+[2026-10-21T05:43:32.863Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b25267b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'delete' @ L243
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > the owner's ledger writes are validated: known status, phone list of at most 500
+[2026-10-21T05:43:32.894Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b25267d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L244, false for 'update' @ L244
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > the owner's ledger writes are validated: known status, phone list of at most 500
+[2026-10-21T05:43:32.911Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b25267e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > the owner's ledger writes are validated: known status, phone list of at most 500
+[2026-10-21T05:43:32.930Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b25267f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+stderr | tests/firestore/clientImport.test.ts > import: only the owner can use the ledger > the owner's ledger writes are validated: known status, phone list of at most 500
+[2026-10-21T05:43:32.934Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x1b252680 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L250, false for 'update' @ L250
+
+
+EXIT 0
+=== npm run test:functions ===
+
+> sua-hair@0.0.0 test:functions
+> firebase emulators:exec --project demo-sua-functions --only firestore,auth "vitest run tests/functions"
+
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-sua-functions", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/functions
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/functions/createBookingRequest.test.ts (73 tests) 37465ms
+     ✓ writes the booking and its slotBlocks projection together, pending, and returns the exact price  2052ms
+     ✓ a retry with the same requestId returns the same booking and writes nothing new  343ms
+     ✓ prices each tier from its own record (director 75, senior 65, junior 55)  332ms
+     ✓ ties on bookings-that-day go to the lowest order  514ms
+     ✓ two simultaneous requests for one stylist and slot create exactly one booking  3347ms
+     ✓ eight simultaneous requests for one slot: exactly one wins, seven are refused, one booking exists  3629ms
+     ✓ seven simultaneous 'any' requests for one time: five stylists take five, two are refused  11502ms
+     ✓ overlapping (not identical) simultaneous requests: only one of two overlapping bookings  3475ms
+     ✓ allows two open requests and refuses the third  318ms
+     ✓ holds under concurrency: five simultaneous requests from one phone leave exactly two  3581ms
+     ✓ is per phone number: another number is unaffected  345ms
+     ✓ limits attempts per phone number, counting refused attempts too, then resets next window  542ms
+     ✓ limits attempts per address  1094ms
+ ✓ tests/functions/ownerCommands.test.ts (30 tests) 16279ms
+     ✓ confirms a pending request, updates the projection, drops the hold and bumps the lock  386ms
+     ✓ two simultaneous approvals of one request: one confirms, the other is refused  3345ms
+     ✓ restore re-checks the slot: refused (and unchanged) if someone took it meanwhile  342ms
+     ✓ is safe to run twice at once and ignores legacy pending bookings that have no hold  2979ms
+     ✓ is rate limited per phone and per address  2151ms
+     ✓ exactly one of them gets the slot, every time  3022ms
+ ✓ tests/functions/roles.test.ts (8 tests) 572ms
+
+ Test Files  3 passed (3)
+      Tests  111 passed (111)
+   Start at  16:44:07
+   Duration  57.71s (transform 349ms, setup 0ms, import 2.69s, tests 54.32s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+=== npm run test:smoke ===
+
+> sua-hair@0.0.0 test:smoke
+> firebase emulators:exec --project sua-hair-rules-test --only firestore "vitest run tests/firestore/smoke.test.ts"
+
+i  emulators: Starting emulators: firestore
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: vitest run tests/firestore/smoke.test.ts
+
+ RUN  v4.1.10 C:/Users/Jason/Desktop/Coding/projects/sua-hair
+
+ ✓ tests/firestore/smoke.test.ts (5 tests) 3306ms
+     ✓ runs the whole pilot-critical path  1211ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  16:45:11
+   Duration  4.03s (transform 170ms, setup 0ms, import 507ms, tests 3.31s, environment 0ms)
+
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+stderr | tests/firestore/smoke.test.ts > smoke: client books -> owner approves -> overlapping walk-in is blocked > an anonymous visitor cannot create a walk-in or approve a booking
+[2026-10-21T05:45:15.368Z]  @firebase/firestore: Firestore (12.11.0): GrpcConnection RPC 'Write' stream 0x83970972 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'update' @ L110
+
+
+EXIT 0
+=== npm run test:e2e ===
+
+> sua-hair@0.0.0 test:e2e
+> node scripts/e2e.mjs
+
+i  emulators: Starting emulators: auth, functions, firestore
+i  emulators: Detected demo project ID "demo-sua-e2e", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  functions: Watching "C:\Users\Jason\Desktop\Coding\projects\sua-hair\functions" for Cloud Functions...
+!  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+!  functions: Please note that there will be breaking changes when you upgrade.
+!  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host.
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+Serving at port 8744
+
++  functions: Loaded functions definitions from source: deleteCustomerData, setUserRole, createBookingRequest, joinWaitlist, approveBooking, declineBooking, cancelBooking, restoreBooking, assignStylist, releaseExpiredRequests, sendBookingReminders, onBookingCreated, onBookingUpdated.
++  functions[australia-southeast1-deleteCustomerData]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/deleteCustomerData).
++  functions[australia-southeast1-setUserRole]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/setUserRole).
++  functions[australia-southeast1-createBookingRequest]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/createBookingRequest).
++  functions[australia-southeast1-joinWaitlist]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/joinWaitlist).
++  functions[australia-southeast1-approveBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/approveBooking).
++  functions[australia-southeast1-declineBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/declineBooking).
++  functions[australia-southeast1-cancelBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/cancelBooking).
++  functions[australia-southeast1-restoreBooking]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/restoreBooking).
++  functions[australia-southeast1-assignStylist]: http function initialized (http://127.0.0.1:5001/demo-sua-e2e/australia-southeast1/assignStylist).
+i  functions[australia-southeast1-releaseExpiredRequests]: function ignored because the pubsub emulator does not exist or is not running.
+i  functions[australia-southeast1-sendBookingReminders]: function ignored because the pubsub emulator does not exist or is not running.
++  functions[australia-southeast2-onBookingCreated]: firestore function initialized.
++  functions[australia-southeast2-onBookingUpdated]: firestore function initialized.
+i  Running script: npx playwright test -c e2e/playwright.config.ts 
+
+Running 109 tests using 1 worker
+
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 4.9911ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 580.001ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+  ✓    1 e2e\01-customer.spec.ts:29:1 › TC-001 new customer booking is saved as pending and shows the confirmation screen (6.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+>  [emulator] email not sent: "We have your booking request — Sua Hair Studio"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 467.1267ms
+  ✓    2 e2e\01-customer.spec.ts:62:1 › TC-002 (revised) a returning phone number is NOT recognised and nothing is pre-filled (4.6s)
+  ✓    3 e2e\01-customer.spec.ts:82:1 › TC-003 Monday cannot be selected (1.8s)
+  ✓    4 e2e\01-customer.spec.ts:111:1 › TC-004 after the 5pm cutoff, today is not selectable (tomorrow is the earliest) (1.5s)
+  ✓    5 e2e\01-customer.spec.ts:149:1 › TC-004b control: before the cutoff, today can still be chosen (1.6s)
+  ✓    6 e2e\01-customer.spec.ts:170:1 › TC-005 price follows the stylist's tier (3.5s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 2.5491ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 123.6285ms
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.6912ms
+  ✓    7 e2e\01-customer.spec.ts:189:1 › TC-006 a slot inside another booking's rest window is available if the service fits (6.0s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.9029ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 104.3398ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 29.9005ms
+  ✓    8 e2e\01-customer.spec.ts:223:1 › TC-007 / TC-008 a clashing slot is unavailable and shown greyed out, not hidden (5.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.1443ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.629ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.63ms
+  ✓    9 e2e\02-admin-today.spec.ts:70:1 › TC-009 timeline loads: every active stylist, today's bookings, current-time bar (2.0s)
+  ✓   10 e2e\02-admin-today.spec.ts:87:1 › TC-010 Next moves the timeline to tomorrow and loads its bookings (543ms)
+  ✓   11 e2e\02-admin-today.spec.ts:97:1 › TC-011 clicking a booking block opens its quick actions, and View details opens the full booking (907ms)
+  ✓   12 e2e\02-admin-today.spec.ts:114:1 › TC-012 clicking empty time opens the create form pre-filled with that stylist, time and a 30-minute block (563ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.7765ms
+  ✓   13 e2e\02-admin-today.spec.ts:132:1 › TC-013 create walk-in: appears immediately as confirmed (981ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.4241ms
+  ✓   14 e2e\02-admin-today.spec.ts:155:1 › TC-014 create break: a break block appears on the timeline (784ms)
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 3.2889ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Finished "australia-southeast1-approveBooking" in 471.39ms
+  ✓   15 e2e\02-admin-today.spec.ts:167:1 › TC-015 confirming a pending booking turns it confirmed with a toast (2.9s)
+  ✓   16 e2e\02-admin-today.spec.ts:179:1 › TC-033 an admin walk-in that overlaps an existing booking is blocked with a clear message (783ms)
+  ✓   17 e2e\02-admin-today.spec.ts:201:1 › TC-033b a walk-in inside another booking's rest window is allowed (888ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 28.1584ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.1391ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.7394ms
+  ✓   18 e2e\02-admin-today.spec.ts:221:1 › TC-033c a break overlapping a booking is blocked (662ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.0858ms
+  ✓   19 e2e\02-admin-today.spec.ts:232:1 › D1 two admins saving the same slot at the same moment: exactly one booking is created (4.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 13.2119ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+i  functions: Finished "australia-southeast1-cancelBooking" in 5.3577ms
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast1-cancelBooking" in 508.6617ms
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.6345ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-restoreBooking"
+i  functions: Finished "australia-southeast1-restoreBooking" in 3.5537ms
+i  functions: Beginning execution of "australia-southeast1-restoreBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast1-restoreBooking" in 448.66ms
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.0999ms
+i  functions: Beginning execution of "australia-southeast1-cancelBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast1-cancelBooking" in 121.3184ms
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.992ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 22.7871ms
+  ✓   20 e2e\02-admin-today.spec.ts:269:1 › D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a restore (6.6s)
+  ✓   21 e2e\02-admin-today.spec.ts:308:1 › D3 the timeline follows the opening hours configured for that date (786ms)
+  ✓   22 e2e\02-admin-today.spec.ts:329:1 › no deprecated Firestore persistence warning is logged (2ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.5597ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.5981ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.8468ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.1376ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.5701ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.0455ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 6.9094ms
+TC-016 filter applied after 336ms
+  ✓   23 e2e\03-admin-pages.spec.ts:58:1 › TC-016 search by name filters the list within 300ms (824ms)
+  ✓   24 e2e\03-admin-pages.spec.ts:74:1 › TC-017 search by phone number (727ms)
+  ✓   25 e2e\03-admin-pages.spec.ts:81:1 › TC-018 filter by stylist (369ms)
+  ✓   26 e2e\03-admin-pages.spec.ts:89:1 › D4 the list is ordered upcoming-first (soonest day first) (345ms)
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 2.1777ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast1-approveBooking" in 108.9555ms
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.8134ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast1-approveBooking" in 92.8311ms
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.8807ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 90.5233ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.1786ms
+  ✓   27 e2e\03-admin-pages.spec.ts:106:1 › TC-019 bulk confirm: all selected pending bookings become confirmed, with ONE summary toast (D4) (957ms)
+TC-020 CSV header: "Date","Time","Customer Name","Phone","Stylist","Service","Price","Duration","Status","Type","Notes"
+  ✓   28 e2e\03-admin-pages.spec.ts:129:1 › TC-020 Export CSV downloads a file with the visible bookings (517ms)
+  ✓   29 e2e\03-admin-pages.spec.ts:150:1 › TC-021 client search shows visit count and total spend (1.1s)
+  ✓   30 e2e\03-admin-pages.spec.ts:163:1 › TC-022 View history expands the booking history, newest first (39ms)
+  ✓   31 e2e\03-admin-pages.spec.ts:175:1 › TC-023 Book again pre-fills the create form with the client's name and phone (78ms)
+  ✓   32 e2e\03-admin-pages.spec.ts:184:1 › TC-024 a cancelled booking is not counted in total spend (1.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.256ms
+  ✓   33 e2e\03-admin-pages.spec.ts:194:1 › TC-025 create a training session: appears under upcoming sessions with a toast (619ms)
+  ✓   34 e2e\03-admin-pages.spec.ts:217:1 › TC-026 a training session does not appear on the main timeline (416ms)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 3.4142ms
+  ✓   35 e2e\03-admin-pages.spec.ts:225:1 › TC-027 a session dated yesterday appears under Past Sessions (687ms)
+  ✓   36 e2e\03-admin-pages.spec.ts:264:1 › TC-028 a new stylist appears in the roster and the customer booking form (1.9s)
+  ✓   37 e2e\03-admin-pages.spec.ts:275:1 › TC-029 deactivating a stylist hides them from customers; their bookings remain (2.3s)
+  ✓   38 e2e\03-admin-pages.spec.ts:293:1 › TC-030 reactivating a stylist brings them back to the booking form (1.5s)
+  ✓   39 e2e\03-admin-pages.spec.ts:300:1 › TC-031 editing a service price updates the booking form and logs the old price (1.7s)
+  ✓   40 e2e\03-admin-pages.spec.ts:332:1 › TC-032 deactivating a service removes it from the booking form (1.5s)
+  ✓   41 e2e\03-admin-pages.spec.ts:344:1 › D7 opening /admin/analytics directly (or refreshing it) stays on Analytics (3.2s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.5777ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 162.9356ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.8283ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.6447ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 95.43ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.3102ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.7741ms
+  ✓   42 e2e\04-smoke.spec.ts:11:1 › SMOKE client books online -> owner approves -> overlapping admin walk-in is blocked (6.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.3803ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7086ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.949ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.6662ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 8.3129ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.9002ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.4684ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.7449ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-joinWaitlist"
+i  functions: Finished "australia-southeast1-joinWaitlist" in 3.1693ms
+i  functions: Beginning execution of "australia-southeast1-joinWaitlist"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-joinWaitlist" in 585.9954ms
+  ✓   43 e2e\05-features.spec.ts:15:1 › TC-034 a client can join the waitlist for a full day and the owner sees them (6.4s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 2.5126ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 193.5482ms
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.9408ms
+  ✓   44 e2e\05-features.spec.ts:46:1 › TC-035 the owner is notified of a new online booking, and the notification opens it (4.6s)
+  ✓   45 e2e\05-features.spec.ts:66:1 › TC-036 closing a date in Manage -> Opening hours makes it unbookable for customers (3.9s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 6.5638ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.8564ms
+  ✓   46 e2e\06-hover-preview.spec.ts:39:1 › hovering an available start highlights the exact range the service would occupy (2.0s)
+  ✓   47 e2e\06-hover-preview.spec.ts:58:1 › the block's length follows the selected service, with hands-on and processing phases (3.8s)
+  ✓   48 e2e\06-hover-preview.spec.ts:83:1 › the hover snaps to 15-minute rows, and every row is a bookable start (DEC-024) (3.9s)
+  ✓   49 e2e\06-hover-preview.spec.ts:104:1 › unavailable areas show a muted state and no highlight (2.7s)
+  ✓   50 e2e\06-hover-preview.spec.ts:123:1 › a block that fits inside another booking's processing window is highlighted; one that does not is not (3.3s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.1277ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 144.6006ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.0423ms
+  ✓   51 e2e\06-hover-preview.spec.ts:142:1 › clicking selects the time and the existing flow continues to a pending booking (3.3s)
+  ✓   52 e2e\06-hover-preview.spec.ts:164:1 › keyboard: arrows move in 15-minute steps and Enter chooses a quarter-hour start (1.9s)
+  ✓   53 e2e\06-hover-preview.spec.ts:188:1 › keyboard: an unavailable position cannot be chosen (2.2s)
+  ✓   54 e2e\06-hover-preview.spec.ts:201:1 › prefers-reduced-motion switches the block's animation off (2.5s)
+  ✓   55 e2e\06-hover-preview.spec.ts:217:3 › touch device › tap a time to preview its block, then Select to choose it (2.6s)
+  ✓   56 e2e\06-hover-preview.spec.ts:233:3 › touch device › tapping a quarter-hour row previews that start (2.6s)
+  ✓   57 e2e\06-hover-preview.spec.ts:241:3 › touch device › tapping an unavailable time previews nothing (1.7s)
+  ✓   58 e2e\07-stylist-order.spec.ts:68:1 › with no `order` saved, the existing order is kept everywhere (2.0s)
+  ✓   59 e2e\07-stylist-order.spec.ts:75:1 › the owner sees drag handles and Move up / Move down on every row; the ends are disabled (481ms)
+  ✓   60 e2e\07-stylist-order.spec.ts:86:1 › Move up changes the order, saves only `order`, and persists after reload (2.6s)
+  ✓   61 e2e\07-stylist-order.spec.ts:113:1 › Move down works too (1.1s)
+  ✓   62 e2e\07-stylist-order.spec.ts:120:1 › dragging a row by its handle reorders and persists (2.6s)
+  ✓   63 e2e\07-stylist-order.spec.ts:140:1 › keyboard: Space picks a row up, an arrow moves it, Space drops it (1.1s)
+  ✓   64 e2e\07-stylist-order.spec.ts:154:1 › a stylist added later (no order) goes after the ordered ones (680ms)
+  ✓   65 e2e\07-stylist-order.spec.ts:169:1 › if saving fails the order is put back and an error toast is shown (1.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.8555ms
+  ✓   66 e2e\08-phases.spec.ts:85:1 › the customer page lists a service's phases and offers only starts where every busy block is free (2.5s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 7.2359ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 4.4272ms
+  ✓   67 e2e\08-phases.spec.ts:105:1 › the owner changes ONE booking's phases: live end time, saved to the booking and its projection, service untouched (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.0173ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 14.1095ms
+  ✓   68 e2e\08-phases.spec.ts:140:1 › shortening processing while another client is booked in the gap is refused, naming them (2.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.5127ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.6178ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.9898ms
+  ✓   69 e2e\08-phases.spec.ts:156:1 › an edit that collides offers to move the return to the next free time (2.8s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.1238ms
+  ✓   70 e2e\08-phases.spec.ts:181:1 › minimums: hands-on at least 15, 15-minute steps, and the booking must end before closing (2.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.4812ms
+  ✓   71 e2e\08-phases.spec.ts:211:1 › Manage: the owner edits a service's default phases; existing bookings keep theirs (2.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.0097ms
+  ✓   72 e2e\08-phases.spec.ts:245:1 › a walk-in can have its phases adjusted when it is created (2.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.6576ms
+  ✓   73 e2e\09-timeline-create.spec.ts:90:1 › TC-060 there are no Open slot buttons or labels; unavailable time is a muted fill (3.1s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.7781ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.4663ms
+  ✓   74 e2e\09-timeline-create.spec.ts:106:1 › TC-061 hovering empty time highlights a 30-minute block snapped to 15 minutes; not over a booking, a break or where it will not fit (2.4s)
+  ✓   75 e2e\09-timeline-create.spec.ts:142:1 › TC-062 dragging down 90 minutes opens the create form with the stylist, start and length (2.3s)
+  ✓   76 e2e\09-timeline-create.spec.ts:167:1 › TC-063 dragging up grows the block upward (2.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.1977ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.6683ms
+  ✓   77 e2e\09-timeline-create.spec.ts:182:1 › TC-064 a drag stops at the next booking, and at a break (2.4s)
+  ✓   78 e2e\09-timeline-create.spec.ts:209:1 › TC-065 a plain click creates a 30-minute block (2.3s)
+  ✓   79 e2e\09-timeline-create.spec.ts:222:1 › TC-066 Escape cancels a drag; nothing opens (2.2s)
+  ✓   80 e2e\09-timeline-create.spec.ts:238:1 › TC-067 the past and a stylist's closed hours cannot be booked (2.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.0389ms
+  ✓   81 e2e\09-timeline-create.spec.ts:251:1 › TC-068 a booking with a processing gap draws solid / hatched / solid (2.2s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.4688ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.6952ms
+  ✓   82 e2e\09-timeline-create.spec.ts:277:1 › TC-069 another client can be booked into the gap; the return stays reserved (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 18.1993ms
+  ✓   83 e2e\09-timeline-create.spec.ts:309:1 › TC-070 a drag in the gap stops at the return block; a booking that clashes with the return is refused (2.7s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.4278ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 4.7509ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 3.8833ms
+  ✓   84 e2e\09-timeline-create.spec.ts:332:1 › TC-071 dragging the edge of a phase changes that phase and moves the later ones (3.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.0406ms
+  ✓   85 e2e\09-timeline-create.spec.ts:371:1 › TC-072 a save that conflicts is rejected when it is made (2.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.935ms
+  ✓   86 e2e\09-timeline-create.spec.ts:392:1 › TC-077 the create form: Client returns after processing adds processing and return phases (2.8s)
+  ✓   87 e2e\09-timeline-create.spec.ts:452:1 › TC-073 touch: a long press then drag creates; a swipe scrolls; a tap previews with a Create button (3.5s)
+  ✓   88 e2e\09-timeline-create.spec.ts:491:1 › TC-074 keyboard: arrows move the highlight, Shift+arrows extend it, Enter opens the form, Escape cancels (2.4s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 19.7485ms
+  ✓   89 e2e\09-timeline-create.spec.ts:532:1 › TC-075 a keyboard cursor on a booked time cannot be created and says why (2.3s)
+  ✓   90 e2e\09-timeline-create.spec.ts:554:1 › TC-076 reduced motion: the highlight does not animate (2.3s)
+  ✓   91 e2e\10-client-import.spec.ts:43:1 › TC-078 the owner sees Import clients in Manage; a stylist account does not (3.1s)
+  ✓   92 e2e\10-client-import.spec.ts:78:1 › TC-079 the dry run reports counts and the error report has row numbers only (2.3s)
+  ✓   93 e2e\10-client-import.spec.ts:111:1 › TC-080 confirming imports the clients as name + phone only; an existing client is untouched (2.3s)
+  ✓   94 e2e\10-client-import.spec.ts:135:1 › TC-081 an imported client is recognised as a returning client in the walk-in form (2.9s)
+  ✓   95 e2e\10-client-import.spec.ts:155:1 › TC-082 importing the same file again, as csv or xlsx, adds nobody (2.6s)
+  ✓   96 e2e\10-client-import.spec.ts:173:1 › TC-083 the xlsx gives the same dry run as the csv (2.1s)
+  ✓   97 e2e\10-client-import.spec.ts:185:1 › TC-084 rolling back removes only what that import created (2.8s)
+  ✓   98 e2e\10-client-import.spec.ts:206:1 › TC-085 a wrong file is refused with a message, nothing is written (2.2s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.3446ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 116.6058ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 193.5614ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 9.967ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.5719ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 233.9451ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 12.183ms
+  ✓   99 e2e\10-client-import.spec.ts:216:1 › TC-095 a client Fresha has blocked cannot book online; rolling the import back lets them book again (11.0s)
+  ✓  100 e2e\10-client-import.spec.ts:251:1 › TC-096 the walk-in form warns about a blocked client instead of calling them a returning client (3.1s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 2.1719ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 179.153ms
+>  [emulator] email not sent: "We have your booking request — Sua Hair Studio"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 10.1943ms
+  ✓  101 e2e\11-booking-commands.spec.ts:54:1 › TC-087 a request shows 'request received', the assigned stylist and the exact price; it is pending and holds the slot (3.5s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.5813ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 181.2412ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 16.4834ms
+  ✓  102 e2e\11-booking-commands.spec.ts:86:1 › TC-088 'Any Available Stylist' shows 'from $X' before sending, then the assigned stylist and exact price (3.5s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.2415ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 191.3329ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 11.6993ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 2.8543ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 121.5157ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.7364ms
+  ✓  103 e2e\11-booking-commands.spec.ts:116:1 › TC-089 the owner approves a request and the booking is confirmed (with its availability projection) (5.3s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.2867ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 198.5783ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 21.5149ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 0.8364ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 75.8459ms
+  ✓  104 e2e\11-booking-commands.spec.ts:137:1 › TC-090 two customers choose the same slot at the same moment: exactly one request is accepted (8.6s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 5.4884ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 1.7303ms
+i  functions: Loaded environment variables from .env.demo-sua-e2e.
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+i  functions: Finished "australia-southeast1-assignStylist" in 4.1749ms
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-assignStylist" in 523.9785ms
+i  functions: Beginning execution of "australia-southeast1-assignStylist"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-assignStylist" in 187.4319ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.9467ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.348ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 153.7669ms
+i  functions: Beginning execution of "australia-southeast2-onBookingUpdated"
+i  functions: Finished "australia-southeast2-onBookingUpdated" in 2.9081ms
+  ✓  105 e2e\11-booking-commands.spec.ts:181:1 › TC-091 a legacy booking with stylist 'any' shows 'Needs stylist'; assigning one is conflict-checked and re-priced, then it can be approved (5.0s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.2276ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 2.1334ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+i  functions: Finished "australia-southeast1-approveBooking" in 1.5147ms
+i  functions: Beginning execution of "australia-southeast1-approveBooking"
+>  {"verifications":{"app":"MISSING","auth":"VALID"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-approveBooking" in 50.0956ms
+  ✓  106 e2e\11-booking-commands.spec.ts:225:1 › TC-092 approving a request whose slot has since been taken is refused with a clear message (2.3s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.1584ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 66.2244ms
+  ✓  107 e2e\11-booking-commands.spec.ts:240:1 › TC-093 a blocked client is told to call the salon, and nothing is booked (3.9s)
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+i  functions: Finished "australia-southeast1-createBookingRequest" in 1.0985ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 171.0785ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.6662ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 208.7458ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 15.3283ms
+i  functions: Beginning execution of "australia-southeast1-createBookingRequest"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+i  functions: Finished "australia-southeast1-createBookingRequest" in 83.1519ms
+  ✓  108 e2e\11-booking-commands.spec.ts:255:1 › TC-094 a third pending request from one phone number is refused (8.3s)
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 17.0073ms
+i  functions: Beginning execution of "australia-southeast2-onBookingCreated"
+i  functions: Finished "australia-southeast2-onBookingCreated" in 20.4083ms
+  ✓  109 e2e\11-booking-commands.spec.ts:265:1 › TC-097 a stylist sees only their own bookings; another stylist's are not readable (1.5s)
+
+  109 passed (4.9m)
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  functions: Stopping Functions Emulator
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  auth: Stopping Authentication Emulator
+i  eventarc: Stopping Eventarc Emulator
+i  tasks: Stopping Cloud Tasks Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+EXIT 0
+FINISHED

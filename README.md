@@ -48,6 +48,7 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - Real-time bookings via Firestore `onSnapshot`
 - **Roles** — an **owner** (everything) and **stylist** accounts (their own schedule only); an account with no role sees "No access yet"
 - **Today tab** — visual timeline grid per stylist. Point at empty time to highlight a 30-minute block, drag to set the length, click for 30 minutes (touch: press and hold; keyboard: arrow keys); processing gaps are hatched and another client can be booked into them; booking phases are edited by dragging a phase edge or in the booking panel
+- **Clients** — a directory of every client: search by a word of the name, the start of the name or the mobile number, filter (lapsed, new, blocked, has a booking, no-shows), sort, 25 at a time. A client's page shows their history, last visit, key numbers (visits, spend, average gap, favourite stylist and services), notes with authors, and the owner's tools: edit, block, merge a duplicate, export their data, anonymise. Stylists get **My clients** (their own clients only, no spend)
 - **Approvals** — approve, decline, cancel and restore requests; each action re-checks the slot on the server and refuses with a clear message if it no longer fits; old "any stylist" bookings show **Needs stylist** with an assign control
 - **Import clients (owner only)** — load a Fresha client list (.csv or .xlsx) in the browser: dry run, then import names and mobile numbers (blocked clients flagged), idempotent, with rollback
 - **Bookings tab** — filterable list by stylist, date, and status with accurate filtered count
@@ -323,6 +324,7 @@ src/
 | 9         | Booking phases (hands-on / processing / return), per-booking edits | ✅ Done |
 | 10        | Timeline: create by hovering and dragging, phase edge resize  | ✅ Done    |
 | 11        | Fresha client-list import (owner only, dry run, rollback)     | ✅ Done    |
+| 13        | Client directory: clients collection, directory, client page, notes, merge, anonymise | Built, **not deployed** (see docs/DEPLOYMENT.md) |
 | 12        | Trust boundary: real roles, booking commands in Cloud Functions, Melbourne clock, CI | Built, **not deployed** (see docs/DEPLOYMENT.md) |
 
 ---
