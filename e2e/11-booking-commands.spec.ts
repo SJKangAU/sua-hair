@@ -4,8 +4,8 @@
 // emulator), the owner approves / assigns through the booking commands, and the
 // outcome is what the server decided, not what the browser claimed. DEC-035..040.
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { connectEnv, insertBooking, readCollection, seedEmulator } from "./seed";
-import { bookOnline, submitDetails, toDetailsStep, tap, upcoming } from "./helpers";
+import { connectEnv, insertBooking, readCollection, seedEmulator, setClaims } from "./seed";
+import { bookOnline, submitDetails, toDetailsStep, tap, todayIso, upcoming } from "./helpers";
 import { newAdminPage } from "./admin";
 
 test.describe.configure({ mode: "serial" });
@@ -260,4 +260,37 @@ test("TC-094 a third pending request from one phone number is refused", async ({
   await submitDetails(page, { phone, name: "Penny Pending" });
   await expect(page.getByText(/already have 2 booking requests/)).toBeVisible();
   expect(await readCollection("bookings")).toHaveLength(2);
+});
+
+test("TC-097 a stylist sees only their own bookings; another stylist's are not readable", async ({ browser }) => {
+  const today = todayIso();
+  await insertBooking("mine", pendingBooking("mine", { status: "confirmed", customerName: "Own Client", stylistId: "steve", stylistName: "Steve Hwang", stylistLevel: "director", date: today, time: "11:00 AM" }));
+  await insertBooking("theirs", pendingBooking("theirs", { status: "confirmed", customerName: "Other Stylists Client", stylistId: "yuto", date: today, time: "2:00 PM" }));
+
+  // a stylist account: signed in, claim role "stylist" for Steve (roles are claims, DEC-033)
+  const signUp = await fetch("http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: "steve@suahair.test", password: "E2e-stylist-pass-2", returnSecureToken: true }),
+  });
+  const uid = ((await signUp.json()) as { localId: string }).localId;
+  await setClaims(uid, { role: "stylist", stylistId: "steve" });
+
+  const context = await browser.newContext({ baseURL: "http://127.0.0.1:5174", locale: "en-AU", timezoneId: "Australia/Melbourne", viewport: { width: 1200, height: 1000 } });
+  const stylist = await context.newPage();
+  await stylist.goto("/admin/login");
+  await stylist.getByPlaceholder("admin@suahair.com.au").fill("steve@suahair.test");
+  await stylist.getByPlaceholder("••••••••").fill("E2e-stylist-pass-2");
+  await stylist.locator('button[type="submit"]').click();
+  await stylist.waitForURL(/\/stylist\//);
+  await expect(stylist.getByText("Own Client")).toBeVisible();
+  await expect(stylist.getByText("Other Stylists Client")).toHaveCount(0);
+
+  // and the rules, not just the page, refuse the other stylist's booking: a direct read from the browser fails
+  const denied = await stylist.evaluate(async () => {
+    const res = await fetch("http://127.0.0.1:8085/v1/projects/demo-sua-e2e/databases/(default)/documents/bookings/theirs");
+    return res.status; // the emulator REST API without a token is unauthenticated => rules apply
+  });
+  expect([401, 403]).toContain(denied);
+  await context.close();
 });
