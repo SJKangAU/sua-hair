@@ -43,6 +43,7 @@ describe.skipIf(!RUN)(`import at scale: ${ROWS.toLocaleString()} rows`, () => {
     const out: string[] = [];
     const note = (line: string) => {
       out.push(line);
+      console.log(`[scale] ${line}`); // as it goes, so a run that is stopped still shows how far it got
     };
 
     const rows: RawRow[] = Array.from({ length: ROWS }, (_, i) => ({
@@ -73,6 +74,15 @@ describe.skipIf(!RUN)(`import at scale: ${ROWS.toLocaleString()} rows`, () => {
 
     const phones = plan.entries.map((e) => e.phone);
     const owner = staffDb(env, "owner-uid");
+    // a smaller sample first, so the full-size cost can be read off even if the run is stopped
+    const sample = phones.slice(0, 3000);
+    t = performance.now();
+    await findExistingRecords(owner, sample, undefined, 1);
+    const sampleSeq = performance.now() - t;
+    t = performance.now();
+    await findExistingRecords(owner, sample, undefined, LOOKUP_CONCURRENCY);
+    const samplePool = performance.now() - t;
+    note(`lookups for 3,000 numbers (100 queries): one at a time ${secs(sampleSeq)}, ${LOOKUP_CONCURRENCY} at a time ${secs(samplePool)}`);
 
     // the lookups: one at a time (how it used to run) versus the bounded pool
     t = performance.now();
