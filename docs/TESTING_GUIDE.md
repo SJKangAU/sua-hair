@@ -38,7 +38,7 @@ Run one part only (while changing code):
 | ---- | ------- | -------------- |
 | Unit (no emulator) | `npm run test:unit` | scheduling, phases, conflicts, timeline create, import rules, Melbourne clock |
 | Unit under 3 time zones | `npm run test:unit:tz` | clock and daylight-saving logic |
-| Firestore rules | `npm run test:rules` | owner / stylist / unprovisioned / anonymous for every collection |
+| Firestore rules | `npm run test:rules` | owner / stylist / unprovisioned / anonymous for every collection, and a stylist's widened client access |
 | Security | `npm run test:security` | no personal data leaks to the public |
 | Lockdown | `npm run test:lockdown` | the public cannot write bookings, slots, waitlist, notifications |
 | Admin writes | `npm run test:admin` | locking, phases, import write and rollback |
@@ -139,6 +139,13 @@ Tick each line. Anything that fails: stop, note exactly what you saw, and use th
 - [ ] Block that test client; try to book again with the same number: "Please call the salon to book". Unblock.
 - [ ] Make a second test client with a slightly different name and merge it into the first; the history joins up and the old name is shown as "also seen as".
 - [ ] Export one test client's data (a JSON file downloads) and anonymise a test client: their bookings stay as "Deleted Customer" and they no longer appear.
+
+### E3. Team access (after the functions, app and rules are live)
+
+- [ ] Manage -> **Team access** lists you as Owner and each stylist account that has a role.
+- [ ] Pick a stylist, choose **their own and chosen colleagues' clients**, tick one colleague, **Save**. Sign in as that stylist (or have them reload): **My clients** has a **Show** picker; the colleague's clients list, a client opens with their history (the colleague's name, no price), and a client of someone else is "not found".
+- [ ] Choose **Every client**, Save: the picker offers **Everyone's clients**. Choose **their own clients only**, Save: the picker disappears and a colleague's client is "not found" again, without the stylist signing out.
+- [ ] Try to remove your own owner access: it is refused.
 
 ### F. Client import (Manage -> Import clients, owner only)
 

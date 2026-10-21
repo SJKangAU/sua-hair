@@ -217,7 +217,7 @@ What would have been sent: `{ to, from, body, reference, createdAt }`. Only the 
 
 ## Collection: `users`
 
-`{ role: 'owner' | 'stylist', stylistId?, email?, grantedAt }` keyed by Firebase Auth uid: the **readable record** of a role grant. The role itself is a custom claim on the sign-in token (`{ role, stylistId? }`), which is what `firestore.rules` reads (no document reads, DEC-033); the functions check this record, so a revoked role stops working in them at once. Written only by `functions/src/roles.ts` (the `setUserRole` function and `functions/scripts/provision-roles.ts`), never from a client. A role can only be removed from the last owner by first adding another.
+`{ role: 'owner' | 'stylist', stylistId?, clientAccess?: { all: boolean, stylistIds: string[] }, email?, grantedAt }` keyed by Firebase Auth uid: the **readable record** of a role grant. `clientAccess` (stylists only, FR-025) is whose clients they may open beyond their own: `all`, or up to 12 colleagues' ids. The role itself is a custom claim on the sign-in token (`{ role, stylistId?, clientsAll? | clientStylists? }`), which is what `firestore.rules` reads (no document reads, DEC-033); the functions check this record, so a revoked role stops working in them at once. Written only by `functions/src/roles.ts` (the `setUserRole` function and `functions/scripts/provision-roles.ts`), never from a client. A role can only be removed from the last owner by first adding another.
 
 ---
 

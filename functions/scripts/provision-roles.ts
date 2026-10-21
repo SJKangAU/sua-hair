@@ -8,7 +8,7 @@
 //   list                                     show every user with a role claim
 //   verify   --email <e> [--role owner]      check claim + record, exit 1 if wrong
 //   grant    --email <e> --role owner        give the owner role
-//   grant    --email <e> --role stylist --stylist <stylistId> [--clients all | id,id]
+//   grant    --email <e> --role stylist --stylist <stylistId> [--clients all | none | id,id]
 //            (--clients: whose clients they may open besides their own; left out, what
 //             they already had is kept)
 //   revoke   --email <e>                     remove the role (claim + record + sessions)
@@ -49,7 +49,7 @@ const dryRun = args.includes("--dry-run");
 
 const usage = (): never => {
   console.error(
-    "Usage: provision-roles <list|verify|grant|revoke|rollback> [--email e] [--role owner|stylist] [--stylist id] [--clients all|id,id] [--project id] [--dry-run]",
+    "Usage: provision-roles <list|verify|grant|revoke|rollback> [--email e] [--role owner|stylist] [--stylist id] [--clients all|none|id,id] [--project id] [--dry-run]",
   );
   process.exit(2);
 };
@@ -110,7 +110,9 @@ const main = async (): Promise<void> => {
             clientAccess: normaliseAccess(
               clients === "all"
                 ? { all: true }
-                : { stylistIds: clients.split(",").map((c) => c.trim()).filter(Boolean) },
+                : clients === "none"
+                  ? { stylistIds: [] }
+                  : { stylistIds: clients.split(",").map((c) => c.trim()).filter(Boolean) },
               opt("stylist"),
             ),
           }

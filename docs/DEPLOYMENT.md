@@ -159,6 +159,20 @@ This release adds `clients` and `clientCards` (and their rules), seven composite
 
 *Rollback of this part:* roll back the Build batch (and the import batch) from Manage; the app without `clients` still works because nothing else depends on them except the Clients page (which then shows "No clients yet"). The trigger can be turned off by deleting `onBookingWritten` (`firebase functions:delete onBookingWritten --region australia-southeast2`), after which only the booking commands keep clients current and **Recalculate every client's figures** repairs the rest.
 
+## Team access (FR-025, DEC-051): what to add to the order above
+
+This release changes `setUserRole` and `roles.ts` (functions), adds a Manage → Team access screen and a Show picker for stylists (app), and extends `firestore.rules` (a few helper functions; the client cards, notes and bookings read rules). **Nothing changes for anyone until the owner widens a stylist**: every existing stylist keeps their own clients only.
+
+1. **Functions** (step 2): `firebase deploy --only functions` - `setUserRole` now accepts `clientAccess`.
+2. **App** (step 3), then **rules last** (step 4) as before. A stylist's widened access works only once the new rules are live; before that the picker may list a colleague's clients and then show "not found". The screen is owner-only, so deploy the rules before using it.
+3. **Check:** as the owner open Manage → Team access: your own account is listed as Owner. (The list reads `users/{uid}`; an account provisioned before this release has the record but no `clientAccess` and is treated as own-clients-only.)
+4. **Give someone wider access:** an existing stylist account is listed under Team access once it has a role. Choose their access and **Save**. If they are signed in, their screens update within a minute (no sign-out needed); otherwise at next sign-in. To do the same from the command line: `npx tsx functions/scripts/provision-roles.ts grant --project sua-hair-ae353 --email <email> --role stylist --stylist <id> --clients all` (or `--clients yuto,elly`); leaving `--clients` out keeps what they had.
+5. **Check as that stylist:** My clients shows a Show picker; a colleague's client opens, with their history (the colleague's name, no price); a client outside the access shows "not found".
+
+**Know before you widen access.** Firestore rules authorise whole documents, so a stylist given a colleague's clients can read that colleague's **bookings** in the database (the app hides the price and the colleague's totals, the database does not). Give wider access only to people you trust with that.
+
+*Rollback:* set the stylist back to "their own clients only" in Team access (or `grant ... --clients none` on the command line); or redeploy the previous rules, after which stylists see only their own clients again whatever their claim says.
+
 ## Existing data
 
 - **Legacy bookings with stylist "any"** (made before this release) appear in **Approvals** with a **Needs stylist** badge and an assign control instead of Approve. Choosing a stylist runs `assignStylist`: it checks that stylist is free for every busy part of the booking, re-prices from their tier and the current service prices, and moves the booking. Until then such a booking blocks nobody, as before.

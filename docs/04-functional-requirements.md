@@ -417,7 +417,7 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 | Role | How it is known | Can |
 | ---- | --------------- | --- |
 | **Owner** | claim `role: owner` | everything: services, prices, stylists, settings and hours, imports, deleting bookings, roles |
-| **Stylist** | claim `role: stylist` + `stylistId` | read and update **only their own stylist's** bookings (day-of status and notes), read and mark read their own notifications, read public data. No deletes, no settings, prices, stylist or client lists |
+| **Stylist** | claim `role: stylist` + `stylistId` (+ `clientsAll` / `clientStylists` when the owner has widened whose clients they may open, FR-025) | read and update **only their own stylist's** bookings (day-of status and notes), read and mark read their own notifications, read public data. No deletes, no settings, prices, stylist or client lists |
 | **Unprovisioned** | signed in, no claim | nothing beyond what an anonymous visitor can do |
 | **Anonymous** | not signed in | read stylists, services, hours and `slotBlocks`; call the public functions |
 
@@ -552,3 +552,27 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [ ] Delivery to a real phone — **not verified**; needs a ClickSend account and a registered sender name (`docs/DEPLOYMENT.md`)
 
 **Privacy and law (for the owner):** these are service messages about a booking the client made, with the salon's name and number in them. Under the Spam Act, messages like that are generally exempt from the consent and unsubscribe rules but must still identify the sender (the salon's name is in every default message); confirm this with your own adviser. The **Stop texts** switch is there to honour a client who asks. A sender name cannot be replied to, so the default wording says to call the salon to change a booking.
+
+---
+
+## FR-025 — Team access: roles, and whose clients a stylist may open
+
+**Description:** The owner manages who can sign in and as what, and decides, per stylist, whose clients that stylist may open. By default a stylist opens only the clients who have a booking with them (FR-021, FR-022, DEC-047); the owner can widen that to named colleagues' clients or to every client. Decision: DEC-051. This amends the stylist rules of FR-021 and FR-022.
+
+**Requirements:**
+
+- **Manage → Team access (owner only):** lists everyone with a role (owners, then stylists with the stylist they are) and, for each stylist, a choice: **their own clients only**, **their own and chosen colleagues' clients** (tick the colleagues), or **every client**. **Save** applies it; **Remove access** (with a confirm) takes the role away
+- **Give someone access:** the email they sign in with, a role (stylist or owner), which stylist they are, and their client access. They need a login first (created in the Firebase console); with no login the owner is told "No account with that email. Create the login first."
+- **What a stylist with extra access sees:** a **Show** picker on **My clients** (My clients, each colleague's clients, Everyone's clients); a colleague's client opens with their card, notes and booking history; the history shows the colleague's name and **no price**; never total spend, the email, the blocked reason, housekeeping or the audit trail. A stylist can add a note to a client they can open and delete or pin only their own notes
+- **Enforced by the database, not the page:** the setting is a custom claim on the stylist's sign-in token (`clientStylists: [ids]` or `clientsAll: true`) written only by the Admin SDK, with the role, and mirrored in `users/{uid}.clientAccess`. `firestore.rules` lets such a stylist read the cards, notes and (read-only) the bookings of those colleagues, and nothing else. A stylist cannot change a colleague's booking, a card, or the owner's client record
+- **It takes effect on their open screen** within moments (the app watches its own role record and refreshes the token), with no sign-out
+- Limits: at most 12 colleagues (a claim is part of every request); a stylist's own id is ignored; an unknown stylist is refused; an owner cannot be given client access (they see everyone). Re-granting a role without stating access (for example with the provisioning script) **keeps** what the stylist had; changing the stylist or the role resets it. `provision-roles.ts grant ... --clients all|id,id` sets it from the command line
+- The existing protections hold: the last owner cannot be removed and an owner cannot remove their own access
+
+**Acceptance criteria:**
+
+- [x] Cleaning, the claim round trip, the picker's options and which bookings make a history (unit `clientAccess`)
+- [x] A grant sets claim and record together, verifies, caps and cleans the list, refuses an unknown stylist, keeps access on a re-grant and resets it on a change (`functions` roles)
+- [x] With no extra access nothing changes from DEC-047; with colleagues, their cards, notes, bookings and `array-contains` / `in` queries open and others stay closed; with all, every card and booking history opens; malformed claims, an unprovisioned account and an anonymous visitor get nothing; no write is widened; the owner reads every role record and a stylist only their own (`rules` clientAccessRules; TC-125)
+- [x] The owner adds a stylist and the team list shows them (TC-120); a stylist without extra access sees only their own and no picker (TC-121); named colleagues open with history and no prices, others closed (TC-122); a change reaches the open screen without signing out (TC-123); removal, and the owner cannot remove themself (TC-124)
+- [ ] The same in production: **not verified** (provision, deploy functions, app and rules; `docs/DEPLOYMENT.md`)
