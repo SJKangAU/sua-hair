@@ -68,6 +68,8 @@ import type {
   Stylist,
 } from "../../src/types";
 import { CALL_THE_SALON, CommandError } from "./commandErrors";
+import { clientIdFromPhone } from "../../src/lib/clients";
+import { clientIdOfBooking, planClientWrite } from "./clients";
 import { LIMITS, consumeRateLimit } from "./limits";
 
 export interface CommandContext {
@@ -437,11 +439,14 @@ export const createBookingRequestCore = async (
     : db.collection("bookings").doc(randomUUID().replace(/-/g, ""));
   const phoneLockRef = db.doc(`phoneLimits/${input.customerPhone}`);
   const lookupRef = db.doc(`customerLookups/${input.customerPhone}`);
+  // The client record is where the owner blocks someone (DEC-044); the visit record's
+  // flag is the one the Fresha import set. Either one stops the request.
+  const clientDocRef = db.doc(`clients/${input.customerPhone}`);
 
   return db.runTransaction(
     async (tx) => {
       // ── all reads first ───────────────────────────────────────────────
-      const [existing, phoneLock, pending, lookup] = await Promise.all([
+      const [existing, phoneLock, pending, lookup, clientDoc] = await Promise.all([
         tx.get(bookingRef),
         tx.get(phoneLockRef),
         tx.get(
@@ -451,6 +456,7 @@ export const createBookingRequestCore = async (
             .where("status", "==", "pending"),
         ),
         tx.get(lookupRef),
+        tx.get(clientDocRef),
       ]);
       const days = await Promise.all(
         candidates.map((c) => readDay(tx, db, c.id, input.date)),
@@ -465,7 +471,7 @@ export const createBookingRequestCore = async (
         return summarise(existing.id, stored, wantsAny);
       }
 
-      if (lookup.get("blocked") === true) {
+      if (lookup.get("blocked") === true || clientDoc.get("blocked") === true) {
         throw new CommandError("blocked", CALL_THE_SALON);
       }
       if (pending.size >= SALON_CONFIG.maxPendingPerPhone) {
@@ -526,6 +532,7 @@ export const createBookingRequestCore = async (
       }));
       const total = bookedServices.reduce((sum, s) => sum + s.price, 0);
       const holdExpiresAt = iso(ctx.now + SALON_CONFIG.pendingHoldHours * 3_600_000);
+      const clientId = clientIdFromPhone(input.customerPhone);
 
       const booking: Omit<Booking, "id"> = {
         bookingType: "customer",
@@ -534,6 +541,7 @@ export const createBookingRequestCore = async (
         customerName: input.customerName,
         customerNameLower: input.customerName.toLowerCase(),
         customerPhone: input.customerPhone,
+        ...(clientId ? { clientId } : {}),
         ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
         stylistId: stylist.id,
         stylistName: stylist.name,
@@ -552,7 +560,19 @@ export const createBookingRequestCore = async (
         ...(wantsAny ? { assignedAutomatically: true } : {}),
       };
 
+      // The client's document and card, worked out from their bookings with this one
+      // added (a read, so it comes before the first write)
+      const writeClient = await planClientWrite(
+        tx,
+        db,
+        clientId,
+        { booking: { ...booking, id: bookingRef.id } as Booking },
+        ctx.now,
+        { source: "online" },
+      );
+
       // ── all writes, together ───────────────────────────────────────────
+      writeClient();
       tx.set(bookingRef, booking);
       tx.set(db.doc(`slotBlocks/${bookingRef.id}`), toSlotBlock(booking));
       bumpLock(tx, day, ctx.now);
@@ -621,6 +641,23 @@ const writeStatus = (
   tx.set(db.doc(`slotBlocks/${b.id}`), toSlotBlock({ ...b, status }));
 };
 
+/** Reads (so: before any write) what the client's document needs once `b` changes as `after`. */
+const planClientFor = (
+  tx: Transaction,
+  db: Firestore,
+  b: Booking,
+  after: Partial<Booking>,
+  now: number,
+): Promise<() => void> =>
+  planClientWrite(
+    tx,
+    db,
+    clientIdOfBooking(b),
+    { booking: { ...b, ...after, id: b.id } },
+    now,
+    { setClientIdOn: b.clientId ? undefined : b.id },
+  );
+
 export interface CommandOutcome {
   bookingId: string;
   status: BookingStatus;
@@ -653,6 +690,7 @@ export const approveBookingCore = async (
           `This request can no longer be approved: ${b.stylistName} is already booked at that time (${describeConflict(clash)}). Decline it or move it first.`,
         );
       }
+      const writeClient = await planClientFor(tx, db, b, { status: "confirmed" }, ctx.now);
       writeStatus(
         tx,
         db,
@@ -661,6 +699,7 @@ export const approveBookingCore = async (
         { holdExpiresAt: FieldValue.delete(), confirmedAt: iso(ctx.now), arrivedAt: FieldValue.delete() },
         historyEntry(ctx.now, "Confirmed", "confirmed"),
       );
+      writeClient();
       bumpLock(tx, day, ctx.now);
       return { bookingId: id, status: "confirmed" as const };
     },
@@ -684,6 +723,7 @@ export const declineBookingCore = async (
           `This booking is ${STATUS_LABELS[b.status].toLowerCase()}, not waiting for approval.`,
         );
       }
+      const writeClient = await planClientFor(tx, db, b, { status: "cancelled" }, ctx.now);
       writeStatus(
         tx,
         db,
@@ -696,6 +736,7 @@ export const declineBookingCore = async (
         },
         historyEntry(ctx.now, "Request declined", "cancelled"),
       );
+      writeClient();
       return { bookingId: id, status: "cancelled" as const };
     },
     { maxAttempts: TX_ATTEMPTS },
@@ -718,6 +759,7 @@ export const cancelBookingCore = async (
           `This booking is already ${STATUS_LABELS[b.status].toLowerCase()}.`,
         );
       }
+      const writeClient = await planClientFor(tx, db, b, { status: "cancelled" }, ctx.now);
       writeStatus(
         tx,
         db,
@@ -730,6 +772,7 @@ export const cancelBookingCore = async (
         },
         historyEntry(ctx.now, STATUS_LABELS.cancelled, "cancelled"),
       );
+      writeClient();
       return { bookingId: id, status: "cancelled" as const };
     },
     { maxAttempts: TX_ATTEMPTS },
@@ -770,6 +813,7 @@ export const restoreBookingCore = async (
           `Not restored: ${b.stylistName} is already booked at that time (${describeConflict(clash)}).`,
         );
       }
+      const writeClient = await planClientFor(tx, db, b, { status: target }, ctx.now);
       writeStatus(
         tx,
         db,
@@ -786,6 +830,7 @@ export const restoreBookingCore = async (
         },
         statusHistoryEntry(b.status, target, iso(ctx.now)),
       );
+      writeClient();
       bumpLock(tx, day, ctx.now);
       return { bookingId: id, status: target };
     },
@@ -871,6 +916,8 @@ export const assignStylistCore = async (
         services: priced,
         servicePrice: price,
       };
+      const writeClient = await planClientFor(tx, db, next, {}, ctx.now);
+      writeClient();
       tx.update(db.doc(`bookings/${id}`), {
         stylistId: stylist.id,
         stylistName: stylist.name,
@@ -912,6 +959,7 @@ export const releaseExpiredPendingCore = async (
       const b = await readBooking(tx, db, doc.id);
       const hold = b.holdExpiresAt;
       if (b.status !== "pending" || !hold || hold > iso(now)) return false;
+      const writeClient = await planClientFor(tx, db, b, { status: "cancelled" }, now);
       writeStatus(
         tx,
         db,
@@ -928,6 +976,7 @@ export const releaseExpiredPendingCore = async (
           "cancelled",
         ),
       );
+      writeClient();
       tx.set(
         db.collection("notifications").doc(),
         notificationFor(
@@ -987,8 +1036,11 @@ export const joinWaitlistCore = async (
   await consumeRateLimit(db, "waitlist-phone", phone, LIMITS.waitlistPerPhone, ctx.now);
 
   // A blocked client cannot join the waitlist any more than they can book (DEC-039)
-  const lookup = await db.doc(`customerLookups/${phone}`).get();
-  if (lookup.get("blocked") === true) {
+  const [lookup, clientDoc] = await Promise.all([
+    db.doc(`customerLookups/${phone}`).get(),
+    db.doc(`clients/${phone}`).get(),
+  ]);
+  if (lookup.get("blocked") === true || clientDoc.get("blocked") === true) {
     throw new CommandError("blocked", CALL_THE_SALON);
   }
 

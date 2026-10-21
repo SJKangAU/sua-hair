@@ -193,6 +193,12 @@ export interface Booking {
   // booking's displayed return time.
   returnTime?: string;
   bookingType: "customer" | "walkin" | "break" | "training";
+  // The client this booking belongs to: their normalised phone, "04XXXXXXXX"
+  // (clients/{clientId}, DEC-044). Absent on breaks and training, on bookings with
+  // no valid phone, and on bookings made before the clients collection existed
+  // until the backfill (or the first write to them) sets it. After the owner
+  // anonymises a client it becomes a tombstone id ("deleted-...").
+  clientId?: string;
   blockReason?: string;
   traineeId?: string;
   traineeName?: string;
@@ -287,4 +293,92 @@ export interface WaitlistEntry {
   requestedStylistId?: string; // optional — 'any' if no preference
   createdAt: string;
   status: "pending" | "contacted" | "resolved";
+}
+
+// ── Clients (DEC-044) ─────────────────────────────────────────────────────────
+// clients/{clientId} - one document per client, keyed by normalised phone. OWNER
+// ONLY (it holds spend, the blocked reason and the email). clientCards/{clientId}
+// is the slim staff-readable copy a stylist may open for their own clients.
+
+export type ClientSource = "online" | "walk-in" | "fresha-import";
+
+// Figures worked out from the client's bookings (src/lib/clients.ts). Always
+// recomputable from the bookings; kept up to date by the booking functions and a
+// trigger, and repaired by the owner's "recompute".
+export interface ClientSummary {
+  totalVisits: number;
+  totalSpend: number; // dollars, from visits only; never breaks or training
+  firstVisit: string; // YYYY-MM-DD, "" when none
+  lastVisit: string; // YYYY-MM-DD, "" when none
+  hasUpcoming: boolean;
+  nextBookingDate: string; // "" when none
+  nextBookingTime: string;
+  nextBookingId: string;
+  cancelCount: number;
+  noShowCount: number;
+  hasNoShows: boolean; // noShowCount > 0, for indexed filtering
+  favouriteStylistId: string; // "" when none
+  favouriteServiceIds: string[];
+  stylistIds: string[]; // every stylist who has a booking with them
+  avgDaysBetweenVisits: number | null;
+  bookingCount: number; // service bookings, any status
+}
+
+export interface Client extends ClientSummary {
+  id: string; // == the document id: the phone, or "deleted-..." once anonymised
+  phone: string;
+  name: string;
+  nameLower: string; // lower-cased, accents removed: prefix search
+  searchTokens: string[]; // name words: "lee" finds "Jade Lee"
+  aliases: string[]; // earlier spellings of the name
+  nameOverride?: boolean; // the owner set the name; bookings no longer rename them
+  email?: string;
+  tags: string[];
+  blocked: boolean;
+  blockReason?: string;
+  source: ClientSource;
+  createdAt: string;
+  updatedAt: string;
+  anonymised?: boolean;
+}
+
+// What a stylist may read about a client of theirs: no spend, no blocked reason
+export interface ClientCard {
+  id: string;
+  phone: string;
+  name: string;
+  nameLower: string;
+  searchTokens: string[];
+  stylistIds: string[];
+  blocked: boolean;
+  tags: string[];
+}
+
+// clients/{id}/notes/{noteId}: append-only, so staff can see who wrote what
+export interface ClientNote {
+  id: string;
+  text: string;
+  authorUid: string;
+  authorName: string;
+  createdAt: string;
+  pinned: boolean;
+}
+
+export type ClientAuditAction =
+  | "edit"
+  | "block"
+  | "unblock"
+  | "merge"
+  | "anonymise"
+  | "export"
+  | "backfill";
+
+// clients/{id}/audit/{entryId}: owner-only, who did what and when
+export interface ClientAudit {
+  id: string;
+  action: ClientAuditAction;
+  byUid: string;
+  byName: string;
+  at: string;
+  detail?: string;
 }

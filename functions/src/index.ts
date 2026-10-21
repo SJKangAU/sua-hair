@@ -7,7 +7,7 @@
 // southeast1")).
 
 import { onCall, HttpsError, type CallableRequest } from "firebase-functions/v2/https";
-import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineBoolean, defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
@@ -43,6 +43,16 @@ import {
   restoreBookingCore,
   type OwnerContext,
 } from "./bookingCommands";
+import {
+  anonymiseClientCore,
+  clientSyncCore,
+  exportClientDataCore,
+  mergeClientsCore,
+  recomputeAllClients,
+  settleClients,
+  type Actor,
+} from "./clients";
+import { backfillClientsCore } from "./clientBackfill";
 import { SALON } from "./salon";
 import { requireOwner } from "./guards";
 import { RoleError, grantRole, revokeRole, type Role } from "./roles";
@@ -320,6 +330,78 @@ export const cancelBooking = ownerCommand("cancel bookings", cancelBookingCore);
 export const restoreBooking = ownerCommand("restore bookings", restoreBookingCore);
 /** assignStylist - owner. Gives a legacy "any" booking a real stylist (conflict-checked, re-priced). */
 export const assignStylist = ownerCommand("assign stylists", assignStylistCore);
+
+// ── Clients (DEC-044 to DEC-049): owner housekeeping ────────────────────────
+
+const ownerClientCommand = <R>(
+  action: string,
+  core: (db: Firestore, raw: unknown, actor: Actor, now: number) => Promise<R>,
+  options: { timeoutSeconds?: number; memory?: "256MiB" | "512MiB" | "1GiB" } = {},
+) =>
+  onCall(
+    { region: REGION, maxInstances: 5, timeoutSeconds: options.timeoutSeconds ?? 120, memory: options.memory },
+    async (request) => {
+      const owner = await requireOwner(db, request, action);
+      const token = request.auth?.token as { name?: string; email?: string } | undefined;
+      const actor: Actor = { uid: owner.uid, name: token?.name ?? token?.email ?? owner.uid };
+      return run(() => core(db, request.data, actor, Date.now()));
+    },
+  );
+
+/** recomputeClients - owner. { clientId? }: repair one client's figures, or every client's. */
+export const recomputeClients = ownerClientCommand(
+  "recompute clients",
+  async (database, raw, _actor, now) => {
+    const id =
+      typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>).clientId : undefined;
+    return recomputeAllClients(database, now, typeof id === "string" ? [id] : undefined);
+  },
+  { timeoutSeconds: 540, memory: "512MiB" },
+);
+/** backfillClients - owner. { mode: "dry" | "apply" | "rollback", batchId? }. */
+export const backfillClients = ownerClientCommand("build the client list", backfillClientsCore, {
+  timeoutSeconds: 540,
+  memory: "512MiB",
+});
+/** mergeClients - owner. { keepId, mergeId }: moves bookings and notes onto the kept client. */
+export const mergeClients = ownerClientCommand("merge clients", mergeClientsCore);
+/** anonymiseClient - owner. { clientId }: removes personal data, keeps bookings for the accounts. */
+export const anonymiseClient = ownerClientCommand("anonymise a client", anonymiseClientCore);
+/** exportClientData - owner. { clientId }: everything held about one client (JSON). */
+export const exportClientData = ownerClientCommand("export client data", exportClientDataCore);
+
+/**
+ * onBookingWritten - after ANY write to a booking (the owner's browser, a stylist's
+ * status change, a delete, a command) the affected client's document and card are
+ * recomputed from their bookings, so they are exact within seconds. The booking
+ * commands also update the client inside their own transaction.
+ */
+export const onBookingWritten = onDocumentWritten(
+  { document: "bookings/{bookingId}", region: FIRESTORE_REGION },
+  async (event) => {
+    try {
+      await clientSyncCore(
+        db,
+        event.data?.before.exists ? event.data.before.data() : undefined,
+        event.data?.after.exists ? event.data.after.data() : undefined,
+        event.params.bookingId,
+        Date.now(),
+      );
+    } catch (err) {
+      // never throws: a client figure can always be repaired with recomputeClients
+      console.error("Client sync failed for a booking:", err instanceof Error ? err.message : "error");
+    }
+  },
+);
+
+/** settleClients - nightly (Melbourne): a booking's day arrives, so it stops being "next" and becomes a visit. */
+export const settleClientSummaries = onSchedule(
+  { schedule: "30 3 * * *", timeZone: SALON.timeZone, region: REGION, timeoutSeconds: 300 },
+  async () => {
+    const changed = await settleClients(db, Date.now());
+    console.log(`Settled ${changed} client summary(ies).`);
+  },
+);
 
 /**
  * releaseExpiredRequests - runs every 15 minutes. Pending requests the owner has not
