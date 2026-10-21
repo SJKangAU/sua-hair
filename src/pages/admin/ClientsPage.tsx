@@ -39,7 +39,11 @@ const ClientsPage = () => {
         <ClientDrawer
           clientId={openId}
           onClose={() => setOpenId(null)}
-          onBookAgain={(name, phone) => setBookAgain({ name, phone })}
+          onBookAgain={(name, phone) => {
+            // the form opens on its own, not underneath the drawer
+            setOpenId(null);
+            setBookAgain({ name, phone });
+          }}
           onNotice={(m, kind) => addToast(m, kind)}
         />
       )}

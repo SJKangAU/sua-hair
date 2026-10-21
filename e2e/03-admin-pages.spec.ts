@@ -147,33 +147,36 @@ test("TC-020 Export CSV downloads a file with the visible bookings", async () =>
   console.log("TC-020 CSV header:", rows[0]);
 });
 
+// TC-021 .. TC-024 were written for the old Clients page, which built a profile from the
+// bookings it searched. The directory (DEC-046) reads a client record that is kept in step
+// with the bookings, so the same four behaviours are checked on it. The bookings above are
+// written straight into Firestore, so the clients are made by the onBookingWritten trigger
+// (running in the Functions emulator): the first search waits for them.
 test("TC-021 client search shows visit count and total spend", async () => {
   await page.goto("/admin/clients");
-  await page.getByPlaceholder("Search by name or mobile number...").fill("Mia");
-  await expect(page.getByText("Mia Multi")).toBeVisible();
-  const card = page.locator("div", { has: page.getByText("Mia Multi", { exact: true }) }).last();
-  // 2 counted visits (completed + confirmed); the cancelled one does not count
-  await expect(page.getByText("visits")).toBeVisible();
-  const main = await names(page);
-  expect(main).toMatch(/2\s*visits/);
-  expect(main).toMatch(/\$150\s*total spend/);
-  void card;
+  await page.getByTestId("client-search").fill("Mia");
+  const row = page.getByTestId("client-row").filter({ hasText: "Mia Multi" });
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  // 2 counted visits (completed + confirmed in the past); the cancelled one does not count
+  await expect(row).toContainText("$150");
+  await row.click();
+  const drawer = page.getByTestId("client-drawer");
+  await expect(drawer.getByTestId("stat-visits")).toHaveText("2");
+  await expect(drawer.getByTestId("stat-spend")).toHaveText("$150");
 });
 
-test("TC-022 View history expands the booking history, newest first", async () => {
-  await page.getByRole("button", { name: "View history" }).click();
-  await expect(page.getByRole("button", { name: "Hide history" })).toBeVisible();
-  const text = await names(page);
-  const iNewest = text.lastIndexOf(addDaysIso(todayIso(), -10));
-  const iMiddle = text.lastIndexOf(addDaysIso(todayIso(), -20));
-  const iOldest = text.lastIndexOf(addDaysIso(todayIso(), -40));
-  expect(iNewest).toBeGreaterThan(-1);
-  expect(iNewest).toBeLessThan(iMiddle);
-  expect(iMiddle).toBeLessThan(iOldest);
+test("TC-022 the client's history lists their bookings, newest first", async () => {
+  const rows = page.getByTestId("client-drawer").getByTestId("history-row");
+  await expect(rows).toHaveCount(3); // completed, confirmed and the cancelled one
+  const texts = await rows.allInnerTexts();
+  // the newest booking is first: the cancelled one (10 days ago), then 20, then 40 days ago
+  expect(texts[0]).toContain("Cancelled");
+  expect(texts[1]).toContain("Confirmed");
+  expect(texts[2]).toContain("Completed");
 });
 
 test("TC-023 Book again pre-fills the create form with the client's name and phone", async () => {
-  await page.getByRole("button", { name: /Book again/ }).click();
+  await page.getByTestId("client-drawer").getByTestId("book-again").click();
   const d = dialog(page);
   await expect(d).toBeVisible();
   await expect(d.getByPlaceholder("e.g. Jane Smith")).toHaveValue("Mia Multi");
@@ -184,11 +187,11 @@ test("TC-023 Book again pre-fills the create form with the client's name and pho
 test("TC-024 a cancelled booking is not counted in total spend", async () => {
   // Mia's cancelled booking is $75: total stays $150, not $225
   await page.goto("/admin/clients");
-  await page.getByPlaceholder("Search by name or mobile number...").fill("0422000001");
-  await expect(page.getByText("Mia Multi")).toBeVisible();
-  const main = await names(page);
-  expect(main).toMatch(/\$150\s*total spend/);
-  expect(main).not.toMatch(/\$225/);
+  await page.getByTestId("client-search").fill("0422000001");
+  const row = page.getByTestId("client-row").filter({ hasText: "Mia Multi" });
+  await expect(row).toBeVisible();
+  await expect(row).toContainText("$150");
+  await expect(row).not.toContainText("$225");
 });
 
 test("TC-025 create a training session: appears under upcoming sessions with a toast", async () => {
