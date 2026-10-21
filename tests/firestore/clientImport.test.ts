@@ -53,14 +53,14 @@ const ledgerChunks = async (batchId: string) =>
   (await getDocs(collection(owner(), "importBatches", batchId, "chunks"))).docs.map((d) => d.data().phones as string[]);
 
 describe("import: batching and the ledger", () => {
-  it("writes 1,250 clients in chunks of 400, each chunk with one ledger entry", async () => {
+  it("writes 1,250 clients in chunks of 150, each chunk with one ledger entry", async () => {
     const result = await runImport(owner(), entries(1250), { batchId: "b1", uid: "owner-uid" });
     expect(result).toEqual({ batchId: "b1", created: 1250, existed: 0 });
     expect(await lookup(1)).toEqual({ name: "Test Client 1", lastVisit: "", visitCount: 0 });
     expect(await lookup(1250)).toEqual({ name: "Test Client 1250", lastVisit: "", visitCount: 0 });
 
     const chunks = await ledgerChunks("b1");
-    expect(chunks.map((c) => c.length)).toEqual([IMPORT_CHUNK, IMPORT_CHUNK, IMPORT_CHUNK, 50]);
+    expect(chunks.map((c) => c.length)).toEqual([...Array(8).fill(IMPORT_CHUNK), 50]);
     expect(new Set(chunks.flat()).size).toBe(1250);
 
     const batch = (await getDoc(doc(owner(), "importBatches", "b1"))).data()!;
@@ -70,7 +70,7 @@ describe("import: batching and the ledger", () => {
   it("reports progress as it goes", async () => {
     const seen: number[] = [];
     await runImport(owner(), entries(900), { batchId: "b1", uid: "owner-uid", onProgress: (d) => seen.push(d) });
-    expect(seen).toEqual([400, 800, 900]);
+    expect(seen).toEqual([150, 300, 450, 600, 750, 900]);
   });
 });
 
@@ -158,16 +158,18 @@ describe("import: rollback", () => {
         batchId: "b1",
         uid: "owner-uid",
         onProgress: (done) => {
-          if (done >= 800) throw new Error("stop");
+          // stops after the fifth chunk of 150 (chunks commit in whole: 750 clients)
+          if (done >= 750) throw new Error("stop");
         },
       }),
     ).rejects.toThrow("stop");
-    expect((await getDoc(doc(owner(), "importBatches", "b1"))).data()).toMatchObject({ status: "failed", created: 800 });
-    expect((await ledgerChunks("b1")).flat()).toHaveLength(800);
-    expect(await lookup(800)).toBeDefined();
-    expect(await lookup(801)).toBeUndefined();
-    expect(await rollbackBatch(owner(), "b1")).toEqual({ removed: 800, kept: 0 });
+    expect((await getDoc(doc(owner(), "importBatches", "b1"))).data()).toMatchObject({ status: "failed", created: 750 });
+    expect((await ledgerChunks("b1")).flat()).toHaveLength(750);
+    expect(await lookup(750)).toBeDefined();
+    expect(await lookup(751)).toBeUndefined();
+    expect(await rollbackBatch(owner(), "b1")).toEqual({ removed: 750, kept: 0 });
     expect(await lookup(1)).toBeUndefined();
+    expect(await clientDoc(750)).toBeUndefined(); // the client documents it made go too
   }, 120_000);
 
   it("lists batches newest first", async () => {
@@ -301,5 +303,88 @@ describe("import: blocked clients", () => {
       await assertFails(db.doc(`customerLookups/${phone(4)}`).get());
       await assertFails(db.collection("customerLookups").get());
     }
+  });
+});
+
+// ── The client records the import also makes (DEC-044) ───────────────────────
+
+const clientDoc = async (n: number) => (await getDoc(doc(owner(), "clients", phone(n)))).data();
+const cardDoc = async (n: number) => (await getDoc(doc(owner(), "clientCards", phone(n)))).data();
+
+describe("import: client records", () => {
+  it("makes a client and a card for every new client, with no bookings, from Fresha, dated when Fresha added them", async () => {
+    const list = entries(3).map((e, i) => ({ ...e, added: `2026-0${i + 1}-15`, ...(i === 2 ? { blocked: true } : {}) }));
+    await runImport(owner(), list, { batchId: "b1", uid: "owner-uid" });
+    expect(await clientDoc(1)).toMatchObject({
+      phone: phone(1),
+      name: "Test Client 1",
+      source: "fresha-import",
+      createdAt: "2026-01-15T00:00:00.000Z",
+      bookingCount: 0,
+      totalVisits: 0,
+      totalSpend: 0,
+      blocked: false,
+      tags: [],
+      stylistIds: [],
+      nameLower: "test client 1",
+    });
+    expect((await clientDoc(1))!.searchTokens).toEqual(["test", "client"]);
+    expect(await clientDoc(3)).toMatchObject({ blocked: true });
+    expect(Object.keys((await cardDoc(1))!).sort()).toEqual(["blocked", "id", "name", "nameLower", "phone", "searchTokens", "stylistIds", "tags"]);
+    expect(await cardDoc(3)).toMatchObject({ blocked: true });
+    expect((await ledgerChunks("b1")).flat().length).toBe(3);
+  });
+
+  it("never recreates or overwrites a client who already exists (one with history and a name the owner set)", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`clients/${phone(5)}`).set({
+        phone: phone(5), name: "Real Client", nameOverride: true, tags: ["vip"], blocked: false,
+        bookingCount: 7, totalVisits: 6, totalSpend: 600, source: "online", createdAt: "2025-01-01T00:00:00.000Z",
+      });
+    });
+    await runImport(owner(), entries(10), { batchId: "b1", uid: "owner-uid" });
+    expect(await clientDoc(5)).toMatchObject({ name: "Real Client", bookingCount: 7, totalSpend: 600, source: "online", tags: ["vip"] });
+    expect(await clientDoc(4)).toMatchObject({ source: "fresha-import" });
+  });
+
+  it("importing the same file again changes nothing and counts nothing twice", async () => {
+    await runImport(owner(), entries(20), { batchId: "first", uid: "owner-uid" });
+    const before = await clientDoc(7);
+    const again = await runImport(owner(), entries(20), { batchId: "second", uid: "owner-uid" });
+    expect(again).toMatchObject({ created: 0, existed: 20 });
+    expect(await clientDoc(7)).toEqual(before);
+    expect(before).toMatchObject({ totalVisits: 0, totalSpend: 0, bookingCount: 0 });
+  });
+
+  it("an existing client Fresha has blocked gets only the flag, on the client and the card as well", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`customerLookups/${phone(2)}`).set({ name: "Existing", lastVisit: "2026-09-01", visitCount: 4 });
+      await db.doc(`clients/${phone(2)}`).set({ phone: phone(2), name: "Existing", blocked: false, tags: [], bookingCount: 4, totalVisits: 4, source: "online" });
+      await db.doc(`clientCards/${phone(2)}`).set({ id: phone(2), phone: phone(2), name: "Existing", blocked: false, tags: [], stylistIds: [], searchTokens: [], nameLower: "existing" });
+    });
+    await runImport(owner(), entries(3).map((e) => (e.phone === phone(2) ? { ...e, blocked: true } : e)), { batchId: "b1", uid: "owner-uid" });
+    expect(await clientDoc(2)).toMatchObject({ blocked: true, name: "Existing", bookingCount: 4 });
+    expect(await cardDoc(2)).toMatchObject({ blocked: true });
+    // rollback removes only the flag it set
+    await rollbackBatch(owner(), "b1");
+    expect(await clientDoc(2)).toMatchObject({ blocked: false, name: "Existing", bookingCount: 4 });
+    expect(await cardDoc(2)).toMatchObject({ blocked: false });
+  });
+
+  it("rollback removes the clients and cards the import made, but keeps one with a booking, an edit or a note", async () => {
+    await runImport(owner(), entries(6), { batchId: "b1", uid: "owner-uid" });
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`clients/${phone(2)}`).update({ bookingCount: 1, totalVisits: 1 }); // has a booking now
+      await db.doc(`clients/${phone(3)}`).update({ tags: ["vip"] }); // the owner edited them
+      await db.doc(`clients/${phone(4)}/notes/n1`).set({ text: "Prefers mornings", authorUid: "u", authorName: "Owner", createdAt: "x", pinned: false });
+    });
+    await rollbackBatch(owner(), "b1");
+    expect(await clientDoc(1)).toBeUndefined();
+    expect(await cardDoc(1)).toBeUndefined();
+    expect(await clientDoc(5)).toBeUndefined();
+    for (const n of [2, 3, 4]) expect(await clientDoc(n), `client ${n} is kept`).toBeDefined();
+    expect((await getDoc(doc(owner(), "importBatches", "b1"))).data()).toMatchObject({ status: "rolled_back", clientsRemoved: 3 });
   });
 });

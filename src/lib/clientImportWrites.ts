@@ -15,7 +15,8 @@
 //     writes only the missing ones, so even a booking made mid-import is safe.
 //   - A chunk's lookups and its ledger entry commit together, so a rollback
 //     always knows exactly what an import (even a stopped one) created.
-//   - 400 lookups + 1 ledger document per transaction: under the 500-write limit.
+//   - 150 clients (3 writes each: visit record, client, card) + 1 ledger document per
+//     transaction: under the 500-write limit.
 //   - Re-importing the same file creates nothing (the phone is the document ID).
 //   - A client Fresha has Blocked who ALREADY has a record gets the blocked flag and
 //     nothing else changes on it; the ledger remembers that this batch set the flag.
@@ -44,6 +45,8 @@ import {
   type Firestore,
 } from "firebase/firestore";
 import { chunkEntries, type ExistingRecord, type ImportEntry } from "./clientImport";
+import { buildClient, clientCardOf } from "./clients";
+import { businessToday } from "./businessTime";
 
 export const SOURCE = "fresha-client-list";
 
@@ -66,6 +69,8 @@ export interface ImportBatch {
   kept?: number;
   // Blocked flags the rollback removed from records that were kept
   unblocked?: number;
+  // Client documents (DEC-044) the rollback removed
+  clientsRemoved?: number;
 }
 
 // Firestore's `in` takes at most 30 values
@@ -165,10 +170,18 @@ export const runImport = async (
       const chunk = chunks[i];
       const result = await runTransaction(firestore, async (tx) => {
         const refs = chunk.map((e) => doc(firestore, "customerLookups", e.phone));
-        const snaps = await Promise.all(refs.map((r) => tx.get(r)));
+        const clientRefs = chunk.map((e) => doc(firestore, "clients", e.phone));
+        const [snaps, clientSnaps] = await Promise.all([
+          Promise.all(refs.map((r) => tx.get(r))),
+          Promise.all(clientRefs.map((r) => tx.get(r))),
+        ]);
+        const today = businessToday();
+        const nowIso = new Date().toISOString();
         const createdHere: string[] = [];
+        const clientsHere: string[] = [];
         const flaggedHere: string[] = [];
         chunk.forEach((e, k) => {
+          const clientExists = clientSnaps[k].exists();
           if (!snaps[k].exists()) {
             tx.set(refs[k], {
               name: e.name,
@@ -183,10 +196,36 @@ export const runImport = async (
             tx.update(refs[k], { blocked: true });
             flaggedHere.push(e.phone);
           }
+          if (!clientExists) {
+            // A client record with no bookings (DEC-044), "added" when Fresha added them.
+            // An existing client (one with bookings) is never recreated or overwritten.
+            const client = buildClient(
+              e.phone,
+              [],
+              {
+                name: e.name,
+                tags: [],
+                blocked: e.blocked === true,
+                source: "fresha-import",
+                createdAt: e.added ? `${e.added}T00:00:00.000Z` : nowIso,
+              },
+              today,
+              nowIso,
+            );
+            tx.set(clientRefs[k], client);
+            tx.set(doc(firestore, "clientCards", e.phone), clientCardOf(client, e.phone));
+            clientsHere.push(e.phone);
+          } else if (e.blocked && clientSnaps[k].get("blocked") !== true) {
+            // an existing client Fresha has blocked: ONLY the flag is added to them too
+            tx.update(clientRefs[k], { blocked: true });
+            tx.update(doc(firestore, "clientCards", e.phone), { blocked: true });
+            if (!flaggedHere.includes(e.phone)) flaggedHere.push(e.phone);
+          }
         });
-        if (createdHere.length > 0 || flaggedHere.length > 0) {
+        if (createdHere.length > 0 || flaggedHere.length > 0 || clientsHere.length > 0) {
           tx.set(doc(batchRef, "chunks", chunkId(i)), {
             phones: createdHere,
+            ...(clientsHere.length > 0 ? { clients: clientsHere } : {}),
             ...(flaggedHere.length > 0 ? { blocked: flaggedHere } : {}),
           });
         }
@@ -237,15 +276,60 @@ export const rollbackBatch = async (
   let removed = 0;
   let kept = 0;
   let unblocked = 0;
+  let clientsRemoved = 0;
   let done = 0;
   for (const chunk of chunkDocs) {
     const phones = (chunk.data().phones ?? []) as string[];
+    const clientPhones = (chunk.data().clients ?? []) as string[];
     const blockedHere = new Set((chunk.data().blocked ?? []) as string[]);
     const all = [...new Set([...phones, ...blockedHere])];
     const created = new Set(phones);
+    const clientsCreated = new Set(clientPhones);
+    const clientsToRead = [...new Set([...clientPhones, ...blockedHere])];
+    // A client someone has written a note on is never removed (notes can't be read
+    // inside a transaction, so this is looked at first, a few at a time)
+    const hasNotes = new Set<string>();
+    await mapPool(clientPhones, LOOKUP_CONCURRENCY, async (phone) => {
+      const notes = await getDocs(query(collection(firestore, "clients", phone, "notes"), limit(1)));
+      if (!notes.empty) hasNotes.add(phone);
+    });
     const result = await runTransaction(firestore, async (tx) => {
       const refs = all.map((p) => doc(firestore, "customerLookups", p));
-      const snaps = await Promise.all(refs.map((r) => tx.get(r)));
+      const clientRefs = clientsToRead.map((p) => doc(firestore, "clients", p));
+      const [snaps, clientSnaps] = await Promise.all([
+        Promise.all(refs.map((r) => tx.get(r))),
+        Promise.all(clientRefs.map((r) => tx.get(r))),
+      ]);
+      // The client documents this batch made go too, if they are still exactly as imported:
+      // no bookings, no visits, no edits, no notes. One that has changed is kept.
+      let clientsGone = 0;
+      clientSnaps.forEach((snap, k) => {
+        const phone = clientsToRead[k];
+        if (!snap.exists()) return;
+        const c = snap.data() as {
+          bookingCount?: number;
+          totalVisits?: number;
+          nameOverride?: boolean;
+          tags?: string[];
+          blocked?: boolean;
+        };
+        const pristine =
+          clientsCreated.has(phone) &&
+          !hasNotes.has(phone) &&
+          (c.bookingCount ?? 0) === 0 &&
+          (c.totalVisits ?? 0) === 0 &&
+          !c.nameOverride &&
+          (c.tags ?? []).length === 0;
+        if (pristine) {
+          tx.delete(clientRefs[k]);
+          tx.delete(doc(firestore, "clientCards", phone));
+          clientsGone += 1;
+        } else if (blockedHere.has(phone) && c.blocked === true) {
+          // a client that stays loses the blocked flag THIS batch set
+          tx.update(clientRefs[k], { blocked: false, blockReason: deleteField() });
+          tx.update(doc(firestore, "clientCards", phone), { blocked: false });
+        }
+      });
       let gone = 0;
       let stayed = 0;
       let freed = 0;
@@ -268,8 +352,9 @@ export const rollbackBatch = async (
         }
       });
       tx.delete(chunk.ref); // the ledger keeps no phone numbers once handled
-      return { gone, stayed, freed };
+      return { gone, stayed, freed, clientsGone };
     });
+    clientsRemoved += result.clientsGone;
     removed += result.gone;
     kept += result.stayed;
     unblocked += result.freed;
@@ -281,6 +366,7 @@ export const rollbackBatch = async (
     rolledBackAt: new Date().toISOString(),
     removed,
     kept,
+    ...(clientsRemoved > 0 ? { clientsRemoved } : {}),
     ...(unblocked > 0 ? { unblocked } : {}),
   });
   return { removed, kept, ...(unblocked > 0 ? { unblocked } : {}) };

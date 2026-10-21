@@ -236,11 +236,11 @@ describe("dryRun", () => {
 });
 
 describe("batching", () => {
-  it("splits into chunks under the 500-write limit (400 lookups + 1 ledger entry)", () => {
-    expect(IMPORT_CHUNK + 1).toBeLessThanOrEqual(500);
+  it("splits into chunks under the 500-write limit (3 writes per client + 1 ledger entry)", () => {
+    expect(IMPORT_CHUNK * 3 + 1).toBeLessThanOrEqual(500);
     const items = Array.from({ length: 1250 }, (_, i) => i);
     const chunks = chunkEntries(items);
-    expect(chunks.map((c) => c.length)).toEqual([400, 400, 400, 50]);
+    expect(chunks.map((c) => c.length)).toEqual([...Array(8).fill(IMPORT_CHUNK), 50]);
     expect(chunks.flat()).toEqual(items);
     expect(chunkEntries([])).toEqual([]);
   });
@@ -254,7 +254,7 @@ describe("batching", () => {
     const plan = buildPlan(rows);
     expect(plan.entries).toHaveLength(12_286);
     const chunks = chunkEntries(plan.entries);
-    expect(chunks).toHaveLength(31);
+    expect(chunks).toHaveLength(Math.ceil(12_286 / IMPORT_CHUNK)); // 82
     expect(new Set(chunks.flat().map((e) => e.phone)).size).toBe(12_286);
   });
 });

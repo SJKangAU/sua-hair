@@ -30,9 +30,10 @@ export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 // 30 minutes without finishing, so that size is not demonstrated. 20,000 is well above the real
 // export (12,286 clients) and comfortably inside what was measured.
 export const MAX_ROWS = 20_000;
-// Lookups written per transaction: 400 + 1 ledger document stays well under
-// Firestore's 500-write limit
-export const IMPORT_CHUNK = 400;
+// Clients written per transaction. Each new client is THREE writes (its visit record,
+// its client document and its card), so 150 x 3 + 1 ledger document = 451 stays under
+// Firestore's 500-write limit (it was 400 when a client was one write; DEC-044).
+export const IMPORT_CHUNK = 150;
 export const MAX_NAME_LENGTH = 100;
 
 export interface ImportEntry {
@@ -41,6 +42,9 @@ export interface ImportEntry {
   row: number; // the row that won, for the error report
   // Fresha's Blocked column said "Yes" (for any row sharing this number)
   blocked?: boolean;
+  // The date Fresha added the client (YYYY-MM-DD), so "new clients" in the directory
+  // means new to the salon, not "imported today"
+  added?: string;
 }
 
 export interface RowProblem {
@@ -159,13 +163,19 @@ export const buildPlan = (rows: RawRow[]): ImportPlan => {
       // lost because another client at the same number was added later)
       const either = blocked || seen.entry.blocked === true;
       if (added >= seen.added) {
-        byPhone.set(phone, { entry: { phone, name, row: rowNumber, ...(either ? { blocked: true } : {}) }, added });
+        byPhone.set(phone, {
+          entry: { phone, name, row: rowNumber, ...(either ? { blocked: true } : {}), ...(added ? { added } : {}) },
+          added,
+        });
       } else if (either) {
         seen.entry.blocked = true;
       }
       return;
     }
-    byPhone.set(phone, { entry: { phone, name, row: rowNumber, ...(blocked ? { blocked: true } : {}) }, added });
+    byPhone.set(phone, {
+      entry: { phone, name, row: rowNumber, ...(blocked ? { blocked: true } : {}), ...(added ? { added } : {}) },
+      added,
+    });
   });
 
   const entries = [...byPhone.values()].map((v) => v.entry).sort((a, b) => a.row - b.row);
