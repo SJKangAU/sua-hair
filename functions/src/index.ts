@@ -52,7 +52,14 @@ import { backfillClientsCore } from "./clientBackfill";
 import { SALON } from "./salon";
 import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } from "./sms/provider";
 import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
-import { requireCapability, requireOwner } from "./guards";
+import { callerRole, requireCapability, requireOwner } from "./guards";
+import {
+  decideTimeOffCore,
+  previewTimeOffCore,
+  requestTimeOffCore,
+  withdrawTimeOffCore,
+  type TimeOffActor,
+} from "./timeOff";
 import {
   cancelManagedBookingCore,
   getManagedBookingCore,
@@ -341,6 +348,7 @@ const HTTPS_CODE: Record<CommandErrorCode, HttpsError["code"]> = {
   "not-found": "not-found",
   precondition: "failed-precondition",
   "needs-stylist": "failed-precondition",
+  forbidden: "permission-denied",
 };
 
 /** Run a command, turning its refusals into the HttpsError the app shows. */
@@ -411,6 +419,45 @@ export const requestBookingChange = onCall({ region: REGION, maxInstances: 10 },
   requireAppCheck(request);
   return run(() => requestChangeCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
 });
+
+// ── Stylist time off (FR-029, DEC-055) ──────────────────────────────────────
+// Signed-in staff only. A stylist asks for their own days off and blocked times; the owner, or a
+// stylist the owner has trusted with "approve time off", decides. The role and the permission
+// are read from the users/{uid} record, so taking a permission away works at once.
+
+const timeOffActor = async (request: CallableRequest): Promise<TimeOffActor> => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
+  const caller = await callerRole(db, request);
+  if (!caller) throw new HttpsError("permission-denied", "You don't have access to this.");
+  const token = request.auth.token as { name?: string; email?: string };
+  let canApprove = caller.role === "owner";
+  if (caller.role === "stylist") {
+    const caps = (await db.doc(`users/${caller.uid}`).get()).get("effectiveCaps");
+    canApprove = Array.isArray(caps) && caps.includes("approveTimeOff");
+  }
+  return {
+    uid: caller.uid,
+    name: token.name ?? token.email ?? caller.uid,
+    role: caller.role,
+    ...(caller.stylistId ? { stylistId: caller.stylistId } : {}),
+    canApprove,
+  };
+};
+
+const timeOffCommand = <R>(core: (db: Firestore, raw: unknown, actor: TimeOffActor, now: number) => Promise<R>) =>
+  onCall({ region: REGION, maxInstances: 5, timeoutSeconds: 120 }, async (request) => {
+    const actor = await timeOffActor(request);
+    return run(() => core(db, request.data, actor, Date.now()));
+  });
+
+/** previewTimeOff - staff. The clients' bookings a request would clash with. */
+export const previewTimeOff = timeOffCommand(previewTimeOffCore);
+/** requestTimeOff - staff. Holds, waits or applies at once as the owner's policy says. */
+export const requestTimeOff = timeOffCommand(requestTimeOffCore);
+/** decideTimeOff - owner or approver. { id, decision: "approve" | "decline", cancelBookingIds?, note? }. */
+export const decideTimeOff = timeOffCommand(decideTimeOffCore);
+/** withdrawTimeOff - the requester (while waiting) or an approver. */
+export const withdrawTimeOff = timeOffCommand(withdrawTimeOffCore);
 
 const ownerCommand = <R>(
   action: string,

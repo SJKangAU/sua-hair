@@ -42,6 +42,8 @@ export const LIMITS = {
   // shared address, tight per booking (a customer opens it a handful of times).
   managePerIp: { max: 120, windowMs: HOUR },
   managePerBooking: { max: 40, windowMs: HOUR },
+  // Time-off requests and previews from one signed-in person
+  timeOffPerDay: { max: 40, windowMs: 24 * HOUR },
 } as const satisfies Record<string, Limit>;
 
 export const hashKey = (value: string): string =>

@@ -14,7 +14,8 @@ export type CommandErrorCode =
   | "slot-taken" //     the slot (or every stylist, for "any") is no longer free
   | "not-found" //      no such booking / service / stylist
   | "precondition" //   the booking is not in a state that allows this
-  | "needs-stylist"; // a legacy "any" booking must be given a stylist first
+  | "needs-stylist" // a legacy "any" booking must be given a stylist first
+  | "forbidden"; //     the caller may not do this (time off for someone else, approving their own...)
 
 export class CommandError extends Error {
   constructor(

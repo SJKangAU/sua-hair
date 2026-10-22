@@ -158,3 +158,58 @@ describe("the email wording (privateSettings/email, FR-027)", () => {
   });
 });
 
+describe("time off (timeOff, privateSettings/timeOff, FR-029)", () => {
+  const owner = () => env.authenticatedContext("owner-uid", { role: "owner" }).firestore();
+  const approver = () => as({ caps: ["timeoff"] });
+  const other = () => env.authenticatedContext("yuto-uid", { role: "stylist", stylistId: "stylist-2" }).firestore();
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("timeOff/r1").set({ stylistId: "stylist-1", kind: "dayoff", status: "pending", reason: "Family" });
+      await ctx.firestore().doc("timeOff/r2").set({ stylistId: "stylist-2", kind: "dayoff", status: "pending", reason: "Private" });
+    });
+  });
+
+  it("the owner and an approver read every request; a stylist only their own; the public none", async () => {
+    for (const db of [owner(), approver()]) {
+      await assertSucceeds(db.doc("timeOff/r1").get());
+      await assertSucceeds(db.doc("timeOff/r2").get());
+      await assertSucceeds(db.collection("timeOff").where("status", "==", "pending").get());
+    }
+    await assertSucceeds(plain().doc("timeOff/r1").get());
+    await assertSucceeds(plain().collection("timeOff").where("stylistId", "==", "stylist-1").get());
+    await assertFails(plain().doc("timeOff/r2").get());
+    await assertFails(plain().collection("timeOff").get());
+    await assertFails(other().doc("timeOff/r1").get());
+    await assertFails(env.unauthenticatedContext().firestore().doc("timeOff/r1").get());
+    await assertFails(as({ caps: ["msg"] }).doc("timeOff/r2").get()); // another permission is not this one
+  });
+
+  it("nobody writes a request from a browser, the owner and approvers included", async () => {
+    for (const db of [owner(), approver(), plain()]) {
+      await assertFails(db.doc("timeOff/new").set({ stylistId: "stylist-1", kind: "dayoff", status: "approved" }));
+      await assertFails(db.doc("timeOff/r1").update({ status: "approved" }));
+      await assertFails(db.doc("timeOff/r1").delete());
+    }
+  });
+
+  it("the policy for a waiting request: the owner writes a valid one; nobody else reads or writes it", async () => {
+    await assertSucceeds(owner().doc("privateSettings/timeOff").set({ pending: "auto", autoMaxHours: 3 }));
+    await assertSucceeds(owner().doc("privateSettings/timeOff").set({ pending: "hold", autoMaxHours: 12 }));
+    for (const bad of [
+      { pending: "never", autoMaxHours: 3 },
+      { pending: "hold", autoMaxHours: 0 },
+      { pending: "hold", autoMaxHours: 13 },
+      { pending: "hold", autoMaxHours: 1.5 },
+      { pending: "hold" },
+      { pending: "hold", autoMaxHours: 3, extra: 1 },
+    ]) {
+      await assertFails(owner().doc("privateSettings/timeOff").set(bad));
+    }
+    for (const db of [plain(), editor(), approver()]) {
+      await assertFails(db.doc("privateSettings/timeOff").get());
+      await assertFails(db.doc("privateSettings/timeOff").set({ pending: "auto", autoMaxHours: 3 }));
+    }
+  });
+});
+

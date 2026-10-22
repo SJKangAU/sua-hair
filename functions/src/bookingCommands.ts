@@ -283,13 +283,13 @@ const fitsHours = (
 
 // ── The stylist-day lock (shared with the owner's browser writes) ────────────
 
-interface Day {
+export interface Day {
   lockRef: DocumentReference;
   version: number;
   bookings: Booking[];
 }
 
-const readDay = async (
+export const readDay = async (
   tx: Transaction,
   db: Firestore,
   stylistId: string,
@@ -309,7 +309,7 @@ const readDay = async (
   };
 };
 
-const bumpLock = (tx: Transaction, day: Day, now: number): void => {
+export const bumpLock = (tx: Transaction, day: Day, now: number): void => {
   tx.set(day.lockRef, { version: day.version + 1, updatedAt: iso(now) });
 };
 

@@ -75,6 +75,7 @@ const router = createBrowserRouter([
       { path: "clients", lazy: adminTab("ClientsRoute") },
       { path: "clients/:clientId", lazy: adminTab("ClientRoute") },
       { path: "training", lazy: adminTab("TrainingRoute") },
+      { path: "time-off", lazy: adminTab("TimeOffRoute") },
       { path: "analytics", lazy: adminTab("AnalyticsRoute") },
       { path: "manage", lazy: adminTab("ManageRoute") },
       { path: "*", element: <Navigate to="/admin/today" replace /> },
@@ -97,6 +98,21 @@ const router = createBrowserRouter([
         Component: () => (
           <ProtectedRoute requiredRole="stylist" loginPath="/stylist/login">
             <StylistSchedulePage />
+          </ProtectedRoute>
+        ),
+      };
+    },
+    HydrateFallback: PageLoading,
+  },
+  {
+    // A stylist's days off and blocked times (FR-029); also where an approver decides them
+    path: "/stylist/time-off",
+    lazy: async () => {
+      const StylistTimeOffPage = (await import("../pages/StylistTimeOffPage")).default;
+      return {
+        Component: () => (
+          <ProtectedRoute requiredRole="stylist" loginPath="/stylist/login">
+            <StylistTimeOffPage />
           </ProtectedRoute>
         ),
       };

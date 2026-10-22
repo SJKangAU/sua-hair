@@ -85,6 +85,15 @@ service cloud.firestore {
         && (!('reminder' in d.templates) || validEmailTemplate(d.templates.reminder));
     }
 
+    // What happens to a time-off request while it waits (FR-029): hold the time, wait, or apply a
+    // short block at once (up to N hours)
+    function validTimeOffPolicy(d) {
+      return d.keys().hasOnly(['pending', 'autoMaxHours'])
+        && d.pending in ['hold', 'wait', 'auto']
+        && d.autoMaxHours is int
+        && d.autoMaxHours >= 1 && d.autoMaxHours <= 12;
+    }
+
     function smsTemplatesOk(t) {
       return (!('received' in t) || (t.received is string && t.received.size() > 0 && t.received.size() <= 320))
         && (!('confirmed' in t) || (t.confirmed is string && t.confirmed.size() > 0 && t.confirmed.size() <= 320))
@@ -290,10 +299,21 @@ service cloud.firestore {
           && request.resource.data.ownerEmail.size() <= 254)
         || (docId == 'sms' && validSmsSettings(request.resource.data))
         || (docId == 'email' && validEmailSettings(request.resource.data))
+        || (docId == 'timeOff' && validTimeOffPolicy(request.resource.data))
       )) || (hasCap('msg') && (
         (docId == 'sms' && validSmsSettings(request.resource.data))
         || (docId == 'email' && validEmailSettings(request.resource.data))
       ));
+    }
+
+    // ── timeOff ─────────────────────────────────────────────────────────
+    // Requests for a stylist's days off and blocked times (FR-029). Written only by the time-off
+    // functions (the Admin SDK); the owner and anyone allowed to approve time off read them all,
+    // a stylist reads their own.
+    match /timeOff/{requestId} {
+      allow read: if isOwner() || hasCap('timeoff')
+        || (isStylist() && resource.data.stylistId == request.auth.token.stylistId);
+      allow write: if false;
     }
 
     // ── smsLog ──────────────────────────────────────────────────────────

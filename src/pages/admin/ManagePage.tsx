@@ -9,6 +9,7 @@ import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
 import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
 import TeamAccess from "../../components/admin/manage/TeamAccess";
+import TimeOffPolicySettings from "../../components/admin/manage/TimeOffPolicySettings";
 import PolicySettings from "../../components/admin/manage/PolicySettings";
 import EmailSettings from "../../components/admin/manage/EmailSettings";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
@@ -71,6 +72,14 @@ const ManagePage = ({ isOwner }: Props) => {
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
           />
           <OwnerNotificationsEditor
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* What happens to a stylist's time-off request while it waits (FR-029) - owner only */}
+          <TimeOffPolicySettings
             onSuccess={(msg) => addToast(msg, "success")}
             onError={(msg) => addToast(msg, "error")}
           />

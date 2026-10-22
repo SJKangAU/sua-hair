@@ -11,6 +11,7 @@ import BookingsPage from "./BookingsPage";
 import ClientsPage from "./ClientsPage";
 import ClientPage from "./ClientPage";
 import TrainingPage from "./TrainingPage";
+import TimeOffPage from "./TimeOffPage";
 import AnalyticsPage from "./AnalyticsPage";
 import ManagePage from "./ManagePage";
 
@@ -42,6 +43,8 @@ export const ClientsRoute = () => <ClientsPage />;
 export const ClientRoute = () => <ClientPage />;
 
 export const TrainingRoute = () => <TrainingPage />;
+
+export const TimeOffRoute = () => <TimeOffPage />;
 
 // Defense in depth: finance data is never rendered for a non-owner, even if
 // they reach this URL some other way

@@ -119,6 +119,9 @@ const ScheduleInner = () => {
           >
             My clients
           </Link>
+          <Link to="/stylist/time-off" style={{ color: "var(--admin-dimmer)", fontSize: "0.8rem" }}>
+            Time off
+          </Link>
           {can(appUser, "editMessages") && (
             <Link to="/stylist/messages" style={{ color: "var(--admin-dimmer)", fontSize: "0.8rem" }}>
               Messages
