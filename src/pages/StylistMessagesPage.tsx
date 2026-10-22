@@ -9,6 +9,7 @@ import useAppUser from "../hooks/useAppUser";
 import { can } from "../lib/permissions";
 import { ToastProvider } from "../context/ToastProvider";
 import { useToastContext } from "../context/ToastContext";
+import EmailSettings from "../components/admin/manage/EmailSettings";
 import SmsSettings from "../components/admin/manage/SmsSettings";
 
 const Inner = () => {
@@ -43,7 +44,10 @@ const Inner = () => {
             You don't have permission to edit messages. Ask the owner if you need it.
           </p>
         ) : (
-          <SmsSettings onSuccess={(m) => addToast(m, "success")} onError={(m) => addToast(m, "error")} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
+            <EmailSettings onSuccess={(m) => addToast(m, "success")} onError={(m) => addToast(m, "error")} />
+            <SmsSettings onSuccess={(m) => addToast(m, "success")} onError={(m) => addToast(m, "error")} />
+          </div>
         )}
       </main>
     </div>

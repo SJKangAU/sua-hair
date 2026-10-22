@@ -97,3 +97,64 @@ describe("without the permission", () => {
     await assertSucceeds(owner.doc("privateSettings/permissions").get());
   });
 });
+
+describe("the email wording (privateSettings/email, FR-027)", () => {
+  const email = (over: Record<string, unknown> = {}) => ({
+    templates: {
+      confirmed: {
+        enabled: true,
+        subject: "Your booking at {salon}",
+        preheader: "{date} at {time}",
+        headline: "See you, {name}",
+        intro: "Your booking is confirmed.",
+        closing: "Call {phone}.",
+        showDetails: true,
+        showReference: false,
+        callButton: true,
+      },
+    },
+    ...over,
+  });
+  const owner = () => env.authenticatedContext("owner-uid", { role: "owner" }).firestore();
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("privateSettings/email").set(email());
+    });
+  });
+
+  it("the owner and an allowed stylist read and write it; another stylist and the public cannot", async () => {
+    await assertSucceeds(owner().doc("privateSettings/email").set(email()));
+    await assertSucceeds(editor().doc("privateSettings/email").get());
+    await assertSucceeds(editor().doc("privateSettings/email").set(email()));
+    for (const db of [plain(), otherCaps(), env.unauthenticatedContext().firestore()]) {
+      await assertFails(db.doc("privateSettings/email").get());
+      await assertFails(db.doc("privateSettings/email").set(email()));
+    }
+  });
+
+  it("accepts some of the wording, or none of it", async () => {
+    await assertSucceeds(editor().doc("privateSettings/email").set({ templates: {} }));
+    await assertSucceeds(editor().doc("privateSettings/email").set({ templates: { reminder: { headline: "Soon, {name}" } } }));
+  });
+
+  it("refuses unknown fields, unknown emails, wrong types, empty or too-long text", async () => {
+    const t = (over: Record<string, unknown>) => ({ templates: { confirmed: { ...email().templates.confirmed, ...over } } });
+    for (const db of [owner(), editor()]) {
+      await assertFails(db.doc("privateSettings/email").set(email({ extra: 1 })));
+      await assertFails(db.doc("privateSettings/email").set({ templates: { surprise: {} } }));
+      await assertFails(db.doc("privateSettings/email").set(t({ surprise: "x" })));
+      await assertFails(db.doc("privateSettings/email").set(t({ enabled: "yes" })));
+      await assertFails(db.doc("privateSettings/email").set(t({ callButton: 1 })));
+      await assertFails(db.doc("privateSettings/email").set(t({ subject: "" })));
+      await assertFails(db.doc("privateSettings/email").set(t({ subject: "x".repeat(151) })));
+      await assertFails(db.doc("privateSettings/email").set(t({ preheader: "x".repeat(201) })));
+      await assertFails(db.doc("privateSettings/email").set(t({ headline: "x".repeat(201) })));
+      await assertFails(db.doc("privateSettings/email").set(t({ intro: "x".repeat(1001) })));
+      await assertFails(db.doc("privateSettings/email").set(t({ closing: "x".repeat(601) })));
+      await assertFails(db.doc("privateSettings/email").set(t({ intro: 7 })));
+    }
+    await assertSucceeds(owner().doc("privateSettings/email").set(t({ intro: "x".repeat(1000), subject: "x".repeat(150) })));
+  });
+});
+

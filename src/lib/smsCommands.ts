@@ -29,3 +29,21 @@ export const sendTestSms = async (kind: SmsKind, to: string): Promise<TestSmsRes
     throw new SmsCommandError(e.message);
   }
 };
+
+/** Emails the saved wording for `kind`, with a sample booking, to `to`. */
+export const sendTestEmail = async (kind: SmsKind, to: string): Promise<{ subject: string }> => {
+  try {
+    const res = await httpsCallable<{ kind: SmsKind; to: string }, { subject: string }>(functions, "sendTestEmail")({ kind, to });
+    return res.data;
+  } catch (err) {
+    const e = err as { code?: string; message?: string };
+    const code = (e.code ?? "").replace(/^functions\//, "");
+    if (code === "unavailable" || code === "deadline-exceeded") {
+      throw new SmsCommandError("We couldn't reach the server. Please check your connection and try again.");
+    }
+    if (code === "internal" || code === "unknown" || code === "unauthenticated" || !e.message) {
+      throw new SmsCommandError("Something went wrong on our side. Please try again.");
+    }
+    throw new SmsCommandError(e.message);
+  }
+};

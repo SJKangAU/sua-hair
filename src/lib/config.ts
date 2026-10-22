@@ -71,7 +71,9 @@ export const SALON_CONFIG = {
   // ── Calendar Settings ──────────────────────────────────────────────────────
   // Used when generating Add to Calendar links
   salonName: "Sua Hair Studio",
-  salonAddress: "Melbourne, VIC",
+  // Mirrors functions/src/salon.ts (the emails): keep the two in step. Only the suburb is
+  // known; the full street address is still to be added (TODO(owner)).
+  salonAddress: "Glen Waverley, VIC",
   salonPhone: "(03) 9569 0840",
   salonEmail: "info@suahair.com.au",
 };

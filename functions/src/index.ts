@@ -14,14 +14,9 @@ import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue, type Firestore } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
-import {
-  buildConfirmationEmail,
-  buildNotConfirmedEmail,
-  buildOwnerNotification,
-  buildReminderEmail,
-  buildRequestReceivedEmail,
-  type BookingEmailData,
-} from "./email/templates";
+import { buildEmail, buildOwnerNotification, type BookingEmailData } from "./email/templates";
+import { sendTestEmailCore } from "./email/testEmail";
+import { effectiveEmailSettings } from "../../src/lib/emailRender";
 import {
   emailKindOnCreate,
   emailKindOnUpdate,
@@ -409,6 +404,34 @@ export const sendTestSms = onCall(
   },
 );
 
+/**
+ * sendTestEmail - owner, or a stylist allowed to edit message wording. { kind, to }: emails the
+ * saved wording for one message, filled in with a made-up booking, to the address given.
+ */
+export const sendTestEmail = onCall(
+  { region: REGION, maxInstances: 3, secrets: [RESEND_API_KEY] },
+  async (request) => {
+    const caller = await requireCapability(db, request, "editMessages", "send a test email");
+    return run(() =>
+      sendTestEmailCore(
+        db,
+        (email) =>
+          sendEmail(RESEND_API_KEY.value(), {
+            from: EMAIL_FROM.value(),
+            to: email.to,
+            replyTo: SALON.replyTo,
+            subject: email.subject,
+            html: email.html,
+            text: email.text,
+          }),
+        request.data,
+        caller.uid,
+        Date.now(),
+      ),
+    );
+  },
+);
+
 /** recomputeClients - owner. { clientId? }: repair one client's figures, or every client's. */
 export const recomputeClients = ownerClientCommand(
   "recompute clients",
@@ -492,13 +515,10 @@ const sendBookingEmail = async (
 ): Promise<void> => {
   if (!isValidEmail(booking.customerEmail)) return;
   try {
-    const data = toEmailData(booking);
-    const email =
-      kind === "received"
-        ? buildRequestReceivedEmail(data)
-        : kind === "confirmed"
-        ? buildConfirmationEmail(data)
-        : buildNotConfirmedEmail(data);
+    // The owner's own wording (privateSettings/email), or the default; an email switched off is not sent
+    const template = effectiveEmailSettings((await db.doc("privateSettings/email").get()).data()).templates[kind];
+    if (!template.enabled) return;
+    const email = buildEmail(kind, toEmailData(booking), template);
     await sendEmail(RESEND_API_KEY.value(), {
       from: EMAIL_FROM.value(),
       to: booking.customerEmail,
@@ -654,6 +674,10 @@ export const sendBookingReminders = onSchedule(
       return;
     }
 
+    const reminderTemplate = effectiveEmailSettings(
+      (await db.doc("privateSettings/email").get()).data(),
+    ).templates.reminder;
+
     let sent = 0;
     for (const docSnap of snap.docs) {
       const booking = docSnap.data() as BookingDoc;
@@ -674,10 +698,10 @@ export const sendBookingReminders = onSchedule(
       // whether this customer gave an email address.
       await sendBookingSmsCore(db, smsTransport(), "reminder", docSnap.id, booking, now);
 
-      if (booking.reminderSentAt || !isValidEmail(booking.customerEmail)) continue;
+      if (booking.reminderSentAt || !isValidEmail(booking.customerEmail) || !reminderTemplate.enabled) continue;
 
       try {
-        const email = buildReminderEmail(toEmailData(booking));
+        const email = buildEmail("reminder", toEmailData(booking), reminderTemplate);
         await sendEmail(RESEND_API_KEY.value(), {
           from: EMAIL_FROM.value(),
           to: booking.customerEmail,

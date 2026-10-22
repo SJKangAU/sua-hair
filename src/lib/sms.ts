@@ -158,14 +158,15 @@ const CONTROL = /[\u0000-\u001f\u007f]/g;
 /** A customer-supplied value, made safe to drop into a text. */
 const tidyValue = (v: string, max: number): string => v.replace(CONTROL, " ").replace(/ +/g, " ").trim().slice(0, max);
 
+/** Put the booking's values into a template's {placeholders}; a value is made safe first. */
+export const fillTemplate = (template: string, values: SmsValues): string =>
+  template.replace(TOKEN, (_m, key: string) => {
+    const v = (values as Record<string, string | undefined>)[key];
+    return v === undefined ? "" : tidyValue(v, 80);
+  });
+
 export const renderSms = (template: string, values: SmsValues): string =>
-  template
-    .replace(TOKEN, (_m, key: string) => {
-      const v = (values as Record<string, string | undefined>)[key];
-      return v === undefined ? "" : tidyValue(v, 80);
-    })
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
+  fillTemplate(template, values).replace(/[ \t]{2,}/g, " ").trim();
 
 /** The values for a booking. */
 export interface SmsBookingFields {

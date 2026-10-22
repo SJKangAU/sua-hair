@@ -37,6 +37,7 @@ export const LIMITS = {
   smsPerPhone: { max: 6, windowMs: 24 * HOUR },
   smsPerDay: { max: 400, windowMs: 24 * HOUR },
   smsTestPerHour: { max: 10, windowMs: HOUR },
+  emailTestPerHour: { max: 10, windowMs: HOUR },
 } as const satisfies Record<string, Limit>;
 
 export const hashKey = (value: string): string =>

@@ -9,6 +9,7 @@ import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
 import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
 import TeamAccess from "../../components/admin/manage/TeamAccess";
+import EmailSettings from "../../components/admin/manage/EmailSettings";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
 import ClientImport from "../../components/admin/manage/ClientImport";
 import ClientBackfill from "../../components/admin/manage/ClientBackfill";
@@ -69,6 +70,15 @@ const ManagePage = ({ isOwner }: Props) => {
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
           />
           <OwnerNotificationsEditor
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* Emails: which go out and their wording (FR-027) - owner only here; a stylist the owner
+              has allowed to edit wording uses /stylist/messages. */}
+          <EmailSettings
             onSuccess={(msg) => addToast(msg, "success")}
             onError={(msg) => addToast(msg, "error")}
           />
