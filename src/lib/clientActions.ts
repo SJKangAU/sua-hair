@@ -130,6 +130,31 @@ export const setClientSmsOptOut = async (
   await batch.commit();
 };
 
+// Invitations to come back on or off for one client (FR-030). Recording consent is the owner
+// saying "this person told me they would like to hear from us" (a conversation at the desk,
+// say); stopping is the same as the client pressing the link in an invitation. The latest of
+// the two decides (src/lib/marketing.ts), and the history keeps who did it.
+export const setClientMarketing = async (
+  db: Firestore,
+  clientId: string,
+  agree: boolean,
+  actor: Actor,
+): Promise<void> => {
+  const now = new Date().toISOString();
+  const batch = writeBatch(db);
+  batch.update(
+    doc(db, "clients", clientId),
+    agree
+      ? { marketingOptIn: true, marketingConsentAt: now, marketingSource: "owner-recorded", updatedAt: now }
+      : { marketingOptIn: deleteField(), marketingOptOutAt: now, updatedAt: now },
+  );
+  batch.set(
+    doc(collection(db, "clients", clientId, "audit")),
+    auditEntry("edit", actor, agree ? "recorded that they agreed to hear about coming back" : "stopped invitations to come back"),
+  );
+  await batch.commit();
+};
+
 export const MAX_NOTE_LENGTH = 2000;
 
 export const addNote = async (

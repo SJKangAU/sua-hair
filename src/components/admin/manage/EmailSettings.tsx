@@ -300,6 +300,7 @@ const EmailSettingsEditor = ({ onSuccess, onError }: Props) => {
                         ["callButton", "Show the call button"],
                         ["manageButton", "Show the \"Change or cancel this booking\" button"],
                         ["attachCalendar", "Attach the appointment, to add to their calendar"],
+                        ["bookButton", "Show a \"Book now\" button (for inviting someone back)"],
                       ] as const
                     ).map(([flag, text]) => (
                       <label key={flag} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", cursor: "pointer" }}>

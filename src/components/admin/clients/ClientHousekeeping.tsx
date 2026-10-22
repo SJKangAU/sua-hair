@@ -6,12 +6,13 @@
 // an audit entry (who, what, when).
 
 import { useState } from "react";
-import { Ban, Download, GitMerge, MessageSquareOff, MessageSquareText, Pencil, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
+import { Ban, Download, GitMerge, MailCheck, MailX, MessageSquareOff, MessageSquareText, Pencil, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
 import Modal from "../../ui/Modal";
 import { db } from "../../../lib/firebase";
 import { fetchClientPage } from "../../../lib/clientDirectory";
 import { businessToday } from "../../../lib/businessTime";
-import { cleanTags, saveClientDetails, setClientBlocked, setClientSmsOptOut, type Actor } from "../../../lib/clientActions";
+import { hasMarketingConsent } from "../../../lib/marketing";
+import { cleanTags, saveClientDetails, setClientBlocked, setClientMarketing, setClientSmsOptOut, type Actor } from "../../../lib/clientActions";
 import {
   ClientCommandError,
   anonymiseClient,
@@ -21,7 +22,7 @@ import {
 } from "../../../lib/clientCommands";
 import type { Client } from "../../../types";
 
-type Dialog = null | "edit" | "block" | "merge" | "anonymise";
+type Dialog = null | "edit" | "block" | "merge" | "anonymise" | "marketing";
 
 interface Props {
   client: Client;
@@ -120,6 +121,20 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
       onDone(client.smsOptOut ? "They'll get booking texts again." : "No more booking texts for this client.");
     } catch {
       onError("Couldn't change the text setting.");
+    }
+    setBusy(false);
+  };
+
+  // ── invitations to come back on / off ──────────────────────────────────────
+  const agreed = hasMarketingConsent(client);
+  const saveMarketing = async (agree: boolean) => {
+    setBusy(true);
+    try {
+      await setClientMarketing(db, client.id, agree, actor);
+      setDialog(null);
+      onDone(agree ? "Recorded. They can now be invited back." : "They won't be invited back.");
+    } catch {
+      onError("Couldn't change that.");
     }
     setBusy(false);
   };
@@ -223,6 +238,16 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
           {client.smsOptOut ? <MessageSquareText size={14} aria-hidden="true" /> : <MessageSquareOff size={14} aria-hidden="true" />}
           {client.smsOptOut ? "Allow texts" : "Stop texts"}
         </button>
+        <button
+          type="button"
+          style={button()}
+          data-testid="hk-marketing"
+          disabled={busy}
+          onClick={() => (agreed ? void saveMarketing(false) : setDialog("marketing"))}
+        >
+          {agreed ? <MailX size={14} aria-hidden="true" /> : <MailCheck size={14} aria-hidden="true" />}
+          {agreed ? "Stop invitations" : "Record consent"}
+        </button>
         <button type="button" style={button()} data-testid="hk-merge" onClick={() => setDialog("merge")}>
           <GitMerge size={14} aria-hidden="true" /> Merge duplicate
         </button>
@@ -256,6 +281,18 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
           </p>
           <button type="button" style={button(true)} disabled={busy} onClick={() => void saveDetails()} data-testid="edit-save">
             {busy ? "Saving..." : "Save"}
+          </button>
+        </Modal>
+      )}
+
+      {dialog === "marketing" && (
+        <Modal title="Record that they agreed?" onClose={close} width="460px">
+          <p style={{ marginTop: 0 }}>
+            Only do this if this client has told you they would like to hear from the salon about coming back. They can then be
+            emailed or texted an invitation, and every one has a link to stop. It is kept in their history that you recorded it.
+          </p>
+          <button type="button" style={button(true)} disabled={busy} onClick={() => void saveMarketing(true)} data-testid="marketing-confirm">
+            {busy ? "Saving..." : "They agreed"}
           </button>
         </Modal>
       )}

@@ -12,6 +12,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import BookingPage from "../pages/BookingPage";
 import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
 import ManageBookingPage from "../pages/ManageBookingPage";
+import UnsubscribePage from "../pages/UnsubscribePage";
 import TermsPage from "../pages/TermsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import PageLoading from "./PageLoading";
@@ -32,6 +33,11 @@ const router = createBrowserRouter([
     // text - public; the secret in the link is the key (FR-028)
     path: "/manage",
     element: <ManageBookingPage />,
+  },
+  {
+    // The link at the bottom of an invitation to come back - public; the secret in the link is the key (FR-030)
+    path: "/unsubscribe",
+    element: <UnsubscribePage />,
   },
   {
     // Privacy policy — public

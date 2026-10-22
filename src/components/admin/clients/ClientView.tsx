@@ -10,11 +10,12 @@
 // "Book again" opens the create-booking form with the client filled in.
 
 import { useState } from "react";
-import { Ban, CalendarPlus, Mail, MessageSquareOff, Phone } from "lucide-react";
+import { Ban, CalendarPlus, Mail, MailCheck, MailX, MessageSquareOff, Phone } from "lucide-react";
 import { auth } from "../../../lib/firebase";
 import { useClientAudit, useClientRecord } from "../../../hooks/useClientData";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
+import { hasMarketingConsent } from "../../../lib/marketing";
 import type { Actor } from "../../../lib/clientActions";
 import type { ClientAccess } from "../../../lib/clientAccess";
 import type { Client } from "../../../types";
@@ -122,6 +123,16 @@ const ClientView = ({ clientId, role, stylistId, access, onBookAgain, onNotice, 
               {full?.smsOptOut && (
                 <span style={pill} data-testid="no-texts-badge">
                   <MessageSquareOff size={11} aria-hidden="true" /> No texts
+                </span>
+              )}
+              {role === "owner" && full && hasMarketingConsent(full) && (
+                <span style={pill} data-testid="agreed-badge" title={`Agreed on ${fmtDate(full.marketingConsentAt?.slice(0, 10) ?? "")}`}>
+                  <MailCheck size={11} aria-hidden="true" /> Agreed to invitations
+                </span>
+              )}
+              {role === "owner" && full?.marketingOptOutAt && !hasMarketingConsent(full) && (
+                <span style={pill} data-testid="unsubscribed-badge">
+                  <MailX size={11} aria-hidden="true" /> Unsubscribed
                 </span>
               )}
               {client.tags.map((t) => (

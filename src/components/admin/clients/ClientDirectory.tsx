@@ -7,7 +7,7 @@
 // Clicking a client calls onOpen(id) (a drawer, or the full page).
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Ban, Search, Users } from "lucide-react";
+import { Ban, Search, Send, Users } from "lucide-react";
 import useClientDirectory from "../../../hooks/useClientDirectory";
 import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
 import { scopeOptions, type ClientAccess } from "../../../lib/clientAccess";
@@ -27,6 +27,8 @@ interface Props {
   stylistNames?: Record<string, string>;
   onOpen: (clientId: string) => void;
   initialSearch?: string;
+  // shows the "Invite lapsed clients back" button (the owner, or a stylist allowed to send win-back messages)
+  onInviteBack?: () => void;
 }
 
 const FILTERS: { id: DirectoryFilter; label: string }[] = [
@@ -105,7 +107,7 @@ const badge: React.CSSProperties = {
 
 const isFull = (c: Client | ClientCard): c is Client => "totalVisits" in c;
 
-const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initialSearch = "" }: Props) => {
+const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initialSearch = "", onInviteBack }: Props) => {
   const options = useMemo(
     () => (role === "stylist" && stylistId ? scopeOptions(stylistId, access ?? { all: false, stylistIds: [] }, stylistNames) : []),
     [role, stylistId, access, stylistNames],
@@ -156,6 +158,14 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
         />
       </div>
 
+      {!owner && onInviteBack && (
+        <div>
+          <button type="button" data-testid="invite-back" onClick={onInviteBack} style={{ ...chip(false), display: "inline-flex", gap: 6, alignItems: "center" }}>
+            <Send size={13} aria-hidden="true" /> Invite lapsed clients back
+          </button>
+        </div>
+      )}
+
       {options.length > 1 && (
         <label style={{ fontSize: "var(--text-sm)", color: "var(--ink-muted)" }}>
           Show{" "}
@@ -191,6 +201,11 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
               </button>
             ))}
           </div>
+          {onInviteBack && (
+            <button type="button" data-testid="invite-back" onClick={onInviteBack} style={{ ...chip(false), display: "inline-flex", gap: 6, alignItems: "center" }}>
+              <Send size={13} aria-hidden="true" /> Invite lapsed clients back
+            </button>
+          )}
           <label style={{ marginLeft: "auto", fontSize: "var(--text-sm)", color: "var(--ink-muted)" }}>
             Sort{" "}
             <select

@@ -139,7 +139,7 @@ const SmsSettingsEditor = ({ onSuccess, onError }: Props) => {
   const senderOk = isValidSenderName(settings.senderName);
   const problems = useMemo(
     () =>
-      Object.fromEntries(SMS_KINDS.map((k) => [k, templateProblem(settings.templates[k])])) as Record<
+      Object.fromEntries(SMS_KINDS.map((k) => [k, templateProblem(settings.templates[k], k)])) as Record<
         SmsKind,
         string | null
       >,

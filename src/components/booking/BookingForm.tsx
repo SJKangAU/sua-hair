@@ -112,6 +112,8 @@ const BookingForm = () => {
   const [notes, setNotes] = useState("");
   // Privacy consent — must be checked before the booking can be submitted.
   const [consent, setConsent] = useState(false);
+  // Optional, separate, never pre-ticked: offers and reminders to come back (FR-030)
+  const [marketing, setMarketing] = useState(false);
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -236,6 +238,7 @@ const BookingForm = () => {
         ...(customerEmail.trim() ? { customerEmail: customerEmail.trim() } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
         consent: true,
+        ...(marketing ? { marketingConsent: true as const } : {}),
         requestId: requestIdRef.current,
       });
       setReceived({ result, customerName: customerName.trim() });
@@ -278,6 +281,7 @@ const BookingForm = () => {
     setCustomerEmail("");
     setNotes("");
     setConsent(false);
+    setMarketing(false);
     setErrors({});
   };
 
@@ -359,6 +363,7 @@ const BookingForm = () => {
               customerEmail={customerEmail}
               notes={notes}
               consent={consent}
+              marketing={marketing}
               errors={errors}
               onPhoneChange={handlePhoneChange}
               onNameChange={(v) => {
@@ -371,6 +376,7 @@ const BookingForm = () => {
               }}
               onNotesChange={setNotes}
               onConsentChange={setConsent}
+              onMarketingChange={setMarketing}
             />
           )}
         </div>

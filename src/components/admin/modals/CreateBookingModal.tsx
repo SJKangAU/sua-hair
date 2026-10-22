@@ -147,6 +147,8 @@ const CreateBookingModal = ({
     date: prefillDate || todayString(),
     time: prefillTime,
     notes: "",
+    // the client says they'd like offers and reminders to come back (FR-030): only ticked when they actually said so
+    marketing: false,
   });
   // ── Break form state ──────────────────────────────────────────────────────
   const [breakForm, setBreakForm] = useState({
@@ -360,6 +362,7 @@ const CreateBookingModal = ({
         date: walkin.date,
         time: walkin.time,
         notes: walkin.notes,
+        ...(walkin.marketing && walkin.customerPhone.trim() ? { marketingConsent: true } : {}),
         bookingRef: buildBookingRef("WI", walkin.date, stylist.id, walkin.time),
         createdAt: new Date().toISOString(),
       };
@@ -878,6 +881,22 @@ const CreateBookingModal = ({
                 setWalkin((prev) => ({ ...prev, notes: e.target.value }))
               }
             />
+          </label>
+
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", fontSize: "var(--text-sm)", margin: "0 0 1rem", cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              data-testid="walkin-marketing"
+              checked={walkin.marketing}
+              onChange={(e) => setWalkin((prev) => ({ ...prev, marketing: e.target.checked }))}
+              style={{ marginTop: 3, accentColor: "var(--ink)" }}
+            />
+            <span>
+              The client agrees to receive offers and reminders to come back
+              <span style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-muted)" }}>
+                Tick only if they said yes. They can unsubscribe at any time.
+              </span>
+            </span>
           </label>
 
           {conflictMessage && <ConflictNotice message={conflictMessage} />}

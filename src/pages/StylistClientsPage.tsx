@@ -8,7 +8,7 @@
 //   /stylist/clients            the list
 //   /stylist/clients/:clientId  one client
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import useAppUser from "../hooks/useAppUser";
@@ -18,6 +18,8 @@ import { useToastContext } from "../context/ToastContext";
 import { useSalonData } from "../context/SalonDataContext";
 import ClientDirectory from "../components/admin/clients/ClientDirectory";
 import ClientView from "../components/admin/clients/ClientView";
+import WinBackModal from "../components/admin/clients/WinBackModal";
+import { can } from "../lib/permissions";
 
 const Inner = () => {
   const { clientId } = useParams();
@@ -27,6 +29,8 @@ const Inner = () => {
   const stylistId = appUser?.stylistId;
   const access = appUser?.clientAccess;
   const { stylists } = useSalonData();
+  const [inviting, setInviting] = useState(false);
+  const canInvite = can(appUser, "sendWinBack");
   const stylistNames = useMemo(
     () => Object.fromEntries(stylists.map((s) => [s.id, s.name.split(" ")[0]])),
     [stylists],
@@ -78,9 +82,11 @@ const Inner = () => {
             access={access}
             stylistNames={stylistNames}
             onOpen={(id) => navigate(`/stylist/clients/${id}`)}
+            onInviteBack={canInvite ? () => setInviting(true) : undefined}
           />
         )}
       </main>
+      {inviting && <WinBackModal onClose={() => setInviting(false)} onNotice={(m, kind) => addToast(m, kind)} />}
     </div>
   );
 };

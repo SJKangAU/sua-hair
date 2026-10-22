@@ -11,6 +11,7 @@ import { useToastContext } from "../../context/ToastContext";
 import { todayString } from "../../lib/dates";
 import ClientDirectory from "../../components/admin/clients/ClientDirectory";
 import ClientDrawer from "../../components/admin/clients/ClientDrawer";
+import WinBackModal from "../../components/admin/clients/WinBackModal";
 import CreateBookingModal from "../../components/admin/modals/CreateBookingModal";
 
 const ClientsPage = () => {
@@ -18,6 +19,7 @@ const ClientsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
   const [bookAgain, setBookAgain] = useState<{ phone: string; name: string } | null>(null);
 
   return (
@@ -33,7 +35,10 @@ const ClientsPage = () => {
         role="owner"
         initialSearch={searchParams.get("q") ?? ""}
         onOpen={(id) => setOpenId(id)}
+        onInviteBack={() => setInviting(true)}
       />
+
+      {inviting && <WinBackModal onClose={() => setInviting(false)} onNotice={(m, kind) => addToast(m, kind)} />}
 
       {openId && (
         <ClientDrawer

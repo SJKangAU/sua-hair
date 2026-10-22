@@ -35,12 +35,14 @@ interface Props {
   customerEmail: string;
   notes: string;
   consent: boolean;
+  marketing: boolean;
   errors: { name?: string; phone?: string; email?: string };
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onNotesChange: (value: string) => void;
   onConsentChange: (value: boolean) => void;
+  onMarketingChange: (value: boolean) => void;
 }
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -79,12 +81,14 @@ const DetailsStep = ({
   customerEmail,
   notes,
   consent,
+  marketing,
   errors,
   onPhoneChange,
   onNameChange,
   onEmailChange,
   onNotesChange,
   onConsentChange,
+  onMarketingChange,
 }: Props) => {
   const formattedDate = date
     ? parseLocalDate(date).toLocaleDateString("en-AU", {
@@ -422,6 +426,38 @@ const DetailsStep = ({
             </a>
             .
           </span>
+        </label>
+
+        {/* Optional, never pre-ticked: agreeing to hear from the salon about coming back
+            (FR-030). A booking confirmation and reminder are sent either way. */}
+        <label
+          htmlFor="booking-marketing"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.625rem",
+            cursor: "pointer",
+            fontSize: "var(--text-sm)",
+            color: "var(--ink-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          <input
+            id="booking-marketing"
+            data-testid="booking-marketing"
+            type="checkbox"
+            checked={marketing}
+            onChange={(e) => onMarketingChange(e.target.checked)}
+            style={{
+              width: "18px",
+              height: "18px",
+              marginTop: "1px",
+              flexShrink: 0,
+              accentColor: "var(--ink)",
+              cursor: "pointer",
+            }}
+          />
+          <span>Send me offers and reminders to come back (optional). You can unsubscribe at any time.</span>
         </label>
       </div>
     </div>
