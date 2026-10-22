@@ -430,6 +430,38 @@ describe("merge, anonymise and export", () => {
     expect(await codeOf(anonymiseClientCore(db, { clientId: tomb }, actor, NOW))).toBe("precondition");
   });
 
+  describe("colour formulas and patch tests (FR-031)", () => {
+    const formula = { kind: "formula", date: "2026-08-20", text: "Roots 6.1 + 20vol 1:1.5", product: "", result: "", authorUid: "stylist-uid", authorName: "Steve", createdAt: "2026-08-20T01:00:00.000Z" };
+    const patch = { kind: "patch", date: "2026-09-02", text: "", product: "Brand X permanent", result: "clear", authorUid: "stylist-uid", authorName: "Steve", createdAt: "2026-09-02T01:00:00.000Z" };
+
+    it("merge moves them onto the kept client with their authors and dates", async () => {
+      await twoClients();
+      await db.doc("clients/0400000002/records/f1").set(formula);
+      await db.doc("clients/0400000001/records/p1").set(patch);
+      await mergeClientsCore(db, { keepId: "0400000001", mergeId: "0400000002" }, actor, NOW);
+      const kept = await db.collection("clients/0400000001/records").get();
+      expect(kept.docs.map((d) => d.id).sort()).toEqual(["f1", "p1"]);
+      expect(kept.docs.find((d) => d.id === "f1")?.data()).toMatchObject({ text: "Roots 6.1 + 20vol 1:1.5", authorName: "Steve", date: "2026-08-20" });
+      expect((await db.collection("clients/0400000002/records").get()).size).toBe(0);
+    });
+
+    it("anonymise deletes them (a patch test is health information); another client keeps theirs", async () => {
+      await twoClients();
+      await db.doc("clients/0400000001/records/p1").set(patch);
+      await db.doc("clients/0400000002/records/f1").set(formula);
+      await anonymiseClientCore(db, { clientId: "0400000001" }, actor, NOW);
+      expect((await db.collection("clients/0400000001/records").get()).size).toBe(0);
+      expect((await db.collection("clients/0400000002/records").get()).size).toBe(1);
+    });
+
+    it("export includes them", async () => {
+      await twoClients();
+      await db.doc("clients/0400000002/records/f1").set(formula);
+      const out = (await exportClientDataCore(db, { clientId: "0400000002" }, actor, NOW)) as { records: { id: string; text: string }[] };
+      expect(out.records).toEqual([expect.objectContaining({ id: "f1", text: "Roots 6.1 + 20vol 1:1.5" })]);
+    });
+  });
+
   it("export returns the client, notes, bookings and audit, and records that it happened", async () => {
     await twoClients();
     const out = (await exportClientDataCore(db, { clientId: "0400000002" }, actor, NOW)) as {

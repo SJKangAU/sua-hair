@@ -23,6 +23,7 @@ import {
   type Firestore,
 } from "firebase/firestore";
 import { MAX_TOKENS, nameKeys, nameTokens, tidyName } from "./clients";
+import { cleanRecord, recordProblem, type NewRecord } from "./clientRecords";
 import type { ClientAuditAction } from "../types";
 
 export interface Actor {
@@ -154,6 +155,23 @@ export const setClientMarketing = async (
   );
   await batch.commit();
 };
+
+// A colour formula or patch test (FR-031): added, never edited; the owner or its author deletes a
+// wrong one. Allowed by the rules to the owner and to a stylist with the "edit client records"
+// permission (who may open this client).
+export const addClientRecord = async (db: Firestore, clientId: string, input: NewRecord, author: Actor): Promise<void> => {
+  const problem = recordProblem(input);
+  if (problem) throw new Error(problem);
+  await addDoc(collection(db, "clients", clientId, "records"), {
+    ...cleanRecord(input),
+    authorUid: author.uid,
+    authorName: author.name.slice(0, 100),
+    createdAt: new Date().toISOString(),
+  });
+};
+
+export const deleteClientRecord = (db: Firestore, clientId: string, recordId: string) =>
+  deleteDoc(doc(db, "clients", clientId, "records", recordId));
 
 export const MAX_NOTE_LENGTH = 2000;
 

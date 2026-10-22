@@ -21,6 +21,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { historyStylists, type ClientAccess } from "../lib/clientAccess";
+import { sortRecords, type ClientRecord } from "../lib/clientRecords";
 import type { Booking, Client, ClientAudit, ClientCard, ClientNote } from "../types";
 
 export type Role = "owner" | "stylist";
@@ -80,6 +81,21 @@ export const useClientNotes = (clientId: string) => {
   const list = notes && notes.id === clientId ? notes.list : [];
   // pinned first, then newest first
   return [...list].sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.createdAt.localeCompare(a.createdAt));
+};
+
+export const useClientRecords = (clientId: string) => {
+  const [records, setRecords] = useState<{ id: string; list: ClientRecord[] } | null>(null);
+  useEffect(
+    () =>
+      onSnapshot(
+        query(collection(db, "clients", clientId, "records"), orderBy("createdAt", "desc"), limit(200)),
+        (snap) =>
+          setRecords({ id: clientId, list: snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ClientRecord) }),
+        () => setRecords({ id: clientId, list: [] }),
+      ),
+    [clientId],
+  );
+  return records && records.id === clientId ? sortRecords(records.list) : [];
 };
 
 export const useClientAudit = (clientId: string, enabled: boolean) => {

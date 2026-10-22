@@ -414,6 +414,23 @@ service cloud.firestore {
       return viewableCard(get(/databases/$(database)/documents/clientCards/$(clientId)).data.stylistIds);
     }
 
+    // A colour formula or patch test (FR-031). A formula carries its text and no result; a patch
+    // test names the product and how the skin was. Entries are never edited, only added or deleted.
+    function validRecord(r) {
+      return r.keys().hasOnly(['kind', 'date', 'text', 'product', 'result', 'authorUid', 'authorName', 'createdAt'])
+        && r.kind in ['formula', 'patch']
+        && r.date is string && r.date.size() == 10
+        && r.text is string && r.text.size() <= 1000
+        && r.product is string && r.product.size() <= 200
+        && r.result is string
+        && r.authorUid == request.auth.uid
+        && r.authorName is string && r.authorName.size() <= 100
+        && r.createdAt is string
+        && (r.kind == 'formula'
+            ? r.text.size() > 0 && r.product == '' && r.result == ''
+            : r.product.size() > 0 && r.result in ['clear', 'reaction']);
+    }
+
     function validNote(n) {
       return n.keys().hasOnly(['text', 'authorUid', 'authorName', 'createdAt', 'pinned'])
         && n.text is string && n.text.size() > 0 && n.text.size() <= 2000
@@ -433,6 +450,16 @@ service cloud.firestore {
         allow update: if (isOwner() || (isStylist() && resource.data.authorUid == request.auth.uid))
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']);
         allow delete: if isOwner() || (isStylist() && resource.data.authorUid == request.auth.uid);
+      }
+
+      // Colour formulas and patch tests: whoever may open the client reads them; the owner and
+      // a stylist allowed to edit client records (who may open this client) add them.
+      match /records/{recordId} {
+        allow read: if isOwner() || cardAllowsMe(clientId);
+        allow create: if (isOwner() || (hasCap('records') && cardAllowsMe(clientId)))
+          && validRecord(request.resource.data);
+        allow update: if false;
+        allow delete: if isOwner() || (hasCap('records') && resource.data.authorUid == request.auth.uid);
       }
 
       match /audit/{entryId} {

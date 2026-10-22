@@ -21,6 +21,7 @@ import type { ClientAccess } from "../../../lib/clientAccess";
 import type { Client } from "../../../types";
 import ClientHistory from "./ClientHistory";
 import ClientNotes from "./ClientNotes";
+import ClientRecords from "./ClientRecords";
 import ClientHousekeeping from "./ClientHousekeeping";
 
 interface Props {
@@ -29,6 +30,8 @@ interface Props {
   stylistId?: string;
   // whose clients this stylist may open beyond their own (FR-025)
   access?: ClientAccess;
+  // a stylist the owner has allowed to add colour formulas and patch tests (the owner always may)
+  canEditRecords?: boolean;
   onBookAgain?: (name: string, phone: string) => void;
   onNotice: (message: string, kind: "success" | "error") => void;
   // The client has been merged away or anonymised: leave this page
@@ -57,7 +60,7 @@ const pill: React.CSSProperties = {
   fontWeight: 600,
 };
 
-const ClientView = ({ clientId, role, stylistId, access, onBookAgain, onNotice, onGone }: Props) => {
+const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false, onBookAgain, onNotice, onGone }: Props) => {
   const owner = role === "owner";
   const { client, loading, notFound, error } = useClientRecord(clientId, role);
   const { stylists, services } = useSalonData();
@@ -189,6 +192,8 @@ const ClientView = ({ clientId, role, stylistId, access, onBookAgain, onNotice, 
         access={access}
         version={full ? `${full.updatedAt}|${full.bookingCount}` : client.stylistIds.join(",")}
       />
+
+      <ClientRecords clientId={clientId} actor={actor} isOwner={owner} canEdit={owner || canEditRecords} onError={(m) => onNotice(m, "error")} />
 
       <ClientNotes clientId={clientId} actor={actor} isOwner={owner} onError={(m) => onNotice(m, "error")} />
 

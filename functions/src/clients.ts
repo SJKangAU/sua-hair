@@ -6,6 +6,7 @@
 //   clients/{clientId}              owner only: profile + summary + blocked reason
 //   clientCards/{clientId}          the slim copy a stylist may read (no spend)
 //   clients/{id}/notes/{noteId}     append-only notes (written from the browser)
+//   clients/{id}/records/{recId}    colour formulas and patch tests (written from the browser)
 //   clients/{id}/audit/{entryId}    owner-only audit trail
 //
 // Everything derived from bookings is worked out by src/lib/clients.ts from the
@@ -379,7 +380,12 @@ export const mergeClientsCore = async (
     batch.update(db.doc(`bookings/${id}`), { clientId: keepId });
   });
 
-  // Notes: copied with their authors and dates, then the merged client's removed
+  // Colour formulas and patch tests, then notes: copied with their authors and dates, then the merged client's removed
+  const records = await db.collection(`clients/${mergeId}/records`).get();
+  await batched(db, records.docs, (batch, d) => {
+    batch.set(db.doc(`clients/${keepId}/records/${d.id}`), d.data());
+    batch.delete(d.ref);
+  });
   const notes = await db.collection(`clients/${mergeId}/notes`).get();
   await batched(db, notes.docs, (batch, d) => {
     batch.set(db.doc(`clients/${keepId}/notes/${d.id}`), d.data());
@@ -445,6 +451,8 @@ export const anonymiseClientCore = async (
   // notes, then the client, its card and the visit record
   const notes = await db.collection(`clients/${clientId}/notes`).get();
   await batched(db, notes.docs, (batch, d) => batch.delete(d.ref));
+  const records = await db.collection(`clients/${clientId}/records`).get();
+  await batched(db, records.docs, (batch, d) => batch.delete(d.ref));
   const audit = await db.collection(`clients/${clientId}/audit`).get();
   await batched(db, audit.docs, (batch, d) => batch.delete(d.ref));
   await Promise.all([
@@ -466,10 +474,11 @@ export const exportClientDataCore = async (
   nowMs: number,
 ): Promise<Record<string, unknown>> => {
   const clientId = idOfRaw(raw, "clientId");
-  const [client, lookup, notes, audit, ...snaps] = await Promise.all([
+  const [client, lookup, notes, records, audit, ...snaps] = await Promise.all([
     clientRef(db, clientId).get(),
     db.doc(`customerLookups/${clientId}`).get(),
     db.collection(`clients/${clientId}/notes`).get(),
+    db.collection(`clients/${clientId}/records`).get(),
     db.collection(`clients/${clientId}/audit`).get(),
     ...[
       db.collection("bookings").where("clientId", "==", clientId),
@@ -485,6 +494,7 @@ export const exportClientDataCore = async (
     client: { id: client.id, ...client.data() },
     visitRecord: lookup.exists ? lookup.data() : null,
     notes: notes.docs.map((d) => ({ id: d.id, ...d.data() })),
+    records: records.docs.map((d) => ({ id: d.id, ...d.data() })),
     audit: audit.docs.map((d) => ({ id: d.id, ...d.data() })),
     bookings: [...bookings.values()],
   };

@@ -268,3 +268,81 @@ describe("win-back invitations (winBackLog, clients' consent, FR-030)", () => {
     await assertFails(sender().doc("clients/0400000001").update({ marketingToken: "mine" }));
   });
 });
+
+describe("colour formulas and patch tests (clients/{id}/records, FR-031)", () => {
+  const owner = () => env.authenticatedContext("owner-uid", { role: "owner" }).firestore();
+  const recorder = () => as({ caps: ["records"] });
+  const other = () => env.authenticatedContext("yuto-uid", { role: "stylist", stylistId: "stylist-2", caps: ["records"] }).firestore();
+  const RECORDED = "clients/0400000001/records";
+
+  const formula = (over: Record<string, unknown> = {}, uid = "stylist-uid") => ({
+    kind: "formula", date: "2026-08-20", text: "Roots 6.1 + 20vol", product: "", result: "", authorUid: uid, authorName: "Steve", createdAt: "2026-08-20T01:00:00.000Z", ...over,
+  });
+  const patch = (over: Record<string, unknown> = {}, uid = "stylist-uid") => ({
+    kind: "patch", date: "2026-09-02", text: "", product: "Brand X", result: "clear", authorUid: uid, authorName: "Steve", createdAt: "2026-09-02T01:00:00.000Z", ...over,
+  });
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc("clients/0400000001").set({ phone: "0400000001", name: "Test Client" });
+      await db.doc("clientCards/0400000001").set({ phone: "0400000001", name: "Test Client", stylistIds: ["stylist-1"], tags: [], blocked: false });
+      await db.doc(`${RECORDED}/f1`).set(formula());
+      await db.doc(`${RECORDED}/f2`).set(formula({}, "owner-uid"));
+    });
+  });
+
+  it("the owner and any stylist who may open the client read them; others do not", async () => {
+    for (const db of [owner(), plain(), recorder()]) await assertSucceeds(db.doc(`${RECORDED}/f1`).get());
+    await assertSucceeds(plain().collection(RECORDED).orderBy("createdAt", "desc").limit(50).get());
+    await assertFails(other().doc(`${RECORDED}/f1`).get()); // not their client
+    await assertFails(env.unauthenticatedContext().firestore().doc(`${RECORDED}/f1`).get());
+  });
+
+  it("the owner and a stylist with the permission add a valid entry; a stylist without it cannot", async () => {
+    await assertSucceeds(owner().collection(RECORDED).add(formula({}, "owner-uid")));
+    await assertSucceeds(recorder().collection(RECORDED).add(formula()));
+    await assertSucceeds(recorder().collection(RECORDED).add(patch()));
+    await assertSucceeds(recorder().collection(RECORDED).add(patch({ result: "reaction", text: "Itchy after 10 minutes" })));
+    await assertFails(plain().collection(RECORDED).add(formula()));
+    await assertFails(as({ caps: ["msg", "winback", "timeoff"] }).collection(RECORDED).add(formula()));
+  });
+
+  it("only for a client they may open", async () => {
+    await assertFails(other().collection(RECORDED).add(formula({}, "yuto-uid")));
+  });
+
+  it("the entry must be well formed and signed by the writer", async () => {
+    const add = (data: Record<string, unknown>) => recorder().collection(RECORDED).add(data);
+    await assertFails(add(formula({}, "someone-else")));
+    await assertFails(add(formula({ text: "" })));
+    await assertFails(add(formula({ text: "x".repeat(1001) })));
+    await assertFails(add(formula({ result: "clear" })));
+    await assertFails(add(formula({ product: "Brand X" })));
+    await assertFails(add(patch({ product: "" })));
+    await assertFails(add(patch({ result: "" })));
+    await assertFails(add(patch({ result: "maybe" })));
+    await assertFails(add(patch({ product: "x".repeat(201) })));
+    await assertFails(add(formula({ kind: "photo" })));
+    await assertFails(add(formula({ date: "yesterday" })));
+    await assertFails(add({ ...formula(), extra: 1 }));
+    const { authorName: _a, ...noAuthor } = formula();
+    void _a;
+    await assertFails(add(noAuthor));
+  });
+
+  it("entries are never edited; the owner or the author deletes", async () => {
+    await assertFails(owner().doc(`${RECORDED}/f1`).update({ text: "changed" }));
+    await assertFails(recorder().doc(`${RECORDED}/f1`).update({ text: "changed" }));
+    await assertFails(recorder().doc(`${RECORDED}/f2`).delete()); // written by the owner
+    await assertSucceeds(recorder().doc(`${RECORDED}/f1`).delete()); // their own
+    await assertFails(plain().doc(`${RECORDED}/f2`).delete());
+    await assertSucceeds(owner().doc(`${RECORDED}/f2`).delete());
+  });
+
+  it("a stylist whose permission was taken away can still read but no longer add or delete", async () => {
+    await assertSucceeds(plain().doc(`${RECORDED}/f1`).get());
+    await assertFails(plain().doc(`${RECORDED}/f1`).delete());
+    await assertFails(plain().collection(RECORDED).add(formula()));
+  });
+});

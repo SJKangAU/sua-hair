@@ -72,6 +72,7 @@ const Inner = () => {
               role="stylist"
               stylistId={stylistId}
               access={access}
+              canEditRecords={can(appUser, "editClientRecords")}
               onNotice={(m, kind) => addToast(m, kind)}
             />
           </>
