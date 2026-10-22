@@ -105,7 +105,7 @@ const BookingPage = () => {
               letterSpacing: "0.04em",
             }}
           >
-            Tuesday – Sunday · 10am – 6pm · Glen Waverley
+            Tuesday – Sunday · 10am – 6pm · Mount Waverley
           </p>
         </div>
 

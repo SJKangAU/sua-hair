@@ -71,9 +71,8 @@ export const SALON_CONFIG = {
   // ── Calendar Settings ──────────────────────────────────────────────────────
   // Used when generating Add to Calendar links
   salonName: "Sua Hair Studio",
-  // Mirrors functions/src/salon.ts (the emails): keep the two in step. Only the suburb is
-  // known; the full street address is still to be added (TODO(owner)).
-  salonAddress: "Glen Waverley, VIC",
+  // Mirrors functions/src/salon.ts (the emails): keep the two in step.
+  salonAddress: "325 Stephensons Rd, Mount Waverley VIC 3149",
   salonPhone: "(03) 9569 0840",
   salonEmail: "info@suahair.com.au",
 };

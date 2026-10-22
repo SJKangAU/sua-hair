@@ -25,7 +25,7 @@ const SiteFooter = () => {
         letterSpacing: "0.02em",
       }}
     >
-      <p>Sua Hair Studio © 2025 · (03) 9569 0840 · Glen Waverley, VIC</p>
+      <p>Sua Hair Studio © 2025 · (03) 9569 0840 · 325 Stephensons Rd, Mount Waverley VIC 3149</p>
       <p
         style={{
           marginTop: "0.5rem",

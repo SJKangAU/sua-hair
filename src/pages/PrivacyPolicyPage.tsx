@@ -13,7 +13,7 @@
 import LegalPage from "../components/legal/LegalPage";
 
 // Keep this in sync with any substantive content change below.
-const LAST_UPDATED = "15 October 2026";
+const LAST_UPDATED = "23 October 2026";
 const PRIVACY_EMAIL = "privacy@suahair.com.au";
 
 const PrivacyPolicyPage = () => {
@@ -43,10 +43,30 @@ const PrivacyPolicyPage = () => {
           Any optional notes you choose to add to a booking (for example, a
           request or preference)
         </li>
+        <li>
+          Whether you agreed to hear from us about coming back (see
+          "Offers and reminders to come back" below)
+        </li>
       </ul>
       <p>
-        We only collect what we need to manage your appointment. You don't
-        need to create an account or give us anything else.
+        When you visit, your stylist may also record, on your client record:
+      </p>
+      <ul>
+        <li>
+          <strong>Colour formulas</strong> — what was mixed and applied, so we
+          can repeat it next time; and
+        </li>
+        <li>
+          <strong>Patch tests</strong> — the product tested, the date, and
+          whether your skin reacted. This relates to your health, so we treat
+          it as sensitive information. We record it only to look after you
+          safely, and only staff who need it can see it.
+        </li>
+      </ul>
+      <p>
+        We only collect what we need to look after you and manage your
+        appointment. You don't need to create an account or give us anything
+        else.
       </p>
 
       <h2>Why we collect it</h2>
@@ -61,6 +81,23 @@ const PrivacyPolicyPage = () => {
           We do not sell your personal information, and we do not use it for
           marketing without your consent.
         </strong>
+      </p>
+
+      <h2>Offers and reminders to come back</h2>
+      <p>
+        When you book, you can tick an optional box to say you'd like to hear
+        from us about coming back. It is never ticked for you, and your
+        booking is the same whether or not you tick it. If you tick it, and
+        you haven't visited for a while, we may email you (or send a text
+        message) inviting you to book again. We don't send these to anyone who
+        hasn't agreed.
+      </p>
+      <p>
+        Every one of these messages comes from Sua Hair Studio and includes a
+        link to unsubscribe. Using it stops the invitations straight away;
+        you'll still get messages about bookings you make. You can also ask us
+        to stop by calling the salon or emailing{" "}
+        <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>.
       </p>
 
       <h2>Where your information is stored</h2>
@@ -78,12 +115,20 @@ const PrivacyPolicyPage = () => {
 
       <h2>How long we keep it</h2>
       <p>
-        We keep your information for as long as you are an active client, so
-        your visit history stays available to us and to you. If you ask us to
-        delete your personal information, we will remove your name, phone
-        number, email address and notes from our records. We may keep de-identified booking
-        records (with your name and contact details removed) for our own
-        business and financial history, where we're permitted or required to.
+        We keep your information for as long as you are a client of the salon,
+        so your visit history, colour formulas and patch tests stay available
+        to us. We don't currently delete client records automatically after a
+        set time; we keep them until you ask us to delete them or we remove
+        them ourselves.
+      </p>
+      <p>
+        When you ask us to delete your information (or we remove it ourselves),
+        we delete your name, phone number, email address, notes, colour
+        formulas and patch tests, and your client record. We may keep
+        de-identified booking records (with your name and contact details
+        removed) for our own business and financial history, where we're
+        permitted or required to. If you unsubscribe from offers, we keep a
+        record that you did, so that we don't contact you again.
       </p>
 
       <h2>Access, correction and deletion</h2>
