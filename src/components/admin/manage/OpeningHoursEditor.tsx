@@ -69,6 +69,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
   const [newOverrideClosed, setNewOverrideClosed] = useState(true);
   const [newOverrideOpen, setNewOverrideOpen] = useState(10);
   const [newOverrideClose, setNewOverrideClose] = useState(18);
+  const [newOverrideLabel, setNewOverrideLabel] = useState("");
 
   const updateDay = (
     key: DayOfWeek,
@@ -90,11 +91,16 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
       onError("An override already exists for that date.");
       return;
     }
-    const override: DateOverride = newOverrideClosed
-      ? { closed: true }
-      : { open: newOverrideOpen, close: newOverrideClose };
+    const label = newOverrideLabel.trim();
+    const override: DateOverride = {
+      ...(newOverrideClosed
+        ? { closed: true }
+        : { open: newOverrideOpen, close: newOverrideClose }),
+      ...(label ? { label } : {}),
+    };
     setOverrides((prev) => [...prev, { date: newOverrideDate, override }]);
     setNewOverrideDate("");
+    setNewOverrideLabel("");
   };
 
   const removeOverride = (date: string) => {
@@ -283,7 +289,7 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
             marginBottom: "0.75rem",
           }}
         >
-          Close for a public holiday or set special hours for a single date.
+          Close for a public holiday or set special hours for a single date. Closures appear on the booking page with the reason.
         </p>
 
         {/* Existing overrides */}
@@ -312,7 +318,10 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
                     fontSize: "0.85rem",
                   }}
                 >
-                  <span style={{ fontWeight: 500 }}>{date}</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {date}
+                    {override.label ? ` · ${override.label}` : ""}
+                  </span>
                   <span
                     style={{
                       color: override.closed
@@ -447,6 +456,26 @@ const OpeningHoursEditor = ({ onSuccess, onError }: Props) => {
               </div>
             </>
           )}
+
+          <div>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--ink-muted)",
+                marginBottom: "0.2rem",
+              }}
+            >
+              Reason (shown to customers)
+            </div>
+            <input
+              type="text"
+              value={newOverrideLabel}
+              maxLength={60}
+              placeholder="e.g. Christmas Day"
+              onChange={(e) => setNewOverrideLabel(e.target.value)}
+              style={{ ...inputStyle, fontSize: "0.85rem" }}
+            />
+          </div>
 
           <button
             onClick={addOverride}

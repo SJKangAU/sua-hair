@@ -32,6 +32,8 @@ export interface DaySchedule {
 // Either {closed: true} to block the day, or {open, close} for custom hours.
 export interface DateOverride {
   closed?: boolean;
+  /** Why, in the owner's words ("Christmas Day"); shown to customers for a closure */
+  label?: string;
   open?: number;
   close?: number;
 }

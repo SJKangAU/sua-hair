@@ -9,6 +9,7 @@
 // the illusion that the form "floats" out of the dark section.
 
 import BookingForm from "../components/booking/BookingForm";
+import { ClosuresBanner, HoursLine } from "../components/booking/OpeningHoursNotice";
 import SiteFooter from "../components/legal/SiteFooter";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 
@@ -98,15 +99,7 @@ const BookingPage = () => {
           >
             Book an Appointment
           </h1>
-          <p
-            style={{
-              color: "var(--ink-muted)",
-              fontSize: "var(--text-base)",
-              letterSpacing: "0.04em",
-            }}
-          >
-            Tuesday – Sunday · 10am – 6pm · Mount Waverley
-          </p>
+          <HoursLine />
         </div>
 
         {/* Booking form card */}
@@ -117,6 +110,7 @@ const BookingPage = () => {
             padding: "0 1.25rem",
           }}
         >
+          <ClosuresBanner />
           <div
             style={{
               background: "var(--surface)",
