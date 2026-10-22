@@ -130,6 +130,8 @@ export interface ParsedBookingRequest {
   customerEmail?: string;
   notes?: string;
   requestId?: string;
+  /** Ticked the optional box to hear about coming back (FR-030) */
+  marketingConsent?: boolean;
 }
 
 const text = (value: unknown): string | null =>
@@ -230,6 +232,7 @@ export const parseBookingRequest = (raw: unknown): ParsedBookingRequest => {
     ...(customerEmail ? { customerEmail } : {}),
     ...(notes ? { notes } : {}),
     ...(requestId ? { requestId } : {}),
+    ...(r.marketingConsent === true ? { marketingConsent: true } : {}),
   };
 };
 
@@ -591,6 +594,8 @@ export const createBookingRequestCore = async (
         createdAt: iso(ctx.now),
         holdExpiresAt,
         manageToken: newManageToken(),
+        // the optional tick-box; a move of an existing booking carries no new consent
+        ...(input.marketingConsent && !old ? { marketingConsent: true } : {}),
         ...(wantsAny ? { assignedAutomatically: true } : {}),
         ...(old
           ? {

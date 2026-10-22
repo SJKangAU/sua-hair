@@ -15,18 +15,35 @@
 
 import { SALON_CONFIG } from "./config";
 
-export type SmsKind = "received" | "confirmed" | "not_confirmed" | "reminder";
+export type SmsKind = "received" | "confirmed" | "not_confirmed" | "reminder" | "winback";
 
-export const SMS_KINDS: readonly SmsKind[] = ["received", "confirmed", "not_confirmed", "reminder"];
+export const SMS_KINDS: readonly SmsKind[] = ["received", "confirmed", "not_confirmed", "reminder", "winback"];
 
 export const SMS_KIND_LABELS: Record<SmsKind, { title: string; when: string }> = {
   received: { title: "Request received", when: "Straight after a customer requests a booking online" },
   confirmed: { title: "Booking confirmed", when: "When you approve a request, or book a walk-in" },
   not_confirmed: { title: "Request not confirmed", when: "When a request is declined or runs out of time" },
   reminder: { title: "Reminder", when: "24 hours before a confirmed appointment" },
+  winback: {
+    title: "Invite back",
+    when: "When you invite a client who hasn't been in for a while (only clients who agreed to hear from you)",
+  },
 };
 
-export const PLACEHOLDERS = ["name", "service", "stylist", "date", "time", "salon", "phone", "ref", "manageLink"] as const;
+export const PLACEHOLDERS = [
+  "name",
+  "service",
+  "stylist",
+  "date",
+  "time",
+  "salon",
+  "phone",
+  "ref",
+  "manageLink",
+  "bookingLink",
+  "unsubscribeLink",
+  "lastVisit",
+] as const;
 export type Placeholder = (typeof PLACEHOLDERS)[number];
 
 export const PLACEHOLDER_HELP: Record<Placeholder, string> = {
@@ -39,6 +56,9 @@ export const PLACEHOLDER_HELP: Record<Placeholder, string> = {
   phone: "Salon phone number",
   ref: "Booking reference",
   manageLink: "Link to change or cancel the booking",
+  bookingLink: "Link to book online",
+  unsubscribeLink: "Link to stop these messages",
+  lastVisit: "Date of their last visit",
 };
 
 export interface SmsSettings {
@@ -64,6 +84,9 @@ export const DEFAULT_TEMPLATES: Record<SmsKind, string> = {
   reminder:
     "Hi {name}, a reminder of your {service} with {stylist} on {date} at {time}. " +
     "Need to change it? Call {phone}. {salon}",
+  winback:
+    "Hi {name}, it's been a while! We'd love to see you again at {salon}. Book here: {bookingLink} " +
+    "To stop these messages: {unsubscribeLink}",
 };
 
 export const MAX_TEMPLATE_LENGTH = 320;
@@ -76,7 +99,7 @@ export const DEFAULT_SENDER_NAME = "SuaHair";
 export const DEFAULT_SMS_SETTINGS: SmsSettings = {
   enabled: false,
   senderName: DEFAULT_SENDER_NAME,
-  kinds: { received: true, confirmed: true, not_confirmed: true, reminder: true },
+  kinds: { received: true, confirmed: true, not_confirmed: true, reminder: true, winback: true },
   templates: { ...DEFAULT_TEMPLATES },
 };
 
@@ -110,7 +133,7 @@ export const effectiveSettings = (raw: unknown): SmsSettings => {
   for (const k of SMS_KINDS) {
     if (typeof kindsRaw[k] === "boolean") kinds[k] = kindsRaw[k] as boolean;
     const t = templatesRaw[k];
-    if (typeof t === "string" && t.trim() !== "" && unknownPlaceholders(t).length === 0) templates[k] = t;
+    if (typeof t === "string" && templateProblem(t, k) === null) templates[k] = t;
   }
   const sender = typeof r.senderName === "string" ? r.senderName.trim() : "";
   return {
@@ -134,9 +157,17 @@ export const unknownPlaceholders = (template: string): string[] => {
   return [...unknown];
 };
 
+/**
+ * A message that invites someone back is marketing, so it must always carry the way to stop it:
+ * these placeholders are required in the wording of that message.
+ */
+export const REQUIRED_PLACEHOLDERS: Partial<Record<SmsKind, Placeholder[]>> = { winback: ["unsubscribeLink"] };
+
 /** What is wrong with a template, in words for the owner; null when it is fine. */
-export const templateProblem = (template: string): string | null => {
+export const templateProblem = (template: string, kind?: SmsKind): string | null => {
   if (template.trim() === "") return "The message can't be empty.";
+  const missing = (kind ? REQUIRED_PLACEHOLDERS[kind] ?? [] : []).filter((p) => !template.includes(`{${p}}`));
+  if (missing.length > 0) return `This message must include ${missing.map((m) => `{${m}}`).join(", ")}, so people can stop it.`;
   if (template.length > MAX_TEMPLATE_LENGTH) {
     return `Keep the wording to ${MAX_TEMPLATE_LENGTH} characters or fewer.`;
   }
@@ -181,6 +212,10 @@ export interface SmsBookingFields {
   bookingRef?: string;
   /** The link in this customer's message to change or cancel the booking (FR-028) */
   manageLink?: string;
+  /** An invitation to come back (FR-030): the booking page, the unsubscribe link, the last visit (YYYY-MM-DD) */
+  bookingLink?: string;
+  unsubscribeLink?: string;
+  lastVisit?: string;
 }
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -224,6 +259,9 @@ export const smsValuesFor = (
     phone: salon.phoneDisplay,
     ref: b.bookingRef ?? "",
     manageLink: b.manageLink ?? "",
+    bookingLink: b.bookingLink ?? "",
+    unsubscribeLink: b.unsubscribeLink ?? "",
+    lastVisit: b.lastVisit ? smsDate(b.lastVisit) : "",
   };
 };
 
@@ -237,6 +275,9 @@ export const SAMPLE_BOOKING: SmsBookingFields = {
   time: "10:30 AM",
   bookingRef: "SUA-1234",
   manageLink: "https://suahair.com.au/manage?b=sample",
+  bookingLink: "https://suahair.com.au",
+  unsubscribeLink: "https://suahair.com.au/unsubscribe?c=sample",
+  lastVisit: "2026-06-12",
 };
 
 // ── Length ───────────────────────────────────────────────────────────────────

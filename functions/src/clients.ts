@@ -39,11 +39,22 @@ import {
   type ClientManual,
   type ProfileBooking,
 } from "../../src/lib/clients";
+import { mergeMarketing } from "../../src/lib/marketing";
 import type { Booking, Client, ClientAuditAction, ClientSource } from "../../src/types";
 import { CommandError } from "./commandErrors";
 import { runTx } from "./tx";
 
 const iso = (ms: number): string => new Date(ms).toISOString();
+
+const MARKETING_KEYS = ["marketingOptIn", "marketingConsentAt", "marketingSource", "marketingOptOutAt"] as const;
+
+/** The marketing fields of a merged client: the latest agreement and the latest unsubscribe of the two (a missing one is deleted). */
+const mergedMarketing = (kept: FirebaseFirestore.DocumentData, gone: FirebaseFirestore.DocumentData): Record<string, unknown> => {
+  const m = mergeMarketing(kept, gone);
+  const out: Record<string, unknown> = {};
+  for (const k of MARKETING_KEYS) out[k] = m[k] ?? FieldValue.delete();
+  return out;
+};
 
 // ── Which client a booking belongs to ────────────────────────────────────────
 
@@ -111,6 +122,12 @@ const manualOf = (data: FirebaseFirestore.DocumentData | undefined, lookupBlocke
   blocked: data ? data.blocked === true : lookupBlocked,
   ...(data?.blockReason ? { blockReason: data.blockReason as string } : {}),
   ...(data?.smsOptOut === true ? { smsOptOut: true } : {}),
+  ...(data?.marketingOptIn === true ? { marketingOptIn: true } : {}),
+  ...(typeof data?.marketingConsentAt === "string" ? { marketingConsentAt: data.marketingConsentAt as string } : {}),
+  ...(typeof data?.marketingSource === "string" ? { marketingSource: data.marketingSource as ClientManual["marketingSource"] } : {}),
+  ...(typeof data?.marketingOptOutAt === "string" ? { marketingOptOutAt: data.marketingOptOutAt as string } : {}),
+  ...(typeof data?.marketingToken === "string" ? { marketingToken: data.marketingToken as string } : {}),
+  ...(typeof data?.winBackSentAt === "string" ? { winBackSentAt: data.winBackSentAt as string } : {}),
   ...(data?.email ? { email: data.email as string } : {}),
   ...(data?.name ? { name: data.name as string } : {}),
   ...(data?.nameOverride ? { nameOverride: true } : {}),
@@ -382,6 +399,8 @@ export const mergeClientsCore = async (
     blocked: kept.blocked === true || gone.blocked === true,
     // not wanting texts wins too
     ...(kept.smsOptOut === true || gone.smsOptOut === true ? { smsOptOut: true } : {}),
+    // marketing: the latest agreement, and the latest unsubscribe, of the two records
+    ...mergedMarketing(kept, gone),
     ...(gone.blocked === true && !kept.blockReason && gone.blockReason ? { blockReason: gone.blockReason } : {}),
   });
   await db.doc(`customerLookups/${mergeId}`).delete().catch(() => undefined);

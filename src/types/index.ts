@@ -237,6 +237,8 @@ export interface Booking {
   calendarUid?: string;
   calendarSeq?: number;
   cancelledBy?: "customer";
+  // Ticked the optional box to hear about coming back when this was made (FR-030)
+  marketingConsent?: boolean;
 }
 
 // Minimal, PII-free projection of a Booking used to compute public
@@ -354,6 +356,14 @@ export interface Client extends ClientSummary {
   blocked: boolean;
   blockReason?: string;
   smsOptOut?: boolean; // asked not to be texted: no booking texts are sent (FR-024)
+  // Agreed to hear about coming back (FR-030): the latest consent, unless they unsubscribed since
+  marketingOptIn?: boolean;
+  marketingConsentAt?: string;
+  marketingSource?: "booking-form" | "walk-in" | "owner-recorded";
+  marketingOptOutAt?: string;
+  // The secret in the unsubscribe link in a win-back message, and when they were last invited back
+  marketingToken?: string;
+  winBackSentAt?: string;
   source: ClientSource;
   createdAt: string;
   updatedAt: string;

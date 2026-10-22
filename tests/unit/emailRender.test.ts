@@ -40,10 +40,16 @@ const render = (over: Partial<EmailTemplate> = {}, b: EmailBookingData = booking
   renderEmail({ ...confirmed, ...over }, b, SALON);
 
 describe("the default wording is what the emails always said", () => {
-  it.each(SMS_KINDS)("%s: valid, on, with every part showing", (kind) => {
+  it.each(SMS_KINDS.filter((k) => k !== "winback"))("%s: valid, on, with every part showing", (kind) => {
     const t = DEFAULT_EMAIL_TEMPLATES[kind];
     expect(emailTemplateProblems(t)).toEqual({});
     expect(t).toMatchObject({ enabled: true, showDetails: true, showReference: true, callButton: true });
+  });
+
+  it("winback: valid and on, with no booking details but a Book now button", () => {
+    const t = DEFAULT_EMAIL_TEMPLATES.winback;
+    expect(emailTemplateProblems(t)).toEqual({});
+    expect(t).toMatchObject({ enabled: true, showDetails: false, showReference: false, callButton: true, bookButton: true, manageButton: false });
   });
 
   it("confirmed", () => {
@@ -259,5 +265,47 @@ describe("the manage button and the calendar file (FR-027, FR-028)", () => {
     expect(effectiveEmailSettings({ templates: { confirmed: { calendarTitle: "Hi {nmae}" } } }).templates.confirmed.calendarTitle).toBe(
       DEFAULT_EMAIL_TEMPLATES.confirmed.calendarTitle,
     );
+  });
+});
+
+describe("the invitation to come back (FR-030)", () => {
+  const invite: EmailBookingData = {
+    customerName: "Jane Citizen",
+    stylistName: "Alex Kim",
+    serviceName: "Cut",
+    stylistId: "stylist-1",
+    lastVisit: "2026-06-12",
+    bookingLink: "https://suahair.com.au",
+    unsubscribeLink: "https://suahair.com.au/unsubscribe?c=C1&t=TOKEN",
+  };
+  const send = renderEmail(DEFAULT_EMAIL_TEMPLATES.winback, invite, SALON);
+
+  it("is warm, has no booking table, and offers Book now and Call", () => {
+    expect(send.subject).toBe("We'd love to see you again — Sua Hair Studio");
+    expect(send.html).toContain("We miss you, Jane");
+    expect(send.html).not.toContain("Stylist</td>");
+    expect(send.html).toContain('href="https://suahair.com.au"');
+    expect(send.html).toContain(">Book now<");
+    expect(send.html).toContain("tel:0395690840");
+    expect(send.text).toContain("Book now: https://suahair.com.au");
+  });
+
+  it("always ends with how to stop it, in the HTML and the plain text, whatever the wording says", () => {
+    expect(send.html).toContain("You're getting this because you agreed to hear from us.");
+    expect(send.html).toContain('href="https://suahair.com.au/unsubscribe?c=C1&amp;t=TOKEN"');
+    expect(send.text).toContain("Unsubscribe: https://suahair.com.au/unsubscribe?c=C1&t=TOKEN");
+    const edited = renderEmail({ ...DEFAULT_EMAIL_TEMPLATES.winback, intro: "Hello", closing: "Bye", bookButton: false }, invite, SALON);
+    expect(edited.html).toContain("Unsubscribe</a>");
+    expect(edited.html).not.toContain(">Book now<");
+  });
+
+  it("the other emails carry no unsubscribe line unless asked (they are not marketing)", () => {
+    expect(render({}, booking).html).not.toContain("Unsubscribe");
+    expect(render({}, booking).text).not.toContain("Unsubscribe");
+  });
+
+  it("{lastVisit} and {bookingLink} work in the owner's wording", () => {
+    const e = renderEmail({ ...DEFAULT_EMAIL_TEMPLATES.winback, intro: "Last time was {lastVisit}. Book: {bookingLink}" }, invite, SALON);
+    expect(e.text).toContain("Last time was Friday 12 June. Book: https://suahair.com.au");
   });
 });

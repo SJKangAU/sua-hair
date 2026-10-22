@@ -69,6 +69,7 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       replacesBookingId: d.replacesBookingId,
       replacesSummary: d.replacesSummary,
       cancelledBy: d.cancelledBy,
+      marketingConsent: d.marketingConsent === true ? true : undefined,
       createdAt: d.createdAt ?? "",
     };
   },

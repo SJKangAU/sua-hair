@@ -47,9 +47,9 @@ service cloud.firestore {
         && d.senderName is string
         && d.senderName.matches('^[A-Za-z0-9 ]{3,11}$')
         && d.kinds is map
-        && d.kinds.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder'])
+        && d.kinds.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder', 'winback'])
         && d.templates is map
-        && d.templates.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder'])
+        && d.templates.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder', 'winback'])
         && smsTemplatesOk(d.templates);
     }
 
@@ -62,12 +62,12 @@ service cloud.firestore {
       return t is map
         && t.keys().hasAll(['enabled', 'subject', 'preheader', 'headline', 'intro', 'closing',
                             'showDetails', 'showReference', 'callButton',
-                            'manageButton', 'attachCalendar', 'calendarTitle'])
+                            'manageButton', 'attachCalendar', 'calendarTitle', 'bookButton'])
         && t.keys().hasOnly(['enabled', 'subject', 'preheader', 'headline', 'intro', 'closing',
                              'showDetails', 'showReference', 'callButton',
-                             'manageButton', 'attachCalendar', 'calendarTitle'])
+                             'manageButton', 'attachCalendar', 'calendarTitle', 'bookButton'])
         && t.enabled is bool && t.showDetails is bool && t.showReference is bool
-        && t.callButton is bool && t.manageButton is bool && t.attachCalendar is bool
+        && t.callButton is bool && t.manageButton is bool && t.attachCalendar is bool && t.bookButton is bool
         && t.subject is string && t.subject.size() <= 150
         && t.preheader is string && t.preheader.size() <= 200
         && t.headline is string && t.headline.size() <= 200
@@ -79,11 +79,12 @@ service cloud.firestore {
     function validEmailSettings(d) {
       return d.keys().hasOnly(['templates'])
         && d.templates is map
-        && d.templates.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder'])
+        && d.templates.keys().hasOnly(['received', 'confirmed', 'not_confirmed', 'reminder', 'winback'])
         && (!('received' in d.templates) || validEmailTemplate(d.templates.received))
         && (!('confirmed' in d.templates) || validEmailTemplate(d.templates.confirmed))
         && (!('not_confirmed' in d.templates) || validEmailTemplate(d.templates.not_confirmed))
-        && (!('reminder' in d.templates) || validEmailTemplate(d.templates.reminder));
+        && (!('reminder' in d.templates) || validEmailTemplate(d.templates.reminder))
+        && (!('winback' in d.templates) || validEmailTemplate(d.templates.winback));
     }
 
     // What happens to a time-off request while it waits (FR-029): hold the time, wait, or apply a
@@ -99,7 +100,8 @@ service cloud.firestore {
       return (!('received' in t) || (t.received is string && t.received.size() > 0 && t.received.size() <= 320))
         && (!('confirmed' in t) || (t.confirmed is string && t.confirmed.size() > 0 && t.confirmed.size() <= 320))
         && (!('not_confirmed' in t) || (t.not_confirmed is string && t.not_confirmed.size() > 0 && t.not_confirmed.size() <= 320))
-        && (!('reminder' in t) || (t.reminder is string && t.reminder.size() > 0 && t.reminder.size() <= 320));
+        && (!('reminder' in t) || (t.reminder is string && t.reminder.size() > 0 && t.reminder.size() <= 320))
+        && (!('winback' in t) || (t.winback is string && t.winback.size() > 0 && t.winback.size() <= 320));
     }
 
     function isOwner() {
@@ -305,6 +307,14 @@ service cloud.firestore {
         (docId == 'sms' && validSmsSettings(request.resource.data))
         || (docId == 'email' && validEmailSettings(request.resource.data))
       ));
+    }
+
+    // ── winBackLog ──────────────────────────────────────────────────────
+    // One record per invitation sent to lapsed clients (who, when, how many; no client data), written
+    // by the win-back function. The owner and anyone allowed to send them read it.
+    match /winBackLog/{campaignId} {
+      allow read: if isOwner() || hasCap('winback');
+      allow write: if false;
     }
 
     // ── timeOff ─────────────────────────────────────────────────────────

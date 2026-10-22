@@ -18,6 +18,7 @@
 
 import { daysBetweenDates } from "./businessTime";
 import { normaliseMobile } from "./clientImport";
+import { marketingStatus, type MarketingSource } from "./marketing";
 import { timeStringToMinutes } from "./scheduling";
 import type {
   Booking,
@@ -244,6 +245,12 @@ export interface ClientManual {
   blocked: boolean;
   blockReason?: string;
   smsOptOut?: boolean;
+  marketingOptIn?: boolean;
+  marketingConsentAt?: string;
+  marketingSource?: MarketingSource;
+  marketingOptOutAt?: string;
+  marketingToken?: string;
+  winBackSentAt?: string;
   name?: string;
   nameOverride?: boolean;
   source?: ClientSource;
@@ -305,6 +312,10 @@ export const buildClient = (
   };
   if (manual.nameOverride) client.nameOverride = true;
   if (manual.smsOptOut) client.smsOptOut = true;
+  // Consent: the latest agreement (a booking with the box ticked, or the owner's record) unless they have unsubscribed since
+  Object.assign(client, marketingStatus(manual, mine));
+  if (manual.marketingToken) client.marketingToken = manual.marketingToken;
+  if (manual.winBackSentAt) client.winBackSentAt = manual.winBackSentAt;
   if (email) client.email = email;
   if (manual.blocked && manual.blockReason) client.blockReason = manual.blockReason;
   return client;

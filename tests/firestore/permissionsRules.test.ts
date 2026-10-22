@@ -113,6 +113,7 @@ describe("the email wording (privateSettings/email, FR-027)", () => {
     showReference: false,
     callButton: true,
     manageButton: true,
+    bookButton: false,
     attachCalendar: true,
     calendarTitle: "{service} with {stylist}",
   };
@@ -231,3 +232,39 @@ describe("time off (timeOff, privateSettings/timeOff, FR-029)", () => {
   });
 });
 
+
+describe("win-back invitations (winBackLog, clients' consent, FR-030)", () => {
+  const owner = () => env.authenticatedContext("owner-uid", { role: "owner" }).firestore();
+  const sender = () => as({ caps: ["winback"] });
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("winBackLog/c1").set({ byName: "Owner", requested: 3, invited: 2, emailsSent: 2, textsSent: 1 });
+      await ctx.firestore().doc("clients/0400000001").set({ phone: "0400000001", name: "Test Client", marketingToken: "secret" });
+    });
+  });
+
+  it("the owner and a stylist allowed to send read the campaign log; others do not", async () => {
+    for (const db of [owner(), sender()]) {
+      await assertSucceeds(db.doc("winBackLog/c1").get());
+      await assertSucceeds(db.collection("winBackLog").orderBy("createdAt", "desc").limit(5).get());
+    }
+    for (const db of [plain(), editor(), as({ caps: ["timeoff", "records"] }), env.unauthenticatedContext().firestore()]) {
+      await assertFails(db.doc("winBackLog/c1").get());
+    }
+  });
+
+  it("no browser writes it, the owner included", async () => {
+    for (const db of [owner(), sender()]) {
+      await assertFails(db.doc("winBackLog/new").set({ invited: 1 }));
+      await assertFails(db.doc("winBackLog/c1").update({ invited: 99 }));
+      await assertFails(db.doc("winBackLog/c1").delete());
+    }
+  });
+
+  it("a stylist who may send still cannot read or change a client record: the server does that", async () => {
+    await assertFails(sender().doc("clients/0400000001").get());
+    await assertFails(sender().doc("clients/0400000001").update({ marketingOptIn: true }));
+    await assertFails(sender().doc("clients/0400000001").update({ marketingToken: "mine" }));
+  });
+});

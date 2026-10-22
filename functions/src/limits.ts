@@ -44,6 +44,11 @@ export const LIMITS = {
   managePerBooking: { max: 40, windowMs: HOUR },
   // Time-off requests and previews from one signed-in person
   timeOffPerDay: { max: 40, windowMs: 24 * HOUR },
+  // Inviting lapsed clients back (FR-030): a few sends a day, a look at the list now and then,
+  // and the public unsubscribe (generous: a shared address, and people click twice)
+  winBackSendPerDay: { max: 10, windowMs: 24 * HOUR },
+  winBackListPerHour: { max: 60, windowMs: HOUR },
+  unsubscribePerIp: { max: 60, windowMs: HOUR },
 } as const satisfies Record<string, Limit>;
 
 export const hashKey = (value: string): string =>

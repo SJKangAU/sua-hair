@@ -49,7 +49,8 @@ describe("templates", () => {
   it("fills every placeholder", () => {
     const text = renderSms(PLACEHOLDERS.map((p) => `{${p}}`).join("|"), sample);
     expect(text).toBe(
-      "Jane|Cut & Blow Dry|Steve|Friday 3 July|10:30 AM|Sua Hair Studio|(03) 9569 0840|SUA-1234|https://suahair.com.au/manage?b=sample",
+      "Jane|Cut & Blow Dry|Steve|Friday 3 July|10:30 AM|Sua Hair Studio|(03) 9569 0840|SUA-1234|https://suahair.com.au/manage?b=sample|" +
+        "https://suahair.com.au|https://suahair.com.au/unsubscribe?c=sample|Friday 12 June",
     );
   });
 
@@ -133,6 +134,34 @@ describe("length and segments", () => {
   });
 });
 
+describe("the invitation to come back (FR-030)", () => {
+  it("always carries the way to stop it: the wording must include {unsubscribeLink}", () => {
+    expect(templateProblem(DEFAULT_TEMPLATES.winback, "winback")).toBeNull();
+    expect(templateProblem("Come back, {name}! {bookingLink}", "winback")).toBe(
+      "This message must include {unsubscribeLink}, so people can stop it.",
+    );
+    // the other messages are not marketing and need no such link
+    expect(templateProblem("Come back, {name}!", "reminder")).toBeNull();
+  });
+
+  it("a stored invitation without the link falls back to the default, so it can never be sent without one", () => {
+    const s = effectiveSettings({ templates: { winback: "Come back, {name}! {bookingLink}" } });
+    expect(s.templates.winback).toBe(DEFAULT_TEMPLATES.winback);
+    const ok = effectiveSettings({ templates: { winback: "Hi {name}, book: {bookingLink} Stop: {unsubscribeLink}" } });
+    expect(ok.templates.winback).toBe("Hi {name}, book: {bookingLink} Stop: {unsubscribeLink}");
+  });
+
+  it("fills the invitation's own placeholders", () => {
+    const v = smsValuesFor(
+      { customerName: "Jane Citizen", lastVisit: "2026-06-12", bookingLink: "https://x.test/book", unsubscribeLink: "https://x.test/u?c=1" },
+      SALON,
+    );
+    expect(renderSms("Hi {name}, since {lastVisit}: {bookingLink} stop {unsubscribeLink}", v)).toBe(
+      "Hi Jane, since Friday 12 June: https://x.test/book stop https://x.test/u?c=1",
+    );
+  });
+});
+
 describe("sender name", () => {
   it.each(["SuaHair", "Sua Hair", "ABC", "Sua12345678"])("accepts %s", (s) => {
     expect(isValidSenderName(s)).toBe(true);
@@ -158,7 +187,7 @@ describe("effectiveSettings: whatever is stored becomes complete, safe settings"
     });
     expect(s.enabled).toBe(true);
     expect(s.senderName).toBe("Sua Hair");
-    expect(s.kinds).toEqual({ received: true, confirmed: true, not_confirmed: true, reminder: false });
+    expect(s.kinds).toEqual({ received: true, confirmed: true, not_confirmed: true, reminder: false, winback: true });
     expect(s.templates.confirmed).toBe("Booked, {name}! {date} {time}");
     expect(s.templates.received).toBe(DEFAULT_TEMPLATES.received);
   });

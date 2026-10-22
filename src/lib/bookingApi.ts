@@ -85,6 +85,8 @@ export interface BookingRequestInput {
   customerEmail?: string;
   notes?: string;
   consent: true;
+  /** Ticked the optional box to hear about coming back (FR-030) */
+  marketingConsent?: true;
   /** makes a retry of the same request return the same booking */
   requestId: string;
 }

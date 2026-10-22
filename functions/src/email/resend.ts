@@ -14,6 +14,8 @@ export interface OutboundEmail {
   replyTo?: string;
   // e.g. the appointment as a calendar file; `content` is the file's text
   attachments?: { filename: string; content: string; contentType: string }[];
+  // extra headers, e.g. List-Unsubscribe on an invitation to come back
+  headers?: Record<string, string>;
   // Resend de-duplicates requests carrying the same key for 24 hours, which
   // protects against Firestore triggers' at-least-once delivery.
   idempotencyKey?: string;
@@ -46,6 +48,7 @@ export const sendEmail = async (
       text: email.text,
       ...(email.html ? { html: email.html } : {}),
       ...(email.replyTo ? { reply_to: email.replyTo } : {}),
+      ...(email.headers ? { headers: email.headers } : {}),
       ...(email.attachments && email.attachments.length > 0
         ? {
             attachments: email.attachments.map((a) => ({

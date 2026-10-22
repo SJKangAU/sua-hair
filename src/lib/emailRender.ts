@@ -40,6 +40,8 @@ export interface EmailTemplate {
   callButton: boolean;
   /** The outlined "Change or cancel this booking" button (when the booking has a link) */
   manageButton: boolean;
+  /** The outlined "Book now" button (the booking page): for an invitation to come back */
+  bookButton: boolean;
   /** Attach the appointment as a calendar file */
   attachCalendar: boolean;
   /** The calendar event's title */
@@ -92,6 +94,7 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     manageButton: true,
     attachCalendar: true,
     calendarTitle: CALENDAR_TITLE,
+    bookButton: false,
   },
   received: {
     enabled: true,
@@ -107,6 +110,7 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     manageButton: true,
     attachCalendar: false,
     calendarTitle: CALENDAR_TITLE,
+    bookButton: false,
   },
   not_confirmed: {
     enabled: true,
@@ -122,6 +126,7 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     manageButton: false,
     attachCalendar: false,
     calendarTitle: CALENDAR_TITLE,
+    bookButton: false,
   },
   reminder: {
     enabled: true,
@@ -136,6 +141,22 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     manageButton: true,
     attachCalendar: false,
     calendarTitle: CALENDAR_TITLE,
+    bookButton: false,
+  },
+  winback: {
+    enabled: true,
+    subject: "We'd love to see you again — {salon}",
+    preheader: "It's been a while since your last visit.",
+    headline: "We miss you, {name}",
+    intro: "It's been a while since your last visit. We'd love to welcome you back whenever suits you.",
+    closing: "Book online, or call us on {phone}.",
+    showDetails: false,
+    showReference: false,
+    callButton: true,
+    manageButton: false,
+    attachCalendar: false,
+    calendarTitle: CALENDAR_TITLE,
+    bookButton: true,
   },
 };
 
@@ -145,7 +166,7 @@ export interface EmailSettings {
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 
-const KINDS: readonly EmailKind[] = ["received", "confirmed", "not_confirmed", "reminder"];
+const KINDS: readonly EmailKind[] = ["received", "confirmed", "not_confirmed", "reminder", "winback"];
 
 /** What is wrong with each field of a template, in words for the owner (empty when fine). */
 export const emailTemplateProblems = (t: EmailTemplate): Partial<Record<EmailTextField, string>> => {
@@ -192,7 +213,7 @@ export const effectiveEmailSettings = (raw: unknown): EmailSettings => {
     }
     const problems = emailTemplateProblems(merged);
     for (const f of EMAIL_TEXT_FIELDS) if (problems[f]) merged[f] = def[f];
-    for (const flag of ["enabled", "showDetails", "showReference", "callButton", "manageButton", "attachCalendar"] as const) {
+    for (const flag of ["enabled", "showDetails", "showReference", "callButton", "manageButton", "attachCalendar", "bookButton"] as const) {
       if (typeof t[flag] === "boolean") merged[flag] = t[flag] as boolean;
     }
     templates[kind] = merged;
@@ -282,6 +303,8 @@ interface Layout {
   rows: Row[];
   callButton: boolean;
   manageLink?: string;
+  bookingLink?: string;
+  unsubscribeLink?: string;
   bookingRef?: string;
 }
 
@@ -307,9 +330,14 @@ const renderHtml = (l: Layout, salon: EmailSalon): string => {
   const manage = l.manageLink
     ? `<tr><td style="padding-bottom:36px;"><a href="${escapeHtml(l.manageLink)}" style="display:inline-block;font-family:${SANS};font-size:13px;letter-spacing:0.08em;color:#111111;text-decoration:none;border:1px solid #111111;padding:12px 24px;">Change or cancel this booking</a></td></tr>`
     : "";
+  const book = l.bookingLink
+    ? `<tr><td style="padding-bottom:36px;"><a href="${escapeHtml(l.bookingLink)}" style="display:inline-block;font-family:${SANS};font-size:13px;letter-spacing:0.08em;color:#111111;text-decoration:none;border:1px solid #111111;padding:12px 24px;">Book now</a></td></tr>`
+    : "";
   const footer =
     `${escapeHtml(salon.name)} &middot; ${escapeHtml(salon.address)}` +
-    (l.bookingRef ? `<br>Reference ${escapeHtml(l.bookingRef)}` : "");
+    (l.bookingRef ? `<br>Reference ${escapeHtml(l.bookingRef)}` : "") +
+    // an invitation to come back is marketing: the way to stop it is always there
+    (l.unsubscribeLink ? `<br>You're getting this because you agreed to hear from us. <a href="${escapeHtml(l.unsubscribeLink)}" style="color:#6b6b6b;">Unsubscribe</a>` : "");
 
   return `<!doctype html>
 <html lang="en">
@@ -331,6 +359,7 @@ ${details}
 <tr><td style="font-family:${SANS};font-size:15px;line-height:1.6;color:#111111;padding:28px 0 20px;">${paragraphs(l.closing)}</td></tr>
 ${button}
 ${manage}
+${book}
 <tr><td style="font-family:${SANS};font-size:12px;line-height:1.6;color:#6b6b6b;">${footer}</td></tr>
 </table>
 </td></tr>
@@ -350,9 +379,11 @@ const renderText = (l: Layout, salon: EmailSalon): string =>
     ...(l.rows.length ? [...l.rows.map((r) => `${r.label}: ${r.lines.join(", ")}`), ""] : []),
     l.closing,
     ...(l.manageLink ? ["", `Change or cancel this booking: ${l.manageLink}`] : []),
+    ...(l.bookingLink ? ["", `Book now: ${l.bookingLink}`] : []),
     "",
     `${salon.name} - ${salon.address}`,
     ...(l.bookingRef ? [`Reference ${l.bookingRef}`] : []),
+    ...(l.unsubscribeLink ? ["", `You're getting this because you agreed to hear from us. Unsubscribe: ${l.unsubscribeLink}`] : []),
   ].join("\n");
 
 /** One booking + one template -> the email: subject, HTML and plain text. */
@@ -369,6 +400,9 @@ export const renderEmail = (template: EmailTemplate, booking: EmailBookingData, 
     rows: template.showDetails ? detailRows(booking) : [],
     callButton: template.callButton,
     ...(template.manageButton && booking.manageLink ? { manageLink: booking.manageLink } : {}),
+    ...(template.bookButton && booking.bookingLink ? { bookingLink: booking.bookingLink } : {}),
+    // always shown when there is one: it is the way to stop an invitation
+    ...(booking.unsubscribeLink ? { unsubscribeLink: booking.unsubscribeLink } : {}),
     ...(template.showReference && booking.bookingRef ? { bookingRef: booking.bookingRef } : {}),
   };
   return { subject: layout.subject, html: renderHtml(layout, salon), text: renderText(layout, salon) };

@@ -204,6 +204,25 @@
       "density": "SPARSE_ALL"
     },
     {
+      "collectionGroup": "clients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "marketingOptIn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastVisit",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
       "collectionGroup": "clientCards",
       "queryScope": "COLLECTION",
       "fields": [

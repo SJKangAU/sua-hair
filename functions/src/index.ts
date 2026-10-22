@@ -54,6 +54,12 @@ import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } fr
 import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
 import { callerRole, requireCapability, requireOwner } from "./guards";
 import {
+  sendWinBackCore,
+  unsubscribeMarketingCore,
+  winBackCandidatesCore,
+  type WinBackActor,
+} from "./winBack";
+import {
   decideTimeOffCore,
   previewTimeOffCore,
   requestTimeOffCore,
@@ -458,6 +464,64 @@ export const requestTimeOff = timeOffCommand(requestTimeOffCore);
 export const decideTimeOff = timeOffCommand(decideTimeOffCore);
 /** withdrawTimeOff - the requester (while waiting) or an approver. */
 export const withdrawTimeOff = timeOffCommand(withdrawTimeOffCore);
+
+// ── Inviting lapsed clients back (FR-030, DEC-056) ──────────────────────────
+// The owner, or a stylist allowed to send win-back messages (read from the users/{uid} record, so
+// taking the permission away works at once). A stylist sees only clients they may open.
+
+const winBackActor = async (request: CallableRequest): Promise<WinBackActor> => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
+  const caller = await callerRole(db, request);
+  if (!caller) throw new HttpsError("permission-denied", "You don't have access to this.");
+  const token = request.auth.token as { name?: string; email?: string };
+  const record = await db.doc(`users/${caller.uid}`).get();
+  const caps = record.get("effectiveCaps");
+  return {
+    uid: caller.uid,
+    name: token.name ?? token.email ?? caller.uid,
+    role: caller.role,
+    ...(caller.stylistId ? { stylistId: caller.stylistId } : {}),
+    canSend: caller.role === "owner" || (Array.isArray(caps) && caps.includes("sendWinBack")),
+    access: normaliseAccess(record.get("clientAccess"), caller.stylistId),
+  };
+};
+
+/** winBackCandidates - owner or an allowed stylist. { days }: the lapsed clients who agreed to hear from the salon. */
+export const winBackCandidates = onCall({ region: REGION, maxInstances: 5 }, async (request) => {
+  const actor = await winBackActor(request);
+  return run(() => winBackCandidatesCore(db, request.data, actor, Date.now()));
+});
+
+/** sendWinBack - owner or an allowed stylist. { clientIds, channels: { email, sms }, days }. Every client is re-checked as it is sent. */
+export const sendWinBack = onCall(
+  { region: REGION, maxInstances: 3, timeoutSeconds: 300, secrets: [RESEND_API_KEY, ...SMS_SECRETS] },
+  async (request) => {
+    const actor = await winBackActor(request);
+    return run(() =>
+      sendWinBackCore(db, request.data, actor, Date.now(), {
+        smsTransport: smsTransport(),
+        siteUrl: SITE_URL.value(),
+        sendEmail: (email) =>
+          sendEmail(RESEND_API_KEY.value(), {
+            from: EMAIL_FROM.value(),
+            to: email.to,
+            replyTo: SALON.replyTo,
+            subject: email.subject,
+            html: email.html,
+            text: email.text,
+            headers: { "List-Unsubscribe": `<${email.unsubscribeLink}>` },
+            idempotencyKey: email.idempotencyKey,
+          }),
+      }),
+    );
+  },
+);
+
+/** unsubscribeMarketing - public. { clientId, token } from the link in an invitation: they stay off the list until they agree again. */
+export const unsubscribeMarketing = onCall({ region: REGION, maxInstances: 5 }, async (request) => {
+  requireAppCheck(request);
+  return run(() => unsubscribeMarketingCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
+});
 
 const ownerCommand = <R>(
   action: string,
