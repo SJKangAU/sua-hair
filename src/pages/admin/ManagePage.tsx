@@ -9,6 +9,7 @@ import OpeningHoursEditor from "../../components/admin/manage/OpeningHoursEditor
 import StylistHoursEditor from "../../components/admin/manage/StylistHoursEditor";
 import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotificationsEditor";
 import TeamAccess from "../../components/admin/manage/TeamAccess";
+import PolicySettings from "../../components/admin/manage/PolicySettings";
 import EmailSettings from "../../components/admin/manage/EmailSettings";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
 import ClientImport from "../../components/admin/manage/ClientImport";
@@ -70,6 +71,14 @@ const ManagePage = ({ isOwner }: Props) => {
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
           />
           <OwnerNotificationsEditor
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* The cancellation and change policy (FR-028) - owner only */}
+          <PolicySettings
             onSuccess={(msg) => addToast(msg, "success")}
             onError={(msg) => addToast(msg, "error")}
           />

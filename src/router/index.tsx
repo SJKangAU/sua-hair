@@ -11,6 +11,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import BookingPage from "../pages/BookingPage";
 import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
+import ManageBookingPage from "../pages/ManageBookingPage";
 import TermsPage from "../pages/TermsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import PageLoading from "./PageLoading";
@@ -25,6 +26,12 @@ const router = createBrowserRouter([
     // Customer-facing booking page — public
     path: "/",
     element: <BookingPage />,
+  },
+  {
+    // A customer changing or cancelling their own booking from the link in their email or
+    // text - public; the secret in the link is the key (FR-028)
+    path: "/manage",
+    element: <ManageBookingPage />,
   },
   {
     // Privacy policy — public

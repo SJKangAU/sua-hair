@@ -65,6 +65,10 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       traineeId: d.traineeId,
       traineeName: d.traineeName,
       trainingTopic: d.trainingTopic,
+      // a request to move a confirmed booking (FR-028) and who cancelled it
+      replacesBookingId: d.replacesBookingId,
+      replacesSummary: d.replacesSummary,
+      cancelledBy: d.cancelledBy,
       createdAt: d.createdAt ?? "",
     };
   },

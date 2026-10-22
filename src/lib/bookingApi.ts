@@ -174,3 +174,47 @@ export const commandForStatusChange = (
   if (released && to !== "cancelled" && to !== "no_show") return "restore";
   return null;
 };
+
+// ── A customer's own booking, from the link in their email or text (FR-028) ──
+// The link carries the booking id and a secret; the server checks both and the salon's
+// change policy (src/lib/changePolicy.ts), so what is offered here is what it will allow.
+
+export interface ManagedBookingView {
+  bookingId: string;
+  status: BookingStatus;
+  firstName: string;
+  date: string;
+  time: string;
+  serviceName: string;
+  stylistName: string;
+  totalTime: number;
+  canCancel: boolean;
+  canChange: boolean;
+  /** Why not, in words for the customer (null when both are allowed) */
+  reason: string | null;
+  /** When changes close (ISO), for confirmed bookings */
+  closesAt: string | null;
+  rescheduleMode: "request" | "instant";
+  pendingChange: { bookingId: string; date: string; time: string } | null;
+  replacesSummary: string | null;
+  salonPhone: string;
+}
+
+export const getManagedBooking = (bookingId: string, token: string) =>
+  call<{ bookingId: string; token: string }, ManagedBookingView>("getManagedBooking", { bookingId, token });
+
+export const listChangeSlots = (bookingId: string, token: string, date: string) =>
+  call<{ bookingId: string; token: string; date: string }, { date: string; times: string[] }>("listChangeSlots", {
+    bookingId,
+    token,
+    date,
+  });
+
+export const cancelManagedBooking = (bookingId: string, token: string) =>
+  call<{ bookingId: string; token: string }, { status: BookingStatus }>("cancelManagedBooking", { bookingId, token });
+
+export const requestBookingChange = (bookingId: string, token: string, date: string, time: string) =>
+  call<
+    { bookingId: string; token: string; date: string; time: string },
+    { bookingId: string; status: "pending" | "confirmed"; date: string; time: string }
+  >("requestBookingChange", { bookingId, token, date, time });

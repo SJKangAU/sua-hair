@@ -136,6 +136,11 @@ const ApprovalRail = ({
                   >
                     {b.serviceName}
                   </span>
+                  {b.replacesSummary && (
+                    <span data-testid="move-request" style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600 }}>
+                      Request to move a booking (now {b.replacesSummary})
+                    </span>
+                  )}
                   <span
                     style={{
                       display: "block",

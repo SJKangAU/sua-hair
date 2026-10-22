@@ -170,6 +170,11 @@ const BookingCard = ({
           <p style={{ color: "var(--ink-muted)", fontSize: "0.78rem", margin: 0 }}>
             with {booking.stylistName}
           </p>
+          {booking.replacesSummary && (
+            <p data-testid="move-request" style={{ fontSize: "0.78rem", fontWeight: 600, margin: "0.2rem 0 0" }}>
+              Request to move a booking (now {booking.replacesSummary})
+            </p>
+          )}
           {booking.restTime > 0 && (
             <p style={{ color: "var(--grey-muted)", fontSize: "0.72rem", margin: 0 }}>
               {booking.activeTime}min + {booking.restTime}min setting
