@@ -21,7 +21,7 @@
 // Pure of firebase-functions (CommandError, not HttpsError) so the whole file is
 // tested against the Firestore emulator by tests/functions/*.
 
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import {
   FieldValue,
   type DocumentReference,
@@ -381,10 +381,24 @@ const notificationFor = (
   now: number,
 ) => ({ recipientId, recipientType, bookingId, message, read: false, createdAt: iso(now) });
 
+/** A fresh secret for a booking's change-or-cancel link: 128 random bits. */
+export const newManageToken = (): string => randomBytes(16).toString("base64url");
+
+export interface RequestOptions {
+  /**
+   * This request is a CHANGE of a confirmed booking (FR-028): the same customer, services and
+   * stylist at a new time. The original stays until this is approved, so it is ignored when
+   * checking the new time, the customer keeps the price they agreed, and the 'too many
+   * pending requests' limit does not apply.
+   */
+  replaces?: { bookingId: string };
+}
+
 export const createBookingRequestCore = async (
   db: Firestore,
   raw: unknown,
   ctx: CommandContext,
+  options: RequestOptions = {},
 ): Promise<BookingRequestResult> => {
   // Abuse limits before anything else is looked at, so refused attempts count too:
   // the address always, the phone number once the request is well-formed enough to have one
@@ -447,7 +461,8 @@ export const createBookingRequestCore = async (
   return runTx(db, 
     async (tx) => {
       // ── all reads first ───────────────────────────────────────────────
-      const [existing, phoneLock, pending, lookup, clientDoc] = await Promise.all([
+      const replacesId = options.replaces?.bookingId;
+      const [existing, phoneLock, pending, lookup, clientDoc, oldSnap, otherChange] = await Promise.all([
         tx.get(bookingRef),
         tx.get(phoneLockRef),
         tx.get(
@@ -458,7 +473,20 @@ export const createBookingRequestCore = async (
         ),
         tx.get(lookupRef),
         tx.get(clientDocRef),
+        replacesId ? tx.get(db.doc(`bookings/${replacesId}`)) : Promise.resolve(null),
+        replacesId
+          ? tx.get(db.collection("bookings").where("replacesBookingId", "==", replacesId).where("status", "==", "pending"))
+          : Promise.resolve(null),
       ]);
+      const old = oldSnap?.exists ? ({ ...(oldSnap.data() as Booking), id: replacesId as string }) : null;
+      if (replacesId) {
+        if (!old || old.status !== "confirmed" || old.customerPhone !== input.customerPhone) {
+          throw new CommandError("precondition", "That booking can't be changed any more. Please call the salon.");
+        }
+        if (otherChange && otherChange.size > 0) {
+          throw new CommandError("limit", "You already have a request to change this booking waiting for the salon.");
+        }
+      }
       const days = await Promise.all(
         candidates.map((c) => readDay(tx, db, c.id, input.date)),
       );
@@ -475,7 +503,7 @@ export const createBookingRequestCore = async (
       if (lookup.get("blocked") === true || clientDoc.get("blocked") === true) {
         throw new CommandError("blocked", CALL_THE_SALON);
       }
-      if (pending.size >= SALON_CONFIG.maxPendingPerPhone) {
+      if (!replacesId && pending.size >= SALON_CONFIG.maxPendingPerPhone) {
         throw new CommandError(
           "limit",
           `You already have ${SALON_CONFIG.maxPendingPerPhone} booking requests waiting for the salon to confirm. Please wait for those, or call ${PHONE}.`,
@@ -494,6 +522,8 @@ export const createBookingRequestCore = async (
             totalTime: totals.totalTime,
             activeTime: totals.activeTime,
             phases,
+            // a change ignores the booking it replaces: that time is released on approval
+            ...(replacesId ? { excludeId: replacesId } : {}),
           };
           return findBookingConflict(probe, day.bookings) === null;
         })
@@ -522,10 +552,12 @@ export const createBookingRequestCore = async (
       const { stylist, day } = free[0];
 
       // ── price and shape the booking from the records ───────────────────
+      // a change keeps the price the customer agreed to; a new request is priced from the records
+      const agreedPrice = new Map((old?.services ?? []).map((s) => [s.id, s.price]));
       const bookedServices: BookedService[] = services.map((s) => ({
         id: s.id,
         name: s.name,
-        price: priceFor(s, stylist.level),
+        price: agreedPrice.get(s.id) ?? priceFor(s, stylist.level),
         activeTime: s.activeTime,
         restTime: s.restTime,
         totalTime: s.totalTime,
@@ -558,7 +590,16 @@ export const createBookingRequestCore = async (
         consentGivenAt: iso(ctx.now),
         createdAt: iso(ctx.now),
         holdExpiresAt,
+        manageToken: newManageToken(),
         ...(wantsAny ? { assignedAutomatically: true } : {}),
+        ...(old
+          ? {
+              replacesBookingId: old.id,
+              replacesSummary: `${old.date} ${old.time}`,
+              calendarUid: old.calendarUid ?? old.id,
+              calendarSeq: (old.calendarSeq ?? 0) + 1,
+            }
+          : {}),
       };
 
       // The client's document and card, worked out from their bookings with this one
@@ -584,8 +625,9 @@ export const createBookingRequestCore = async (
         { merge: true },
       );
       const what = `${input.customerName} — ${booking.serviceName} on ${input.date} at ${input.time}`;
-      tx.set(db.collection("notifications").doc(), notificationFor("owner", "owner", bookingRef.id, `New booking request: ${what}`, ctx.now));
-      tx.set(db.collection("notifications").doc(), notificationFor(stylist.id, "stylist", bookingRef.id, `You have a new booking request: ${what}`, ctx.now));
+      const was = old ? ` (moving from ${old.date} at ${old.time})` : "";
+      tx.set(db.collection("notifications").doc(), notificationFor("owner", "owner", bookingRef.id, old ? `Request to move a booking: ${what}${was}` : `New booking request: ${what}`, ctx.now));
+      tx.set(db.collection("notifications").doc(), notificationFor(stylist.id, "stylist", bookingRef.id, old ? `A client wants to move a booking: ${what}${was}` : `You have a new booking request: ${what}`, ctx.now));
 
       return summarise(bookingRef.id, booking as Booking, wantsAny);
     },
@@ -684,7 +726,20 @@ export const approveBookingCore = async (
         throw new CommandError("needs-stylist", noStylistMessage);
       }
       const day = await readDay(tx, db, b.stylistId, b.date);
-      const clash = findBookingConflict(probeFor(b, id), day.bookings);
+      // A request to MOVE a booking: the original is released in the same transaction
+      const original =
+        b.replacesBookingId && b.replacesBookingId !== id
+          ? await tx.get(db.doc(`bookings/${b.replacesBookingId}`)).then((s) => (s.exists ? ({ ...(s.data() as Booking), id: s.id }) : null))
+          : null;
+      const releasing = original && isOpenStatus(original.status) ? original : null;
+      const originalDay =
+        releasing && (releasing.stylistId !== b.stylistId || releasing.date !== b.date)
+          ? await readDay(tx, db, releasing.stylistId, releasing.date)
+          : null;
+      const clash = findBookingConflict(
+        probeFor(b, id),
+        releasing ? day.bookings.filter((x) => x.id !== releasing.id) : day.bookings,
+      );
       if (clash) {
         throw new CommandError(
           "slot-taken",
@@ -700,6 +755,22 @@ export const approveBookingCore = async (
         { holdExpiresAt: FieldValue.delete(), confirmedAt: iso(ctx.now), arrivedAt: FieldValue.delete() },
         historyEntry(ctx.now, "Confirmed", "confirmed"),
       );
+      if (releasing) {
+        writeStatus(
+          tx,
+          db,
+          releasing,
+          "cancelled",
+          {
+            restoreStatus: releasing.status,
+            cancelReason: "rescheduled",
+            holdExpiresAt: FieldValue.delete(),
+            rescheduledToId: id,
+          },
+          historyEntry(ctx.now, `Moved to ${b.date} at ${b.time}`, "cancelled"),
+        );
+        if (originalDay) bumpLock(tx, originalDay, ctx.now);
+      }
       writeClient();
       bumpLock(tx, day, ctx.now);
       return { bookingId: id, status: "confirmed" as const };

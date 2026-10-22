@@ -237,7 +237,7 @@ const EmailSettingsEditor = ({ onSuccess, onError }: Props) => {
 
               {isOpen && built && (
                 <>
-                  {EMAIL_TEXT_FIELDS.map((f) => {
+                  {EMAIL_TEXT_FIELDS.filter((f) => f !== "calendarTitle" || t.attachCalendar).map((f) => {
                     const multiline = f === "intro" || f === "closing";
                     const common = {
                       value: t[f],
@@ -298,6 +298,8 @@ const EmailSettingsEditor = ({ onSuccess, onError }: Props) => {
                         ["showDetails", "Show the booking details"],
                         ["showReference", "Show the booking reference"],
                         ["callButton", "Show the call button"],
+                        ["manageButton", "Show the \"Change or cancel this booking\" button"],
+                        ["attachCalendar", "Attach the appointment, to add to their calendar"],
                       ] as const
                     ).map(([flag, text]) => (
                       <label key={flag} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", cursor: "pointer" }}>

@@ -49,7 +49,7 @@ describe("templates", () => {
   it("fills every placeholder", () => {
     const text = renderSms(PLACEHOLDERS.map((p) => `{${p}}`).join("|"), sample);
     expect(text).toBe(
-      "Jane|Cut & Blow Dry|Steve|Friday 3 July|10:30 AM|Sua Hair Studio|(03) 9569 0840|SUA-1234",
+      "Jane|Cut & Blow Dry|Steve|Friday 3 July|10:30 AM|Sua Hair Studio|(03) 9569 0840|SUA-1234|https://suahair.com.au/manage?b=sample",
     );
   });
 

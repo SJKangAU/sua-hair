@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_EMAIL_TEMPLATES,
+  buildCalendarEvent,
   EMAIL_LIMITS,
   effectiveEmailSettings,
   emailTemplateProblems,
@@ -189,5 +190,74 @@ describe("effectiveEmailSettings: whatever is stored becomes complete, safe sett
     expect(s.templates.confirmed.closing).toBe(confirmed.closing);
     expect(s.templates.confirmed.headline).toBe("Hello {name}");
     expect(s.templates.confirmed.enabled).toBe(true); // only a real boolean changes it
+  });
+});
+
+describe("the manage button and the calendar file (FR-027, FR-028)", () => {
+  const link = "https://suahair.com.au/manage?b=B1&t=TOKEN";
+  const withLink: EmailBookingData = { ...booking, manageLink: link, totalTime: 45, bookingId: "B1" };
+
+  it("the default confirmed, request and reminder emails offer the link; the 'not confirmed' one does not", () => {
+    for (const kind of ["confirmed", "received", "reminder"] as const) {
+      const e = renderEmail(DEFAULT_EMAIL_TEMPLATES[kind], withLink, SALON);
+      expect(e.html).toContain(`href="${link.replace(/&/g, "&amp;")}"`);
+      expect(e.html).toContain("Change or cancel this booking");
+      expect(e.text).toContain(`Change or cancel this booking: ${link}`);
+    }
+    const no = renderEmail(DEFAULT_EMAIL_TEMPLATES.not_confirmed, withLink, SALON);
+    expect(no.html).not.toContain("manage?b=B1");
+  });
+
+  it("no button when the booking has no link, or when the owner switches it off", () => {
+    expect(render({}, booking).html).not.toContain("Change or cancel this booking");
+    expect(render({ manageButton: false }, withLink).html).not.toContain("manage?b=B1");
+  });
+
+  it("{manageLink} can be used in the owner's own wording", () => {
+    const e = render({ closing: "Change it here: {manageLink}", manageButton: false }, withLink);
+    expect(e.text).toContain(`Change it here: ${link}`);
+  });
+
+  it("a link with HTML in it is escaped, not trusted", () => {
+    const e = render({}, { ...withLink, manageLink: 'https://x.test/"><script>alert(1)</script>' });
+    expect(e.html).not.toContain("<script>");
+  });
+
+  it("the confirmation attaches the appointment: UTC times, the owner's title, a reminder, our UID", () => {
+    const ics = buildCalendarEvent(DEFAULT_EMAIL_TEMPLATES.confirmed, withLink, SALON, "confirmed", Date.UTC(2026, 6, 1))!;
+    const lines = ics.replace(/\r\n /g, "").split("\r\n");
+    expect(lines).toContain("DTSTART:20260703T003000Z"); // 10:30 AM on 3 July in Melbourne (UTC+10)
+    expect(lines).toContain("DTEND:20260703T011500Z");
+    expect(lines).toContain("SUMMARY:Cut + Colour with Alex Kim — Sua Hair Studio");
+    expect(lines).toContain("STATUS:CONFIRMED");
+    expect(lines).toContain("UID:B1@suahair");
+    expect(lines).toContain("SEQUENCE:0");
+    expect(lines).toContain("LOCATION:Glen Waverley\\, VIC");
+    expect(lines.find((l) => l.startsWith("DESCRIPTION:"))).toContain(link); // the (folded) description carries the link
+  });
+
+  it("a moved booking keeps its calendar UID and raises the version", () => {
+    const ics = buildCalendarEvent(DEFAULT_EMAIL_TEMPLATES.confirmed, { ...withLink, bookingId: "NEW", calendarUid: "B1", calendarSeq: 2 }, SALON, "confirmed", 0)!;
+    const lines = ics.replace(/\r\n /g, "").split("\r\n");
+    expect(lines).toContain("UID:B1@suahair");
+    expect(lines).toContain("SEQUENCE:2");
+  });
+
+  it("only when the wording says so: off by default for the request, the reminder and 'not confirmed'", () => {
+    for (const kind of ["received", "not_confirmed", "reminder"] as const) {
+      expect(buildCalendarEvent(DEFAULT_EMAIL_TEMPLATES[kind], withLink, SALON, kind, 0)).toBeNull();
+    }
+    expect(buildCalendarEvent({ ...confirmed, attachCalendar: false }, withLink, SALON, "confirmed", 0)).toBeNull();
+    expect(buildCalendarEvent({ ...confirmed, attachCalendar: true }, { ...withLink, totalTime: undefined }, SALON, "confirmed", 0)).toBeNull();
+    const tentative = buildCalendarEvent({ ...DEFAULT_EMAIL_TEMPLATES.received, attachCalendar: true }, withLink, SALON, "received", 0)!;
+    expect(tentative).toContain("STATUS:TENTATIVE");
+  });
+
+  it("the calendar title is edited with placeholders, and a bad one falls back to the default", () => {
+    const ics = buildCalendarEvent({ ...confirmed, calendarTitle: "Hair: {service}" }, withLink, SALON, "confirmed", 0)!;
+    expect(ics).toContain("SUMMARY:Hair: Cut + Colour");
+    expect(effectiveEmailSettings({ templates: { confirmed: { calendarTitle: "Hi {nmae}" } } }).templates.confirmed.calendarTitle).toBe(
+      DEFAULT_EMAIL_TEMPLATES.confirmed.calendarTitle,
+    );
   });
 });

@@ -9,6 +9,9 @@
 // Pure - no Firebase, no network - so the Manage screen (live preview), the Cloud
 // Functions (the real send) and the unit tests run the same code.
 
+import { businessInstant } from "./businessTime";
+import { buildIcs, type IcsEvent } from "./icsEvent";
+import { timeStringToMinutes } from "./scheduling";
 import {
   PLACEHOLDERS,
   fillTemplate,
@@ -35,11 +38,24 @@ export interface EmailTemplate {
   showReference: boolean;
   /** The outlined "Call (03) ..." button */
   callButton: boolean;
+  /** The outlined "Change or cancel this booking" button (when the booking has a link) */
+  manageButton: boolean;
+  /** Attach the appointment as a calendar file */
+  attachCalendar: boolean;
+  /** The calendar event's title */
+  calendarTitle: string;
 }
 
-export type EmailTextField = "subject" | "preheader" | "headline" | "intro" | "closing";
+export type EmailTextField = "subject" | "preheader" | "headline" | "intro" | "closing" | "calendarTitle";
 
-export const EMAIL_TEXT_FIELDS: readonly EmailTextField[] = ["subject", "preheader", "headline", "intro", "closing"];
+export const EMAIL_TEXT_FIELDS: readonly EmailTextField[] = [
+  "subject",
+  "preheader",
+  "headline",
+  "intro",
+  "closing",
+  "calendarTitle",
+];
 
 export const EMAIL_FIELD_LABELS: Record<EmailTextField, string> = {
   subject: "Subject",
@@ -47,6 +63,7 @@ export const EMAIL_FIELD_LABELS: Record<EmailTextField, string> = {
   headline: "Headline",
   intro: "Opening message",
   closing: "Closing message",
+  calendarTitle: "Calendar event title",
 };
 
 export const EMAIL_LIMITS: Record<EmailTextField, number> = {
@@ -55,9 +72,11 @@ export const EMAIL_LIMITS: Record<EmailTextField, number> = {
   headline: 200,
   intro: 1000,
   closing: 600,
+  calendarTitle: 150,
 };
 
 const CLOSING = "Need to change your booking? Call us on {phone}.";
+const CALENDAR_TITLE = "{service} with {stylist} — {salon}";
 
 export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
   confirmed: {
@@ -70,6 +89,9 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     showDetails: true,
     showReference: true,
     callButton: true,
+    manageButton: true,
+    attachCalendar: true,
+    calendarTitle: CALENDAR_TITLE,
   },
   received: {
     enabled: true,
@@ -82,6 +104,9 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     showDetails: true,
     showReference: true,
     callButton: true,
+    manageButton: true,
+    attachCalendar: false,
+    calendarTitle: CALENDAR_TITLE,
   },
   not_confirmed: {
     enabled: true,
@@ -94,6 +119,9 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     showDetails: true,
     showReference: true,
     callButton: true,
+    manageButton: false,
+    attachCalendar: false,
+    calendarTitle: CALENDAR_TITLE,
   },
   reminder: {
     enabled: true,
@@ -105,6 +133,9 @@ export const DEFAULT_EMAIL_TEMPLATES: Record<EmailKind, EmailTemplate> = {
     showDetails: true,
     showReference: true,
     callButton: true,
+    manageButton: true,
+    attachCalendar: false,
+    calendarTitle: CALENDAR_TITLE,
   },
 };
 
@@ -161,7 +192,7 @@ export const effectiveEmailSettings = (raw: unknown): EmailSettings => {
     }
     const problems = emailTemplateProblems(merged);
     for (const f of EMAIL_TEXT_FIELDS) if (problems[f]) merged[f] = def[f];
-    for (const flag of ["enabled", "showDetails", "showReference", "callButton"] as const) {
+    for (const flag of ["enabled", "showDetails", "showReference", "callButton", "manageButton", "attachCalendar"] as const) {
       if (typeof t[flag] === "boolean") merged[flag] = t[flag] as boolean;
     }
     templates[kind] = merged;
@@ -180,6 +211,12 @@ export interface EmailSalon {
 
 export interface EmailBookingData extends SmsBookingFields {
   servicePrice?: number;
+  /** Minutes, for the calendar event */
+  totalTime?: number;
+  /** Which calendar event this booking is (stable across moves) and its version */
+  calendarUid?: string;
+  calendarSeq?: number;
+  bookingId?: string;
 }
 
 export interface BuiltEmail {
@@ -244,6 +281,7 @@ interface Layout {
   closing: string;
   rows: Row[];
   callButton: boolean;
+  manageLink?: string;
   bookingRef?: string;
 }
 
@@ -266,6 +304,9 @@ const renderHtml = (l: Layout, salon: EmailSalon): string => {
   const button = l.callButton
     ? `<tr><td style="padding-bottom:36px;"><a href="${escapeHtml(salon.phoneHref)}" style="display:inline-block;font-family:${SANS};font-size:13px;letter-spacing:0.08em;color:#111111;text-decoration:none;border:1px solid #111111;padding:12px 24px;">Call ${escapeHtml(salon.phoneDisplay)}</a></td></tr>`
     : `<tr><td style="padding-bottom:20px;">&nbsp;</td></tr>`;
+  const manage = l.manageLink
+    ? `<tr><td style="padding-bottom:36px;"><a href="${escapeHtml(l.manageLink)}" style="display:inline-block;font-family:${SANS};font-size:13px;letter-spacing:0.08em;color:#111111;text-decoration:none;border:1px solid #111111;padding:12px 24px;">Change or cancel this booking</a></td></tr>`
+    : "";
   const footer =
     `${escapeHtml(salon.name)} &middot; ${escapeHtml(salon.address)}` +
     (l.bookingRef ? `<br>Reference ${escapeHtml(l.bookingRef)}` : "");
@@ -289,6 +330,7 @@ const renderHtml = (l: Layout, salon: EmailSalon): string => {
 ${details}
 <tr><td style="font-family:${SANS};font-size:15px;line-height:1.6;color:#111111;padding:28px 0 20px;">${paragraphs(l.closing)}</td></tr>
 ${button}
+${manage}
 <tr><td style="font-family:${SANS};font-size:12px;line-height:1.6;color:#6b6b6b;">${footer}</td></tr>
 </table>
 </td></tr>
@@ -307,6 +349,7 @@ const renderText = (l: Layout, salon: EmailSalon): string =>
     "",
     ...(l.rows.length ? [...l.rows.map((r) => `${r.label}: ${r.lines.join(", ")}`), ""] : []),
     l.closing,
+    ...(l.manageLink ? ["", `Change or cancel this booking: ${l.manageLink}`] : []),
     "",
     `${salon.name} - ${salon.address}`,
     ...(l.bookingRef ? [`Reference ${l.bookingRef}`] : []),
@@ -325,9 +368,49 @@ export const renderEmail = (template: EmailTemplate, booking: EmailBookingData, 
     closing: fillTemplate(template.closing, values).trim(),
     rows: template.showDetails ? detailRows(booking) : [],
     callButton: template.callButton,
+    ...(template.manageButton && booking.manageLink ? { manageLink: booking.manageLink } : {}),
     ...(template.showReference && booking.bookingRef ? { bookingRef: booking.bookingRef } : {}),
   };
   return { subject: layout.subject, html: renderHtml(layout, salon), text: renderText(layout, salon) };
+};
+
+/**
+ * The calendar event to attach for this booking, or null when the wording says not to (or the
+ * booking has no usable time). The same UID is kept when a booking is moved and the version
+ * goes up, so the customer's calendar updates the one event.
+ */
+export const buildCalendarEvent = (
+  template: EmailTemplate,
+  booking: EmailBookingData,
+  salon: EmailSalon,
+  kind: EmailKind,
+  nowMs: number,
+): string | null => {
+  if (!template.attachCalendar) return null;
+  const startMs = businessInstant(booking.date ?? "", timeStringToMinutes(booking.time ?? ""));
+  if (startMs === null || !(booking.totalTime && booking.totalTime > 0)) return null;
+  const values = smsValuesFor(booking, { name: salon.name, phoneDisplay: salon.phoneDisplay });
+  const detail = [
+    `Stylist: ${booking.stylistName ?? ""}`,
+    `Service: ${serviceLines(booking).join(", ")}`,
+    formatPrice(booking) ? `Price: ${formatPrice(booking)}` : "",
+    `Phone: ${salon.phoneDisplay}`,
+    booking.bookingRef ? `Reference: ${booking.bookingRef}` : "",
+    booking.manageLink ? `Change or cancel: ${booking.manageLink}` : "",
+  ].filter(Boolean);
+  const event: IcsEvent = {
+    uid: booking.calendarUid ?? booking.bookingId ?? booking.bookingRef ?? `${booking.date}-${booking.time}`,
+    sequence: booking.calendarSeq ?? 0,
+    startMs,
+    endMs: startMs + booking.totalTime * 60_000,
+    summary: oneLine(fillTemplate(template.calendarTitle, values)),
+    description: detail.join("\n"),
+    location: salon.address,
+    status: kind === "confirmed" ? "CONFIRMED" : "TENTATIVE",
+    alarmMinutesBefore: 24 * 60,
+    stampMs: nowMs,
+  };
+  return buildIcs(event);
 };
 
 /** Every placeholder an email may use (the same ones as a text). */

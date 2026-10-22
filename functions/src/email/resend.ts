@@ -12,6 +12,8 @@ export interface OutboundEmail {
   text: string;
   html?: string;
   replyTo?: string;
+  // e.g. the appointment as a calendar file; `content` is the file's text
+  attachments?: { filename: string; content: string; contentType: string }[];
   // Resend de-duplicates requests carrying the same key for 24 hours, which
   // protects against Firestore triggers' at-least-once delivery.
   idempotencyKey?: string;
@@ -44,6 +46,15 @@ export const sendEmail = async (
       text: email.text,
       ...(email.html ? { html: email.html } : {}),
       ...(email.replyTo ? { reply_to: email.replyTo } : {}),
+      ...(email.attachments && email.attachments.length > 0
+        ? {
+            attachments: email.attachments.map((a) => ({
+              filename: a.filename,
+              content: Buffer.from(a.content, "utf8").toString("base64"),
+              content_type: a.contentType,
+            })),
+          }
+        : {}),
     }),
   });
 

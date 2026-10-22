@@ -14,9 +14,9 @@ import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue, type Firestore } from "firebase-admin/firestore";
 import { sendEmail } from "./email/resend";
-import { buildEmail, buildOwnerNotification, type BookingEmailData } from "./email/templates";
+import { SALON_FOR_EMAIL, buildEmail, buildOwnerNotification, type BookingEmailData } from "./email/templates";
 import { sendTestEmailCore } from "./email/testEmail";
-import { effectiveEmailSettings } from "../../src/lib/emailRender";
+import { buildCalendarEvent, effectiveEmailSettings } from "../../src/lib/emailRender";
 import {
   emailKindOnCreate,
   emailKindOnUpdate,
@@ -28,6 +28,7 @@ import {
   type CommandErrorCode,
 } from "./commandErrors";
 import {
+  newManageToken,
   approveBookingCore,
   assignStylistCore,
   cancelBookingCore,
@@ -52,6 +53,12 @@ import { SALON } from "./salon";
 import { clickSendTransport, inEmulator, outboxTransport, type SmsTransport } from "./sms/provider";
 import { sendBookingSmsCore, sendTestSmsCore } from "./sms/send";
 import { requireCapability, requireOwner } from "./guards";
+import {
+  cancelManagedBookingCore,
+  getManagedBookingCore,
+  listChangeSlotsCore,
+  requestChangeCore,
+} from "./customerChange";
 import { normaliseAccess } from "../../src/lib/clientAccess";
 import { normalisePermissions } from "../../src/lib/permissions";
 import { RoleError, grantRole, revokeRole, setStylistDefaults, type Role } from "./roles";
@@ -68,6 +75,9 @@ const db = getFirestore();
 // must be verified in Resend before mail to real customers will send.
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const EMAIL_FROM = defineString("EMAIL_FROM");
+// The public address of the site, for the link in a booking email or text that lets the
+// customer change or cancel (FR-028): <SITE_URL>/manage?b=<id>&t=<secret>
+const SITE_URL = defineString("SITE_URL", { default: "https://sua-hair.vercel.app" });
 
 // ── Text message configuration (FR-024) ─────────────────────────────────────
 // ClickSend credentials, both Secret Manager secrets:
@@ -111,7 +121,30 @@ interface BookingDoc {
   time?: string;
   notes?: string | null;
   reminderSentAt?: string | null;
+  totalTime?: number;
+  manageToken?: string;
+  calendarUid?: string;
+  calendarSeq?: number;
 }
+
+/**
+ * The link in a customer's email or text to change or cancel this booking. A booking made
+ * before this existed (or entered by staff in the browser) gets its secret here, the first
+ * time it is needed. Never throws: no link is better than no email.
+ */
+const manageLinkFor = async (bookingId: string, booking: BookingDoc): Promise<string> => {
+  try {
+    let token = booking.manageToken;
+    if (!token) {
+      token = newManageToken();
+      await db.doc(`bookings/${bookingId}`).update({ manageToken: token });
+    }
+    return `${SITE_URL.value().replace(/\/+$/, "")}/manage?b=${encodeURIComponent(bookingId)}&t=${encodeURIComponent(token)}`;
+  } catch (err) {
+    console.error(`Manage link failed for booking ${bookingId}:`, err instanceof Error ? err.message : "error");
+    return "";
+  }
+};
 
 const toEmailData = (b: BookingDoc): BookingEmailData => ({
   customerName: b.customerName ?? "",
@@ -123,6 +156,9 @@ const toEmailData = (b: BookingDoc): BookingEmailData => ({
   date: b.date ?? "",
   time: b.time ?? "",
   bookingRef: b.bookingRef,
+  totalTime: b.totalTime,
+  calendarUid: b.calendarUid,
+  calendarSeq: b.calendarSeq,
 });
 
 // Firestore writes are capped at 500 operations per batch.
@@ -354,6 +390,28 @@ export const joinWaitlist = onCall(
   },
 );
 
+/**
+ * getManagedBooking / listChangeSlots / cancelManagedBooking / requestBookingChange - public, for the
+ * customer's link to change or cancel their own booking (FR-028). The secret in the link is
+ * the key; every attempt is rate limited; the salon's policy decides what is allowed.
+ */
+export const getManagedBooking = onCall({ region: REGION, maxInstances: 10 }, async (request) => {
+  requireAppCheck(request);
+  return run(() => getManagedBookingCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
+});
+export const listChangeSlots = onCall({ region: REGION, maxInstances: 10 }, async (request) => {
+  requireAppCheck(request);
+  return run(() => listChangeSlotsCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
+});
+export const cancelManagedBooking = onCall({ region: REGION, maxInstances: 10 }, async (request) => {
+  requireAppCheck(request);
+  return run(() => cancelManagedBookingCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
+});
+export const requestBookingChange = onCall({ region: REGION, maxInstances: 10 }, async (request) => {
+  requireAppCheck(request);
+  return run(() => requestChangeCore(db, request.data, { now: Date.now(), ip: callerIp(request) }));
+});
+
 const ownerCommand = <R>(
   action: string,
   core: (db: Firestore, raw: unknown, ctx: OwnerContext) => Promise<R>,
@@ -512,13 +570,16 @@ const sendBookingEmail = async (
   kind: BookingEmailKind,
   bookingId: string,
   booking: BookingDoc,
+  manageLink = "",
 ): Promise<void> => {
   if (!isValidEmail(booking.customerEmail)) return;
   try {
     // The owner's own wording (privateSettings/email), or the default; an email switched off is not sent
     const template = effectiveEmailSettings((await db.doc("privateSettings/email").get()).data()).templates[kind];
     if (!template.enabled) return;
-    const email = buildEmail(kind, toEmailData(booking), template);
+    const data = { ...toEmailData(booking), manageLink, bookingId };
+    const email = buildEmail(kind, data, template);
+    const calendar = buildCalendarEvent(template, data, SALON_FOR_EMAIL, kind, Date.now());
     await sendEmail(RESEND_API_KEY.value(), {
       from: EMAIL_FROM.value(),
       to: booking.customerEmail,
@@ -526,6 +587,9 @@ const sendBookingEmail = async (
       subject: email.subject,
       html: email.html,
       text: email.text,
+      ...(calendar
+        ? { attachments: [{ filename: "appointment.ics", content: calendar, contentType: "text/calendar; method=PUBLISH; charset=UTF-8" }] }
+        : {}),
       idempotencyKey: idempotencyKey(kind, bookingId),
     });
   } catch (err) {
@@ -563,8 +627,11 @@ export const onBookingCreated = onDocumentCreated(
     const bookingId = event.params.bookingId;
 
     const kind = emailKindOnCreate(booking);
-    if (kind) await sendBookingEmail(kind, bookingId, booking);
-    if (kind) await sendBookingSmsCore(db, smsTransport(), kind, bookingId, booking, Date.now());
+    if (kind) {
+      const manageLink = await manageLinkFor(bookingId, booking);
+      await sendBookingEmail(kind, bookingId, booking, manageLink);
+      await sendBookingSmsCore(db, smsTransport(), kind, bookingId, { ...booking, manageLink }, Date.now());
+    }
 
     // Owner heads-up: online requests only (walk-ins are entered by staff who
     // already know about them). Independent of the customer email above.
@@ -619,8 +686,9 @@ export const onBookingUpdated = onDocumentUpdated(
     if (!before || !after) return;
     const kind = emailKindOnUpdate(before, after);
     if (kind) {
-      await sendBookingEmail(kind, event.params.bookingId, after);
-      await sendBookingSmsCore(db, smsTransport(), kind, event.params.bookingId, after, Date.now());
+      const manageLink = await manageLinkFor(event.params.bookingId, after);
+      await sendBookingEmail(kind, event.params.bookingId, after, manageLink);
+      await sendBookingSmsCore(db, smsTransport(), kind, event.params.bookingId, { ...after, manageLink }, Date.now());
     }
   },
 );
@@ -696,12 +764,15 @@ export const sendBookingReminders = onSchedule(
 
       // The text first: it has its own once-only record (smsLog), independent of
       // whether this customer gave an email address.
-      await sendBookingSmsCore(db, smsTransport(), "reminder", docSnap.id, booking, now);
+      const manageLink = await manageLinkFor(docSnap.id, booking);
+      await sendBookingSmsCore(db, smsTransport(), "reminder", docSnap.id, { ...booking, manageLink }, now);
 
       if (booking.reminderSentAt || !isValidEmail(booking.customerEmail) || !reminderTemplate.enabled) continue;
 
       try {
-        const email = buildEmail("reminder", toEmailData(booking), reminderTemplate);
+        const data = { ...toEmailData(booking), manageLink, bookingId: docSnap.id };
+        const email = buildEmail("reminder", data, reminderTemplate);
+        const calendar = buildCalendarEvent(reminderTemplate, data, SALON_FOR_EMAIL, "reminder", Date.now());
         await sendEmail(RESEND_API_KEY.value(), {
           from: EMAIL_FROM.value(),
           to: booking.customerEmail,
@@ -709,6 +780,9 @@ export const sendBookingReminders = onSchedule(
           subject: email.subject,
           html: email.html,
           text: email.text,
+          ...(calendar
+            ? { attachments: [{ filename: "appointment.ics", content: calendar, contentType: "text/calendar; method=PUBLISH; charset=UTF-8" }] }
+            : {}),
           idempotencyKey: `reminder-${docSnap.id}`,
         });
         await docSnap.ref.update({ reminderSentAt: new Date().toISOString() });

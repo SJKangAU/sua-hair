@@ -34,6 +34,12 @@ export interface BookingEmailData {
   date: string; // YYYY-MM-DD
   time: string; // "10:30 AM"
   bookingRef?: string;
+  // The customer's link to change or cancel (FR-028) and what the calendar file needs (FR-027)
+  manageLink?: string;
+  totalTime?: number;
+  calendarUid?: string;
+  calendarSeq?: number;
+  bookingId?: string;
 }
 
 export interface OwnerNotificationData extends BookingEmailData {

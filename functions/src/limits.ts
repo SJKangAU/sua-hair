@@ -38,6 +38,10 @@ export const LIMITS = {
   smsPerDay: { max: 400, windowMs: 24 * HOUR },
   smsTestPerHour: { max: 10, windowMs: HOUR },
   emailTestPerHour: { max: 10, windowMs: HOUR },
+  // The customer's change-or-cancel link: every look, cancel or move counts. Generous for a
+  // shared address, tight per booking (a customer opens it a handful of times).
+  managePerIp: { max: 120, windowMs: HOUR },
+  managePerBooking: { max: 40, windowMs: HOUR },
 } as const satisfies Record<string, Limit>;
 
 export const hashKey = (value: string): string =>

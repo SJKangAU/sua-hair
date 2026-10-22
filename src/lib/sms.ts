@@ -26,7 +26,7 @@ export const SMS_KIND_LABELS: Record<SmsKind, { title: string; when: string }> =
   reminder: { title: "Reminder", when: "24 hours before a confirmed appointment" },
 };
 
-export const PLACEHOLDERS = ["name", "service", "stylist", "date", "time", "salon", "phone", "ref"] as const;
+export const PLACEHOLDERS = ["name", "service", "stylist", "date", "time", "salon", "phone", "ref", "manageLink"] as const;
 export type Placeholder = (typeof PLACEHOLDERS)[number];
 
 export const PLACEHOLDER_HELP: Record<Placeholder, string> = {
@@ -38,6 +38,7 @@ export const PLACEHOLDER_HELP: Record<Placeholder, string> = {
   salon: "Salon name",
   phone: "Salon phone number",
   ref: "Booking reference",
+  manageLink: "Link to change or cancel the booking",
 };
 
 export interface SmsSettings {
@@ -178,6 +179,8 @@ export interface SmsBookingFields {
   date?: string;
   time?: string;
   bookingRef?: string;
+  /** The link in this customer's message to change or cancel the booking (FR-028) */
+  manageLink?: string;
 }
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -220,6 +223,7 @@ export const smsValuesFor = (
     salon: salon.name,
     phone: salon.phoneDisplay,
     ref: b.bookingRef ?? "",
+    manageLink: b.manageLink ?? "",
   };
 };
 
@@ -232,6 +236,7 @@ export const SAMPLE_BOOKING: SmsBookingFields = {
   date: "2026-07-03",
   time: "10:30 AM",
   bookingRef: "SUA-1234",
+  manageLink: "https://suahair.com.au/manage?b=sample",
 };
 
 // ── Length ───────────────────────────────────────────────────────────────────

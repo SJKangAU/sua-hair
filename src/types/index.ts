@@ -227,6 +227,16 @@ export interface Booking {
   // True when the customer chose "Any Available Stylist" and the server picked
   // the stylist; stylistId is always a real stylist
   assignedAutomatically?: boolean;
+  // The secret in the customer's link to change or cancel this booking (FR-028). Only the
+  // owner and this booking's stylist can read a booking, so it stays private.
+  manageToken?: string;
+  // This booking is a request to MOVE a confirmed one: approving it releases the original
+  replacesBookingId?: string;
+  replacesSummary?: string; // "2026-11-03 10:00 AM", for the approvals list
+  // The calendar event this booking updates, and how many times it has changed (FR-027)
+  calendarUid?: string;
+  calendarSeq?: number;
+  cancelledBy?: "customer";
 }
 
 // Minimal, PII-free projection of a Booking used to compute public
