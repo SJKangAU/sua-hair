@@ -53,26 +53,27 @@ service cloud.firestore {
         && smsTemplatesOk(d.templates);
     }
 
-    // One email's wording (FR-027): known fields only, text kept to a sane length. The
-    // wording is checked for unknown {placeholders} by the editor and again by the sender
+    // One email's wording (FR-027): exactly the known fields, text kept to a sane length. The
+    // Manage screen always saves a complete template. (Kept compact on purpose: Firestore stops a
+    // request that evaluates more than 1,000 expressions, and four templates are checked at once.)
+    // The wording is checked for unknown {placeholders} by the editor and again by the sender
     // (which falls back to the default), so the rule only bounds what can be stored.
     function validEmailTemplate(t) {
       return t is map
+        && t.keys().hasAll(['enabled', 'subject', 'preheader', 'headline', 'intro', 'closing',
+                            'showDetails', 'showReference', 'callButton',
+                            'manageButton', 'attachCalendar', 'calendarTitle'])
         && t.keys().hasOnly(['enabled', 'subject', 'preheader', 'headline', 'intro', 'closing',
                              'showDetails', 'showReference', 'callButton',
                              'manageButton', 'attachCalendar', 'calendarTitle'])
-        && (!('enabled' in t) || t.enabled is bool)
-        && (!('showDetails' in t) || t.showDetails is bool)
-        && (!('showReference' in t) || t.showReference is bool)
-        && (!('callButton' in t) || t.callButton is bool)
-        && (!('manageButton' in t) || t.manageButton is bool)
-        && (!('attachCalendar' in t) || t.attachCalendar is bool)
-        && (!('calendarTitle' in t) || (t.calendarTitle is string && t.calendarTitle.size() > 0 && t.calendarTitle.size() <= 150))
-        && (!('subject' in t) || (t.subject is string && t.subject.size() > 0 && t.subject.size() <= 150))
-        && (!('preheader' in t) || (t.preheader is string && t.preheader.size() > 0 && t.preheader.size() <= 200))
-        && (!('headline' in t) || (t.headline is string && t.headline.size() > 0 && t.headline.size() <= 200))
-        && (!('intro' in t) || (t.intro is string && t.intro.size() > 0 && t.intro.size() <= 1000))
-        && (!('closing' in t) || (t.closing is string && t.closing.size() > 0 && t.closing.size() <= 600));
+        && t.enabled is bool && t.showDetails is bool && t.showReference is bool
+        && t.callButton is bool && t.manageButton is bool && t.attachCalendar is bool
+        && t.subject is string && t.subject.size() <= 150
+        && t.preheader is string && t.preheader.size() <= 200
+        && t.headline is string && t.headline.size() <= 200
+        && t.intro is string && t.intro.size() <= 1000
+        && t.closing is string && t.closing.size() <= 600
+        && t.calendarTitle is string && t.calendarTitle.size() <= 150;
     }
 
     function validEmailSettings(d) {

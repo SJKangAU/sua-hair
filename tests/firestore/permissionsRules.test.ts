@@ -5,6 +5,9 @@
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { createTestEnv } from "./testEnv";
+import { effectiveEmailSettings } from "../../src/lib/emailRender";
+import { effectiveSettings } from "../../src/lib/sms";
+import { effectivePolicy } from "../../src/lib/changePolicy";
 
 let env: RulesTestEnvironment;
 beforeAll(async () => {
@@ -99,22 +102,21 @@ describe("without the permission", () => {
 });
 
 describe("the email wording (privateSettings/email, FR-027)", () => {
-  const email = (over: Record<string, unknown> = {}) => ({
-    templates: {
-      confirmed: {
-        enabled: true,
-        subject: "Your booking at {salon}",
-        preheader: "{date} at {time}",
-        headline: "See you, {name}",
-        intro: "Your booking is confirmed.",
-        closing: "Call {phone}.",
-        showDetails: true,
-        showReference: false,
-        callButton: true,
-      },
-    },
-    ...over,
-  });
+  const full = {
+    enabled: true,
+    subject: "Your booking at {salon}",
+    preheader: "{date} at {time}",
+    headline: "See you, {name}",
+    intro: "Your booking is confirmed.",
+    closing: "Call {phone}.",
+    showDetails: true,
+    showReference: false,
+    callButton: true,
+    manageButton: true,
+    attachCalendar: true,
+    calendarTitle: "{service} with {stylist}",
+  };
+  const email = (over: Record<string, unknown> = {}) => ({ templates: { confirmed: full }, ...over });
   const owner = () => env.authenticatedContext("owner-uid", { role: "owner" }).firestore();
 
   beforeEach(async () => {
@@ -133,20 +135,36 @@ describe("the email wording (privateSettings/email, FR-027)", () => {
     }
   });
 
-  it("accepts some of the wording, or none of it", async () => {
+  it("accepts the complete document the Manage screen saves, as it stands by default", async () => {
+    const full = effectiveEmailSettings(undefined);
+    await assertSucceeds(owner().doc("privateSettings/email").set(full));
+    await assertSucceeds(editor().doc("privateSettings/email").set(full));
+    await assertSucceeds(owner().doc("privateSettings/sms").set(effectiveSettings(undefined)));
+    await assertSucceeds(owner().doc("salonSettings/policy").set(effectivePolicy(undefined)));
+  });
+
+  it("accepts complete templates for some of the emails, or for none", async () => {
     await assertSucceeds(editor().doc("privateSettings/email").set({ templates: {} }));
-    await assertSucceeds(editor().doc("privateSettings/email").set({ templates: { reminder: { headline: "Soon, {name}" } } }));
+    await assertSucceeds(editor().doc("privateSettings/email").set({ templates: { reminder: { ...full, headline: "Soon, {name}" } } }));
+  });
+
+  it("refuses a template with a field missing", async () => {
+    const { calendarTitle: _c, ...noTitle } = full;
+    void _c;
+    for (const db of [owner(), editor()]) {
+      await assertFails(db.doc("privateSettings/email").set({ templates: { confirmed: noTitle } }));
+      await assertFails(db.doc("privateSettings/email").set({ templates: { confirmed: { headline: "Soon" } } }));
+    }
   });
 
   it("refuses unknown fields, unknown emails, wrong types, empty or too-long text", async () => {
-    const t = (over: Record<string, unknown>) => ({ templates: { confirmed: { ...email().templates.confirmed, ...over } } });
+    const t = (over: Record<string, unknown>) => ({ templates: { confirmed: { ...full, ...over } } });
     for (const db of [owner(), editor()]) {
       await assertFails(db.doc("privateSettings/email").set(email({ extra: 1 })));
       await assertFails(db.doc("privateSettings/email").set({ templates: { surprise: {} } }));
       await assertFails(db.doc("privateSettings/email").set(t({ surprise: "x" })));
       await assertFails(db.doc("privateSettings/email").set(t({ enabled: "yes" })));
       await assertFails(db.doc("privateSettings/email").set(t({ callButton: 1 })));
-      await assertFails(db.doc("privateSettings/email").set(t({ subject: "" })));
       await assertFails(db.doc("privateSettings/email").set(t({ subject: "x".repeat(151) })));
       await assertFails(db.doc("privateSettings/email").set(t({ preheader: "x".repeat(201) })));
       await assertFails(db.doc("privateSettings/email").set(t({ headline: "x".repeat(201) })));
