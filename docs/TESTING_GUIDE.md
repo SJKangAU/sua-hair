@@ -147,6 +147,15 @@ Tick each line. Anything that fails: stop, note exactly what you saw, and use th
 - [ ] Choose **Every client**, Save: the picker offers **Everyone's clients**. Choose **their own clients only**, Save: the picker disappears and a colleague's client is "not found" again, without the stylist signing out.
 - [ ] Try to remove your own owner access: it is refused.
 
+### E4. Permissions, emails, the customer link, time off, win-back and client records (after the functions, app and rules are live)
+
+- [ ] Manage -> **Team & permissions**: tick "Every stylist can edit message wording"; sign in as a stylist: **Messages** opens and saves. Untick it: within a minute the stylist's open screen no longer allows editing.
+- [ ] Manage -> **Emails**: change a headline, watch the preview, **Send me a test** to your own address: it arrives with the new wording and a working button.
+- [ ] Make a request with your own number and approve it. The email has **Change or cancel** and **Add to calendar**; the link opens the booking; **Ask to move** creates a request in Approvals; approving it moves the booking.
+- [ ] As a stylist, ask for a day off: it shows as held on the calendar; as the owner approve it and cancel one client's booking; the time stays blocked and the client's booking is cancelled.
+- [ ] Tick the marketing box on a test booking, then Clients -> **Invite lapsed clients back** (make that client lapsed by editing their last visit in the console): send to yourself by email; the **unsubscribe** link works from your inbox and the client leaves the list.
+- [ ] A client page -> **Colour formulas & patch tests**: save a formula and a clear patch test; the status says covered for six months; **Repeat** fills the form.
+
 ### F. Client import (Manage -> Import clients, owner only)
 
 - [ ] Choose the real Fresha client list. Read the **dry run**: rows, new, already in the app, skipped, merged, and the **blocked

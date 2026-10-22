@@ -223,6 +223,20 @@ This release adds `sendTestSms` (owner callable), SMS sending inside `onBookingC
 
 *Turning texts off:* untick the switch in Manage and Save (takes effect on the next booking). *Rollback:* the functions work without the section; `firebase functions:delete sendTestSms --region australia-southeast1` removes the test callable. Nothing else depends on `smsLog`.
 
+## Permissions, editable emails, customer link, time off, win-back and client records (FR-026 to FR-031): what to add to the order above
+
+These ship together on `main`. **Nothing changes for clients or stylists until the owner uses them**: no permission is granted, the new emails default to today's wording, the customer link appears in new emails and texts, time off and win-back are opt-in.
+
+1. **Indexes first** (`firebase deploy --only firestore:indexes`): `bookings` (`stylistId`, `date`) and `clients` (`marketingOptIn`, `lastVisit`). Wait for both to finish building; a time-off request or the win-back list fails until they have.
+2. **Functions** (step 2). New callables: `setPermissionDefaults`, `sendTestEmail`, `getManagedBooking`, `listChangeSlots`, `cancelManagedBooking`, `requestBookingChange` (public), `previewTimeOff`, `requestTimeOff`, `decideTimeOff`, `withdrawTimeOff`, `winBackCandidates`, `sendWinBack`, `unsubscribeMarketing` (public). Secrets are the same as before (`RESEND_API_KEY`, `CLICKSEND_*`). Set **`SITE_URL`** if the public address is not `https://sua-hair.vercel.app` (it builds the links in emails and texts); put it in `functions/.env.<project>`.
+3. **App** (step 3), then **rules last** (step 4). The rules add `privateSettings/{email,permissions,timeOff}`, `timeOff`, `winBackLog`, `clients/{id}/records` and the `caps` claim checks. Before the rules are live, a stylist's Messages page and the owner's new Manage sections cannot save.
+4. **Check as the owner:** Manage → Team & permissions lists the four permissions; Manage → Emails shows five emails with a preview; Manage → Cancellation & change policy and Time-off requests show their defaults; Clients has **Invite lapsed clients back**; a client page has **Colour formulas & patch tests**.
+5. **Links:** make a request with your own phone and approve it: the confirmation email and text carry a **Change or cancel** link that opens `/manage` with the booking, and the email has an **Add to calendar** attachment.
+6. **Win-back (only when you want it):** the invitation email is on by default; the invitation text is sent only if text messages as a whole are switched on in Manage → Text messages. Only clients who ticked the box (or whose consent you recorded) can be invited, so the list will be empty until some do. Send the first one to yourself: tick the box on a test booking, wait until you have a past visit (or set the client's last visit older in the console), invite, and press the unsubscribe link from your own inbox.
+7. **Spam Act:** commercial messages need consent, the salon's identity and a working unsubscribe. The booking form says what the box is for; keep the wording of the invitation that includes the salon name and the unsubscribe link.
+
+*Rollback:* grant nothing and leave the new sections alone and the old behaviour is unchanged. The customer link can be turned off by switching both options off in Cancellation & change policy. Redeploying the previous rules removes the new access (stylists lose the permissions at once).
+
 ## Everything else to know
 
 - The 24-hour hold is `SALON_CONFIG.pendingHoldHours` in `src/lib/config.ts` (and `maxPendingPerPhone: 2`). The release job runs every 15 minutes, so a request is released between 24:00 and 24:15 after it was made.

@@ -271,3 +271,60 @@ Specs: `e2e/14-team-access.spec.ts`; logic in `tests/unit/clientAccess.test.ts`;
 | TC-125 | Rules                                      | A stylist with no extra access, named colleagues, every client, a malformed claim, no role and an anonymous visitor read cards, notes and bookings (gets, lists, `array-contains`, `in`) and try to write | Exactly the access in FR-025 and nothing more; no write is widened; the owner reads every role record, a stylist only their own, and nobody writes them from a browser               | `rules`     |
 | TC-126 | Grants                                     | Grant with colleagues, all, a messy list, an unknown stylist, 15 colleagues; re-grant; change stylist or role; a claim/record mismatch | Claim and record agree and verify; duplicates, own id and bad ids dropped; unknown stylist refused and nothing changed; capped at 12; a re-grant keeps access, a change resets it; an owner cannot have it; a mismatch is reported | `functions` roles |
 | TC-127 | Pure rules of access                       | Clean, round-trip and break the claim; list the picker; choose the history stylists                                           | As FR-025                                                                                                                                                                           | unit        |
+
+## Permissions — what a stylist may do beyond the day-to-day
+
+Specs: `e2e/17-permissions.spec.ts`; logic in `tests/unit/permissions.test.ts`; grants in `tests/functions/roles.test.ts`; rules in `tests/firestore/permissionsRules.test.ts`.
+
+| ID     | Scenario | Steps | Expected Result |
+| ------ | -------- | ----- | --------------- |
+| TC-139 | Every stylist can edit wording once the owner allows it | Owner adds Steve as a stylist, ticks "Edit message wording" under the role defaults and saves; Steve opens Messages | Steve can read and save text and email wording (the complete default email document is accepted by the rules) |
+| TC-140 | One stylist can be allowed, or stopped, on their own | With the default off, allow Steve only; then tick the role default and untick it for Yuto | Steve gets it on his own; with the default on, Yuto's denial wins and the others have it |
+| TC-141 | Taking a permission away reaches an open screen | Steve is on Messages; the owner removes the permission | Without signing out, Steve's screen no longer allows editing |
+
+## Customer changes and cancels a booking
+
+Spec: `e2e/15-customer-change.spec.ts`; logic in `tests/unit/changePolicy.test.ts`; server in `tests/functions/customerChange.test.ts`.
+
+| ID     | Scenario | Steps | Expected Result |
+| ------ | -------- | ----- | --------------- |
+| TC-128 | The link shows the booking and what can be done | Open `/manage?b=...&t=...`; then with a wrong secret | The booking and its options; a wrong secret shows only "We couldn't find that booking" |
+| TC-129 | Cancelling | Cancel, confirm | Asks first; the booking is cancelled, the time is free, the owner is told |
+| TC-130 | Moving (default) | Ask to move to a free time; owner approves | The original stays until approved, then it moves; the Approvals entry says "Request to move a booking" |
+| TC-131 | The owner's policy | Change the cutoff and message, switch cancelling or moving off | The page offers only what the policy allows, with the salon's message once it is too late |
+| TC-132 | Moves straight away | Policy: move immediately | The booking moves at once and the old time is freed |
+| TC-133 | A taken time is not offered | Another booking holds a time | That time is not listed |
+
+## Time off
+
+Spec: `e2e/16-time-off.spec.ts`; logic in `tests/unit/timeOff.test.ts`; server in `tests/functions/timeOff.test.ts`.
+
+| ID     | Scenario | Steps | Expected Result |
+| ------ | -------- | ----- | --------------- |
+| TC-134 | A day off: held, reviewed, approved | Steve asks for a day off; owner opens Time off, cancels one client's booking, approves | Held at once; the clash is listed; the cancelled client's time is blocked, kept bookings stay; Steve is told |
+| TC-135 | Declining and withdrawing | Owner declines one request; Steve withdraws another | Held time released; Steve told; withdrawn leaves no breaks |
+| TC-136 | The owner's policy | Choose "don't block while waiting"; then short blocks apply at once | A waiting request holds nothing / a short block applies itself and the owner is told |
+| TC-137 | The owner adds time off | Owner adds a block for Elly | Applied at once; bookings in the way listed to cancel |
+| TC-138 | A trusted approver | Give Yuto "Approve time off"; Yuto decides Steve's request; Elly cannot | Yuto sees and decides; Elly sees only her own |
+
+## Inviting lapsed clients back
+
+Spec: `e2e/18-win-back.spec.ts`; logic in `tests/unit/marketing.test.ts`; server in `tests/functions/winBack.test.ts`; rules in `tests/firestore/permissionsRules.test.ts`.
+
+| ID     | Scenario | Steps | Expected Result |
+| ------ | -------- | ----- | --------------- |
+| TC-142 | The booking form's box | Book online and tick the optional box; book again without | The first client is recorded as agreed (date, source `booking-form`); the second has nothing recorded |
+| TC-143 | The owner invites | Clients → Invite lapsed clients back; untick one; text only; send | Only clients who agreed, lapsed, with nothing booked are listed; the count of those who have not agreed is shown; one text is sent with the personal unsubscribe link; the client and the campaign are recorded; asked again, that client is left out ("invited back recently") |
+| TC-144 | The unsubscribe link | Open the link from the text; press the button; try a wrong secret and an incomplete link | Opening changes nothing; the button records the unsubscribe and the client leaves the list; the owner sees "Unsubscribed"; a wrong secret changes nobody |
+| TC-145 | A stylist | A stylist without the permission; then with it | No button without it; with it, only their own clients are listed and the owner-only count is absent |
+| TC-146 | The owner records consent by hand | Client page → Record consent; then Stop invitations | A warning first; "Agreed" badge and source `owner-recorded`; then "Unsubscribed"; both are in the history |
+
+## Colour formulas and patch tests
+
+Spec: `e2e/19-client-records.spec.ts`; logic in `tests/unit/clientRecords.test.ts`; merge / anonymise / export in `tests/functions/clients.test.ts`; rules in `tests/firestore/permissionsRules.test.ts`.
+
+| ID     | Scenario | Steps | Expected Result |
+| ------ | -------- | ----- | --------------- |
+| TC-147 | Recording and repeating | Owner saves a formula, then a patch test (clear), then repeats the formula; deletes one | Problems are explained (no text, no product, no result); status becomes "clear" with the product; Repeat fills the form from the last formula |
+| TC-148 | Reaction and expiry | A clear test 300 days old; then a reaction; then a new clear test | Expired, then "Reacted to ... Do not use it", then clear |
+| TC-149 | A stylist | One without the permission; one with it | Without: reads but no form, Repeat or delete; with: adds, and deletes only their own entry |

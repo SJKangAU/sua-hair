@@ -3,7 +3,7 @@
 // emulators (Auth + Firestore + Functions): the optional box on the booking form, the owner's
 // "Invite lapsed clients back" list (only clients who agreed), the send (texts go to smsOutbox,
 // never to a phone; the functions emulator sends no email), the unsubscribe link, a stylist
-// trusted to send, and the owner recording consent by hand. Fake people only. TC-140 .. TC-144.
+// trusted to send, and the owner recording consent by hand. Fake people only. TC-142 .. TC-146.
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { connectEnv, readCollection, seedEmulator, setClaims } from "./seed";
 import { bookOnline, addDaysIso, todayIso, upcoming } from "./helpers";
@@ -101,7 +101,7 @@ test.beforeEach(async () => {
   await seedClients();
 });
 
-test("TC-140 the booking form has an unticked box; ticking it records that the client agreed", async ({ browser }) => {
+test("TC-142 the booking form has an unticked box; ticking it records that the client agreed", async ({ browser }) => {
   const context = await browser.newContext({ baseURL: BASE_URL, locale: "en-AU", timezoneId: "Australia/Melbourne", viewport: { width: 1300, height: 1500 } });
   const page = await context.newPage();
   const day = upcoming(3, 4);
@@ -128,7 +128,7 @@ test("TC-140 the booking form has an unticked box; ticking it records that the c
   await context.close();
 });
 
-test("TC-141 the owner invites lapsed clients back: only those who agreed are listed; the text carries the unsubscribe link", async ({ browser }) => {
+test("TC-143 the owner invites lapsed clients back: only those who agreed are listed; the text carries the unsubscribe link", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
   await page.goto("/admin/clients");
   await page.getByTestId("invite-back").click();
@@ -170,7 +170,7 @@ test("TC-141 the owner invites lapsed clients back: only those who agreed are li
   await page.context().close();
 });
 
-test("TC-142 the unsubscribe link: nothing happens until the button; then they leave the list; a bad link does nothing", async ({ browser }) => {
+test("TC-144 the unsubscribe link: nothing happens until the button; then they leave the list; a bad link does nothing", async ({ browser }) => {
   const { page: owner } = await newAdminPage(browser);
   await owner.goto("/admin/clients");
   await owner.getByTestId("invite-back").click();
@@ -213,7 +213,7 @@ test("TC-142 the unsubscribe link: nothing happens until the button; then they l
   await owner.context().close();
 });
 
-test("TC-143 a stylist sees the button only with the permission, and only their own clients", async ({ browser }) => {
+test("TC-145 a stylist sees the button only with the permission, and only their own clients", async ({ browser }) => {
   const plain = await stylistPage(browser, "plain@suahair.test", "steve");
   await plain.goto("/stylist/clients");
   await expect(plain.getByTestId("client-directory")).toBeVisible();
@@ -234,7 +234,7 @@ test("TC-143 a stylist sees the button only with the permission, and only their 
   await sender.context().close();
 });
 
-test("TC-144 the owner records consent by hand (with a warning), and can stop invitations", async ({ browser }) => {
+test("TC-146 the owner records consent by hand (with a warning), and can stop invitations", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
   await page.goto("/admin/clients/0411000003"); // Cleo never agreed
   await expect(page.getByTestId("agreed-badge")).toHaveCount(0);

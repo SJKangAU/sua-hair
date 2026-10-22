@@ -207,6 +207,40 @@ ID `{bookingId}_{kind}`: the once-only record. `{ bookingId, bookingRef, kind, s
 
 What would have been sent: `{ to, from, body, reference, createdAt }`. Only the emulator stand-in writes it; no rule allows any browser to read or write it.
 
+## Collection: `privateSettings` (documents `email`, `permissions`, `timeOff`) (FR-026, FR-027, FR-029)
+
+Owner-only (and the `email` / `sms` wording also to a stylist with the `msg` permission); the rules check the shape. A missing field or document means the defaults.
+
+- `email`: `{ templates: { received?, confirmed?, not_confirmed?, reminder?, winback? } }`, each a complete template `{ enabled, subject, preheader, headline, intro, closing, showDetails, showReference, callButton, manageButton, bookButton, attachCalendar, calendarTitle }` (defaults in `src/lib/emailRender.ts`)
+- `permissions`: `{ stylistDefaults: Capability[] }` - what every stylist may do. Written only by the `setPermissionDefaults` function
+- `timeOff`: `{ pending: 'hold' | 'wait' | 'auto', autoMaxHours: 1-12 }` - what happens while a time-off request waits
+
+`sms.kinds` and `sms.templates` also accept `winback` (the invitation).
+
+## Collection: `salonSettings` (document `policy`) (FR-028)
+
+The cancellation and change policy, **public to read** (the customer page shows it): `{ allowCancel, allowReschedule, cutoffHours (0-720), rescheduleMode: 'request' | 'instant', pastCutoffMessage (up to 300 characters) }`. Owner-written.
+
+## Collection: `timeOff` (functions write, owner / approvers / the stylist read) (FR-029)
+
+`{ stylistId, stylistName, kind: 'dayoff' | 'block', startDate, endDate, startTime?, endTime?, reason, status: 'pending' | 'approved' | 'declined' | 'withdrawn', requestedByUid, requestedByName, requestedAt, decidedByUid?, decidedByName?, decidedAt?, decisionNote?, auto?, breakIds[] }`. The calendar sees only the `break` bookings it creates.
+
+## Collection: `winBackLog` (functions write, owner / senders read) (FR-030)
+
+ID = campaign. `{ byUid, byName, at, days, channels: { email, sms }, requested, invited, emailsSent, textsSent, skipped: { reason: count } }`. No client names or contact details.
+
+## Subcollection: `clients/{id}/records` (FR-031)
+
+`{ kind: 'formula' | 'patch', date (YYYY-MM-DD), text, product, result: 'clear' | 'reaction' | '', authorUid, authorName, createdAt }`. Append-only: no updates; deleted by the owner or the author. Read by anyone who may open the client; written by the owner and by stylists with the `records` permission. Removed on anonymise, moved on merge, included in the export.
+
+## Additions to existing collections (FR-026 to FR-030)
+
+- `bookings`: `manageToken` (the secret in the customer's link), `replacesBookingId` / `replacesSummary` (a request to move a booking), `rescheduledToId` with `cancelReason: 'rescheduled'`, `cancelledBy`, `marketingConsent` (the box was ticked)
+- `clients`: `marketingOptIn`, `marketingConsentAt`, `marketingSource` (`booking-form` / `walk-in` / `owner-recorded`), `marketingOptOutAt`, `marketingToken` (the secret in the unsubscribe link; owner-only like the rest of `clients`), `winBackSentAt`. Indexed: `marketingOptIn` + `lastVisit`
+- `users`: `permissions { grant[], deny[] }`, `effectiveCaps[]`, `grantedAt` (the app refreshes the token when this changes)
+- `smsLog`: ID `winback_{clientId}_{campaignId}` for an invitation text (no message text, no number)
+- `bookings` index: `stylistId` + `date`, for laying time off
+
 ## Collection: `notifications`
 
 `{ recipientId ('owner' or a stylist id), recipientType, bookingId, message, read, createdAt }`. Written by the booking functions (new request, expiry, waitlist) and by the owner's admin screens; read by the owner and, for their own `recipientId`, by a stylist.

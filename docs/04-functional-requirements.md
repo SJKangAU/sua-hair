@@ -576,3 +576,136 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] With no extra access nothing changes from DEC-047; with colleagues, their cards, notes, bookings and `array-contains` / `in` queries open and others stay closed; with all, every card and booking history opens; malformed claims, an unprovisioned account and an anonymous visitor get nothing; no write is widened; the owner reads every role record and a stylist only their own (`rules` clientAccessRules; TC-125)
 - [x] The owner adds a stylist and the team list shows them (TC-120); a stylist without extra access sees only their own and no picker (TC-121); named colleagues open with history and no prices, others closed (TC-122); a change reaches the open screen without signing out (TC-123); removal, and the owner cannot remove themself (TC-124)
 - [ ] The same in production: **not verified** (provision, deploy functions, app and rules; `docs/DEPLOYMENT.md`)
+
+---
+
+## FR-026 — Permissions: what a stylist may do beyond the day-to-day
+
+**Description:** The owner can do everything, always. Everything else a stylist might do beyond their own day is a named permission the owner grants to **all stylists** (a role default: "every stylist can ...") and/or to **one stylist** (an override: "Elly can", "Harry can't"). Decision: DEC-052.
+
+**The four permissions:** *Edit message wording* (the emails and texts, and send tests), *Send win-back messages* (FR-030), *Approve time off* (FR-029), *Edit client records* (colour formulas and patch tests, FR-031).
+
+**Requirements:**
+
+- **Manage → Team & permissions (owner only):** a card of role defaults ("Every stylist can ...", one tick-box per permission) and, for each stylist, the same tick-boxes showing what they can do now. Ticking something the default does not give is a grant for that stylist; unticking something it does give is a denial. **Save** applies it
+- **The effective list** of a stylist is (defaults + their grants) minus their denials; a denial always wins. Changing the role defaults re-applies to every stylist (their own overrides are kept)
+- **Enforced, not just hidden:** the list is a short-code claim on the sign-in token (`caps`: `msg`, `winback`, `timeoff`, `records`) written only by the Admin SDK, and mirrored in `users/{uid}.effectiveCaps`. `firestore.rules` reads the claim; the functions read the record, so taking a permission away stops it **at once** in the functions and when the token refreshes in the rules. The app refreshes the token when its own role record changes, so an open screen follows without signing out
+- A stylist with *Edit message wording* gets **Messages** (`/stylist/messages`): the same text and email editors, test sends and the send log; they cannot read the owner's notification address or the permission settings
+- Re-granting a role without stating permissions **keeps** what the stylist had; changing the role or the stylist resets it
+
+**Acceptance criteria:**
+
+- [x] Effective list, overrides from tick-boxes, claim round trip, tolerance of malformed claims (unit `permissions`)
+- [x] Grants set claim and record together, defaults re-apply to all stylists, a denial wins, unknown permissions are refused (`functions` roles)
+- [x] A stylist with the claim reads and writes the text and email wording and the send log and gets nothing else of the owner's; without it, nothing; malformed claims, no role and anonymous get nothing (`rules` permissionsRules)
+- [x] Every stylist can edit wording once the owner allows it (TC-139); one stylist can be allowed or stopped on their own (TC-140); taking a permission away reaches an open screen without signing out (TC-141)
+- [ ] The same in production: **not verified**
+
+---
+
+## FR-027 — Editable booking emails
+
+**Description:** The owner (and a stylist allowed to edit wording) controls what each email says. The layout (header, details table, buttons) is fixed so every email looks right; the words are theirs. Decision: DEC-053.
+
+**Requirements:**
+
+- **Manage → Emails:** five emails - request received, confirmed, not confirmed, reminder, and the win-back invitation (FR-030). Each has: on/off, **subject**, preview line, **headline**, intro, closing, and tick-boxes for the booking details table, the reference, a **Call us** button, a **Change or cancel** button (FR-028) and, for the invitation, a **Book now** button; the confirmed email also has **Add to calendar** (an `.ics` attachment) with its own event title. A live preview shows each with a sample booking, and **Send me a test** sends it to an address of the owner's choosing
+- Placeholders in subject, headline, intro, closing and calendar title: `{name} {service} {stylist} {date} {time} {salon} {phone} {ref}`; unknown ones are refused on save and replaced safely at send. Customer-supplied values are sanitised. Limits: subject 150, preview 200, headline 200, intro 1,000, closing 600 characters
+- The same renderer (`src/lib/emailRender.ts`) draws the preview and the real email, so what the owner sees is what is sent. A missing or invalid setting falls back to the default wording
+- Stored in `privateSettings/email`; the rules require a complete, well-formed template (a whole-document check kept under Firestore's 1,000-expression limit, which an earlier version exceeded)
+- Emails carry a `List-Unsubscribe` header on the invitation, and the booking emails carry the change-or-cancel link when that button is on
+
+**Acceptance criteria:**
+
+- [x] Rendering, placeholders, validation, fallbacks, calendar event, escaping (unit `emailRender`)
+- [x] The complete default document is accepted by the rules for the owner and an allowed stylist; missing fields, unknown fields or emails, wrong types and over-long text are refused (`rules` permissionsRules)
+- [x] Editing the wording, the preview, a saved full default document, and a test send (TC-139 saves the full default document)
+- [ ] Real delivery, spam filing and how each email looks in Gmail / Outlook / iOS Mail: **not verified** (needs a Resend key and a verified domain)
+
+---
+
+## FR-028 — A customer changes or cancels their own booking
+
+**Description:** The email and text for a booking carry a private link. It opens a page where the customer sees their booking and does what the owner's policy allows: cancel it, or ask to move it. Decision: DEC-054.
+
+**Requirements:**
+
+- **The link** is `/manage?b=<booking id>&t=<secret>`. The secret (`manageToken`, 128 random bits) is stored on the booking, which only the owner and its stylist can read, and is compared in constant time. A wrong or missing secret shows only "We couldn't find that booking" (no hint whether the booking exists)
+- **The page** shows the booking (services, stylist, date and time, status) and, depending on the policy: **Cancel** (asks first), **Ask to move** (pick a date, then a free time; times come from the same checks as the owner's tools), or the salon's own message and phone number when it is too late
+- **Owner's policy, Manage → Cancellation & change policy** (`salonSettings/policy`): allow cancelling, allow moving, how many hours before the appointment changes close (**default 24**, 0 = until the start), what a customer reads once it is too late, and **how a move works**: *as a request the owner approves* (default - the original booking stays until the owner approves; if it is declined or lapses the customer keeps their original time) or *moves straight away* if the new time is free
+- A **pending** request can always be cancelled. A cancelled booking frees the time and tells the owner
+- A move arrives in Approvals as **"Request to move a booking (now ...)"**; approving it releases the original (`cancelReason: rescheduled`, linked both ways)
+- Public callables (`getManagedBooking`, `listChangeSlots`, `cancelManagedBooking`, `requestBookingChange`) are rate limited per address and per booking and run the same booking commands as the owner's tools, so a customer cannot take a time the owner could not
+- The confirmed email can carry the appointment as an `.ics` calendar file ("Add to calendar", FR-027)
+
+**Acceptance criteria:**
+
+- [x] Policy defaults, rights by time and status, validation (unit `changePolicy`, `icsEvent`)
+- [x] View, cancel, slots and request-change commands: secret checks, cutoff, pending vs confirmed, original kept until approved, instant mode, a taken time is refused, rate limits (`functions` customerChange)
+- [x] TC-128 to TC-133 in the browser
+- [ ] In production, and links in real emails and texts: **not verified**
+
+---
+
+## FR-029 — Stylist days off and blocked times
+
+**Description:** A stylist asks for a day off (one or more whole days) or a blocked time (a stretch of one day). The owner - or a stylist the owner trusts with *Approve time off* - decides. The owner's own entries apply at once. Decision: DEC-055.
+
+**Requirements:**
+
+- **Stylists:** `/stylist/time-off` - ask (kind, dates, times for a block, reason), see their requests and their state (waiting, approved, declined, withdrawn), withdraw one. Ranges up to 60 days, at most a year ahead
+- **Owner:** **Time off** tab - requests waiting, with **the clients' bookings the request would clash with** listed first; approving can cancel the bookings chosen (through the normal cancel command), keep the others where they are (the block is laid around them) and tells the stylist; declining releases anything held and tells the stylist. The owner can also add time off for anyone, applied at once with the bookings in the way to cancel
+- **While a request waits** (Manage → Time-off requests, `privateSettings/timeOff`): *Hold the time straight away* (default - it shows as a break and customers cannot book it), *Don't block until approved*, or *Apply short blocks at once* (up to N hours on one day, default 3; longer ones are held). The owner is told when a short block applied itself
+- It becomes ordinary **break** bookings that the timeline, the customer booking page and every conflict check already understand, laid under the same stylist-day locks as every booking and re-generated from the current state, so an interrupted run is repaired by running it again
+- A stylist with *Approve time off* sees other stylists' requests and decides them; without it they see only their own. Browsers cannot write requests (functions only)
+
+**Acceptance criteria:**
+
+- [x] Parsing, clashes, the break plan, policy (unit `timeOff`)
+- [x] Request, preview, decide, withdraw, policy modes, locks, repair on re-run, permissions (`functions` timeOff); read rules (`rules` permissionsRules)
+- [x] TC-134 to TC-138 in the browser
+- [ ] In production: **not verified**
+
+---
+
+## FR-030 — Inviting lapsed clients back
+
+**Description:** The owner - or a stylist allowed to - emails and/or texts clients who have not been in for a while, inviting them to return. This is **marketing**, so it goes only to clients who agreed, and every message can be stopped. Decision: DEC-056.
+
+**Requirements:**
+
+- **Consent:** an optional, **unticked** box on the booking form ("I'd like to hear from Sua Hair about coming back"; one tick covers email and text), the same box on the owner's walk-in form, or the owner recording it on a client's page (**Record consent**, with a warning and an audit entry). It is kept with its date and where it was given. **Clients imported from another system have no consent and are never invited until it is recorded.** The latest word wins: an unsubscribe ends consent until they tick the box again
+- **Clients → Invite lapsed clients back:** choose how long counts as lapsed (60 to 365 days, default 90), email and/or text, untick anyone, then send. The list holds only clients who agreed, are lapsed, have nothing booked, are not blocked and were not invited in the last **60 days**; a stylist sees only clients they may open. The owner also sees how many lapsed clients have **not** agreed. Up to 100 per send; 10 sends a person a day
+- **Every client is checked again at the moment of sending**, and the result says how many were reached and why others were left out
+- **Wording:** the invitation is one of the five emails (FR-027) and one of the text messages (FR-024); the text must contain `{unsubscribeLink}` (a stored wording without it is replaced by the default). Texts are once-only and use the same caps as booking texts; emails carry `List-Unsubscribe`
+- **Unsubscribe:** `/unsubscribe?c=<client>&t=<secret>`, a page that does nothing until the button is pressed (so a mail scanner opening the link changes nothing). The secret is per client; a wrong secret, wrong client or malformed link all get the same answer. Booking messages are unaffected
+- Needs *Send win-back messages* for a stylist; the owner always can. A `winBackLog` record of each send is kept (who, when, counts); the client's history notes "invited back by ..."
+
+**Acceptance criteria:**
+
+- [x] Consent rules: latest agreement wins, unsubscribe outranks an older tick, imports carry none, merge keeps the latest word (unit `marketing`; `functions` winBack)
+- [x] Candidates, scope, cool-down, channels, re-checks at send, once-only text, caps, switched-off messages, own wording, rate limits, unsubscribe token handling (`functions` winBack, 31 tests); log rules (`rules` permissionsRules)
+- [x] TC-142 to TC-146 in the browser
+- [ ] Real email and text delivery, and that the unsubscribe link works from a real inbox: **not verified**
+
+---
+
+## FR-031 — Colour formulas and patch tests
+
+**Description:** On a client's page, stylists record the colour formula used at a visit and any patch test, so the next visit can repeat the formula and nobody colours a client who is not covered. Decision: DEC-057. Photos are a later addition.
+
+**Requirements:**
+
+- **Colour formulas & patch tests** section on the client page (owner and stylists who may open the client). It leads with a **patch-test status**: *clear* (covers colour for **6 months**, with the date it runs to), *expired* (test again before colour), *reacted* (shown as a reaction, with the product, until a later clear test) or *none on record*, and the **last formula** with a **Repeat** button that fills the form
+- **Adding** (owner, or a stylist with *Edit client records*): choose Colour formula or Patch test, the date (not in the future), the formula text (up to 1,000 characters) or the product tested, clear / reacted, and an optional note. Entries are **never edited** - a correction is a new entry, or the author (or the owner) deletes the wrong one
+- Anyone who may open the client **reads** the entries; only those with the permission add
+- **Merge** moves them to the kept client; **anonymise** deletes them (a patch test is health information); **export** includes them
+- Rules: `clients/{id}/records`, validated shape (a formula has text and no result; a patch test names the product and a result), signed by the writer, no updates
+
+**Acceptance criteria:**
+
+- [x] Validation, month arithmetic, patch status (the newest test decides), last formula (unit `clientRecords`)
+- [x] Read / add / delete rules for the owner, an allowed stylist, one without the permission, another stylist's client, malformed entries, no edits (`rules` permissionsRules)
+- [x] Merge, anonymise and export handle them (`functions` clients)
+- [x] TC-147 to TC-149 in the browser
+- [ ] In production: **not verified**. Not built (by decision): photos, and showing the formula and patch status inside the booking panel

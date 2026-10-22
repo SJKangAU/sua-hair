@@ -3,7 +3,7 @@
 // emulators (Auth + Firestore): the owner records a formula and a patch test, the page says
 // whether the client is covered today, the last formula can be repeated, a reaction stands out
 // and an old test reads as expired; a stylist with the permission can add (and delete their own),
-// one without can read but not add. Fake people only. TC-145 .. TC-147.
+// one without can read but not add. Fake people only. TC-147 .. TC-149.
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { connectEnv, readCollection, seedEmulator, setClaims } from "./seed";
 import { addDaysIso, todayIso } from "./helpers";
@@ -96,7 +96,7 @@ test.beforeEach(async () => {
   await seedClient();
 });
 
-test("TC-145 the owner records a formula and a patch test; the page says the client is covered, and the formula can be repeated", async ({ browser }) => {
+test("TC-147 the owner records a formula and a patch test; the page says the client is covered, and the formula can be repeated", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
   await page.goto(`/admin/clients/${PHONE}`);
   const section = page.getByTestId("client-records");
@@ -140,7 +140,7 @@ test("TC-145 the owner records a formula and a patch test; the page says the cli
   await page.context().close();
 });
 
-test("TC-146 a reaction stands out until a later clear test; an old clear test reads as expired", async ({ browser }) => {
+test("TC-148 a reaction stands out until a later clear test; an old clear test reads as expired", async ({ browser }) => {
   await seedRecord("old-clear", { kind: "patch", date: addDaysIso(todayIso(), -300), text: "", product: "Brand X permanent", result: "clear" });
   const { page } = await newAdminPage(browser);
   await page.goto(`/admin/clients/${PHONE}`);
@@ -164,7 +164,7 @@ test("TC-146 a reaction stands out until a later clear test; an old clear test r
   await page.context().close();
 });
 
-test("TC-147 a stylist with the permission adds and deletes their own entries; without it they can read but not add", async ({ browser }) => {
+test("TC-149 a stylist with the permission adds and deletes their own entries; without it they can read but not add", async ({ browser }) => {
   await seedRecord("from-elly", { kind: "formula", date: addDaysIso(todayIso(), -40), text: "Lengths 7.0 + 9vol", product: "", result: "" });
 
   const plain = await stylistPage(browser, "plain@suahair.test");
