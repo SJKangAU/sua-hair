@@ -384,7 +384,7 @@ service cloud.firestore {
       match /chunks/{chunkId} {
         allow read, delete: if isOwner();
         allow create, update: if isOwner()
-          && request.resource.data.keys().hasOnly(['phones', 'blocked', 'clients'])
+          && request.resource.data.keys().hasOnly(['phones', 'blocked', 'clients', 'bookings'])
           && request.resource.data.phones is list
           && request.resource.data.phones.size() <= 500
           && (!('blocked' in request.resource.data)
@@ -392,7 +392,10 @@ service cloud.firestore {
                   && request.resource.data.blocked.size() <= 500))
           && (!('clients' in request.resource.data)
               || (request.resource.data.clients is list
-                  && request.resource.data.clients.size() <= 500));
+                  && request.resource.data.clients.size() <= 500))
+          && (!('bookings' in request.resource.data)
+              || (request.resource.data.bookings is list
+                  && request.resource.data.bookings.size() <= 500));
       }
     }
 

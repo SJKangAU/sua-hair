@@ -40,10 +40,13 @@ const cellText = (value: unknown): string => {
   return String(value);
 };
 
-export const parseClientFile = async (file: File): Promise<ParsedFile> => {
+export const parseClientFile = async (
+  file: File,
+  what = "the client list export",
+): Promise<ParsedFile> => {
   if (file.size > MAX_FILE_BYTES) {
     throw new ImportFileError(
-      `That file is larger than ${MAX_FILE_BYTES / 1024 / 1024} MB. Choose the client list export.`,
+      `That file is larger than ${MAX_FILE_BYTES / 1024 / 1024} MB. Choose ${what}.`,
     );
   }
   const name = file.name.toLowerCase();

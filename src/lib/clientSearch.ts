@@ -9,7 +9,7 @@
 
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { db } from "./firebase";
-import { cleanPhone } from "./validation";
+import { phoneQueryDigits } from "./phoneSearch";
 import { namePrefixRange } from "./nameRange";
 import type { Booking } from "../types";
 
@@ -18,8 +18,8 @@ export const fetchBookingsForClientQuery = async (
 ): Promise<Booking[]> => {
   const bookingsRef = collection(db, "bookings");
   const { from: lower, to: nameEnd } = namePrefixRange(q);
-  const digits = cleanPhone(q);
-  const looksLikePhone = /^\d{4,}$/.test(digits);
+  const digits = phoneQueryDigits(q, 4);
+  const looksLikePhone = digits !== "";
 
   const queries = [
     // Name prefix — case-insensitive via customerNameLower

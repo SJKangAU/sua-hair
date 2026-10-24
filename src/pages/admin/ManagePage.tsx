@@ -14,6 +14,7 @@ import PolicySettings from "../../components/admin/manage/PolicySettings";
 import EmailSettings from "../../components/admin/manage/EmailSettings";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
 import ClientImport from "../../components/admin/manage/ClientImport";
+import BookingImport from "../../components/admin/manage/BookingImport";
 import ClientBackfill from "../../components/admin/manage/ClientBackfill";
 
 interface Props {
@@ -115,6 +116,14 @@ const ManagePage = ({ isOwner }: Props) => {
           {/* Import clients from a Fresha export — owner only; the ledger it
               keeps is owner-only in firestore.rules (importBatches). */}
           <ClientImport
+            onSuccess={(msg) => addToast(msg, "success")}
+            onError={(msg) => addToast(msg, "error")}
+          />
+          <hr
+            style={{ border: "none", borderTop: "1px solid var(--border)", margin: 0 }}
+          />
+          {/* Import appointments from a Fresha export as bookings - owner only */}
+          <BookingImport
             onSuccess={(msg) => addToast(msg, "success")}
             onError={(msg) => addToast(msg, "error")}
           />

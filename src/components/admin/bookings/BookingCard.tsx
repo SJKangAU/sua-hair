@@ -12,6 +12,7 @@ import Badge from "../../ui/Badge";
 import StatusActionButtons from "./StatusActionButtons";
 import type { Booking, BookingStatus } from "../../../types";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
+import { formatMobile } from "../../../lib/phoneSearch";
 
 // Inline styles can't express media queries, so the grid layout lives in a
 // class (base = desktop grid, override = mobile stack) while dynamic,
@@ -127,7 +128,7 @@ const BookingCard = ({
           </p>
           {booking.customerPhone && (
             <p style={{ color: "var(--ink-muted)", fontSize: "0.78rem", margin: 0 }}>
-              {booking.customerPhone}
+              {formatMobile(booking.customerPhone)}
             </p>
           )}
           <div

@@ -5,6 +5,7 @@
 // instead of each re-implementing the same filtering rules.
 
 import type { Booking } from "../types";
+import { phoneMatches } from "./phoneSearch";
 
 export interface Filters {
   stylistId: string;
@@ -32,7 +33,7 @@ export const hasActiveFilters = (filters: Filters): boolean =>
   );
 
 // Applies stylist/date-range/status/flagged filters, then an optional
-// case-insensitive search over customer name and phone.
+// case-insensitive search over customer name and phone (any way a number is typed).
 export const filterBookings = (
   bookings: Booking[],
   filters: Filters,
@@ -53,6 +54,6 @@ export const filterBookings = (
   return filtered.filter(
     (b) =>
       b.customerName.toLowerCase().includes(query) ||
-      (b.customerPhone && b.customerPhone.includes(searchQuery.trim())),
+      phoneMatches(b.customerPhone, searchQuery),
   );
 };

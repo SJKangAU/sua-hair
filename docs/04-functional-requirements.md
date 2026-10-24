@@ -709,3 +709,24 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Merge, anonymise and export handle them (`functions` clients)
 - [x] TC-147 to TC-149 in the browser
 - [ ] In production: **not verified**. Not built (by decision): photos, and showing the formula and patch status inside the booking panel
+
+## FR-032 — Import bookings from a Fresha appointments export
+
+**Description:** The owner can load a Fresha **appointments** export (.csv or .xlsx; columns Ref #, Client, Service, Scheduled Date, Time, Duration, Staff, Price, Status...) and have each row become a booking. Location: Manage → Import bookings (owner only).
+
+- The file is read in the browser and never uploaded. Each Fresha staff name is matched to a stylist by the owner (suggested by name; "Leave out" skips that person's rows).
+- **Dry run first**: new bookings, cancelled ones, already imported, staff left out, rows overlapping another row for the same stylist, invalid rows (row number and reason only, downloadable). Nothing is written until the owner confirms.
+- Each row is one booking: client name, date, time, the Fresha service name / price / duration as a single hands-on service, the chosen stylist, `Booked` → confirmed, `Canceled` → cancelled. The export has **no phone number**, so the booking has none, is not linked to a client and sends no message; its type is `walkin` for the same reason (no owner heads-up email).
+- **Mobile numbers (optional):** the owner can also load the Fresha client list; each new booking's client is looked up **by name**. The dry run lists one row per client with the number found and warnings ("added to Fresha after this booking was made", "number is also on a client with a different name"); a name with several numbers or none gets no suggestion. Only clients the owner **ticks** get the number (nothing is ticked by default; "Tick all without a warning" is offered). A ticked booking carries `customerPhone` and `clientId`, so the clients trigger files it under that client. Every imported booking has `importedFrom`, which stops the "booking confirmed" email / text on creation; the day-before reminder text still goes to a booking with a number.
+- Search: the Bookings list, Today search and Clients search find a number however it is typed (`0412 345 678`, `0412-345-678`, `+61 412 345 678`, part of it); booking cards show it as `0412 345 678`.
+- The Fresha ref is the booking's `bookingRef` (`FR-...`), so importing the same file again adds nothing.
+- Each confirmed booking is written under the stylist-day lock like a walk-in; one that clashes with a booking already in the app is skipped and counted, never double-booked.
+- **Roll back** by batch removes only bookings still exactly as imported (no history entry). The ledger `importBatches/{id}/chunks/{bookingId}` = `{ phones: [], bookings: [id] }`, written in the same transaction as the booking.
+
+**Acceptance criteria:**
+
+- [x] Row rules, staff matching, overlaps, the booking built from a row (unit `bookingImport`)
+- [x] Write path, idempotency lookup, clash skip, cancelled holds no slot, rollback, owner-only ledger (`firestore` `bookingImport`, `npm run test:admin`)
+- [x] Name matching, warnings, ordering, confirmed-only numbers; number search (unit `bookingImport`, `phoneSearch`)
+- [ ] Browser spec: **not written**; the `importedFrom` guard in `onBookingCreated` has no test
+- [ ] In production: **not verified**; deploy `firestore.rules` (the ledger's `bookings` key) BEFORE the site, and the functions (`importedFrom` guard) BEFORE importing bookings that carry a number

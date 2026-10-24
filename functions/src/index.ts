@@ -119,6 +119,7 @@ const isValidEmail = (value: unknown): value is string =>
 
 /** The subset of a bookings/{id} document the email code reads. */
 interface BookingDoc {
+  importedFrom?: string;
   bookingType?: "customer" | "walkin" | "break" | "training";
   status?: string;
   bookingRef?: string;
@@ -737,7 +738,8 @@ export const onBookingCreated = onDocumentCreated(
     }
     const bookingId = event.params.bookingId;
 
-    const kind = emailKindOnCreate(booking);
+    // A booking brought in from another system was already confirmed with the client there
+    const kind = booking.importedFrom ? null : emailKindOnCreate(booking);
     if (kind) {
       const manageLink = await manageLinkFor(bookingId, booking);
       await sendBookingEmail(kind, bookingId, booking, manageLink);

@@ -241,6 +241,10 @@ export interface Booking {
   cancelledBy?: "customer";
   // Ticked the optional box to hear about coming back when this was made (FR-030)
   marketingConsent?: boolean;
+  // Set on a booking brought in from another system (the Fresha import). The salon already
+  // told the client about it, so the "booking confirmed" email / text is not sent when it is
+  // created (the day-before reminder still goes out).
+  importedFrom?: string;
 }
 
 // Minimal, PII-free projection of a Booking used to compute public

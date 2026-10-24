@@ -14,8 +14,8 @@ import Badge from "../../ui/Badge";
 import { useBookingContext } from "../../../context/BookingContext";
 import { formatWhen } from "../../../lib/bookingHistory";
 import { fetchBookingsForClientQuery } from "../../../lib/clientSearch";
+import { phoneMatches } from "../../../lib/phoneSearch";
 import { groupClientHits, type ClientHit } from "../../../lib/clientHits";
-import { cleanPhone } from "../../../lib/validation";
 import { todayString } from "../../../lib/dates";
 import type { Booking } from "../../../types";
 
@@ -85,7 +85,6 @@ const TodaySearch = ({ onOpenBooking, onOpenClient }: Props) => {
   const bookingHits = useMemo(() => {
     if (!searching) return [];
     const lower = q.toLowerCase();
-    const digits = cleanPhone(q);
     const today = todayString();
     return bookings
       .filter(
@@ -93,7 +92,7 @@ const TodaySearch = ({ onOpenBooking, onOpenClient }: Props) => {
           (b.bookingType === "customer" || b.bookingType === "walkin") &&
           (b.customerName.toLowerCase().includes(lower) ||
             b.serviceName.toLowerCase().includes(lower) ||
-            (digits.length >= 3 && (b.customerPhone ?? "").includes(digits))),
+            phoneMatches(b.customerPhone, q)),
       )
       .sort((a, b) => {
         const aUp = a.date >= today;
