@@ -123,6 +123,9 @@ export async function seedEmulator(env?: RulesTestEnvironment): Promise<void> {
         totalTime: s.activeTime + s.restTime,
         ...("phases" in s ? { phases: s.phases } : {}),
         price: s.price,
+        // held for approval, as the specs assume (DEC-038); a spec for the new default
+        // (DEC-059) turns it off on a service
+        requiresApproval: true,
         status: "active",
         sortOrder: order++,
         priceHistory: [

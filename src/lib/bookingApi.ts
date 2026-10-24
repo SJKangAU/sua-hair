@@ -91,11 +91,14 @@ export interface BookingRequestInput {
   requestId: string;
 }
 
-/** What the server decided. "pending" means REQUEST RECEIVED, not confirmed. */
+/**
+ * What the server decided. "pending" means REQUEST RECEIVED, not confirmed; "confirmed" is a
+ * booking made only of services that need no approval.
+ */
 export interface BookingRequestResult {
   bookingId: string;
   bookingRef: string;
-  status: "pending";
+  status: "pending" | "confirmed";
   stylistId: string;
   stylistName: string;
   stylistLevel: "director" | "senior" | "junior";

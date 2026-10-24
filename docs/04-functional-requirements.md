@@ -730,3 +730,19 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Name matching, warnings, ordering, confirmed-only numbers; number search (unit `bookingImport`, `phoneSearch`)
 - [ ] Browser spec: **not written**; the `importedFrom` guard in `onBookingCreated` has no test
 - [ ] In production: **not verified**; deploy `firestore.rules` (the ledger's `bookings` key) BEFORE the site, and the functions (`importedFrom` guard) BEFORE importing bookings that carry a number
+
+## FR-033 — Confirm on the spot, or hold for approval, per service; retouch period
+
+**Description:** Each service has a "Hold online bookings until I confirm them" setting (Manage → Services). Location: Manage → Services (owner).
+
+- **Off (the default, also for services saved before this existed):** a customer's online booking is confirmed immediately: no hold, no Approvals entry, the "confirmed" email / text goes out, the page says **Booked**, and the time is theirs. The owner and stylist get a "New booking" notification.
+- **On:** the time is held and the booking is pending until the owner approves or declines it, as before (DEC-038). If a booking contains several services, **any** one with the setting holds the whole booking.
+- A request to move a confirmed booking always waits for the salon (DEC-059); bookings that need no approval do not count towards the limit of requests waiting for the salon.
+- A service also has an optional **retouch period** in whole weeks (1 to 104), stored as `retouchWeeks` and shown in the services list. Nothing reads it yet.
+- Services already have a name, category, prices by stylist level, and phases (hands-on time and setting / processing time); adding a service uses the same form.
+
+**Acceptance criteria:**
+
+- [x] Confirmed on the spot, no hold, history entry, slot claimed, a second request refused; absent flag = no approval; any one service holds the booking; not counted in the pending limit (`tests/functions/createBookingRequest.test.ts`, `npm run test:functions`)
+- [ ] Browser spec for the form and the "Booked" screen: **not written**. The e2e seed marks every service as held so the existing specs keep their meaning
+- [ ] In production: **not verified**; deploy the functions BEFORE the site

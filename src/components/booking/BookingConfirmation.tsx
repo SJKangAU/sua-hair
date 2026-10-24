@@ -1,7 +1,7 @@
 // BookingConfirmation.tsx
-// "Request received" screen shown after the server accepts a booking request —
-// B&W luxury theme. It is NOT a confirmation: the booking is confirmed only when
-// the salon approves it (DEC-038). It shows what the SERVER decided: the stylist
+// "Request received" / "Booked" screen shown after the server accepts a booking —
+// B&W luxury theme. A request is NOT a confirmation: it is confirmed only when the
+// salon approves it (DEC-038), unless every service needs no approval (DEC-059). It shows what the SERVER decided: the stylist
 // who was assigned (which matters for "Any Available Stylist") and the exact price.
 //
 // Calendar export buttons (marked "requested"/tentative until confirmed):
@@ -42,6 +42,7 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
     servicePrice: result.total,
   };
   const holdsFor = SALON_CONFIG.pendingHoldHours;
+  const confirmed = result.status === "confirmed";
 
   return (
     <>
@@ -89,7 +90,7 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
             lineHeight: 1.15,
           }}
         >
-          Request received, {customerName.split(" ")[0]}.
+          {confirmed ? "Booked" : "Request received"}, {customerName.split(" ")[0]}.
         </h2>
         <p
           style={{
@@ -99,9 +100,9 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
             lineHeight: 1.6,
           }}
         >
-          This is not confirmed yet. We are holding this time for you and the
-          salon will confirm your booking within {holdsFor} hours — we will
-          email you if you gave us an address.
+          {confirmed
+            ? "Your booking is confirmed. We will email you if you gave us an address."
+            : `This is not confirmed yet. We are holding this time for you and the salon will confirm your booking within ${holdsFor} hours — we will email you if you gave us an address.`}
         </p>
 
         {/* Booking details */}

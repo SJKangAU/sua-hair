@@ -93,6 +93,7 @@ const iso = (ms: number): string => new Date(ms).toISOString();
 
 type StoredStylist = Stylist & { id: string };
 type StoredService = Service & { id: string; status?: string; phases?: Phase[] };
+// Service.requiresApproval (optional on the record): true = a request waits for the owner
 
 const loadSettings = async (db: Firestore): Promise<SalonSettings | undefined> => {
   const snap = await db.doc("salonSettings/main").get();
@@ -331,8 +332,11 @@ const probeFor = (b: Booking, excludeId?: string): ConflictProbe => ({
 export interface BookingRequestResult {
   bookingId: string;
   bookingRef: string;
-  /** "Pending" means REQUEST RECEIVED. Only an approval confirms (DEC-038). */
-  status: "pending";
+  /**
+   * "pending" means REQUEST RECEIVED: only an approval confirms it (DEC-038). "confirmed" is
+   * a booking made only of services that need no approval (DEC-059): the time is simply theirs.
+   */
+  status: "pending" | "confirmed";
   stylistId: string;
   stylistName: string;
   stylistLevel: Stylist["level"];
@@ -352,7 +356,7 @@ export interface BookingRequestResult {
 const summarise = (id: string, b: Booking, assigned: boolean): BookingRequestResult => ({
   bookingId: id,
   bookingRef: b.bookingRef ?? "",
-  status: "pending",
+  status: b.status === "confirmed" ? "confirmed" : "pending",
   stylistId: b.stylistId,
   stylistName: b.stylistName,
   stylistLevel: b.stylistLevel,
@@ -365,7 +369,7 @@ const summarise = (id: string, b: Booking, assigned: boolean): BookingRequestRes
   ...(b.returnTime ? { returnTime: b.returnTime } : {}),
   services: (b.services ?? []).map((s) => ({ id: s.id, name: s.name, price: s.price })),
   total: b.servicePrice,
-  holdExpiresAt: b.holdExpiresAt ?? "",
+  holdExpiresAt: b.status === "confirmed" ? "" : (b.holdExpiresAt ?? ""),
 });
 
 const priceFor = (service: Service, level: Stylist["level"]): number => {
@@ -506,7 +510,11 @@ export const createBookingRequestCore = async (
       if (lookup.get("blocked") === true || clientDoc.get("blocked") === true) {
         throw new CommandError("blocked", CALL_THE_SALON);
       }
-      if (!replacesId && pending.size >= SALON_CONFIG.maxPendingPerPhone) {
+      // A booking made only of services that need no approval is confirmed on the spot
+      // (DEC-059). A request to MOVE a booking always waits for the salon: the original is
+      // only released when that request is approved.
+      const autoConfirm = !replacesId && !services.some((s) => s.requiresApproval === true);
+      if (!autoConfirm && !replacesId && pending.size >= SALON_CONFIG.maxPendingPerPhone) {
         throw new CommandError(
           "limit",
           `You already have ${SALON_CONFIG.maxPendingPerPhone} booking requests waiting for the salon to confirm. Please wait for those, or call ${PHONE}.`,
@@ -572,7 +580,7 @@ export const createBookingRequestCore = async (
 
       const booking: Omit<Booking, "id"> = {
         bookingType: "customer",
-        status: "pending",
+        status: autoConfirm ? "confirmed" : "pending",
         bookingRef: buildBookingRef("BK", input.date, stylist.id, input.time),
         customerName: input.customerName,
         customerNameLower: input.customerName.toLowerCase(),
@@ -592,7 +600,9 @@ export const createBookingRequestCore = async (
         ...(input.notes ? { notes: input.notes } : {}),
         consentGivenAt: iso(ctx.now),
         createdAt: iso(ctx.now),
-        holdExpiresAt,
+        ...(autoConfirm
+          ? { confirmedAt: iso(ctx.now), history: [historyEntry(ctx.now, "Confirmed automatically", "confirmed")] }
+          : { holdExpiresAt }),
         manageToken: newManageToken(),
         // the optional tick-box; a move of an existing booking carries no new consent
         ...(input.marketingConsent && !old ? { marketingConsent: true } : {}),
@@ -631,8 +641,18 @@ export const createBookingRequestCore = async (
       );
       const what = `${input.customerName} — ${booking.serviceName} on ${input.date} at ${input.time}`;
       const was = old ? ` (moving from ${old.date} at ${old.time})` : "";
-      tx.set(db.collection("notifications").doc(), notificationFor("owner", "owner", bookingRef.id, old ? `Request to move a booking: ${what}${was}` : `New booking request: ${what}`, ctx.now));
-      tx.set(db.collection("notifications").doc(), notificationFor(stylist.id, "stylist", bookingRef.id, old ? `A client wants to move a booking: ${what}${was}` : `You have a new booking request: ${what}`, ctx.now));
+      const ownerMessage = old
+        ? `Request to move a booking: ${what}${was}`
+        : autoConfirm
+          ? `New booking: ${what}`
+          : `New booking request: ${what}`;
+      const stylistMessage = old
+        ? `A client wants to move a booking: ${what}${was}`
+        : autoConfirm
+          ? `You have a new booking: ${what}`
+          : `You have a new booking request: ${what}`;
+      tx.set(db.collection("notifications").doc(), notificationFor("owner", "owner", bookingRef.id, ownerMessage, ctx.now));
+      tx.set(db.collection("notifications").doc(), notificationFor(stylist.id, "stylist", bookingRef.id, stylistMessage, ctx.now));
 
       return summarise(bookingRef.id, booking as Booking, wantsAny);
     },

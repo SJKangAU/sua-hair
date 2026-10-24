@@ -33,6 +33,8 @@ export interface FirestoreService {
   // Changing these affects NEW bookings only.
   phases?: Phase[];
   price: TieredPrice;
+  requiresApproval?: boolean;
+  retouchWeeks?: number;
   status: "active" | "inactive";
   sortOrder: number;
   priceHistory: PriceHistoryEntry[];

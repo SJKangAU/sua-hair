@@ -59,6 +59,9 @@ export async function seedSalon(db: Firestore): Promise<void> {
       name: s.name, category: "cut", activeTime: s.activeTime, restTime: s.restTime,
       totalTime: s.activeTime + s.restTime,
       ...("phases" in s ? { phases: s.phases } : {}),
+      // held for approval, as every online booking was before DEC-059; tests that want the
+      // new default turn it off on the service
+      requiresApproval: true,
       price: s.price, status: "active", sortOrder: order++, priceHistory: [], createdAt: now,
     });
   }

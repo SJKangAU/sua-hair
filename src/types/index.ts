@@ -87,6 +87,11 @@ export interface Service {
   restTime: number;
   totalTime: number;
   price: TieredPrice;
+  // true = an online booking for this service is held until the owner confirms it.
+  // Absent / false = confirmed on the spot (DEC-059).
+  requiresApproval?: boolean;
+  // Weeks until the client is due back for a retouch (e.g. colour regrowth). Optional.
+  retouchWeeks?: number;
 }
 
 // ── Phases (DEC-026) ───────────────────────────────────────────────────────────

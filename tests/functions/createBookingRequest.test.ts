@@ -4,6 +4,7 @@
 // blocked-client check, the pending limit and the rate limits. DEC-035 to DEC-040.
 // Run via `npm run test:functions`.
 import { beforeEach, describe, expect, it } from "vitest";
+import { FieldValue } from "firebase-admin/firestore";
 import { createBookingRequestCore, type BookingRequestResult } from "../../functions/src/bookingCommands";
 import { CommandError } from "../../functions/src/commandErrors";
 import { LIMITS } from "../../functions/src/limits";
@@ -40,6 +41,55 @@ const count = async (collection: string) => (await db.collection(collection).get
 beforeEach(async () => {
   await resetEmulators();
   await seedSalon(db);
+});
+
+describe("services that need no approval (DEC-059)", () => {
+  const noApproval = (...ids: string[]) =>
+    Promise.all(ids.map((id) => db.doc(`services/${id}`).update({ requiresApproval: false })));
+
+  it("confirms the booking on the spot, with no hold, a history entry and the slot claimed", async () => {
+    await noApproval("mens-cut");
+    const res = await book(request({ stylistId: "steve" }));
+    expect(res.status).toBe("confirmed");
+    expect(res.holdExpiresAt).toBe("");
+
+    const booking = (await db.doc(`bookings/${res.bookingId}`).get()).data()!;
+    expect(booking.status).toBe("confirmed");
+    expect(booking.holdExpiresAt).toBeUndefined();
+    expect(booking.confirmedAt).toBe(new Date(NOW).toISOString());
+    expect(booking.history).toEqual([
+      expect.objectContaining({ label: "Confirmed automatically", status: "confirmed" }),
+    ]);
+    const slot = (await db.doc(`slotBlocks/${res.bookingId}`).get()).data()!;
+    expect(slot.status).toBe("confirmed");
+
+    // the time is taken: a second request for it is refused
+    const clash = await refusal(request({ stylistId: "steve" }));
+    expect(clash.code).toBe("slot-taken");
+  });
+
+  it("treats a service with no setting at all as no approval needed", async () => {
+    await db.doc("services/mens-cut").update({ requiresApproval: FieldValue.delete() });
+    const res = await book(request({ stylistId: "steve" }));
+    expect(res.status).toBe("confirmed");
+  });
+
+  it("holds the booking when ANY chosen service needs approval", async () => {
+    await noApproval("mens-cut"); // beard-trim still needs it
+    const res = await book(request({ stylistId: "steve", serviceIds: ["mens-cut", "beard-trim"] }));
+    expect(res.status).toBe("pending");
+    expect(new Date(res.holdExpiresAt).getTime()).toBe(NOW + 24 * 3_600_000);
+  });
+
+  it("does not count towards the limit of requests waiting for the salon", async () => {
+    await noApproval("mens-cut");
+    const phone = "0411222333";
+    // maxPendingPerPhone is 2: three confirmed bookings in a row are fine
+    for (const stylistId of ["steve", "yuto", "elly"]) {
+      const res = await book(request({ customerPhone: phone, stylistId }));
+      expect(res.status).toBe("confirmed");
+    }
+  });
 });
 
 describe("a valid request", () => {

@@ -21,6 +21,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  deleteField,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { todayString } from "../../../lib/dates";
@@ -59,6 +60,10 @@ const EMPTY_FORM = {
   priceDirector: 0,
   priceSenior: 0,
   priceJunior: 0,
+  // true = an online booking for this service is held until the owner confirms it
+  requiresApproval: false,
+  // weeks until the client is due back for a retouch; "" = none
+  retouchWeeks: "" as number | "",
 };
 
 const SERVICE_CATEGORIES = [
@@ -94,6 +99,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
       priceDirector: service.price.director,
       priceSenior: service.price.senior,
       priceJunior: service.price.junior,
+      requiresApproval: service.requiresApproval === true,
+      retouchWeeks: service.retouchWeeks ?? "",
     });
     setShowForm(true);
   };
@@ -126,6 +133,14 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
       senior: Number(form.priceSenior),
       junior: Number(form.priceJunior),
     };
+    const retouchWeeks = form.retouchWeeks === "" ? null : Number(form.retouchWeeks);
+    if (
+      retouchWeeks !== null &&
+      (!Number.isInteger(retouchWeeks) || retouchWeeks < 1 || retouchWeeks > 104)
+    ) {
+      onError("Retouch period must be a whole number of weeks, from 1 to 104 (or left empty).");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -145,6 +160,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           restTime: formRest,
           totalTime,
           price: newPrice,
+          requiresApproval: form.requiresApproval,
+          // deleteField so clearing the box removes the old value
+          retouchWeeks: retouchWeeks === null ? deleteField() : retouchWeeks,
         };
 
         if (priceChanged) {
@@ -176,6 +194,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           restTime: formRest,
           totalTime,
           price: newPrice,
+          requiresApproval: form.requiresApproval,
+          ...(retouchWeeks !== null ? { retouchWeeks } : {}),
           status: "active",
           sortOrder: nextSortOrder,
           priceHistory: [
@@ -494,6 +514,61 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             </label>
           </div>
 
+          <p
+            style={{
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              margin: "0.5rem 0 0.75rem",
+            }}
+          >
+            Booking rules
+          </p>
+          <label
+            style={{
+              ...labelStyle,
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "flex-start",
+              fontWeight: 400,
+            }}
+          >
+            <input
+              type="checkbox"
+              data-testid="service-requires-approval"
+              checked={form.requiresApproval}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, requiresApproval: e.target.checked }))
+              }
+              style={{ marginTop: "0.2rem" }}
+            />
+            <span>
+              Hold online bookings until I confirm them
+              <span style={{ display: "block", color: "var(--admin-muted)", fontSize: "0.78rem" }}>
+                Off: clients are confirmed straight away. On: the time is held and appears under
+                Approvals; a booking with any such service waits for you.
+              </span>
+            </span>
+          </label>
+          <label style={{ ...labelStyle, maxWidth: "16rem" }}>
+            Retouch period (weeks, optional)
+            <input
+              style={inputStyle}
+              type="number"
+              min={1}
+              max={104}
+              step={1}
+              placeholder="e.g. 6"
+              data-testid="service-retouch-weeks"
+              value={form.retouchWeeks}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  retouchWeeks: e.target.value === "" ? "" : Number(e.target.value),
+                }))
+              }
+            />
+          </label>
+
           {editingId && (
             <p
               style={{
@@ -641,6 +716,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           const detail = describePhases(resolvePhases(service));
                           return detail ? ` (${detail})` : "";
                         })()}
+                        {service.retouchWeeks ? ` · retouch every ${service.retouchWeeks} wk` : ""}
+                        {service.requiresApproval ? " · held for approval" : ""}
                       </p>
                     </div>
 
