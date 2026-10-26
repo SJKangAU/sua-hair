@@ -10,7 +10,7 @@ Built and tested against emulators; **not yet in use at the salon**. Pre-pilot �
 
 ## Background
 
-Sua Hair Studio is a Korean hair salon in Glen Waverley, Melbourne (VIC) with 5 active stylists across director, senior and junior tiers. Before this project, appointments arrived by phone call and SMS. Staff took each request and managed it by hand — checking availability and replying — **while they were also serving clients in the chair**. There was no booking system for customers and no shared, real-time view of the day for the owner.
+Sua Hair Studio is a Korean hair salon in Mount Waverley, Melbourne (VIC) with 5 active stylists across director, senior and junior tiers. Before this project, appointments arrived by phone call and SMS. Staff took each request and managed it by hand — checking availability and replying — **while they were also serving clients in the chair**. There was no booking system for customers and no shared, real-time view of the day for the owner.
 
 The purpose of the platform is to take that booking admin off the staff so they can focus on their clients: customers book themselves, the system enforces the scheduling rules, and the owner only reviews and approves.
 
@@ -63,7 +63,6 @@ These are the targets the pilot should measure (none has been measured yet):
 
 **Out of scope:**
 
-- SMS sending (the app only opens the owner's own messaging app with the text filled in; nothing is sent from the platform)
 - Payment processing
 - Customer accounts or login
 - Multi-location support

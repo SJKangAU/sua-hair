@@ -176,7 +176,7 @@ This release changes `setUserRole` and `roles.ts` (functions), adds a Manage →
 ## Existing data
 
 - **Legacy bookings with stylist "any"** (made before this release) appear in **Approvals** with a **Needs stylist** badge and an assign control instead of Approve. Choosing a stylist runs `assignStylist`: it checks that stylist is free for every busy part of the booking, re-prices from their tier and the current service prices, and moves the booking. Until then such a booking blocks nobody, as before.
-- **Legacy pending bookings have no 24-hour hold** and are never auto-released; the owner approves or declines them as before.
+- **Legacy pending bookings have no 24-hour hold** and are never auto-released. After deploying the functions, run `npx tsx functions/scripts/hold-legacy-pending.ts --project sua-hair-ae353 --dry-run`, then again without `--dry-run`. Each upcoming pending booking gets a hold of 24 hours from that moment, so the owner has a full day to approve it before the normal release job and "couldn't confirm" email apply. Pending bookings already dated in the past are listed, not changed; resolve those by hand in Approvals. Safe to re-run.
 - **Blocked clients from Fresha:** re-run the import (Manage → Import clients) with the same file. Clients that already exist are untouched, but the **blocked** flag is applied to them (see FR-020). Roll back with the import's Roll back button, which removes only the flag it set.
 
 ## App Check (reCAPTCHA) — off until you do this

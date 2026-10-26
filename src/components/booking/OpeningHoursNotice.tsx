@@ -33,9 +33,18 @@ const useClosureRanges = (): ClosureRange[] => {
 };
 
 export const HoursLine = () => {
-  const { salonSettings } = useSalonData();
+  const { salonSettings, settingsLoading } = useSalonData();
   const rows = weeklyHoursRows(salonSettings.weeklySchedule);
   const ranges = useClosureRanges();
+  // Until the salon's saved settings arrive these are only the built-in defaults, which may not
+  // be the real hours: show the place, not wrong times.
+  if (settingsLoading) {
+    return (
+      <p style={{ color: "var(--ink-muted)", fontSize: "var(--text-base)", letterSpacing: "0.04em" }}>
+        Mount Waverley
+      </p>
+    );
+  }
   return (
     <div data-testid="opening-hours">
       <p
@@ -65,8 +74,9 @@ export const HoursLine = () => {
 };
 
 export const ClosuresBanner = () => {
+  const { settingsLoading } = useSalonData();
   const ranges = useClosureRanges();
-  if (ranges.length === 0) return null;
+  if (settingsLoading || ranges.length === 0) return null;
   return (
     <aside
       data-testid="closures-banner"

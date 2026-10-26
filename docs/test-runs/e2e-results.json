@@ -141,12 +141,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6579,
+                  "duration": 6955,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:02.103Z",
+                  "startTime": "2026-10-26T08:11:41.048Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -193,12 +193,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4455,
+                  "duration": 4727,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:09.508Z",
+                  "startTime": "2026-10-26T08:11:48.961Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -245,12 +245,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1685,
+                  "duration": 1781,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:13.976Z",
+                  "startTime": "2026-10-26T08:11:53.703Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -297,12 +297,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2108,
+                  "duration": 1755,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:15.674Z",
+                  "startTime": "2026-10-26T08:11:55.499Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -339,22 +339,31 @@
                     "line": 0,
                     "column": 0
                   }
+                },
+                {
+                  "type": "skip",
+                  "description": "today is a Monday (closed)",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                    "line": 152,
+                    "column": 8
+                  }
                 }
               ],
-              "expectedStatus": "passed",
+              "expectedStatus": "skipped",
               "projectId": "",
               "projectName": "",
               "results": [
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1973,
+                  "status": "skipped",
+                  "duration": 196,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:17.797Z",
+                  "startTime": "2026-10-26T08:11:57.271Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -363,12 +372,21 @@
                         "line": 0,
                         "column": 0
                       }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "today is a Monday (closed)",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\01-customer.spec.ts",
+                        "line": 152,
+                        "column": 8
+                      }
                     }
                   ],
                   "attachments": []
                 }
               ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "3fd5fc550daf1a52d8d3-7d315d8026ac576db4a0",
@@ -401,12 +419,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3815,
+                  "duration": 3679,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:19.786Z",
+                  "startTime": "2026-10-26T08:11:57.484Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -453,12 +471,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6562,
+                  "duration": 5798,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:23.614Z",
+                  "startTime": "2026-10-26T08:12:01.177Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -505,12 +523,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4761,
+                  "duration": 4629,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:30.188Z",
+                  "startTime": "2026-10-26T08:12:06.990Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -555,22 +573,31 @@
                     "line": 0,
                     "column": 0
                   }
+                },
+                {
+                  "type": "skip",
+                  "description": "salon is closed on Mondays",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                    "line": 73,
+                    "column": 8
+                  }
                 }
               ],
-              "expectedStatus": "passed",
+              "expectedStatus": "skipped",
               "projectId": "",
               "projectName": "",
               "results": [
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1705,
+                  "status": "skipped",
+                  "duration": 5,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:34.992Z",
+                  "startTime": "2026-10-26T08:12:11.667Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -579,12 +606,21 @@
                         "line": 0,
                         "column": 0
                       }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "salon is closed on Mondays",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\02-admin-today.spec.ts",
+                        "line": 73,
+                        "column": 8
+                      }
                     }
                   ],
                   "attachments": []
                 }
               ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "61f078a1de64b436dfad-b00e272ac6e936f87394",
@@ -617,12 +653,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 488,
+                  "duration": 590,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:38.162Z",
+                  "startTime": "2026-10-26T08:12:13.419Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -669,12 +705,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 894,
+                  "duration": 1108,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:38.669Z",
+                  "startTime": "2026-10-26T08:12:14.025Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -721,12 +757,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 531,
+                  "duration": 575,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:39.578Z",
+                  "startTime": "2026-10-26T08:12:15.147Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -773,12 +809,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 869,
+                  "duration": 1069,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:40.121Z",
+                  "startTime": "2026-10-26T08:12:15.735Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -825,12 +861,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 659,
+                  "duration": 861,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:41.003Z",
+                  "startTime": "2026-10-26T08:12:16.819Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -877,12 +913,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2856,
+                  "duration": 2980,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:41.674Z",
+                  "startTime": "2026-10-26T08:12:17.698Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -929,12 +965,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 625,
+                  "duration": 794,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:44.541Z",
+                  "startTime": "2026-10-26T08:12:20.690Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -981,12 +1017,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 716,
+                  "duration": 826,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:45.177Z",
+                  "startTime": "2026-10-26T08:12:21.496Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1033,12 +1069,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 636,
+                  "duration": 714,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:45.904Z",
+                  "startTime": "2026-10-26T08:12:22.341Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1085,12 +1121,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3263,
+                  "duration": 4742,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:46.549Z",
+                  "startTime": "2026-10-26T08:12:23.067Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1137,12 +1173,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6465,
+                  "duration": 7582,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:49.829Z",
+                  "startTime": "2026-10-26T08:12:27.821Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1189,12 +1225,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 699,
+                  "duration": 1143,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:56.312Z",
+                  "startTime": "2026-10-26T08:12:35.421Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1241,12 +1277,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1,
+                  "duration": 3,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:57.023Z",
+                  "startTime": "2026-10-26T08:12:36.581Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1301,16 +1337,16 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 836,
+                  "duration": 936,
                   "errors": [],
                   "stdout": [
                     {
-                      "text": "TC-016 filter applied after 335ms\n"
+                      "text": "TC-016 filter applied after 359ms\n"
                     }
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:57.133Z",
+                  "startTime": "2026-10-26T08:12:36.749Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1357,12 +1393,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 714,
+                  "duration": 771,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:51:59.562Z",
+                  "startTime": "2026-10-26T08:12:39.632Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1409,12 +1445,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 338,
+                  "duration": 394,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:00.286Z",
+                  "startTime": "2026-10-26T08:12:40.414Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1461,12 +1497,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 359,
+                  "duration": 466,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:00.633Z",
+                  "startTime": "2026-10-26T08:12:40.820Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1513,12 +1549,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 921,
+                  "duration": 1035,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:01.003Z",
+                  "startTime": "2026-10-26T08:12:41.296Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1565,7 +1601,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 542,
+                  "duration": 551,
                   "errors": [],
                   "stdout": [
                     {
@@ -1574,7 +1610,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:01.936Z",
+                  "startTime": "2026-10-26T08:12:42.343Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1621,12 +1657,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 429,
+                  "duration": 538,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:02.490Z",
+                  "startTime": "2026-10-26T08:12:42.907Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1673,12 +1709,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 115,
+                  "duration": 123,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:02.931Z",
+                  "startTime": "2026-10-26T08:12:43.464Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1725,12 +1761,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 117,
+                  "duration": 106,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:03.062Z",
+                  "startTime": "2026-10-26T08:12:43.604Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1777,12 +1813,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 342,
+                  "duration": 488,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:03.193Z",
+                  "startTime": "2026-10-26T08:12:43.722Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1829,12 +1865,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 638,
+                  "duration": 725,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:03.544Z",
+                  "startTime": "2026-10-26T08:12:44.221Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1857,7 +1893,7 @@
           "column": 1
         },
         {
-          "title": "TC-026 a training session does not appear on the main timeline",
+          "title": "TC-026 a training session is on the Today timeline of its day; the grid stretches to cover it",
           "ok": true,
           "tags": [],
           "tests": [
@@ -1881,12 +1917,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 261,
+                  "duration": 431,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:04.192Z",
+                  "startTime": "2026-10-26T08:12:44.959Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1903,9 +1939,9 @@
               "status": "expected"
             }
           ],
-          "id": "72233cec458b5920a2b1-78466cee62babe252407",
+          "id": "72233cec458b5920a2b1-6c1577bf470364b3b79f",
           "file": "03-admin-pages.spec.ts",
-          "line": 220,
+          "line": 223,
           "column": 1
         },
         {
@@ -1933,12 +1969,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 592,
+                  "duration": 693,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:04.467Z",
+                  "startTime": "2026-10-26T08:12:45.405Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -1957,7 +1993,7 @@
           ],
           "id": "72233cec458b5920a2b1-22cb57a746470dd203f8",
           "file": "03-admin-pages.spec.ts",
-          "line": 228,
+          "line": 232,
           "column": 1
         },
         {
@@ -1985,12 +2021,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1670,
+                  "duration": 1913,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:05.070Z",
+                  "startTime": "2026-10-26T08:12:46.111Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2009,7 +2045,7 @@
           ],
           "id": "72233cec458b5920a2b1-6a5e9c65e16542cbeb29",
           "file": "03-admin-pages.spec.ts",
-          "line": 267,
+          "line": 271,
           "column": 1
         },
         {
@@ -2037,12 +2073,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1836,
+                  "duration": 2281,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:06.751Z",
+                  "startTime": "2026-10-26T08:12:48.038Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2061,7 +2097,7 @@
           ],
           "id": "72233cec458b5920a2b1-7dc5eb4c7af594d38dd7",
           "file": "03-admin-pages.spec.ts",
-          "line": 278,
+          "line": 282,
           "column": 1
         },
         {
@@ -2089,12 +2125,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1374,
+                  "duration": 1673,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:08.599Z",
+                  "startTime": "2026-10-26T08:12:50.338Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2113,7 +2149,7 @@
           ],
           "id": "72233cec458b5920a2b1-7cf0a3e9b728248e8c58",
           "file": "03-admin-pages.spec.ts",
-          "line": 296,
+          "line": 300,
           "column": 1
         },
         {
@@ -2141,12 +2177,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1713,
+                  "duration": 3473,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:09.983Z",
+                  "startTime": "2026-10-26T08:12:52.025Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2165,7 +2201,7 @@
           ],
           "id": "72233cec458b5920a2b1-216733c121d467369338",
           "file": "03-admin-pages.spec.ts",
-          "line": 303,
+          "line": 307,
           "column": 1
         },
         {
@@ -2193,12 +2229,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1274,
+                  "duration": 1627,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:11.711Z",
+                  "startTime": "2026-10-26T08:12:55.518Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2217,7 +2253,7 @@
           ],
           "id": "72233cec458b5920a2b1-1d42d3e8b288fe7ff921",
           "file": "03-admin-pages.spec.ts",
-          "line": 335,
+          "line": 340,
           "column": 1
         },
         {
@@ -2245,12 +2281,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3219,
+                  "duration": 3308,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:13.001Z",
+                  "startTime": "2026-10-26T08:12:57.160Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2269,7 +2305,7 @@
           ],
           "id": "72233cec458b5920a2b1-5a1b76a41ca876317a7a",
           "file": "03-admin-pages.spec.ts",
-          "line": 347,
+          "line": 352,
           "column": 1
         }
       ]
@@ -2296,12 +2332,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6368,
+                  "duration": 8390,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:16.360Z",
+                  "startTime": "2026-10-26T08:13:00.600Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -2347,12 +2383,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5807,
+                  "duration": 8258,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:22.760Z",
+                  "startTime": "2026-10-26T08:13:09.038Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2399,12 +2435,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4579,
+                  "duration": 5763,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:28.795Z",
+                  "startTime": "2026-10-26T08:13:17.619Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2451,12 +2487,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3624,
+                  "duration": 4117,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:33.388Z",
+                  "startTime": "2026-10-26T08:13:23.393Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2511,12 +2547,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1796,
+                  "duration": 2647,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:37.050Z",
+                  "startTime": "2026-10-26T08:13:27.546Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2563,12 +2599,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 486,
+                  "duration": 716,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:40.061Z",
+                  "startTime": "2026-10-26T08:13:31.495Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2615,12 +2651,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2360,
+                  "duration": 3439,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:40.560Z",
+                  "startTime": "2026-10-26T08:13:32.224Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2667,12 +2703,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 658,
+                  "duration": 856,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:42.932Z",
+                  "startTime": "2026-10-26T08:13:35.676Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2719,12 +2755,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2878,
+                  "duration": 3526,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:43.604Z",
+                  "startTime": "2026-10-26T08:13:36.544Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2771,12 +2807,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1011,
+                  "duration": 1566,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:46.494Z",
+                  "startTime": "2026-10-26T08:13:40.089Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2823,12 +2859,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 383,
+                  "duration": 1305,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:47.515Z",
+                  "startTime": "2026-10-26T08:13:41.680Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2875,12 +2911,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1145,
+                  "duration": 2134,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:47.910Z",
+                  "startTime": "2026-10-26T08:13:43.001Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -2926,12 +2962,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2230,
+                  "duration": 2377,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:49.179Z",
+                  "startTime": "2026-10-26T08:13:45.302Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -2960,12 +2996,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2595,
+                  "duration": 2786,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:51.430Z",
+                  "startTime": "2026-10-26T08:13:47.697Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -2994,12 +3030,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2487,
+                  "duration": 2962,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:54.040Z",
+                  "startTime": "2026-10-26T08:13:50.495Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3028,12 +3064,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2481,
+                  "duration": 2893,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:56.546Z",
+                  "startTime": "2026-10-26T08:13:53.472Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3062,12 +3098,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1949,
+                  "duration": 2301,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:52:59.040Z",
+                  "startTime": "2026-10-26T08:13:56.376Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3096,12 +3132,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2693,
+                  "duration": 2969,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:01.003Z",
+                  "startTime": "2026-10-26T08:13:58.690Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3130,12 +3166,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2157,
+                  "duration": 2423,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:03.706Z",
+                  "startTime": "2026-10-26T08:14:01.671Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3172,12 +3208,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3088,
+                  "duration": 3379,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:05.906Z",
+                  "startTime": "2026-10-26T08:14:04.135Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3206,12 +3242,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2293,
+                  "duration": 2607,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:09.008Z",
+                  "startTime": "2026-10-26T08:14:07.531Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3240,12 +3276,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2270,
+                  "duration": 2953,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:11.311Z",
+                  "startTime": "2026-10-26T08:14:10.151Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3274,12 +3310,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2164,
+                  "duration": 2583,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:13.593Z",
+                  "startTime": "2026-10-26T08:14:13.120Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3308,12 +3344,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2496,
+                  "duration": 2840,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:15.770Z",
+                  "startTime": "2026-10-26T08:14:15.726Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3342,12 +3378,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2183,
+                  "duration": 2364,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:18.277Z",
+                  "startTime": "2026-10-26T08:14:18.577Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3376,12 +3412,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2180,
+                  "duration": 2619,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:20.471Z",
+                  "startTime": "2026-10-26T08:14:20.955Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3410,12 +3446,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2089,
+                  "duration": 2421,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:22.664Z",
+                  "startTime": "2026-10-26T08:14:23.588Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3444,12 +3480,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2376,
+                  "duration": 2517,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:24.766Z",
+                  "startTime": "2026-10-26T08:14:26.024Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3478,12 +3514,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2590,
+                  "duration": 2762,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:27.157Z",
+                  "startTime": "2026-10-26T08:14:28.553Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3512,12 +3548,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2686,
+                  "duration": 2960,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:29.759Z",
+                  "startTime": "2026-10-26T08:14:31.330Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3546,12 +3582,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2823,
+                  "duration": 3106,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:32.458Z",
+                  "startTime": "2026-10-26T08:14:34.303Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3580,12 +3616,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2495,
+                  "duration": 2830,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:35.295Z",
+                  "startTime": "2026-10-26T08:14:37.422Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3614,12 +3650,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2606,
+                  "duration": 3160,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:37.802Z",
+                  "startTime": "2026-10-26T08:14:40.265Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3648,12 +3684,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3377,
+                  "duration": 4101,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:40.420Z",
+                  "startTime": "2026-10-26T08:14:43.440Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3682,12 +3718,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2350,
+                  "duration": 2574,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:43.814Z",
+                  "startTime": "2026-10-26T08:14:47.560Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3716,12 +3752,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2615,
+                  "duration": 2425,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:46.177Z",
+                  "startTime": "2026-10-26T08:14:50.148Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3750,12 +3786,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2278,
+                  "duration": 2427,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:48.803Z",
+                  "startTime": "2026-10-26T08:14:52.588Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3792,12 +3828,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3163,
+                  "duration": 3474,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:51.119Z",
+                  "startTime": "2026-10-26T08:14:55.043Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3826,12 +3862,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2428,
+                  "duration": 2858,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:54.295Z",
+                  "startTime": "2026-10-26T08:14:58.531Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3860,12 +3896,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2670,
+                  "duration": 3422,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:56.744Z",
+                  "startTime": "2026-10-26T08:15:01.403Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3894,12 +3930,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2978,
+                  "duration": 3980,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:53:59.433Z",
+                  "startTime": "2026-10-26T08:15:04.838Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3928,12 +3964,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3586,
+                  "duration": 3713,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:02.425Z",
+                  "startTime": "2026-10-26T08:15:08.835Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3962,12 +3998,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2309,
+                  "duration": 2977,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:06.025Z",
+                  "startTime": "2026-10-26T08:15:12.571Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -3996,12 +4032,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3005,
+                  "duration": 4343,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:08.349Z",
+                  "startTime": "2026-10-26T08:15:15.561Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4030,12 +4066,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1985,
+                  "duration": 2217,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:11.364Z",
+                  "startTime": "2026-10-26T08:15:19.922Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4064,12 +4100,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 12206,
+                  "duration": 12127,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:13.362Z",
+                  "startTime": "2026-10-26T08:15:22.151Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4098,12 +4134,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2790,
+                  "duration": 3985,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:25.582Z",
+                  "startTime": "2026-10-26T08:15:34.296Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -4149,12 +4185,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3988,
+                  "duration": 3685,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:28.408Z",
+                  "startTime": "2026-10-26T08:15:38.324Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4201,12 +4237,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3550,
+                  "duration": 3681,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:32.411Z",
+                  "startTime": "2026-10-26T08:15:42.024Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4253,12 +4289,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5423,
+                  "duration": 6154,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:35.982Z",
+                  "startTime": "2026-10-26T08:15:45.722Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4305,12 +4341,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8146,
+                  "duration": 9050,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:41.418Z",
+                  "startTime": "2026-10-26T08:15:51.892Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4357,12 +4393,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4886,
+                  "duration": 5203,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:49.583Z",
+                  "startTime": "2026-10-26T08:16:00.954Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4409,12 +4445,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2129,
+                  "duration": 2376,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:54.483Z",
+                  "startTime": "2026-10-26T08:16:06.172Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4461,12 +4497,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3393,
+                  "duration": 3696,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:54:56.627Z",
+                  "startTime": "2026-10-26T08:16:08.564Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4513,12 +4549,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8371,
+                  "duration": 9053,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:00.035Z",
+                  "startTime": "2026-10-26T08:16:12.277Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4565,12 +4601,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1619,
+                  "duration": 2072,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:08.419Z",
+                  "startTime": "2026-10-26T08:16:21.350Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4625,12 +4661,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7823,
+                  "duration": 7919,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:10.100Z",
+                  "startTime": "2026-10-26T08:16:23.495Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4649,7 +4685,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-4e73d0522f194865cd21",
           "file": "12-clients.spec.ts",
-          "line": 151,
+          "line": 159,
           "column": 1
         },
         {
@@ -4677,12 +4713,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3487,
+                  "duration": 3477,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:17.939Z",
+                  "startTime": "2026-10-26T08:16:31.426Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4701,7 +4737,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-e1003525754f47c737d9",
           "file": "12-clients.spec.ts",
-          "line": 180,
+          "line": 188,
           "column": 1
         },
         {
@@ -4729,12 +4765,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2916,
+                  "duration": 4571,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:21.439Z",
+                  "startTime": "2026-10-26T08:16:34.917Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4753,7 +4789,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-26a5d61e53d33f8b6e1e",
           "file": "12-clients.spec.ts",
-          "line": 188,
+          "line": 196,
           "column": 1
         },
         {
@@ -4781,12 +4817,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2709,
+                  "duration": 3206,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:24.369Z",
+                  "startTime": "2026-10-26T08:16:39.502Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4805,7 +4841,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-18a0d02a00145b1cdde4",
           "file": "12-clients.spec.ts",
-          "line": 216,
+          "line": 224,
           "column": 1
         },
         {
@@ -4833,12 +4869,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5912,
+                  "duration": 6643,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:27.089Z",
+                  "startTime": "2026-10-26T08:16:42.722Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4857,7 +4893,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-72c48f1542323dc86397",
           "file": "12-clients.spec.ts",
-          "line": 240,
+          "line": 248,
           "column": 1
         },
         {
@@ -4885,12 +4921,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7456,
+                  "duration": 12655,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:33.016Z",
+                  "startTime": "2026-10-26T08:16:49.376Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4909,7 +4945,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-3a7101b7ec4fb0a0c614",
           "file": "12-clients.spec.ts",
-          "line": 268,
+          "line": 276,
           "column": 1
         },
         {
@@ -4937,12 +4973,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5913,
+                  "duration": 6954,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:40.485Z",
+                  "startTime": "2026-10-26T08:17:02.047Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -4961,7 +4997,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-c6fd8d7c2d9af6f7f90a",
           "file": "12-clients.spec.ts",
-          "line": 293,
+          "line": 301,
           "column": 1
         },
         {
@@ -4989,12 +5025,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3163,
+                  "duration": 3732,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:46.409Z",
+                  "startTime": "2026-10-26T08:17:09.019Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5013,7 +5049,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-7831719615dffd0b473a",
           "file": "12-clients.spec.ts",
-          "line": 315,
+          "line": 323,
           "column": 1
         },
         {
@@ -5041,12 +5077,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3876,
+                  "duration": 4218,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:49.588Z",
+                  "startTime": "2026-10-26T08:17:12.766Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5065,7 +5101,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-763e16ccb9328232ce58",
           "file": "12-clients.spec.ts",
-          "line": 350,
+          "line": 358,
           "column": 1
         },
         {
@@ -5093,12 +5129,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4955,
+                  "duration": 5182,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:53.478Z",
+                  "startTime": "2026-10-26T08:17:16.996Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5117,7 +5153,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-070670d802942d00edf6",
           "file": "12-clients.spec.ts",
-          "line": 369,
+          "line": 377,
           "column": 1
         },
         {
@@ -5145,12 +5181,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7801,
+                  "duration": 9880,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:55:58.449Z",
+                  "startTime": "2026-10-26T08:17:22.193Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5169,7 +5205,7 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-0101a41d722b7cbb3113",
           "file": "12-clients.spec.ts",
-          "line": 421,
+          "line": 429,
           "column": 1
         },
         {
@@ -5197,12 +5233,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8449,
+                  "duration": 10711,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T10:56:06.263Z",
+                  "startTime": "2026-10-26T08:17:32.087Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -5221,7 +5257,1763 @@
           ],
           "id": "e2ddc3f3d0db83bc42a4-18e5d2726093b34cfd07",
           "file": "12-clients.spec.ts",
-          "line": 453,
+          "line": 461,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "13-sms.spec.ts",
+      "file": "13-sms.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-111 Manage shows Text messages: off, with all four messages and a preview of each",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2834,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:17:42.830Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6d0719c5ecb216f48588-06bd8ff7df5f998a1389",
+          "file": "13-sms.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "TC-112 the wording editor: live preview, length, placeholders, validation and reset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2902,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:17:45.676Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6d0719c5ecb216f48588-10e224e4144343394e59",
+          "file": "13-sms.spec.ts",
+          "line": 58,
+          "column": 1
+        },
+        {
+          "title": "TC-113 saving keeps the switches, sender name and wording across a reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4035,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:17:48.593Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6d0719c5ecb216f48588-f993977b87ff116a23d7",
+          "file": "13-sms.spec.ts",
+          "line": 100,
+          "column": 1
+        },
+        {
+          "title": "TC-114 a booking becomes a text in the owner's wording; off means nothing; 'Stop texts' means nothing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13320,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:17:52.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6d0719c5ecb216f48588-ac50d26f5ffc81d2fb2a",
+          "file": "13-sms.spec.ts",
+          "line": 127,
+          "column": 1
+        },
+        {
+          "title": "TC-115 'Send me a test' texts the saved wording with a made-up booking",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6791,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:05.976Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\13-sms.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6d0719c5ecb216f48588-8f683289aabd57f71ddf",
+          "file": "13-sms.spec.ts",
+          "line": 183,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "14-team-access.spec.ts",
+      "file": "14-team-access.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-120 the owner gives a stylist a role in Manage; the team list shows them",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6648,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:12.808Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5347a21223bef5581f2e-264cbf7e2178fa08bfea",
+          "file": "14-team-access.spec.ts",
+          "line": 119,
+          "column": 1
+        },
+        {
+          "title": "TC-121 a stylist with no extra access sees only their own clients, with no picker",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5065,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:19.468Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5347a21223bef5581f2e-51d75bf179274a5d0d39",
+          "file": "14-team-access.spec.ts",
+          "line": 143,
+          "column": 1
+        },
+        {
+          "title": "TC-122 named colleagues: their clients, notes and history (no prices) open; others stay closed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5706,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:24.547Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5347a21223bef5581f2e-f5969d8f2b85276d94a6",
+          "file": "14-team-access.spec.ts",
+          "line": 156,
+          "column": 1
+        },
+        {
+          "title": "TC-123 changing the access takes effect on the stylist's open screen, without signing out",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7060,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:30.269Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5347a21223bef5581f2e-309cdd957b8c3defd75a",
+          "file": "14-team-access.spec.ts",
+          "line": 193,
+          "column": 1
+        },
+        {
+          "title": "TC-124 removing a role, and the owner cannot remove their own access",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4356,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:37.349Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\14-team-access.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5347a21223bef5581f2e-5db5393c62efe7dc9eb3",
+          "file": "14-team-access.spec.ts",
+          "line": 227,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "15-customer-change.spec.ts",
+      "file": "15-customer-change.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-128 the link shows the booking and what can be done; a wrong secret shows nothing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8110,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:41.740Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-257e9ed31b6989c5d05c",
+          "file": "15-customer-change.spec.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "TC-129 cancelling: asks first, then cancels, frees the time and tells the salon",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8604,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:49.865Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-ccefd91019c401cd3ccd",
+          "file": "15-customer-change.spec.ts",
+          "line": 74,
+          "column": 1
+        },
+        {
+          "title": "TC-130 moving (the default): the original stays until the owner approves, then it moves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14658,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:18:58.482Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-3ce09f270952898be35d",
+          "file": "15-customer-change.spec.ts",
+          "line": 96,
+          "column": 1
+        },
+        {
+          "title": "TC-131 the owner's policy: cutoff and message, switches, and what the page then offers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8666,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:19:13.155Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-8a63e1e4264c0779d3e3",
+          "file": "15-customer-change.spec.ts",
+          "line": 129,
+          "column": 1
+        },
+        {
+          "title": "TC-132 'moves straight away': the booking moves at once and the old time is freed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8666,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:19:21.834Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-497409a76c4d16b5ae7b",
+          "file": "15-customer-change.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "TC-133 a time that is taken is not offered",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2002,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:19:30.515Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\15-customer-change.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd573068c7f5c708b090-e0642147abebabb7722b",
+          "file": "15-customer-change.spec.ts",
+          "line": 191,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "16-time-off.spec.ts",
+      "file": "16-time-off.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-134 a stylist asks for a day off: it is held at once; the owner reviews, cancels one booking, approves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18001,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:19:32.550Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b774574886df5919c0f8-066726743585c480928c",
+          "file": "16-time-off.spec.ts",
+          "line": 83,
+          "column": 1
+        },
+        {
+          "title": "TC-135 declining releases the held time and tells the stylist; a stylist can withdraw their own request",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15721,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Request withdrawn.')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Request withdrawn.') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Request withdrawn.')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Request withdrawn.')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Request withdrawn.') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Request withdrawn.')\u001b[22m\n\n    at C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts:154:55",
+                    "location": {
+                      "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                      "column": 55,
+                      "line": 154
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 152 |\u001b[39m   \u001b[36mawait\u001b[39m expect(steve\u001b[33m.\u001b[39mgetByTestId(\u001b[32m\"timeoff-waiting\"\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m\"Waiting\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 153 |\u001b[39m   \u001b[36mawait\u001b[39m steve\u001b[33m.\u001b[39mgetByTestId(\u001b[32m\"timeoff-withdraw\"\u001b[39m)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 154 |\u001b[39m   \u001b[36mawait\u001b[39m expect(steve\u001b[33m.\u001b[39mgetByText(\u001b[32m\"Request withdrawn.\"\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 155 |\u001b[39m   \u001b[36mawait\u001b[39m expect\u001b[33m.\u001b[39mpoll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m (\u001b[36mawait\u001b[39m bookings())\u001b[33m.\u001b[39mfilter((b) \u001b[33m=>\u001b[39m b\u001b[33m.\u001b[39mbookingType \u001b[33m===\u001b[39m \u001b[32m\"break\"\u001b[39m)\u001b[33m.\u001b[39mlength)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 156 |\u001b[39m   \u001b[36mawait\u001b[39m steve\u001b[33m.\u001b[39mcontext()\u001b[33m.\u001b[39mclose()\u001b[33m;\u001b[39m\n \u001b[90m 157 |\u001b[39m   \u001b[36mawait\u001b[39m owner\u001b[33m.\u001b[39mcontext()\u001b[33m.\u001b[39mclose()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                        "column": 55,
+                        "line": 154
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Request withdrawn.')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Request withdrawn.') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Request withdrawn.')\u001b[22m\n\n\n  152 |   await expect(steve.getByTestId(\"timeoff-waiting\")).toContainText(\"Waiting\");\n  153 |   await steve.getByTestId(\"timeoff-withdraw\").click();\n> 154 |   await expect(steve.getByText(\"Request withdrawn.\")).toBeVisible();\n      |                                                       ^\n  155 |   await expect.poll(async () => (await bookings()).filter((b) => b.bookingType === \"break\").length).toBe(0);\n  156 |   await steve.context().close();\n  157 |   await owner.context().close();\n    at C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts:154:55"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:19:50.567Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\test-results\\16-time-off-TC-135-declini-8ac6a--withdraw-their-own-request\\test-failed-1.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\test-results\\16-time-off-TC-135-declini-8ac6a--withdraw-their-own-request\\test-failed-2.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\test-results\\16-time-off-TC-135-declini-8ac6a--withdraw-their-own-request\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "column": 55,
+                    "line": 154
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b774574886df5919c0f8-755adc3a4c7617896aa8",
+          "file": "16-time-off.spec.ts",
+          "line": 130,
+          "column": 1
+        },
+        {
+          "title": "TC-136 the owner's policy: don't block while waiting, and short blocks apply at once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.671Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b774574886df5919c0f8-40a75bbccf72c5c567f2",
+          "file": "16-time-off.spec.ts",
+          "line": 160,
+          "column": 1
+        },
+        {
+          "title": "TC-137 the owner adds time off for anyone: applied at once, with the bookings in the way to cancel",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.671Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b774574886df5919c0f8-fdc9707f7543ab34bad0",
+          "file": "16-time-off.spec.ts",
+          "line": 202,
+          "column": 1
+        },
+        {
+          "title": "TC-138 a stylist trusted to approve time off decides other stylists' requests; one without the permission cannot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\16-time-off.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.671Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b774574886df5919c0f8-1809f682bd8b5a1a323b",
+          "file": "16-time-off.spec.ts",
+          "line": 228,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "17-permissions.spec.ts",
+      "file": "17-permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-139 every stylist can edit message wording once the owner allows it",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\17-permissions.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.734Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "de0d3bbe8549f6981f57-df8198ea1cf13db0e55f",
+          "file": "17-permissions.spec.ts",
+          "line": 56,
+          "column": 1
+        },
+        {
+          "title": "TC-140 one stylist can be allowed, or stopped, on their own",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\17-permissions.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.735Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "de0d3bbe8549f6981f57-031762952caeb00b02ed",
+          "file": "17-permissions.spec.ts",
+          "line": 97,
+          "column": 1
+        },
+        {
+          "title": "TC-141 taking a permission away reaches an open screen without signing out",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\17-permissions.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.735Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "de0d3bbe8549f6981f57-672703a492849128e6c5",
+          "file": "17-permissions.spec.ts",
+          "line": 140,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "18-win-back.spec.ts",
+      "file": "18-win-back.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-142 the booking form has an unticked box; ticking it records that the client agreed",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\18-win-back.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.736Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c80878ed6cb08339b86f-a1966406f0a2710dc095",
+          "file": "18-win-back.spec.ts",
+          "line": 104,
+          "column": 1
+        },
+        {
+          "title": "TC-143 the owner invites lapsed clients back: only those who agreed are listed; the text carries the unsubscribe link",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\18-win-back.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.736Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c80878ed6cb08339b86f-6157c91a2d1381474b10",
+          "file": "18-win-back.spec.ts",
+          "line": 131,
+          "column": 1
+        },
+        {
+          "title": "TC-144 the unsubscribe link: nothing happens until the button; then they leave the list; a bad link does nothing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\18-win-back.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.736Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c80878ed6cb08339b86f-03f94f38bbf41786285e",
+          "file": "18-win-back.spec.ts",
+          "line": 173,
+          "column": 1
+        },
+        {
+          "title": "TC-145 a stylist sees the button only with the permission, and only their own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\18-win-back.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.736Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c80878ed6cb08339b86f-f61700ba7e0fcc8e4a1a",
+          "file": "18-win-back.spec.ts",
+          "line": 216,
+          "column": 1
+        },
+        {
+          "title": "TC-146 the owner records consent by hand (with a warning), and can stop invitations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\18-win-back.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.737Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c80878ed6cb08339b86f-cfacbdf1b70f77da56ef",
+          "file": "18-win-back.spec.ts",
+          "line": 237,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "19-client-records.spec.ts",
+      "file": "19-client-records.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-147 the owner records a formula and a patch test; the page says the client is covered, and the formula can be repeated",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\19-client-records.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.747Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e2c9f84f9ca71386eb2-0b486155188dfe00c409",
+          "file": "19-client-records.spec.ts",
+          "line": 99,
+          "column": 1
+        },
+        {
+          "title": "TC-148 a reaction stands out until a later clear test; an old clear test reads as expired",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\19-client-records.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.748Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "1e2c9f84f9ca71386eb2-25ed1245d76e031959ea",
+          "file": "19-client-records.spec.ts",
+          "line": 143,
+          "column": 1
+        },
+        {
+          "title": "TC-149 a stylist with the permission adds and deletes their own entries; without it they can read but not add",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\19-client-records.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.748Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "1e2c9f84f9ca71386eb2-6ba391225fb33f06caa2",
+          "file": "19-client-records.spec.ts",
+          "line": 167,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "20-dark-mode.spec.ts",
+      "file": "20-dark-mode.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "desktop: toggle, persist across reload, and stay out of the booking site",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\20-dark-mode.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.749Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2a94da62d0d94c531ef3-19107e22cbfb83399aeb",
+          "file": "20-dark-mode.spec.ts",
+          "line": 20,
+          "column": 1
+        },
+        {
+          "title": "phone: the More sheet has the toggle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\Jason\\Desktop\\Coding\\projects\\sua-hair\\e2e\\20-dark-mode.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T08:20:06.749Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "2a94da62d0d94c531ef3-a16101bc3e5b11d83ccf",
+          "file": "20-dark-mode.spec.ts",
+          "line": 61,
           "column": 1
         }
       ]
@@ -5229,11 +7021,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-21T10:50:58.537Z",
-    "duration": 316716.726,
-    "expected": 109,
-    "skipped": 0,
-    "unexpected": 0,
+    "startTime": "2026-10-26T08:11:37.053Z",
+    "duration": 510187.966,
+    "expected": 124,
+    "skipped": 14,
+    "unexpected": 5,
     "flaky": 0
   }
 }

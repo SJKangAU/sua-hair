@@ -10,6 +10,7 @@ import { GraduationCap } from "lucide-react";
 import { db } from "../../../lib/firebase";
 import { todayString } from "../../../lib/dates";
 import { useSalonData } from "../../../context/SalonDataContext";
+import { trainingSlots } from "../../../lib/trainingSlots";
 import { createAdminBooking } from "../../../lib/adminBookingWrites";
 import { BookingConflictError } from "../../../lib/bookingConflicts";
 import type { Booking } from "../../../types";
@@ -49,23 +50,6 @@ const TRAINING_TOPICS = [
   "Custom topic",
 ];
 
-// After-hours time slots (before 10am and after 6pm)
-const AFTER_HOURS_SLOTS = [
-  "7:00 AM",
-  "7:30 AM",
-  "8:00 AM",
-  "8:30 AM",
-  "9:00 AM",
-  "9:30 AM",
-  "6:00 PM",
-  "6:30 PM",
-  "7:00 PM",
-  "7:30 PM",
-  "8:00 PM",
-  "8:30 PM",
-  "9:00 PM",
-];
-
 const DURATIONS = [
   { label: "30 min", value: 30 },
   { label: "1 hour", value: 60 },
@@ -76,7 +60,7 @@ const DURATIONS = [
 ];
 
 const TrainingForm = ({ onSuccess, onError }: Props) => {
-  const { stylists } = useSalonData();
+  const { stylists, salonSettings, settingsLoading } = useSalonData();
   const [submitting, setSubmitting] = useState(false);
   const [customTopic, setCustomTopic] = useState("");
 
@@ -99,6 +83,11 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
   const selectedTrainer = stylists.find((s) => s.id === form.trainerId);
   const selectedTrainee = stylists.find((s) => s.id === form.traineeId);
 
+  // Outside the trading hours Manage has for that date, and long enough to finish before opening
+  const slots = form.date && !settingsLoading ? trainingSlots(form.date, salonSettings, form.duration) : [];
+  // A time picked earlier only counts while it is still outside the hours for the date and duration
+  const time = slots.includes(form.time) ? form.time : "";
+
   const effectiveTopic =
     form.topic === "Custom topic" ? customTopic : form.topic;
 
@@ -108,7 +97,7 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
       !form.traineeId ||
       !effectiveTopic ||
       !form.date ||
-      !form.time
+      !time
     ) {
       onError("Please fill in all required fields.");
       return;
@@ -132,7 +121,7 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
         restTime: 0,
         totalTime: form.duration,
         date: form.date,
-        time: form.time,
+        time,
         notes: form.notes,
         traineeId: selectedTrainee.id,
         traineeName: selectedTrainee.name,
@@ -262,13 +251,15 @@ const TrainingForm = ({ onSuccess, onError }: Props) => {
           Start Time *
           <select
             style={inputStyle}
-            value={form.time}
+            value={time}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, time: e.target.value }))
             }
           >
-            <option value="">Select time...</option>
-            {AFTER_HOURS_SLOTS.map((slot) => (
+            <option value="">
+              {!form.date ? "Choose a date first..." : settingsLoading ? "Loading hours..." : "Select time..."}
+            </option>
+            {slots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
