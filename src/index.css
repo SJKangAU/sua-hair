@@ -127,9 +127,56 @@ body {
   outline-offset: 2px;
   border-radius: 2px;
 }
-.admin-dark :focus-visible,
-[data-theme="dark"] :focus-visible {
+.admin-dark :focus-visible {
   outline-color: var(--surface);
+}
+
+/* ── Admin dark mode ────────────────────────────────────────────────────
+   useAdminTheme puts data-theme="dark" on <html> while the admin shell is
+   mounted. Components only use the tokens above, so re-pointing the tokens
+   is the whole job: ink and surface swap roles (a filled "ink" button keeps
+   its "surface" label and both stay readable). The sidebar, top bar and tab
+   bar are dark in both modes and re-declare the light values in
+   shellStyles.ts. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ink: #ecebe7;
+  --ink-soft: #cfcdc7;
+  --ink-muted: #a3a19b;
+  --paper: #121211;
+  --surface: #1b1b1a;
+  --surface-raised: #262625;
+  --border: #2f2f2d;
+  --border-strong: #454543;
+  --grey-muted: #8a8884;
+  --accent: #ecebe7;
+
+  --white: #1b1b1a;
+  --off-white: #121211;
+  --text-primary: #ecebe7;
+  --text-secondary: #cfcdc7;
+  --text-muted: #8a8884;
+
+  --error: #f87171;
+  --error-bg: #2a1515;
+  --success: #4ade80;
+  --success-bg: #12261a;
+  --warning-bg: #2a2410;
+
+  /* "admin-bg" doubles as dark ink on the content side (chart titles, roster
+     labels, in-service blocks), so it flips with the rest */
+  --admin-bg: #ecebe7;
+  --admin-bg-darker: #f7f6f2;
+  --admin-card-border: #2f2f2d;
+  --admin-row-border: #262625;
+  --admin-surface: #1b1b1a;
+  --admin-input-border: #454543;
+  --admin-page-bg: #121211;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
 /* ── Hover micro-interactions ──────────────────────────────────────────
@@ -209,6 +256,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .bk-skeleton { animation: none; }
   .bk-fade-in { animation: none; }
+}
+
+/* Inline-style animations (booking step slide, confirmation entrance) can't be
+   reached by the class rules above, so users who prefer reduced motion get
+   them collapsed to an instant change here. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Screen-reader-only — visually hidden but announced (live regions, labels) */

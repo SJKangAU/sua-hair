@@ -9,6 +9,33 @@ import { ADMIN_NAV_BREAKPOINT } from "../../../lib/breakpoints";
 export const SIDEBAR_WIDTH = 232;
 
 export const SHELL_CSS = `
+  /* Dark mode: the sidebar, top bar, tab bar and anything marked adm-keep-dark
+     are dark in both modes, so they get the light-mode token values back. */
+  :root[data-theme="dark"] .adm-sidebar,
+  :root[data-theme="dark"] .adm-topbar,
+  :root[data-theme="dark"] .adm-tabbar,
+  :root[data-theme="dark"] .adm-sheet,
+  :root[data-theme="dark"] .adm-keep-dark {
+    color-scheme: light;
+    --ink: #161615;
+    --ink-soft: #3a3a38;
+    --ink-muted: #6b6a65;
+    --paper: #faf9f7;
+    --surface: #ffffff;
+    --surface-raised: #f0eeea;
+    --border: #e7e5e0;
+    --border-strong: #cfccc5;
+    --grey-muted: #8a8884;
+    --accent: #161615;
+    --admin-bg: #161615;
+    --admin-bg-darker: #0d0d0c;
+  }
+  .adm-sidebar :focus-visible,
+  .adm-topbar :focus-visible,
+  .adm-tabbar :focus-visible,
+  .adm-sheet :focus-visible,
+  .adm-keep-dark :focus-visible { outline-color: #ffffff; }
+
   .adm-shell {
     display: grid;
     grid-template-columns: ${SIDEBAR_WIDTH}px minmax(0, 1fr);

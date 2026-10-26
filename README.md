@@ -41,6 +41,9 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - **Any Available Stylist** — the server picks a real stylist who is free for the whole appointment (fewest bookings that day, then the owner's order) and recalculates the price from that stylist's tier
 - **Services with phases** — a service can be hands-on, then processing (the stylist is free for another client), then hands-on again (for example a digital perm); the exact blocks are what the calendar checks
 - **Add to Calendar** — Google Calendar link and Apple/Outlook ICS download
+- **Running total while choosing** — the service step shows "from $X · N min total" (the lowest tier, since the stylist is picked next)
+- **Find us** — the confirmation screen shows the salon address with an Open in Maps link and a tap-to-call number, both read from `SALON_CONFIG`
+- **Reduced motion** — a global `prefers-reduced-motion` rule collapses the step slide and confirmation entrance animations
 
 ### Admin Dashboard
 
@@ -58,6 +61,7 @@ A full-stack booking and management platform built for **Sua Hair Studio**, Melb
 - **Time off** — stylists ask for days off and blocked times; the owner (or a trusted stylist) approves, seeing the bookings in the way; the owner's own entries apply at once; what happens while a request waits is a setting.
 - **Win-back** — Clients → Invite lapsed clients back: email and/or text clients who agreed (an optional box on the booking form), who are lapsed, with nothing booked; every message has an unsubscribe link; imported clients are excluded until consent is recorded.
 - **Colour formulas & patch tests** — on a client's page: append-only entries, whether the client is covered by a patch test today (six months), and the last formula to repeat.
+- **Dark mode** — a Light mode / Dark mode toggle in the sidebar (and the More sheet on phones). The choice is saved in that browser only and defaults to light. The sidebar, top bar and tab bar stay dark in both modes; customer pages are never affected
 - **Bookings tab** — filterable list by stylist, date, and status with accurate filtered count
 - **Jump-to-date** input on Today tab for navigating directly to any date
 - Confirm, cancel, and restore bookings with optimistic UI updates
@@ -95,7 +99,7 @@ npm run test:lockdown  # the public cannot write bookings, slots, waitlist or no
 npm run test:admin     # admin write path against real rules: walk-ins, breaks, phases, import and rollback, races
 npm run test:functions # booking commands, roles, limits and races (Cloud Functions + Auth + Firestore emulators)
 npm run test:smoke     # client requests -> owner approves -> overlapping walk-in blocked
-npm run test:e2e       # Playwright drives the real UI against the Auth + Firestore + Functions emulators
+npm run test:e2e       # (includes e2e/20-dark-mode.spec.ts: toggle, persistence, phone sheet) Playwright drives the real UI against the Auth + Firestore + Functions emulators
                        # (docs/08-test-scenarios.md); uses installed Edge locally
 npm run test:all       # build + the main suites above
 node scripts/run-suite.mjs <prefix> <tag> [TZ]   # everything under one time zone, log in docs/test-runs/
@@ -273,6 +277,7 @@ src/
         ServiceRoster.tsx        # Add/edit/reorder/deactivate services
         StylistRoster.tsx        # Add/edit/deactivate stylists
     ui/
+      Modal.tsx                  # Dialog — Tab trap, Escape, focus returns to the opener
       Skeleton.tsx               # Loading skeleton components
       Toast.tsx                  # Toast notification system
   context/
@@ -288,6 +293,7 @@ src/
     useBookings.ts               # Real-time bookings + optimistic updates
     useStylists.ts               # Stylists from Firestore
     useServices.ts               # Services from Firestore, sorted by sortOrder
+    useAdminTheme.ts             # Admin light/dark choice (data-theme on <html>, saved per browser)
   lib/
     firebase.ts                  # Firebase initialisation
     config.ts                    # Business rules (single source of truth)
@@ -402,6 +408,7 @@ npx firebase deploy --only firestore:rules --project <your-project-id>  # step 4
 | Context + hooks over prop drilling           | One Firestore subscription shared across all components                                                                      |
 | Optimistic UI updates                        | Admin dashboard feels instant — UI updates before Firestore confirms                                                         |
 | Scheduling in minutes from midnight          | Avoids AM/PM string parsing bugs in time comparisons                                                                         |
+| Dark mode by re-pointing CSS tokens          | Components only use `--ink` / `--surface` / `--border`…, so `:root[data-theme="dark"]` in `index.css` swaps them; the always-dark sidebar re-declares the light values in `shellStyles.ts`. `data-theme` is on `<html>` only while the admin shell is mounted |
 | CSS keyframe animations via inline `<style>` | No animation library dependency; keyframes are scoped to the booking flow and don't affect admin styles                      |
 | `isFirstRender` ref in availability hook     | Prevents the hook from clearing the selected date/time when the user navigates back to Step 2                                |
 

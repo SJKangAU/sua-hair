@@ -35,6 +35,7 @@ const BulkActions = ({
 
   return (
     <div
+      className="adm-keep-dark"
       style={{
         display: "flex",
         alignItems: "center",

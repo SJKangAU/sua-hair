@@ -6,7 +6,7 @@
 // panel and a white bar, not colour.
 
 import { NavLink } from "react-router-dom";
-import { ExternalLink, LogOut } from "lucide-react";
+import { ExternalLink, LogOut, Moon, Sun } from "lucide-react";
 import NotificationBell from "../../ui/NotificationBell";
 import CountBadge from "./CountBadge";
 import { SIDEBAR_WIDTH } from "./shellStyles";
@@ -15,6 +15,7 @@ import {
   type NavGroup,
   type NavItem,
 } from "./navItems";
+import type { AdminTheme } from "../../../hooks/useAdminTheme";
 import type { Notification } from "../../../types";
 
 interface Props {
@@ -23,6 +24,8 @@ interface Props {
   email: string | null | undefined;
   onSignOut: () => void;
   onSelectNotification: (notification: Notification) => void;
+  theme: AdminTheme;
+  onToggleTheme: () => void;
 }
 
 const GROUPS: NavGroup[] = ["operate", "run"];
@@ -33,6 +36,8 @@ const AdminSidebar = ({
   email,
   onSignOut,
   onSelectNotification,
+  theme,
+  onToggleTheme,
 }: Props) => (
   <aside
     className="adm-sidebar"
@@ -147,6 +152,18 @@ const AdminSidebar = ({
         <ExternalLink size={16} strokeWidth={1.75} aria-hidden="true" />
         View booking site
       </a>
+      <button
+        className="adm-footer-btn"
+        onClick={onToggleTheme}
+        aria-pressed={theme === "dark"}
+      >
+        {theme === "dark" ? (
+          <Sun size={16} strokeWidth={1.75} aria-hidden="true" />
+        ) : (
+          <Moon size={16} strokeWidth={1.75} aria-hidden="true" />
+        )}
+        {theme === "dark" ? "Light mode" : "Dark mode"}
+      </button>
       {email && (
         <p
           title={email}

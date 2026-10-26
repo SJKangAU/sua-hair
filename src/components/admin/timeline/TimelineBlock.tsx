@@ -334,7 +334,9 @@ const TimelineBlock = ({
   const icon = isCompleted ? CircleCheck : categoryIcon(booking.serviceId);
   const onDark = !isPending;
   const textColor = onDark ? "var(--surface)" : "var(--ink)";
-  const subColor = onDark ? "rgba(255,255,255,0.8)" : "var(--ink-muted)";
+  const subColor = onDark
+    ? "color-mix(in srgb, var(--surface) 80%, transparent)"
+    : "var(--ink-muted)";
 
   return (
     <div

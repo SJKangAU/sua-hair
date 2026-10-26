@@ -15,6 +15,7 @@ import useAppUser from "../hooks/useAppUser";
 import { useBookingContext } from "../context/BookingContext";
 import useBookingActions from "../hooks/useBookingActions";
 import useBookingDrawerParam from "../hooks/useBookingDrawerParam";
+import useAdminTheme from "../hooks/useAdminTheme";
 import { BookingProvider } from "../context/BookingProvider";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 import { useToastContext } from "../context/ToastContext";
@@ -38,6 +39,7 @@ const DashboardInner = () => {
   const { changeStatus } = useBookingActions();
   const { addToast } = useToastContext();
   const drawer = useBookingDrawerParam();
+  const { theme, toggleTheme } = useAdminTheme();
 
   // Fail closed: until the role doc resolves, treat the user as non-owner so
   // finance data never flashes before the role is confirmed.
@@ -106,6 +108,8 @@ const DashboardInner = () => {
         email={user?.email}
         onSignOut={handleSignOut}
         onSelectNotification={handleSelectNotification}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <div style={{ minWidth: 0 }}>
@@ -138,6 +142,8 @@ const DashboardInner = () => {
         approvalsCount={approvalsCount}
         email={user?.email}
         onSignOut={handleSignOut}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Wait for bookings to load so a deep link isn't closed as "not found" */}

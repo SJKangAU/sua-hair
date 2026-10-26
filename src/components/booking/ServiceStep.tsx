@@ -91,6 +91,11 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
 
   const selectedServices = services.filter((s) => selectedIds.includes(s.id));
   const totalTime = selectedServices.reduce((sum, s) => sum + s.totalTime, 0);
+  // Lowest tier per service: the stylist (and so the exact price) is chosen next
+  const fromPrice = selectedServices.reduce(
+    (sum, s) => sum + Math.min(s.price.director, s.price.senior, s.price.junior),
+    0,
+  );
 
   const getMinPrice = (s: FirestoreService) =>
     Math.min(s.price.director, s.price.senior, s.price.junior);
@@ -282,7 +287,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
               color: "var(--surface)",
             }}
           >
-            {totalTime} min total
+            from ${fromPrice} · {totalTime} min total
           </span>
         </div>
       )}

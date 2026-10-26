@@ -313,14 +313,40 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
         >
           Need to make changes? Call us on{" "}
           <a
-            href="tel:0395690840"
+            href={`tel:${SALON_CONFIG.salonPhone.replace(/\D/g, "")}`}
             style={{
               color: "var(--ink)",
               fontWeight: 500,
               textDecoration: "none",
             }}
           >
-            (03) 9569 0840
+            {SALON_CONFIG.salonPhone}
+          </a>
+        </p>
+
+        {/* Where to find us */}
+        <p
+          style={{
+            fontSize: "0.82rem",
+            color: "var(--grey-muted)",
+            marginTop: "-1rem",
+            marginBottom: "1.75rem",
+          }}
+        >
+          {SALON_CONFIG.salonAddress} ·{" "}
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              SALON_CONFIG.salonAddress,
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "var(--ink)",
+              fontWeight: 500,
+              textDecoration: "none",
+            }}
+          >
+            Open in Maps
           </a>
         </p>
 

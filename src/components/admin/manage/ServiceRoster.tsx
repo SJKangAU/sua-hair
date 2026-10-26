@@ -342,8 +342,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
             onClick={() => setShowForm(true)}
             style={{
               padding: "0.4rem 0.875rem",
-              background: "var(--admin-bg)",
-              color: "white",
+              background: "var(--accent)",
+              color: "var(--surface)",
               border: "none",
               borderRadius: "6px",
               fontSize: "0.82rem",
@@ -600,7 +600,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                 padding: "0.5rem 1.25rem",
                 background: submitting
                   ? "var(--admin-input-border)"
-                  : "var(--admin-bg)",
+                  : "var(--accent)",
                 color: submitting ? "var(--grey-muted)" : "var(--surface)",
                 border: "none",
                 borderRadius: "6px",

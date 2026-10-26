@@ -87,6 +87,9 @@ const useBookingAvailability = ({
   const isAnyRef = useRef(isAny);
   const stylistIdRef = useRef(stylistId);
   const dateRef = useRef(date);
+  // The month the calendar is showing, as one comparable value
+  const viewKey = `${viewYear}-${viewMonth}`;
+  const viewRef = useRef(viewKey);
   const effTotalRef = useRef(effTotal);
   const effActiveRef = useRef(effActive);
   // The phases as a stable key: a new array with the same content is not a change
@@ -107,6 +110,9 @@ const useBookingAvailability = ({
   });
   useEffect(() => {
     dateRef.current = date;
+  });
+  useEffect(() => {
+    viewRef.current = viewKey;
   });
   useEffect(() => {
     effTotalRef.current = effTotal;
@@ -320,6 +326,8 @@ const useBookingAvailability = ({
 
   const findNextAvailable = useCallback(async () => {
     const generation = ++findGeneration.current;
+    // The month on screen when the search started (see the check before applying)
+    const viewAtStart = viewRef.current;
 
     const ids = isAnyRef.current
       ? allStylistIdsRef.current
@@ -374,6 +382,10 @@ const useBookingAvailability = ({
           // while it was in flight, keep their choice - never overwrite it
           // with the suggestion (it used to jump them to a different day).
           if (dateRef.current) return;
+          // Same for the month: a customer who has paged ahead is looking at
+          // that month on purpose; applying the suggestion would snap the
+          // calendar back to the month it is in.
+          if (viewRef.current !== viewAtStart) return;
           onDateSelectRef.current(checkDate);
           onTimeSelectRef.current(firstAvail.time);
           const d = parseLocalDate(checkDate);

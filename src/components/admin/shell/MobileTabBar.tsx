@@ -6,18 +6,28 @@
 
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Ellipsis, ExternalLink, LogOut, X } from "lucide-react";
+import { Ellipsis, ExternalLink, LogOut, Moon, Sun, X } from "lucide-react";
 import CountBadge from "./CountBadge";
 import { TAB_BAR_IDS, type NavItem } from "./navItems";
+import type { AdminTheme } from "../../../hooks/useAdminTheme";
 
 interface Props {
   items: NavItem[];
   approvalsCount: number;
   email: string | null | undefined;
   onSignOut: () => void;
+  theme: AdminTheme;
+  onToggleTheme: () => void;
 }
 
-const MobileTabBar = ({ items, approvalsCount, email, onSignOut }: Props) => {
+const MobileTabBar = ({
+  items,
+  approvalsCount,
+  email,
+  onSignOut,
+  theme,
+  onToggleTheme,
+}: Props) => {
   const [moreOpen, setMoreOpen] = useState(false);
   const location = useLocation();
 
@@ -76,6 +86,7 @@ const MobileTabBar = ({ items, approvalsCount, email, onSignOut }: Props) => {
             }}
           />
           <div
+            className="adm-sheet"
             role="dialog"
             aria-label="More"
             style={{
@@ -137,6 +148,19 @@ const MobileTabBar = ({ items, approvalsCount, email, onSignOut }: Props) => {
                 <ExternalLink size={18} strokeWidth={1.75} aria-hidden="true" />
                 View booking site
               </a>
+              <button
+                className="adm-footer-btn"
+                onClick={onToggleTheme}
+                aria-pressed={theme === "dark"}
+                style={{ padding: "0.6rem 0.75rem", fontSize: "var(--text-base)" }}
+              >
+                {theme === "dark" ? (
+                  <Sun size={18} strokeWidth={1.75} aria-hidden="true" />
+                ) : (
+                  <Moon size={18} strokeWidth={1.75} aria-hidden="true" />
+                )}
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
             </div>
             <div
               style={{

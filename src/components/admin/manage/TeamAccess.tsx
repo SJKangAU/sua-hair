@@ -202,11 +202,8 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
       }
       list.sort((a, b) => (a.role === b.role ? a.email.localeCompare(b.email) : a.role === "owner" ? -1 : 1));
       setMembers(list);
-      setDraft({});
-      setCapsDraft({});
       const saved = normaliseDefaults((await getDoc(doc(db, "privateSettings", "permissions"))).get("stylistDefaults"));
       setDefaults(saved);
-      setDefaultsDraft(null);
     } catch (err) {
       console.error("TeamAccess load:", err);
       onError("Failed to load the team.");
@@ -229,6 +226,17 @@ const TeamAccess = ({ onSuccess, onError }: Props) => {
       await work();
       onSuccess(done);
       await load();
+      // Only what was just saved is reset. The reload runs after the "Saved"
+      // message, so anything the owner has started changing meanwhile in another
+      // row (or the defaults) must survive it.
+      if (key === "defaults") {
+        setDefaultsDraft(null);
+      } else {
+        const without = <T,>(all: Record<string, T>) =>
+          Object.fromEntries(Object.entries(all).filter(([k]) => k !== key));
+        setDraft(without);
+        setCapsDraft(without);
+      }
     } catch (err) {
       onError(err instanceof TeamCommandError ? err.message : "That didn't work. Please try again.");
     }

@@ -1,7 +1,8 @@
 // Modal.tsx
 // Reusable modal wrapper for the admin dashboard.
 // Bodoni Moda title, --surface panel, --border hairline header rule.
-// Closes on backdrop click and Escape key press.
+// Closes on backdrop click and Escape key press. Tab stays inside the dialog and
+// focus returns to whatever opened it (same behaviour as Drawer).
 
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
@@ -14,23 +15,47 @@ interface Props {
   width?: string;
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const Modal = ({ title, onClose, children, width = "480px" }: Props) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape key press
+  // Escape closes; Tab is kept inside the panel
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const items = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
+      );
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panelRef.current)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
   // Move focus into the dialog on open so keyboard/screen-reader users
-  // land inside it rather than on the page behind the backdrop.
+  // land inside it rather than on the page behind the backdrop; give it
+  // back to the opener on close.
   useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
     panelRef.current?.focus();
+    return () => opener?.focus?.();
   }, []);
 
   // Prevent body scroll when modal is open
