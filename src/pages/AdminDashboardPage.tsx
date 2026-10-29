@@ -7,6 +7,7 @@
 // Providers (salon data, bookings, toasts, notifications) wrap the whole shell
 // so every page shares one bookings subscription.
 
+import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { Outlet, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
@@ -27,6 +28,7 @@ import MobileTabBar from "../components/admin/shell/MobileTabBar";
 import { visibleNavItems } from "../components/admin/shell/navItems";
 import { SHELL_CSS } from "../components/admin/shell/shellStyles";
 import BookingDrawer from "../components/admin/drawer/BookingDrawer";
+import CreateBookingModal from "../components/admin/modals/CreateBookingModal";
 import type { AdminOutletContext } from "./admin/adminContext";
 import type { BookingStatus, Notification } from "../types";
 
@@ -38,6 +40,8 @@ const DashboardInner = () => {
   const { bookings, loading, setFlag } = useBookingContext();
   const { changeStatus } = useBookingActions();
   const { addToast } = useToastContext();
+  // "Book someone into this gap" from the booking drawer: the free stretch inside a processing window
+  const [gapForm, setGapForm] = useState<{ stylistId: string; date: string; time: string; gap: { start: number; end: number } } | null>(null);
   const drawer = useBookingDrawerParam();
   const { theme, toggleTheme } = useAdminTheme();
 
@@ -148,7 +152,27 @@ const DashboardInner = () => {
 
       {/* Wait for bookings to load so a deep link isn't closed as "not found" */}
       {drawer.bookingId && !loading && (
-        <BookingDrawer bookingId={drawer.bookingId} onClose={drawer.close} />
+        <BookingDrawer
+          bookingId={drawer.bookingId}
+          onClose={drawer.close}
+          onBookGap={(b, w) => {
+            // the form opens on its own, not underneath the drawer
+            drawer.close();
+            setGapForm({ stylistId: b.stylistId, date: b.date, time: w.from, gap: { start: w.start, end: w.end } });
+          }}
+        />
+      )}
+
+      {gapForm && (
+        <CreateBookingModal
+          prefillStylistId={gapForm.stylistId}
+          prefillDate={gapForm.date}
+          prefillTime={gapForm.time}
+          gap={gapForm.gap}
+          onClose={() => setGapForm(null)}
+          onSuccess={(msg) => addToast(msg, "success")}
+          onError={(msg) => addToast(msg, "error")}
+        />
       )}
     </div>
   );

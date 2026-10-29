@@ -9,6 +9,8 @@
 import { useState } from "react";
 import { Flag, StickyNote } from "lucide-react";
 import Badge from "../../ui/Badge";
+import { FreeWindowChip } from "../../ui/ProcessingNote";
+import { bookingFreeWindows } from "../../../lib/processingWindow";
 import StatusActionButtons from "./StatusActionButtons";
 import type { Booking, BookingStatus } from "../../../types";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
@@ -176,11 +178,9 @@ const BookingCard = ({
               Request to move a booking (now {booking.replacesSummary})
             </p>
           )}
-          {booking.restTime > 0 && (
-            <p style={{ color: "var(--grey-muted)", fontSize: "0.72rem", margin: 0 }}>
-              {booking.activeTime}min + {booking.restTime}min setting
-              {booking.returnTime && ` · returns ${booking.returnTime}`}
-            </p>
+          {/* Processing time: the stylist is free then and can take another client */}
+          {booking.restTime > 0 && booking.status !== "cancelled" && booking.status !== "no_show" && (
+            <FreeWindowChip windows={bookingFreeWindows(booking)} />
           )}
         </div>
 

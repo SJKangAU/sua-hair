@@ -53,6 +53,7 @@ import {
 import { buildHistoryView } from "../../../lib/bookingHistory";
 import { resolvePhases, segmentsFor } from "../../../lib/bookingPhases";
 import { planPhaseEdit } from "../../../lib/phaseEdit";
+import { freeWindowSentence, freeWindows, type FreeWindow } from "../../../lib/processingWindow";
 import { BookingConflictError } from "../../../lib/bookingConflicts";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { formatDisplayDate } from "../../../lib/dates";
@@ -61,6 +62,8 @@ import type { Booking, BookingStatus, Phase } from "../../../types";
 interface Props {
   bookingId: string;
   onClose: () => void;
+  // "Book someone into this gap": the page opens the new-booking form for the stylist and the free window
+  onBookGap?: (booking: Booking, window: FreeWindow) => void;
 }
 
 // The four check-in steps shown as a button row
@@ -164,7 +167,7 @@ const filledButton: React.CSSProperties = {
 
 // Looks the booking up live so every optimistic update (status, move, notes,
 // timings) shows straight away; renders nothing if it no longer exists.
-const BookingDrawer = ({ bookingId, onClose }: Props) => {
+const BookingDrawer = ({ bookingId, onClose, onBookGap }: Props) => {
   const { bookings } = useBookingContext();
   const booking = bookings.find((b) => b.id === bookingId);
 
@@ -173,15 +176,17 @@ const BookingDrawer = ({ bookingId, onClose }: Props) => {
   }, [booking, onClose]);
 
   if (!booking) return null;
-  return <DrawerContent key={booking.id} booking={booking} onClose={onClose} />;
+  return <DrawerContent key={booking.id} booking={booking} onClose={onClose} onBookGap={onBookGap} />;
 };
 
 const DrawerContent = ({
   booking,
   onClose,
+  onBookGap,
 }: {
   booking: Booking;
   onClose: () => void;
+  onBookGap?: Props["onBookGap"];
 }) => {
   const { bookings, updatePhases, updateNotes } = useBookingContext();
   const { salonSettings } = useSalonData();
@@ -252,6 +257,8 @@ const DrawerContent = ({
       ? shownSegments[shownSegments.length - 1].end
       : startMinutes,
   );
+  const gapWindows = freeWindows(booking.time, shownPhases);
+  const gapOpen = ["pending", "confirmed", "arrived", "in_service"].includes(booking.status);
   const firstRest = shownSegments.find((seg) => seg.type === "rest");
   const returnTime = firstRest ? minutesToTimeString(firstRest.end) : undefined;
 
@@ -623,6 +630,41 @@ const DrawerContent = ({
           </div>
 
           <PhaseBar phases={shownPhases} returnTime={returnTime} />
+
+          {/* The stylist is free while the product processes: say so, and offer the gap */}
+          {gapOpen &&
+            gapWindows.map((w) => (
+              <div
+                key={w.start}
+                data-testid="drawer-free-window"
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "0.5rem 1rem",
+                  marginTop: "0.75rem",
+                  padding: "0.6rem 0.75rem",
+                  border: "1px solid var(--border-strong)",
+                  borderRadius: 8,
+                  background: "var(--surface-raised)",
+                  fontSize: "var(--text-sm)",
+                  color: "var(--ink)",
+                }}
+              >
+                <span style={{ minWidth: 0 }}>{freeWindowSentence(w)}</span>
+                {onBookGap && (
+                  <button
+                    type="button"
+                    data-testid="book-into-gap"
+                    onClick={() => onBookGap(booking, w)}
+                    style={{ ...outlinedButton, width: "auto", whiteSpace: "nowrap" }}
+                  >
+                    Book someone into this gap
+                  </button>
+                )}
+              </div>
+            ))}
 
           {canEditPhases && (
             <div style={{ marginTop: "1rem" }}>

@@ -480,6 +480,7 @@ const BookingForm = () => {
           time={time}
           estimatedTotalDisplay={estimatedTotalDisplay}
           totalTime={totalTime}
+          phases={phases}
           onConfirm={() => {
             setShowSummarySheet(false);
             goTo(3);

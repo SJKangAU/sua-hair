@@ -12,6 +12,9 @@
 // self-contained and does not depend on BookingForm's ANIM_CSS block.
 
 import { parseLocalDate } from "../../lib/dates";
+import type { Phase } from "../../lib/bookingPhases";
+import { freeWindows } from "../../lib/processingWindow";
+import { ProcessingExplainer } from "../ui/ProcessingNote";
 
 const SHEET_CSS = `
   @keyframes bkSheetUp {
@@ -38,6 +41,8 @@ interface Props {
   time: string;
   estimatedTotalDisplay: string; // "$120" or "$120 – $180"
   totalTime: number;
+  // the booking's phases, to explain the setting time with clock times
+  phases?: readonly Phase[];
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -49,6 +54,7 @@ const BookingSummarySheet = ({
   time,
   estimatedTotalDisplay,
   totalTime,
+  phases,
   onConfirm,
   onClose,
 }: Props) => {
@@ -217,6 +223,13 @@ const BookingSummarySheet = ({
               </div>
             ))}
           </div>
+
+          {phases &&
+            freeWindows(time, phases).map((w) => (
+              <div key={w.start} style={{ marginBottom: "1.25rem" }}>
+                <ProcessingExplainer window={w} />
+              </div>
+            ))}
 
           {/* Total */}
           <div

@@ -16,6 +16,7 @@ import { timeStringToMinutes } from "../../../lib/scheduling";
 import { todayString } from "../../../lib/dates";
 import SearchBar from "./SearchBar";
 import BulkActions from "./BulkActions";
+import { FreeWindowLegend } from "../../ui/ProcessingNote";
 import type { Booking, BookingStatus } from "../../../types";
 import { filterBookings, type Filters } from "../../../lib/bookingFilters";
 
@@ -200,6 +201,13 @@ const BookingTable = ({ bookings, filters, onUpdate, onSetFlag }: Props) => {
         onCancelAll={handleBulkCancel}
         onClearSelection={handleClearSelection}
       />
+
+      {/* What the hatched "Stylist free" chips mean */}
+      {visible.some((b) => b.restTime > 0 && b.status !== "cancelled" && b.status !== "no_show") && (
+        <div style={{ padding: "0 1.25rem" }}>
+          <FreeWindowLegend />
+        </div>
+      )}
 
       {/* Select all row */}
       {visible.length > 0 && (

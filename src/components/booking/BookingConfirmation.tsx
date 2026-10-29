@@ -9,6 +9,9 @@
 //   Apple / Outlook — downloads an .ics file (downloadICSFile)
 
 import { getGoogleCalendarLink, downloadICSFile } from "../../lib/calendar";
+import { phasesFromLegacy } from "../../lib/bookingPhases";
+import { freeWindows } from "../../lib/processingWindow";
+import { ProcessingExplainer } from "../ui/ProcessingNote";
 import { parseLocalDate } from "../../lib/dates";
 import { SALON_CONFIG } from "../../lib/config";
 import type { BookingRequestResult } from "../../lib/bookingApi";
@@ -208,27 +211,12 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
             </span>
           </div>
 
-          {result.restTime > 0 && (
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--grey-muted)",
-                marginTop: "0.75rem",
-                marginBottom: 0,
-              }}
-            >
-              {result.activeTime} min active + {result.restTime} min setting
-              time
-              {result.returnTime && (
-                <>
-                  {" — "}
-                  <strong style={{ color: "var(--ink)" }}>
-                    back with you by {result.returnTime}
-                  </strong>
-                </>
-              )}
-            </p>
-          )}
+          {result.restTime > 0 &&
+            freeWindows(result.time, phasesFromLegacy(result.activeTime, result.restTime, result.totalTime)).map((w) => (
+              <div key={w.start} style={{ marginTop: "0.75rem" }}>
+                <ProcessingExplainer window={w} />
+              </div>
+            ))}
         </div>
 
         {/* Calendar buttons */}
