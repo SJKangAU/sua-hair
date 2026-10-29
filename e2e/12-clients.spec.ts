@@ -17,6 +17,8 @@ test.describe.configure({ mode: "serial" });
 const TODAY = todayIso();
 const ago = (days: number) => addDaysIso(TODAY, -days);
 const ahead = (days: number) => addDaysIso(TODAY, days);
+// Jade Lee's birthday falls three days from now (MM-DD)
+const BIRTHDAY = ahead(3).slice(5);
 
 interface Visit {
   id: string;
@@ -60,6 +62,8 @@ interface ClientSeed {
   blockReason?: string;
   createdAt?: string;
   email?: string;
+  // profile details the owner has recorded by hand
+  profile?: { allergies?: string; pronouns?: string; birthday?: string; preferredContact?: "text" | "call" | "email" };
 }
 
 /**
@@ -84,6 +88,7 @@ async function seedClients(list: ClientSeed[]): Promise<void> {
             blocked: c.blocked === true,
             ...(c.blockReason ? { blockReason: c.blockReason } : {}),
             ...(c.email ? { email: c.email } : {}),
+            ...(c.profile ?? {}),
             name: c.name,
             source: "online",
             createdAt: c.createdAt ?? "2025-01-01T00:00:00.000Z",
@@ -113,6 +118,7 @@ async function seedClients(list: ClientSeed[]): Promise<void> {
 const CLIENTS: ClientSeed[] = [
   {
     phone: "0400000001", name: "Jade Lee", email: "jade.lee@example.test",
+    profile: { allergies: "PPD allergy, sensitive scalp", pronouns: "she/her", birthday: BIRTHDAY, preferredContact: "text" },
     visits: [
       { id: "j1", date: ago(60) },
       { id: "j2", date: ago(10), price: 80 },
@@ -323,7 +329,7 @@ test("TC-104 anonymising shows how many bookings it affects, then removes the pe
 test("TC-105 filters: lapsed, new, blocked, has a booking, has no-shows", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
   await openClients(page);
-  const names = async () => (await page.getByTestId("client-row").allInnerTexts()).map((t) => t.split("\n")[0].replace(/\s*Blocked$/, ""));
+  const names = async () => await page.getByTestId("client-row-name").allInnerTexts();
 
   await page.getByTestId("filter-lapsed").click(); // visited, but not in the last 90 days
   await expect(row(page, "Sam Walker")).toBeVisible();
@@ -406,6 +412,10 @@ test("TC-107 a stylist sees only their own clients, no spend, no blocked reason;
   await expect(page.getByTestId("client-name")).toHaveText("Jade Lee");
   await expect(page.getByTestId("history-row")).toHaveCount(3); // their own bookings with her
   await expect(page.getByTestId("client-stats")).toHaveCount(0); // no total spend
+  await expect(page.getByTestId("allergy-banner")).toContainText("PPD allergy"); // safety information reaches the stylist
+  await expect(page.getByTestId("client-pronouns")).toHaveText("she/her");
+  await expect(page.getByTestId("contact-card")).toHaveCount(0); // birthday and consent are the owner's
+  await expect(page.getByTestId("client-birthday")).toHaveCount(0);
   await expect(page.getByTestId("client-housekeeping")).toHaveCount(0);
   await expect(page.getByTestId("book-again")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("Total spend");
@@ -424,6 +434,87 @@ test("TC-107 a stylist sees only their own clients, no spend, no blocked reason;
   await expect(page.getByTestId("blocked-badge")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("Private reason");
   await context.close();
+});
+
+test("TC-150 the list opens with a summary strip whose numbers match the filters, and rows show who needs attention", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await openClients(page);
+  const strip = page.getByTestId("client-summary");
+  await expect(strip.getByTestId("summary-all-count")).toHaveText(String(CLIENTS.length));
+  await expect(strip.getByTestId("summary-lapsed-count")).toHaveText("1");
+  await expect(strip.getByTestId("summary-new-count")).toHaveText("1");
+  await expect(strip.getByTestId("summary-blocked-count")).toHaveText("1");
+  // a tile is a shortcut to its filter
+  await strip.getByTestId("summary-lapsed").click();
+  await expect(page.getByTestId("filter-lapsed")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("client-row")).toHaveCount(1);
+  await expect(row(page, "Sam Walker")).toContainText("Lapsed");
+  await expect(row(page, "Sam Walker")).toContainText("1 no-show");
+  await strip.getByTestId("summary-all").click();
+  // rows: an allergy flag, and how long since the last visit
+  await expect(row(page, "Jade Lee").getByTestId("allergy-badge")).toBeVisible();
+  await expect(row(page, "Rae Lee").getByTestId("allergy-badge")).toHaveCount(0);
+  await expect(row(page, "Rae Lee")).toContainText("Last seen 5 days ago");
+  await expect(row(page, "Nia Newcomer")).toContainText("New");
+  await page.context().close();
+});
+
+test("TC-151 the client page shows the allergy banner, profile details, figures in groups, recent notes and consent", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await page.goto("/admin/clients/0400000001");
+  await expect(page.getByTestId("client-name")).toHaveText("Jade Lee");
+  await expect(page.getByTestId("client-pronouns")).toHaveText("she/her");
+  await expect(page.getByTestId("allergy-banner")).toContainText("PPD allergy, sensitive scalp");
+  await expect(page.getByTestId("client-birthday")).toContainText("(in 3 days)");
+  await expect(page.getByTestId("contact-preferred")).toHaveText("Text");
+  await expect(page.getByTestId("contact-source")).toHaveText("Booked online");
+  await expect(page.getByTestId("contact-texts")).toHaveText("On");
+  await expect(page.getByTestId("contact-invited")).toHaveText("Never");
+  // the figures, grouped, with the ones that were already there
+  await expect(page.getByTestId("stat-spend")).toHaveText("$155");
+  await expect(page.getByTestId("stat-noshow-rate")).toHaveText("0%");
+  // a note shows at the top as well as in the notes list lower down, pinned first
+  await expect(page.getByTestId("notes-preview")).toContainText("No notes yet");
+  await page.getByTestId("note-input").fill("Prefers mornings");
+  await page.getByTestId("note-add").click();
+  await page.getByTestId("note-input").fill("Likes a quiet chair");
+  await page.getByTestId("note-add").click();
+  await expect(page.getByTestId("note")).toHaveCount(2);
+  await expect(page.getByTestId("note-preview")).toHaveCount(2);
+  await page.getByTestId("note").nth(1).getByTestId("note-pin").click();
+  await expect(page.getByTestId("note-preview").first()).toContainText("Prefers mornings");
+  await page.context().close();
+});
+
+test("TC-152 the owner edits allergies, pronouns, birthday and preferred contact; a bad birthday is refused", async ({ browser }) => {
+  const { page } = await newAdminPage(browser);
+  await page.goto("/admin/clients/0400000003"); // Rae Lee, nothing recorded yet
+  await expect(page.getByTestId("allergy-banner")).toHaveCount(0);
+  await page.getByTestId("hk-edit").click();
+  await page.getByTestId("edit-allergies").fill("Latex");
+  await page.getByTestId("edit-pronouns").fill("they/them");
+  await page.getByTestId("edit-birthday").fill("31/04"); // there is no 31 April
+  await page.getByTestId("edit-contact").selectOption("call");
+  await page.getByTestId("edit-save").click();
+  await expect(page.getByText("That birthday isn't a real date.")).toBeVisible();
+  await page.getByTestId("edit-birthday").fill("12/03");
+  await page.getByTestId("edit-save").click();
+  await expect(page.getByTestId("allergy-banner")).toContainText("Latex");
+  await expect(page.getByTestId("client-pronouns")).toHaveText("they/them");
+  await expect(page.getByTestId("contact-preferred")).toHaveText("Call");
+  await expect(page.getByTestId("contact-birthday")).toHaveText("12 March");
+  // the stylist-visible card carries the allergy, and nothing private
+  await expect
+    .poll(async () => (await readCollection("clientCards")).find((c) => c.id === "0400000003"))
+    .toMatchObject({ allergies: "Latex", pronouns: "they/them" });
+  const card = (await readCollection("clientCards")).find((c) => c.id === "0400000003");
+  expect(JSON.stringify(card)).not.toMatch(/birthday|03-12|call/);
+  // clearing the allergy field removes it
+  await page.getByTestId("hk-edit").click();
+  await page.getByTestId("edit-allergies").fill("");
+  await page.getByTestId("edit-save").click();
+  await expect(page.getByTestId("allergy-banner")).toHaveCount(0);
+  await page.context().close();
 });
 
 test("TC-108 import then directory: imported clients appear with no history; rollback removes them; an existing client is untouched", async ({ browser }) => {

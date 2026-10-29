@@ -20,6 +20,7 @@
 
 import {
   collection,
+  getCountFromServer,
   getDocs,
   limit,
   orderBy,
@@ -214,4 +215,32 @@ export const fetchCardPage = async (
 ): Promise<DirectoryPage<ClientCard>> => {
   const full: DirectoryQuery = { search: q.search, filter: "all", sort: "name", today: "" };
   return fetchPlans<Omit<ClientCard, "id">>(db, "clientCards", plansFor(full, scope), cursor);
+};
+
+// ── Counts for the summary strip (owner) ────────────────────────────────────
+// Four count queries (no documents read): the same conditions as the filters, so a
+// number on the strip is the number the filter then lists.
+
+export interface DirectoryCounts {
+  total: number;
+  lapsed: number;
+  newlyAdded: number;
+  blocked: number;
+}
+
+export const fetchDirectoryCounts = async (
+  db: Firestore,
+  today: string,
+  lapsedDays = LAPSED_DAYS,
+): Promise<DirectoryCounts> => {
+  const clients = collection(db, "clients");
+  const count = async (...constraints: QueryConstraint[]) =>
+    (await getCountFromServer(query(clients, ...constraints))).data().count;
+  const [total, lapsed, newlyAdded, blocked] = await Promise.all([
+    count(),
+    count(where("lastVisit", ">", ""), where("lastVisit", "<", addDaysToDate(today, -lapsedDays))),
+    count(where("createdAt", ">=", addDaysToDate(today, -NEW_DAYS))),
+    count(where("blocked", "==", true)),
+  ]);
+  return { total, lapsed, newlyAdded, blocked };
 };

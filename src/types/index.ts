@@ -331,6 +331,7 @@ export interface WaitlistEntry {
 // is the slim staff-readable copy a stylist may open for their own clients.
 
 export type ClientSource = "online" | "walk-in" | "fresha-import";
+export type PreferredContact = "text" | "call" | "email";
 
 // Figures worked out from the client's bookings (src/lib/clients.ts). Always
 // recomputable from the bookings; kept up to date by the booking functions and a
@@ -375,6 +376,11 @@ export interface Client extends ClientSummary {
   // The secret in the unsubscribe link in a win-back message, and when they were last invited back
   marketingToken?: string;
   winBackSentAt?: string;
+  // Profile details the owner records by hand (bookings never overwrite them)
+  birthday?: string; // "MM-DD", or "YYYY-MM-DD" when the year is known
+  pronouns?: string;
+  preferredContact?: PreferredContact;
+  allergies?: string; // allergies / sensitivities; also on the card, so stylists see it
   source: ClientSource;
   createdAt: string;
   updatedAt: string;
@@ -391,6 +397,8 @@ export interface ClientCard {
   stylistIds: string[];
   blocked: boolean;
   tags: string[];
+  allergies?: string; // safety information: a stylist must see it
+  pronouns?: string;
 }
 
 // clients/{id}/notes/{noteId}: append-only, so staff can see who wrote what

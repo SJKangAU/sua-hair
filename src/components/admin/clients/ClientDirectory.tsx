@@ -1,19 +1,24 @@
 // ClientDirectory.tsx
 // The client list: a search box, filters, a sort, and 25 clients at a time (a table
 // on a wide screen, cards on a phone). One component for both roles:
-//   owner    name, phone, last visit, next booking, visits, spend, tags, blocked
-//   stylist  name, phone, tags - their own clients, plus a colleague's or everyone's when
+//   owner    a summary strip, then name (with status badges), phone, last visit, next booking,
+//            visits, spend, tags
+//   stylist  name (allergy badge), phone, tags - their own clients, plus a colleague's or everyone's when
 //            the owner has allowed it (a picker appears), no spend
 // Clicking a client calls onOpen(id) (a drawer, or the full page).
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Ban, Search, Send, Users } from "lucide-react";
+import { Ban, Search, Send, TriangleAlert, Users } from "lucide-react";
 import useClientDirectory from "../../../hooks/useClientDirectory";
-import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
+import Avatar from "../../ui/Avatar";
+import ClientSummaryStrip from "./ClientSummaryStrip";
+import { businessToday } from "../../../lib/businessTime";
+import { fmtDate, fmtMoney, sinceLabel } from "../../../lib/clientFormat";
 import { scopeOptions, type ClientAccess } from "../../../lib/clientAccess";
 import {
   LAPSED_DAYS,
   NEW_DAYS,
+  matchesFilter,
   type DirectoryFilter,
   type DirectorySort,
 } from "../../../lib/clients";
@@ -69,6 +74,9 @@ const CSS = `
   }
   .cd-row:hover { background: var(--surface-raised); }
   .cd-row:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .cd-skeleton { height: 14px; border-radius: 6px; background: var(--surface-raised); animation: cd-pulse 1.4s ease-in-out infinite; }
+  @keyframes cd-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+  @media (prefers-reduced-motion: reduce) { .cd-skeleton { animation: none; } }
   .cd-label { display: none; color: var(--ink-muted); font-size: var(--text-xs); }
   @media (max-width: 760px) {
     .cd-head { display: none; }
@@ -105,6 +113,13 @@ const badge: React.CSSProperties = {
   fontWeight: 600,
 };
 
+const softBadge: React.CSSProperties = {
+  ...badge,
+  border: "1px solid var(--border-strong)",
+  fontWeight: 500,
+  color: "var(--ink-soft)",
+};
+
 const isFull = (c: Client | ClientCard): c is Client => "totalVisits" in c;
 
 const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initialSearch = "", onInviteBack }: Props) => {
@@ -124,11 +139,14 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
     setSearch(initialSearch);
   }, [initialSearch, setSearch]);
   const owner = role === "owner";
+  const today = businessToday();
   const sortable = owner && d.filter === "all" && !d.searching;
 
   return (
     <div data-testid="client-directory" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <style>{CSS}</style>
+
+      {owner && <ClientSummaryStrip filter={d.filter} onPick={d.setFilter} />}
 
       <div style={{ position: "relative" }}>
         <Search
@@ -243,9 +261,24 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
       )}
 
       {d.loading && (
-        <p role="status" style={{ textAlign: "center", color: "var(--ink-muted)", margin: "1.5rem 0" }}>
-          Loading clients...
-        </p>
+        <div style={{ border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface)", overflow: "hidden" }}>
+          <p role="status" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", margin: 0 }}>
+            Loading clients...
+          </p>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              aria-hidden="true"
+              style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.8rem 1rem", borderTop: i ? "1px solid var(--border)" : "none" }}
+            >
+              <span className="cd-skeleton" style={{ width: 36, height: 36, borderRadius: "50%" }} />
+              <span style={{ flex: 1, display: "grid", gap: 6 }}>
+                <span className="cd-skeleton" style={{ width: `${40 + ((i * 17) % 30)}%` }} />
+                <span className="cd-skeleton" style={{ width: "25%", height: 10 }} />
+              </span>
+            </div>
+          ))}
+        </div>
       )}
 
       {!d.loading && !d.error && d.items.length === 0 && (
@@ -299,13 +332,35 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
                   data-testid="client-row"
                   onClick={() => onOpen(c.id)}
                 >
-                  <span className="cd-name" style={{ fontWeight: 600, display: "flex", gap: "0.5rem", alignItems: "center", minWidth: 0 }}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-                    {c.blocked && (
-                      <span style={badge} title="Blocked">
-                        <Ban size={11} aria-hidden="true" /> Blocked
+                  <span className="cd-name" style={{ display: "flex", gap: "0.65rem", alignItems: "center", minWidth: 0 }}>
+                    <Avatar name={c.name} size={36} />
+                    <span style={{ display: "grid", gap: 2, minWidth: 0 }}>
+                      <span style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", minWidth: 0 }}>
+                        <span data-testid="client-row-name" style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                        {c.blocked && (
+                          <span style={badge} title="Blocked">
+                            <Ban size={11} aria-hidden="true" /> Blocked
+                          </span>
+                        )}
+                        {c.allergies && (
+                          <span style={{ ...badge, borderColor: "var(--error)", color: "var(--error)" }} title={c.allergies} data-testid="allergy-badge">
+                            <TriangleAlert size={11} aria-hidden="true" /> Allergy
+                          </span>
+                        )}
+                        {owner && isFull(c) && matchesFilter(c, "new", today) && <span style={softBadge}>New</span>}
+                        {owner && isFull(c) && matchesFilter(c, "lapsed", today) && <span style={softBadge}>Lapsed</span>}
+                        {owner && isFull(c) && c.noShowCount > 0 && (
+                          <span style={softBadge}>
+                            {c.noShowCount} no-show{c.noShowCount === 1 ? "" : "s"}
+                          </span>
+                        )}
                       </span>
-                    )}
+                      {owner && isFull(c) && c.lastVisit && (
+                        <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-muted)" }}>
+                          Last seen {sinceLabel(c.lastVisit, today)}
+                        </span>
+                      )}
+                    </span>
                   </span>
                   <span>
                     <span className="cd-label">Mobile</span>

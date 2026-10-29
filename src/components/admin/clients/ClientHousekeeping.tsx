@@ -20,7 +20,8 @@ import {
   mergeClients,
   recomputeClients,
 } from "../../../lib/clientCommands";
-import type { Client } from "../../../types";
+import { MAX_ALLERGIES, MAX_PRONOUNS } from "../../../lib/clients";
+import type { Client, PreferredContact } from "../../../types";
 
 type Dialog = null | "edit" | "block" | "merge" | "anonymise" | "marketing";
 
@@ -73,13 +74,17 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
   const [name, setName] = useState(client.name);
   const [email, setEmail] = useState(client.email ?? "");
   const [tags, setTags] = useState(client.tags.join(", "));
+  const [birthday, setBirthday] = useState(client.birthday ?? "");
+  const [pronouns, setPronouns] = useState(client.pronouns ?? "");
+  const [preferredContact, setPreferredContact] = useState<PreferredContact | "">(client.preferredContact ?? "");
+  const [allergies, setAllergies] = useState(client.allergies ?? "");
   const saveDetails = async () => {
     setBusy(true);
     try {
       await saveClientDetails(
         db,
         client.id,
-        { name, email, tags: cleanTags(tags.split(",")) },
+        { name, email, tags: cleanTags(tags.split(",")), birthday, pronouns, preferredContact, allergies },
         client.aliases,
         actor,
         name.trim() !== client.name,
@@ -87,7 +92,8 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
       setDialog(null);
       onDone("Details saved.");
     } catch (err) {
-      onError(err instanceof Error && err.message === "A name is required." ? err.message : "Couldn't save the details.");
+      const known = err instanceof Error && ["A name is required.", "That birthday isn't a real date."].includes(err.message);
+      onError(known ? (err as Error).message : "Couldn't save the details.");
     }
     setBusy(false);
   };
@@ -96,6 +102,10 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
     setName(client.name);
     setEmail(client.email ?? "");
     setTags(client.tags.join(", "));
+    setBirthday(client.birthday ?? "");
+    setPronouns(client.pronouns ?? "");
+    setPreferredContact(client.preferredContact ?? "");
+    setAllergies(client.allergies ?? "");
     setDialog("edit");
   };
 
@@ -276,6 +286,36 @@ const ClientHousekeeping = ({ client, actor, onDone, onError, onGone }: Props) =
             Tags (separated by commas)
             <input style={field} value={tags} onChange={(e) => setTags(e.target.value)} placeholder="vip, colour client" data-testid="edit-tags" />
           </label>
+          <label style={{ display: "block", marginBottom: "1rem" }}>
+            Allergies / sensitivities (stylists see this)
+            <textarea
+              style={{ ...field, minHeight: "4rem", resize: "vertical" }}
+              value={allergies}
+              maxLength={MAX_ALLERGIES}
+              onChange={(e) => setAllergies(e.target.value)}
+              placeholder="e.g. PPD allergy, sensitive scalp"
+              data-testid="edit-allergies"
+            />
+          </label>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+            <label style={{ flex: "1 1 130px" }}>
+              Birthday
+              <input style={field} value={birthday} onChange={(e) => setBirthday(e.target.value)} placeholder="12/03 or 1990-03-12" data-testid="edit-birthday" />
+            </label>
+            <label style={{ flex: "1 1 130px" }}>
+              Pronouns
+              <input style={field} value={pronouns} maxLength={MAX_PRONOUNS} onChange={(e) => setPronouns(e.target.value)} placeholder="she/her" data-testid="edit-pronouns" />
+            </label>
+            <label style={{ flex: "1 1 130px" }}>
+              Prefers
+              <select style={field} value={preferredContact} onChange={(e) => setPreferredContact(e.target.value as PreferredContact | "")} data-testid="edit-contact">
+                <option value="">No preference</option>
+                <option value="text">Text</option>
+                <option value="call">Call</option>
+                <option value="email">Email</option>
+              </select>
+            </label>
+          </div>
           <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-muted)" }}>
             The mobile number identifies the client and can't be changed here. A name you set stays, even if a later booking uses a different spelling.
           </p>

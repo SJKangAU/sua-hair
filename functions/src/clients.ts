@@ -135,6 +135,10 @@ const manualOf = (data: FirebaseFirestore.DocumentData | undefined, lookupBlocke
   ...(data?.source ? { source: data.source as ClientSource } : {}),
   ...(data?.createdAt ? { createdAt: data.createdAt as string } : {}),
   ...(Array.isArray(data?.aliases) ? { aliases: data!.aliases as string[] } : {}),
+  ...(typeof data?.birthday === "string" && data.birthday ? { birthday: data.birthday as string } : {}),
+  ...(typeof data?.pronouns === "string" && data.pronouns ? { pronouns: data.pronouns as string } : {}),
+  ...(typeof data?.preferredContact === "string" ? { preferredContact: data.preferredContact as ClientManual["preferredContact"] } : {}),
+  ...(typeof data?.allergies === "string" && data.allergies ? { allergies: data.allergies as string } : {}),
 });
 
 const clientRef = (db: Firestore, id: string): DocumentReference => db.doc(`clients/${id}`);
@@ -408,6 +412,13 @@ export const mergeClientsCore = async (
     // marketing: the latest agreement, and the latest unsubscribe, of the two records
     ...mergedMarketing(kept, gone),
     ...(gone.blocked === true && !kept.blockReason && gone.blockReason ? { blockReason: gone.blockReason } : {}),
+    // profile details: the kept client's own win; allergies are joined so none is lost
+    ...(!kept.birthday && gone.birthday ? { birthday: gone.birthday } : {}),
+    ...(!kept.pronouns && gone.pronouns ? { pronouns: gone.pronouns } : {}),
+    ...(!kept.preferredContact && gone.preferredContact ? { preferredContact: gone.preferredContact } : {}),
+    ...(gone.allergies && gone.allergies !== kept.allergies
+      ? { allergies: [kept.allergies, gone.allergies].filter(Boolean).join("; ").slice(0, 500) }
+      : {}),
   });
   await db.doc(`customerLookups/${mergeId}`).delete().catch(() => undefined);
   await Promise.all([clientRef(db, mergeId).delete(), cardRef(db, mergeId).delete()]);

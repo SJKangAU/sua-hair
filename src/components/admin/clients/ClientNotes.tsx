@@ -6,13 +6,14 @@
 import { useState } from "react";
 import { Pin, PinOff, Trash2 } from "lucide-react";
 import { db } from "../../../lib/firebase";
-import { useClientNotes } from "../../../hooks/useClientData";
 import { MAX_NOTE_LENGTH, addNote, deleteNote, setNotePinned, type Actor } from "../../../lib/clientActions";
 import { businessDateOf } from "../../../lib/businessTime";
 import { fmtDate } from "../../../lib/clientFormat";
+import type { ClientNote } from "../../../types";
 
 interface Props {
   clientId: string;
+  notes: ClientNote[];
   actor: Actor;
   isOwner: boolean;
   onError: (message: string) => void;
@@ -27,8 +28,7 @@ const iconButton: React.CSSProperties = {
   display: "inline-flex",
 };
 
-const ClientNotes = ({ clientId, actor, isOwner, onError }: Props) => {
-  const notes = useClientNotes(clientId);
+const ClientNotes = ({ clientId, notes, actor, isOwner, onError }: Props) => {
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -49,7 +49,7 @@ const ClientNotes = ({ clientId, actor, isOwner, onError }: Props) => {
   };
 
   return (
-    <section aria-labelledby="client-notes-heading" data-testid="client-notes">
+    <section id="client-notes" aria-labelledby="client-notes-heading" data-testid="client-notes">
       <h3 id="client-notes-heading" style={{ fontSize: "1rem", fontWeight: 600, margin: "0 0 0.6rem" }}>
         Notes
       </h3>

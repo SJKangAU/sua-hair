@@ -26,6 +26,7 @@ import type {
   ClientCard,
   ClientSource,
   ClientSummary,
+  PreferredContact,
 } from "../types";
 
 // ── Identity ─────────────────────────────────────────────────────────────────
@@ -256,9 +257,41 @@ export interface ClientManual {
   source?: ClientSource;
   createdAt?: string;
   aliases?: string[];
+  birthday?: string;
+  pronouns?: string;
+  preferredContact?: PreferredContact;
+  allergies?: string;
 }
 
 export const MAX_ALIASES = 10;
+export const MAX_ALLERGIES = 500;
+export const MAX_PRONOUNS = 30;
+export const PREFERRED_CONTACTS: readonly PreferredContact[] = ["text", "call", "email"];
+
+// "12/03" (day/month), "12-03", "1990-03-12" or "" -> "MM-DD" / "YYYY-MM-DD" / ""; null when not a real date
+export const cleanBirthday = (raw: string): string | null => {
+  const v = raw.trim();
+  if (!v) return "";
+  const full = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  const short = /^(\d{1,2})[-/](\d{1,2})$/.exec(v);
+  // a leap year for the short form, so 29 Feb is allowed
+  const [year, month, day] = full
+    ? [Number(full[1]), Number(full[2]), Number(full[3])]
+    : short
+      ? [2000, Number(short[2]), Number(short[1])]
+      : [0, 0, 0];
+  if (!month) return null;
+  const d = new Date(Date.UTC(year, month - 1, day));
+  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return null;
+  const mm = String(month).padStart(2, "0");
+  const dd = String(day).padStart(2, "0");
+  return full ? `${year}-${mm}-${dd}` : `${mm}-${dd}`;
+};
+
+// Free text for the profile fields: one line, trimmed, capped
+export const cleanProfileText = (raw: string, max: number): string =>
+  // eslint-disable-next-line no-control-regex
+  raw.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 export const DELETED_NAME = "Deleted Customer";
 
 const sourceOf = (bookings: ProfileBooking[]): ClientSource => {
@@ -318,6 +351,10 @@ export const buildClient = (
   if (manual.winBackSentAt) client.winBackSentAt = manual.winBackSentAt;
   if (email) client.email = email;
   if (manual.blocked && manual.blockReason) client.blockReason = manual.blockReason;
+  if (manual.birthday) client.birthday = manual.birthday;
+  if (manual.pronouns) client.pronouns = manual.pronouns;
+  if (manual.preferredContact) client.preferredContact = manual.preferredContact;
+  if (manual.allergies) client.allergies = manual.allergies;
   return client;
 };
 
@@ -331,6 +368,8 @@ export const clientCardOf = (client: Omit<Client, "id">, id: string): ClientCard
   stylistIds: client.stylistIds,
   blocked: client.blocked,
   tags: client.tags,
+  ...(client.allergies ? { allergies: client.allergies } : {}),
+  ...(client.pronouns ? { pronouns: client.pronouns } : {}),
 });
 
 // ── Directory filters ────────────────────────────────────────────────────────

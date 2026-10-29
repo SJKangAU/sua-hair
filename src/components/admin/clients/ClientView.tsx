@@ -10,16 +10,21 @@
 // "Book again" opens the create-booking form with the client filled in.
 
 import { useState } from "react";
-import { Ban, CalendarPlus, Mail, MailCheck, MailX, MessageSquareOff, Phone } from "lucide-react";
+import { Ban, CalendarPlus, Mail, MailCheck, MailX, MessageSquareOff, Phone, TriangleAlert } from "lucide-react";
 import { auth } from "../../../lib/firebase";
-import { useClientAudit, useClientRecord } from "../../../hooks/useClientData";
+import { useClientAudit, useClientNotes, useClientRecord } from "../../../hooks/useClientData";
 import { useSalonData } from "../../../context/SalonDataContext";
-import { fmtDate, fmtMoney } from "../../../lib/clientFormat";
+import Avatar from "../../ui/Avatar";
+import { businessToday } from "../../../lib/businessTime";
+import { SOURCE_LABELS, birthdayLabel, fmtDate } from "../../../lib/clientFormat";
 import { hasMarketingConsent } from "../../../lib/marketing";
 import type { Actor } from "../../../lib/clientActions";
 import type { ClientAccess } from "../../../lib/clientAccess";
 import type { Client } from "../../../types";
+import ClientContactCard from "./ClientContactCard";
+import ClientFigures from "./ClientFigures";
 import ClientHistory from "./ClientHistory";
+import ClientNotesPreview from "./ClientNotesPreview";
 import ClientNotes from "./ClientNotes";
 import ClientRecords from "./ClientRecords";
 import ClientHousekeeping from "./ClientHousekeeping";
@@ -38,17 +43,6 @@ interface Props {
   onGone?: (message: string, goTo?: string) => void;
 }
 
-const Stat = ({ label, value, testId }: { label: string; value: string; testId: string }) => (
-  <div style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "0.7rem 0.85rem", background: "var(--surface)" }}>
-    <p style={{ margin: 0, fontSize: "var(--text-xs)", color: "var(--ink-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-      {label}
-    </p>
-    <p data-testid={testId} style={{ margin: "0.2rem 0 0", fontSize: "var(--text-lg, 1.1rem)", fontWeight: 600 }}>
-      {value}
-    </p>
-  </div>
-);
-
 const pill: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -65,6 +59,8 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
   const { client, loading, notFound, error } = useClientRecord(clientId, role);
   const { stylists, services } = useSalonData();
   const audit = useClientAudit(clientId, owner);
+  const notes = useClientNotes(clientId);
+  const today = businessToday();
   const [showAudit, setShowAudit] = useState(false);
 
   const user = auth.currentUser;
@@ -89,23 +85,37 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
   const full = owner && "totalVisits" in client ? (client as Client) : null;
   const stylistName = (id: string) => stylists.find((s) => s.id === id)?.name ?? "-";
   const serviceName = (id: string) => services.find((s) => s.id === id)?.name ?? id;
-  const initial = client.name.charAt(0).toUpperCase();
+  const birthday = full ? birthdayLabel(full.birthday, today) : null;
 
   return (
     <div data-testid="client-view" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Header */}
-      <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", justifyContent: "space-between" }}>
+      <header
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "1rem",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "1.1rem 1.25rem",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 14,
+        }}
+      >
         <div style={{ display: "flex", gap: "1rem", alignItems: "center", minWidth: 0 }}>
-          <div
-            aria-hidden="true"
-            style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--ink-soft)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "1.2rem", flexShrink: 0 }}
-          >
-            {initial}
-          </div>
+          <Avatar name={client.name} size={64} />
           <div style={{ minWidth: 0 }}>
-            <h2 data-testid="client-name" style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "1.6rem" }}>
-              {client.name}
-            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "0.2rem 0.6rem" }}>
+              <h2 data-testid="client-name" style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 400, fontSize: "1.8rem", lineHeight: 1.15 }}>
+                {client.name}
+              </h2>
+              {client.pronouns && (
+                <span data-testid="client-pronouns" style={{ fontSize: "var(--text-sm)", color: "var(--ink-muted)" }}>
+                  {client.pronouns}
+                </span>
+              )}
+            </div>
             <p style={{ margin: "0.2rem 0 0", display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", alignItems: "center", fontSize: "var(--text-sm)", color: "var(--ink-soft)" }}>
               <a href={`tel:${client.phone}`} style={{ color: "inherit", display: "inline-flex", gap: 4, alignItems: "center" }}>
                 <Phone size={13} aria-hidden="true" /> {client.phone}
@@ -116,6 +126,13 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
                 </a>
               )}
               {full && <span>Client since {fmtDate(full.createdAt.slice(0, 10))}</span>}
+              {full && <span>{SOURCE_LABELS[full.source] ?? full.source}</span>}
+              {birthday && (
+                <span data-testid="client-birthday">
+                  Birthday {birthday.text}
+                  {birthday.soon ? ` (${birthday.soon})` : ""}
+                </span>
+              )}
             </p>
             <p style={{ margin: "0.4rem 0 0", display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
               {client.blocked && (
@@ -168,22 +185,39 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
         )}
       </header>
 
-      {/* Key numbers (owner) */}
-      {full && (
-        <section aria-label="Key numbers" data-testid="client-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
-          <Stat label="Visits" value={String(full.totalVisits)} testId="stat-visits" />
-          <Stat label="Total spend" value={fmtMoney(full.totalSpend)} testId="stat-spend" />
-          <Stat label="Average spend" value={full.totalVisits ? fmtMoney(Math.round((full.totalSpend / full.totalVisits) * 100) / 100) : "-"} testId="stat-average" />
-          <Stat label="First visit" value={fmtDate(full.firstVisit)} testId="stat-first" />
-          <Stat label="Last visit" value={fmtDate(full.lastVisit)} testId="stat-last" />
-          <Stat label="Next appointment" value={full.hasUpcoming ? `${fmtDate(full.nextBookingDate)}, ${full.nextBookingTime}` : "-"} testId="stat-next" />
-          <Stat label="Days between visits" value={full.avgDaysBetweenVisits === null ? "-" : String(full.avgDaysBetweenVisits)} testId="stat-gap" />
-          <Stat label="Favourite stylist" value={full.favouriteStylistId ? stylistName(full.favouriteStylistId) : "-"} testId="stat-stylist" />
-          <Stat label="Favourite services" value={full.favouriteServiceIds.length ? full.favouriteServiceIds.map(serviceName).join(", ") : "-"} testId="stat-services" />
-          <Stat label="Cancellations" value={String(full.cancelCount)} testId="stat-cancel" />
-          <Stat label="No-shows" value={String(full.noShowCount)} testId="stat-noshow" />
-        </section>
+      {/* Safety first: allergies and sensitivities, for the owner and every stylist who opens the client */}
+      {client.allergies && (
+        <div
+          role="note"
+          data-testid="allergy-banner"
+          style={{
+            display: "flex",
+            gap: "0.6rem",
+            alignItems: "flex-start",
+            padding: "0.85rem 1rem",
+            border: "1px solid var(--error)",
+            borderRadius: 12,
+            background: "var(--surface)",
+          }}
+        >
+          <TriangleAlert size={18} aria-hidden="true" color="var(--error)" style={{ flex: "none", marginTop: 2 }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--error)" }}>
+              Allergies / sensitivities
+            </p>
+            <p style={{ margin: "0.2rem 0 0", fontSize: "var(--text-sm)", overflowWrap: "anywhere" }}>{client.allergies}</p>
+          </div>
+        </div>
       )}
+
+      {/* Notes worth seeing first, and (owner) how to reach them */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "0.75rem", alignItems: "start" }}>
+        <ClientNotesPreview notes={notes} />
+        {full && <ClientContactCard client={full} today={today} />}
+      </div>
+
+      {/* Key numbers (owner) */}
+      {full && <ClientFigures client={full} stylistName={stylistName} serviceName={serviceName} />}
 
       <ClientHistory
         clientId={clientId}
@@ -195,7 +229,7 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
 
       <ClientRecords clientId={clientId} actor={actor} isOwner={owner} canEdit={owner || canEditRecords} onError={(m) => onNotice(m, "error")} />
 
-      <ClientNotes clientId={clientId} actor={actor} isOwner={owner} onError={(m) => onNotice(m, "error")} />
+      <ClientNotes clientId={clientId} notes={notes} actor={actor} isOwner={owner} onError={(m) => onNotice(m, "error")} />
 
       {full && (
         <>

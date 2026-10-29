@@ -25,9 +25,20 @@ const ClientsPage = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 500, margin: "0 0 0.25rem" }}>Clients</h2>
-        <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)", margin: 0 }}>
-          Every client, with their history, last visit and notes. Search by name or mobile number.
+        <h2
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(1.6rem, 3.5vw, 2.1rem)",
+            fontWeight: 400,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.15,
+            margin: "0 0 0.3rem",
+          }}
+        >
+          Clients
+        </h2>
+        <p style={{ fontSize: "0.9rem", color: "var(--ink-muted)", margin: 0 }}>
+          Everyone you have looked after: their history, spend, notes and what to watch for. Search by name or mobile number.
         </p>
       </div>
 

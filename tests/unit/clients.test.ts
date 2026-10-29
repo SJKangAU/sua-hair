@@ -5,9 +5,12 @@
 // whole client document with aliases and manual fields, the slim card a stylist
 // may read, and the directory filters. Fake people only. `npm run test:unit`.
 import { describe, expect, it } from "vitest";
+import { birthdayLabel, initialsOf, noShowRate, previewNotes, sinceLabel } from "../../src/lib/clientFormat";
 import {
   EMPTY_SUMMARY,
   buildClient,
+  cleanBirthday,
+  cleanProfileText,
   clientCardOf,
   clientIdFromPhone,
   computeClientSummary,
@@ -331,6 +334,52 @@ describe("the client document", () => {
   });
 });
 
+describe("profile details", () => {
+  const NOW = "2026-10-20T01:00:00.000Z";
+  const profile = {
+    tags: [],
+    blocked: false,
+    birthday: "03-12",
+    pronouns: "she/her",
+    preferredContact: "text" as const,
+    allergies: "PPD allergy",
+  };
+
+  it("are kept on the client from the manual fields, and absent when not set", () => {
+    const c = buildClient("0400000001", [b()], profile, TODAY, NOW);
+    expect(c).toMatchObject({ birthday: "03-12", pronouns: "she/her", preferredContact: "text", allergies: "PPD allergy" });
+    const bare = buildClient("0400000001", [b()], { tags: [], blocked: false }, TODAY, NOW);
+    expect(bare).not.toHaveProperty("birthday");
+    expect(bare).not.toHaveProperty("allergies");
+  });
+
+  it("put only allergies and pronouns on the card a stylist reads", () => {
+    const card = clientCardOf(buildClient("0400000001", [b()], profile, TODAY, NOW), "0400000001");
+    expect(card.allergies).toBe("PPD allergy");
+    expect(card.pronouns).toBe("she/her");
+    expect(JSON.stringify(card)).not.toMatch(/03-12|text/);
+    const bare = clientCardOf(buildClient("0400000001", [b()], { tags: [], blocked: false }, TODAY, NOW), "0400000001");
+    expect(bare).not.toHaveProperty("allergies");
+  });
+
+  it("cleanBirthday takes day/month or a full date and refuses impossible ones", () => {
+    expect(cleanBirthday("")).toBe("");
+    expect(cleanBirthday("  ")).toBe("");
+    expect(cleanBirthday("12/03")).toBe("03-12");
+    expect(cleanBirthday("1-9")).toBe("09-01");
+    expect(cleanBirthday("29/02")).toBe("02-29");
+    expect(cleanBirthday("1990-03-12")).toBe("1990-03-12");
+    expect(cleanBirthday("31/04")).toBeNull();
+    expect(cleanBirthday("1990-02-30")).toBeNull();
+    expect(cleanBirthday("March 12")).toBeNull();
+  });
+
+  it("cleanProfileText makes one tidy line and caps its length", () => {
+    expect(cleanProfileText("  PPD" + String.fromCharCode(10) + " allergy " + String.fromCharCode(9) + " ", 100)).toBe("PPD allergy");
+    expect(cleanProfileText("x".repeat(600), 500)).toHaveLength(500);
+  });
+});
+
 describe("directory filters", () => {
   const client = (over: Record<string, unknown> = {}) => ({
     lastVisit: "2026-10-01",
@@ -360,5 +409,56 @@ describe("directory filters", () => {
     expect(matchesFilter(client({ hasUpcoming: true }), "upcoming", TODAY)).toBe(true);
     expect(matchesFilter(client({ hasNoShows: true }), "noshows", TODAY)).toBe(true);
     expect(matchesFilter(client(), "all", TODAY)).toBe(true);
+  });
+});
+
+describe("client list labels", () => {
+  it("sinceLabel says how long ago in plain words", () => {
+    const today = "2026-10-20";
+    expect(sinceLabel("", today)).toBe("");
+    expect(sinceLabel("2026-10-20", today)).toBe("today");
+    expect(sinceLabel("2026-10-19", today)).toBe("yesterday");
+    expect(sinceLabel("2026-10-10", today)).toBe("10 days ago");
+    expect(sinceLabel("2026-09-15", today)).toBe("5 weeks ago");
+    expect(sinceLabel("2026-03-20", today)).toBe("7 months ago");
+    expect(sinceLabel("2025-09-01", today)).toBe("a year ago");
+    expect(sinceLabel("2023-01-01", today)).toBe("3 years ago");
+    expect(sinceLabel("2026-11-01", today)).toBe("upcoming");
+  });
+
+  it("initialsOf takes the first and last word", () => {
+    expect(initialsOf("Jade Lee")).toBe("JL");
+    expect(initialsOf("  jade   marie lee ")).toBe("JL");
+    expect(initialsOf("Madonna")).toBe("M");
+    expect(initialsOf("")).toBe("?");
+  });
+});
+
+describe("client page helpers", () => {
+  it("birthdayLabel names the day and says when it is close", () => {
+    expect(birthdayLabel("", "2026-10-20")).toBeNull();
+    expect(birthdayLabel("nonsense", "2026-10-20")).toBeNull();
+    expect(birthdayLabel("03-12", "2026-10-20")).toEqual({ text: "12 March", soon: "" });
+    expect(birthdayLabel("1990-10-20", "2026-10-20")).toEqual({ text: "20 October", soon: "today" });
+    expect(birthdayLabel("10-21", "2026-10-20")).toEqual({ text: "21 October", soon: "in 1 day" });
+    expect(birthdayLabel("11-02", "2026-10-20")).toEqual({ text: "2 November", soon: "in 13 days" });
+    // across the new year
+    expect(birthdayLabel("01-03", "2026-12-28")).toEqual({ text: "3 January", soon: "in 6 days" });
+    // just passed: next year's, so not soon
+    expect(birthdayLabel("10-19", "2026-10-20").soon).toBe("");
+  });
+
+  it("noShowRate is a whole percentage of their bookings", () => {
+    expect(noShowRate({ noShowCount: 0, bookingCount: 0 })).toBe("-");
+    expect(noShowRate({ noShowCount: 0, bookingCount: 8 })).toBe("0%");
+    expect(noShowRate({ noShowCount: 1, bookingCount: 8 })).toBe("13%");
+    expect(noShowRate({ noShowCount: 2, bookingCount: 4 })).toBe("50%");
+  });
+
+  it("previewNotes puts pinned first, then the newest, up to four", () => {
+    const note = (id: string, pinned = false) => ({ id, text: id, authorUid: "u", authorName: "A", createdAt: "2026-01-01T00:00:00.000Z", pinned });
+    const list = [note("n1"), note("n2"), note("n3", true), note("n4"), note("n5"), note("n6", true)];
+    expect(previewNotes(list).map((n) => n.id)).toEqual(["n3", "n6", "n1", "n2"]);
+    expect(previewNotes([])).toEqual([]);
   });
 });

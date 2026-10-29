@@ -3,7 +3,7 @@
 // Everything that needs a client's whole booking history (merge, anonymise, export,
 // recompute) goes through the functions instead (clientCommands.ts).
 //
-//   saveClientDetails  name / email / tags  -> clients + clientCards + an audit entry
+//   saveClientDetails  name / email / tags / profile  -> clients + clientCards + an audit entry
 //   setClientBlocked   block / unblock      -> clients + clientCards + the visit
 //                      record's flag (which the booking command also reads) + audit
 //   addNote / setNotePinned / deleteNote    -> clients/{id}/notes
@@ -22,9 +22,19 @@ import {
   writeBatch,
   type Firestore,
 } from "firebase/firestore";
-import { MAX_TOKENS, nameKeys, nameTokens, tidyName } from "./clients";
+import {
+  MAX_ALLERGIES,
+  MAX_PRONOUNS,
+  MAX_TOKENS,
+  PREFERRED_CONTACTS,
+  cleanBirthday,
+  cleanProfileText,
+  nameKeys,
+  nameTokens,
+  tidyName,
+} from "./clients";
 import { cleanRecord, recordProblem, type NewRecord } from "./clientRecords";
-import type { ClientAuditAction } from "../types";
+import type { ClientAuditAction, PreferredContact } from "../types";
 
 export interface Actor {
   uid: string;
@@ -47,6 +57,11 @@ export interface DetailsPatch {
   name: string;
   email: string;
   tags: string[];
+  // Profile details; left out = leave as they are, "" = clear
+  birthday?: string;
+  pronouns?: string;
+  preferredContact?: PreferredContact | "";
+  allergies?: string;
 }
 
 export const saveClientDetails = async (
@@ -61,6 +76,18 @@ export const saveClientDetails = async (
   if (!name) throw new Error("A name is required.");
   const tags = cleanTags(patch.tags);
   const email = patch.email.trim();
+  const birthday = patch.birthday === undefined ? undefined : cleanBirthday(patch.birthday);
+  if (birthday === null) throw new Error("That birthday isn't a real date.");
+  const pronouns = patch.pronouns === undefined ? undefined : cleanProfileText(patch.pronouns, MAX_PRONOUNS);
+  const allergies = patch.allergies === undefined ? undefined : cleanProfileText(patch.allergies, MAX_ALLERGIES);
+  const contact =
+    patch.preferredContact === undefined
+      ? undefined
+      : PREFERRED_CONTACTS.includes(patch.preferredContact as PreferredContact)
+        ? patch.preferredContact
+        : "";
+  // undefined leaves a field alone; "" clears it
+  const profile = (key: string, v: string | undefined) => (v === undefined ? {} : { [key]: v || deleteField() });
   const keys = nameKeys(name);
   const searchTokens = [...new Set([...keys.searchTokens, ...aliases.flatMap(nameTokens)])].slice(0, MAX_TOKENS);
   const batch = writeBatch(db);
@@ -72,6 +99,10 @@ export const saveClientDetails = async (
     ...(nameChanged ? { nameOverride: true } : {}),
     email: email || deleteField(),
     tags,
+    ...profile("birthday", birthday),
+    ...profile("pronouns", pronouns),
+    ...profile("preferredContact", contact),
+    ...profile("allergies", allergies),
     updatedAt: new Date().toISOString(),
   });
   batch.update(doc(db, "clientCards", clientId), {
@@ -79,6 +110,9 @@ export const saveClientDetails = async (
     nameLower: keys.nameLower,
     searchTokens,
     tags,
+    // the card carries only what a stylist may see
+    ...profile("pronouns", pronouns),
+    ...profile("allergies", allergies),
   });
   batch.set(doc(collection(db, "clients", clientId, "audit")), auditEntry("edit", actor, "edited details"));
   await batch.commit();
