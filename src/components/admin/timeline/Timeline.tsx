@@ -101,6 +101,8 @@ const Timeline = ({ onBlockClick, onCreateRange, selectedDate }: Props) => {
   const columnRefs = useRef(new Map<string, HTMLElement>());
   // Cancelled / no-show bookings show as faint ghost blocks; this hides them
   const [showReleased, setShowReleased] = useState(true);
+  // Stylists picked in the filter row; none picked (or none of them on this day) = everyone
+  const [picked, setPicked] = useState<string[]>([]);
   // Re-render every 30 s so the now line and "open slot" start times move
   const [nowMinutes, setNowMinutes] = useState(getCurrentMinutes);
   useEffect(() => {
@@ -143,8 +145,36 @@ const Timeline = ({ onBlockClick, onCreateRange, selectedDate }: Props) => {
     if (unassigned) {
       shown.push({ stylist: UNASSIGNED, hours: salonHours });
     }
-    return { shown, hiddenNames: hidden.map((c) => c.stylist.name.split(" ")[0]) };
-  }, [stylists, selectedDate, salonSettings, range.closed, dayBookings, salonHours]);
+    const chosen = shown.filter((c) => picked.includes(c.stylist.id));
+    return {
+      shown: chosen.length > 0 ? chosen : shown,
+      available: shown.map((c) => c.stylist),
+      hiddenNames: hidden.map((c) => c.stylist.name.split(" ")[0]),
+    };
+  }, [stylists, selectedDate, salonSettings, range.closed, dayBookings, salonHours, picked]);
+
+  // A chip adds or removes all of its stylists: everyone picked already -> remove them
+  const toggleGroup = (ids: string[]) =>
+    setPicked((cur) =>
+      ids.every((id) => cur.includes(id))
+        ? cur.filter((x) => !ids.includes(x))
+        : [...new Set([...cur, ...ids])],
+    );
+
+  // All, then one chip per stylist, then the Seniors / Juniors groups (only when
+  // that level has someone working the day)
+  const filterChips = useMemo(() => {
+    const levelOf = new Map(stylists.map((s) => [s.id, s.level]));
+    const ofLevel = (level: string) =>
+      columns.available.filter((s) => levelOf.get(s.id) === level).map((s) => s.id);
+    return [
+      { key: "all", label: "All", ids: [] as string[] },
+      ...columns.available.map((s) => ({ key: s.id, label: s.name.split(" ")[0], ids: [s.id] })),
+      ...(["senior", "junior"] as const)
+        .map((level) => ({ key: `${level}s`, label: `${level[0].toUpperCase()}${level.slice(1)}s`, ids: ofLevel(level) }))
+        .filter((g) => g.ids.length > 0),
+    ];
+  }, [stylists, columns.available]);
 
   const releasedCount = dayBookings.filter((b) =>
     isSlotFreeing(b.status),
@@ -348,6 +378,52 @@ const Timeline = ({ onBlockClick, onCreateRange, selectedDate }: Props) => {
       }}
     >
       <style>{TIMELINE_CSS}</style>
+
+      {/* Filter: show only the stylists picked (none picked = everyone) */}
+      {columns.available.length > 1 && (
+        <div
+          role="group"
+          aria-label="Filter by stylist"
+          data-testid="stylist-filter"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            flexWrap: "wrap",
+            padding: "0.5rem 0.875rem",
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
+          {filterChips.map(({ key, label, ids }) => {
+            const on =
+              key === "all"
+                ? !columns.available.some((s) => picked.includes(s.id))
+                : ids.every((id) => picked.includes(id));
+            return (
+              <button
+                key={key}
+                type="button"
+                className="bk-ghost"
+                aria-pressed={on}
+                data-testid={`stylist-filter-${key}`}
+                onClick={() => (key === "all" ? setPicked([]) : toggleGroup(ids))}
+                style={{
+                  padding: "0.3rem 0.8rem",
+                  borderRadius: "999px",
+                  border: "1px solid var(--border-strong)",
+                  background: on ? "var(--accent)" : "transparent",
+                  color: on ? "var(--surface)" : "var(--ink)",
+                  cursor: "pointer",
+                  fontSize: "var(--text-sm)",
+                  fontFamily: "var(--font-body)",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Notes (closed day, who is off) and the ghost toggle */}
       {(hasNotes || releasedCount > 0) && (

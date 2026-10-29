@@ -94,6 +94,28 @@ test("TC-010 Next moves the timeline to tomorrow and loads its bookings", async 
   ).toBeVisible();
 });
 
+test("the stylist filter shows only the stylists picked, and All brings everyone back", async () => {
+  await gotoToday(page, DAY);
+  const columns = page.locator('[data-testid^="timeline-column-"]');
+  const everyone = await columns.count();
+  expect(everyone).toBeGreaterThan(2);
+  await page.getByTestId("stylist-filter-steve").click();
+  await expect(columns).toHaveCount(1);
+  await expect(page.getByTestId("timeline-column-steve")).toBeVisible();
+  await page.getByTestId("stylist-filter-yuto").click();
+  await expect(columns).toHaveCount(2);
+  await page.getByTestId("stylist-filter-all").click();
+  await expect(columns).toHaveCount(everyone);
+  // the level groups pick every stylist of that level, and toggle off again
+  await page.getByTestId("stylist-filter-juniors").click();
+  await expect(columns).toHaveCount(2); // Ethan and Harry
+  await expect(page.getByTestId("timeline-column-steve")).toHaveCount(0);
+  await page.getByTestId("stylist-filter-seniors").click();
+  await expect(columns).toHaveCount(4); // plus Elly and Yuto
+  await page.getByTestId("stylist-filter-juniors").click();
+  await expect(columns).toHaveCount(2);
+});
+
 test("TC-011 clicking a booking block opens its quick actions, and View details opens the full booking", async () => {
   await gotoToday(page, DAY);
   await page.getByText("Carl Confirmed").first().click();
