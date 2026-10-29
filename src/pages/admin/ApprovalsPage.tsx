@@ -1,5 +1,6 @@
 // ApprovalsPage.tsx
-// Dedicated pending-approval queue for the admin dashboard.
+// Dedicated pending-approval queue for the admin dashboard, with (owner) the switch
+// that decides, per service, which online bookings wait here.
 // Shows only bookings with status === "pending" (today, that's exclusively
 // customer self-bookings — walk-ins/breaks/training are auto-confirmed at
 // creation, see CreateBookingModal.tsx / TrainingForm.tsx) so the owner can
@@ -13,10 +14,12 @@ import { useBookingContext } from "../../context/BookingContext";
 import { CircleCheck } from "lucide-react";
 import type { BookingStatus } from "../../types";
 import BookingTable from "../../components/admin/bookings/BookingTable";
+import ServiceApprovalPanel from "../../components/admin/ServiceApprovalPanel";
 import { BookingCardSkeleton } from "../../components/ui/Skeleton";
 import { DEFAULT_FILTERS } from "../../lib/bookingFilters";
 
 interface Props {
+  isOwner?: boolean;
   onUpdateStatus: (id: string, status: BookingStatus) => void;
   onSetFlag: (id: string, flagged: boolean, reason?: string) => void;
 }
@@ -25,7 +28,7 @@ interface Props {
 // value is fixed rather than user-editable.
 const PENDING_FILTER = { ...DEFAULT_FILTERS, status: "pending" };
 
-const ApprovalsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
+const ApprovalsPage = ({ isOwner = false, onUpdateStatus, onSetFlag }: Props) => {
   const { bookings, loading, error } = useBookingContext();
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
@@ -52,10 +55,12 @@ const ApprovalsPage = ({ onUpdateStatus, onSetFlag }: Props) => {
             margin: "0.25rem 0 0",
           }}
         >
-          Customer bookings land here first. Confirm to finalise, or cancel if
-          it shouldn't go ahead.
+          Online bookings for services you hold for approval wait here. Confirm to finalise, or cancel if it shouldn't go
+          ahead. Other services are confirmed straight away.
         </p>
       </div>
+
+      {isOwner && <ServiceApprovalPanel />}
 
       {loading ? (
         <div

@@ -21,9 +21,9 @@ export const TodayRoute = () => {
 };
 
 export const ApprovalsRoute = () => {
-  const { onUpdateStatus, onSetFlag } = useAdminContext();
+  const { isOwner, onUpdateStatus, onSetFlag } = useAdminContext();
   return (
-    <ApprovalsPage onUpdateStatus={onUpdateStatus} onSetFlag={onSetFlag} />
+    <ApprovalsPage isOwner={isOwner} onUpdateStatus={onUpdateStatus} onSetFlag={onSetFlag} />
   );
 };
 
