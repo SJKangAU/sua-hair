@@ -265,3 +265,9 @@ bookings (stylistId + date) ──→ stylistDayLocks ({date}_{stylistId})
 ```
 
 All are soft references — bookings store denormalised copies of stylist name, level, service name and resolved price, so a booking record stays self-contained for analytics and display even if the referenced documents change.
+
+## Additions (FR-034, FR-037)
+
+- `clients`: `birthday` (`MM-DD` or `YYYY-MM-DD`), `pronouns`, `preferredContact` (`text` / `call` / `email`), `allergies` (up to 500 characters). Set by the owner; they survive a recompute because they are read as manual fields. `clientCards` carries `allergies` and `pronouns` only (a stylist must see an allergy)
+- `services`: `requiresConsultation` (true = the colour questionnaire is required to book it online and the booking is held until the salon has rung)
+- `bookings`: `needsConsultation` and `consultation` (`treatedBefore`, `lastColoured`, `currentColour`, `desiredColour`, `treatments[]`, `dyeReaction`, `patchTest`, `healthNotes`, `callTime`). Written only by `createBookingRequest`, which validates every field against a fixed set; health information, so never copied into `slotBlocks` or the owner's email, a stylist cannot edit it (the update whitelist in `firestore.rules` does not include it), and anonymise deletes it

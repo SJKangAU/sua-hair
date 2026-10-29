@@ -15,6 +15,8 @@
 // starts correcting.
 
 import { parseLocalDate } from "../../lib/dates";
+import type { ConsultationDraft } from "../../lib/consultation";
+import ConsultationQuestionnaire from "./ConsultationQuestionnaire";
 
 interface SelectedServiceDisplay {
   id: string;
@@ -37,6 +39,10 @@ interface Props {
   consent: boolean;
   marketing: boolean;
   errors: { name?: string; phone?: string; email?: string };
+  // a chosen service needs a phone consultation first: the questionnaire is shown and required
+  needsConsultation?: boolean;
+  consultation?: ConsultationDraft;
+  onConsultationChange?: (value: ConsultationDraft) => void;
   onPhoneChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
@@ -83,6 +89,9 @@ const DetailsStep = ({
   consent,
   marketing,
   errors,
+  needsConsultation,
+  consultation,
+  onConsultationChange,
   onPhoneChange,
   onNameChange,
   onEmailChange,
@@ -354,6 +363,14 @@ const DetailsStep = ({
             </p>
           )}
         </div>
+
+        {needsConsultation && consultation && onConsultationChange && (
+          <ConsultationQuestionnaire
+            value={consultation}
+            onChange={onConsultationChange}
+            phone={customerPhone}
+          />
+        )}
 
         {/* Notes */}
         <div>

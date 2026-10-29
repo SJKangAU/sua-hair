@@ -120,6 +120,7 @@ const isValidEmail = (value: unknown): value is string =>
 /** The subset of a bookings/{id} document the email code reads. */
 interface BookingDoc {
   importedFrom?: string;
+  needsConsultation?: boolean;
   bookingType?: "customer" | "walkin" | "break" | "training";
   status?: string;
   bookingRef?: string;
@@ -232,6 +233,8 @@ export const deleteCustomerData = onCall(
           customerPhone: null,
           customerEmail: null,
           notes: null,
+          // the colour consultation answers are health information about the person
+          consultation: FieldValue.delete(),
           anonymisedAt,
         });
       }
@@ -689,7 +692,13 @@ const sendBookingEmail = async (
     // The owner's own wording (privateSettings/email), or the default; an email switched off is not sent
     const template = effectiveEmailSettings((await db.doc("privateSettings/email").get()).data()).templates[kind];
     if (!template.enabled) return;
-    const data = { ...toEmailData(booking), manageLink, bookingId };
+    // a colour booking is held until the salon has rung: the "request received" email says so
+    const data = {
+      ...toEmailData(booking),
+      manageLink,
+      bookingId,
+      ...(kind === "received" && booking.needsConsultation ? { consultationCall: true } : {}),
+    };
     const email = buildEmail(kind, data, template);
     const calendar = buildCalendarEvent(template, data, SALON_FOR_EMAIL, kind, Date.now());
     await sendEmail(RESEND_API_KEY.value(), {
@@ -743,7 +752,14 @@ export const onBookingCreated = onDocumentCreated(
     if (kind) {
       const manageLink = await manageLinkFor(bookingId, booking);
       await sendBookingEmail(kind, bookingId, booking, manageLink);
-      await sendBookingSmsCore(db, smsTransport(), kind, bookingId, { ...booking, manageLink }, Date.now());
+      await sendBookingSmsCore(
+        db,
+        smsTransport(),
+        kind,
+        bookingId,
+        { ...booking, manageLink, consultationCall: kind === "received" && booking.needsConsultation === true },
+        Date.now(),
+      );
     }
 
     // Owner heads-up: online requests only (walk-ins are entered by staff who
@@ -762,6 +778,7 @@ export const onBookingCreated = onDocumentCreated(
             customerPhone: booking.customerPhone,
             customerEmail: booking.customerEmail,
             notes: booking.notes,
+            needsConsultation: booking.needsConsultation === true,
           });
           await sendEmail(RESEND_API_KEY.value(), {
             from: EMAIL_FROM.value(),

@@ -70,6 +70,10 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       replacesSummary: d.replacesSummary,
       cancelledBy: d.cancelledBy,
       marketingConsent: d.marketingConsent === true ? true : undefined,
+      // the client record this booking belongs to, and a colour booking's consultation (the salon rings first)
+      clientId: d.clientId,
+      needsConsultation: d.needsConsultation === true ? true : undefined,
+      consultation: d.consultation && typeof d.consultation === "object" ? d.consultation : undefined,
       createdAt: d.createdAt ?? "",
     };
   },

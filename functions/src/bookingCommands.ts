@@ -41,6 +41,7 @@ import {
   combinePhases,
   phaseTotals,
 } from "../../src/lib/bookingPhases";
+import { checkConsultation, consultationSummary, needsConsultation, type Consultation } from "../../src/lib/consultation";
 import { phaseWriteFields } from "../../src/lib/phaseFields";
 import { toSlotBlock } from "../../src/lib/slotBlockData";
 import { slotLockId } from "../../src/lib/slotLockId";
@@ -133,6 +134,8 @@ export interface ParsedBookingRequest {
   requestId?: string;
   /** Ticked the optional box to hear about coming back (FR-030) */
   marketingConsent?: boolean;
+  /** The colour consultation answers, cleaned. Whether they are REQUIRED depends on the services. */
+  consultation?: Consultation;
 }
 
 const text = (value: unknown): string | null =>
@@ -210,6 +213,13 @@ export const parseBookingRequest = (raw: unknown): ParsedBookingRequest => {
     notes = n.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ") || undefined;
   }
 
+  let consultation: Consultation | undefined;
+  if (r.consultation !== undefined && r.consultation !== null) {
+    const checked = checkConsultation(r.consultation);
+    if (!checked.ok) throw new CommandError("invalid", checked.problem);
+    consultation = checked.value;
+  }
+
   if (r.consent !== true) {
     throw new CommandError("invalid", "Please agree to the privacy policy to book.");
   }
@@ -234,6 +244,7 @@ export const parseBookingRequest = (raw: unknown): ParsedBookingRequest => {
     ...(notes ? { notes } : {}),
     ...(requestId ? { requestId } : {}),
     ...(r.marketingConsent === true ? { marketingConsent: true } : {}),
+    ...(consultation ? { consultation } : {}),
   };
 };
 
@@ -370,6 +381,7 @@ const summarise = (id: string, b: Booking, assigned: boolean): BookingRequestRes
   services: (b.services ?? []).map((s) => ({ id: s.id, name: s.name, price: s.price })),
   total: b.servicePrice,
   holdExpiresAt: b.status === "confirmed" ? "" : (b.holdExpiresAt ?? ""),
+  ...(b.needsConsultation ? { needsConsultation: true } : {}),
 });
 
 const priceFor = (service: Service, level: Stylist["level"]): number => {
@@ -423,6 +435,12 @@ export const createBookingRequestCore = async (
   ]);
   if (services.some((s) => s.status !== "active")) {
     throw new CommandError("invalid", "One of the services you chose is no longer available.");
+  }
+  // A colour service is booked only with its consultation answers (a request to MOVE a booking
+  // already has them from when it was made)
+  const consultationNeeded = !options.replaces && needsConsultation(services);
+  if (consultationNeeded && !input.consultation) {
+    throw new CommandError("invalid", "Colour needs a quick consultation first. Please answer the colour questions to book.");
   }
   const phases: Phase[] = combinePhases(services);
   const totals = phaseTotals(phases);
@@ -513,7 +531,9 @@ export const createBookingRequestCore = async (
       // A booking made only of services that need no approval is confirmed on the spot
       // (DEC-059). A request to MOVE a booking always waits for the salon: the original is
       // only released when that request is approved.
-      const autoConfirm = !replacesId && !services.some((s) => s.requiresApproval === true);
+      // A service that needs a consultation is held until the salon has rung the client.
+      const autoConfirm =
+        !replacesId && !consultationNeeded && !services.some((s) => s.requiresApproval === true);
       if (!autoConfirm && !replacesId && pending.size >= SALON_CONFIG.maxPendingPerPhone) {
         throw new CommandError(
           "limit",
@@ -598,6 +618,9 @@ export const createBookingRequestCore = async (
         date: input.date,
         time: input.time,
         ...(input.notes ? { notes: input.notes } : {}),
+        ...(consultationNeeded && input.consultation
+          ? { needsConsultation: true, consultation: input.consultation }
+          : {}),
         consentGivenAt: iso(ctx.now),
         createdAt: iso(ctx.now),
         ...(autoConfirm
@@ -645,12 +668,16 @@ export const createBookingRequestCore = async (
         ? `Request to move a booking: ${what}${was}`
         : autoConfirm
           ? `New booking: ${what}`
-          : `New booking request: ${what}`;
+          : consultationNeeded && input.consultation
+            ? `New booking request, call needed first: ${what} (${consultationSummary(input.consultation).slice(0, 160)})`
+            : `New booking request: ${what}`;
       const stylistMessage = old
         ? `A client wants to move a booking: ${what}${was}`
         : autoConfirm
           ? `You have a new booking: ${what}`
-          : `You have a new booking request: ${what}`;
+          : consultationNeeded
+            ? `You have a new booking request (the salon will ring the client first): ${what}`
+            : `You have a new booking request: ${what}`;
       tx.set(db.collection("notifications").doc(), notificationFor("owner", "owner", bookingRef.id, ownerMessage, ctx.now));
       tx.set(db.collection("notifications").doc(), notificationFor(stylist.id, "stylist", bookingRef.id, stylistMessage, ctx.now));
 

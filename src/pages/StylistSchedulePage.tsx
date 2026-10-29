@@ -18,6 +18,7 @@ import { blocksSlot, STATUS_LABELS } from "../lib/bookingStatus";
 import type { Booking, BookingStatus } from "../types";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import ConsultationAnswers from "../components/admin/ConsultationAnswers";
 import { useEffect } from "react";
 
 // Monochrome status treatment on dark cards — shade encodes state, not colour
@@ -278,6 +279,11 @@ const ScheduleInner = () => {
                   >
                     {b.serviceName}
                   </div>
+                  {b.consultation && (
+                    <div style={{ marginTop: "0.4rem", color: "var(--admin-dim)" }} data-testid="stylist-consultation">
+                      <ConsultationAnswers consultation={b.consultation} compact />
+                    </div>
+                  )}
                   {b.notes && (
                     <div
                       style={{

@@ -74,6 +74,8 @@ const call = async <In, Out>(name: string, data: In): Promise<Out> => {
 // ── Customer ────────────────────────────────────────────────────────────────
 
 /** What the customer sends: choices and contact details - never a price or phases. */
+import type { Consultation } from "./consultation";
+
 export interface BookingRequestInput {
   serviceIds: string[];
   /** a stylist id, or "any" for no preference (the server assigns a real one) */
@@ -87,6 +89,8 @@ export interface BookingRequestInput {
   consent: true;
   /** Ticked the optional box to hear about coming back (FR-030) */
   marketingConsent?: true;
+  /** the colour consultation answers, required when a chosen service asks for them */
+  consultation?: Consultation;
   /** makes a retry of the same request return the same booking */
   requestId: string;
 }
@@ -113,6 +117,8 @@ export interface BookingRequestResult {
   services: { id: string; name: string; price: number }[];
   total: number;
   holdExpiresAt: string;
+  /** a colour booking: the salon rings the client before confirming it */
+  needsConsultation?: boolean;
 }
 
 export const createBookingRequest = (input: BookingRequestInput) =>

@@ -34,6 +34,7 @@ export interface FirestoreService {
   phases?: Phase[];
   price: TieredPrice;
   requiresApproval?: boolean;
+  requiresConsultation?: boolean;
   retouchWeeks?: number;
   status: "active" | "inactive";
   sortOrder: number;

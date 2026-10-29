@@ -328,3 +328,13 @@ Spec: `e2e/19-client-records.spec.ts`; logic in `tests/unit/clientRecords.test.t
 | TC-147 | Recording and repeating | Owner saves a formula, then a patch test (clear), then repeats the formula; deletes one | Problems are explained (no text, no product, no result); status becomes "clear" with the product; Repeat fills the form from the last formula |
 | TC-148 | Reaction and expiry | A clear test 300 days old; then a reaction; then a new clear test | Expired, then "Reacted to ... Do not use it", then clear |
 | TC-149 | A stylist | One without the permission; one with it | Without: reads but no form, Repeat or delete; with: adds, and deletes only their own entry |
+| TC-150 | The client list | Open Clients as the owner | A summary strip whose numbers match the filters (tiles filter the list); rows show avatars, "last seen", New / Lapsed / no-show / Allergy / Blocked badges |
+| TC-151 | The client page | Open a client with allergies, pronouns, a birthday and notes | Allergy banner, pronouns and birthday ("in 3 days"), a Contact and consent card, figures in groups, notes shown first |
+| TC-152 | Editing profile details | Edit allergies, pronouns, birthday, contact; try 31/04 | Refused with a message; saved; the stylist's card has allergies and pronouns only; clearing removes the banner |
+| TC-153 | Approvals panel | Switch a service to confirm automatically and back | Written to the service; the label follows |
+| TC-154 | Bookings list | A perm with a processing gap and a plain cut | Only the perm shows "Stylist free 11:00 AM – 11:30 AM (30 min)", with a legend |
+| TC-155 | Booking drawer | Open the perm, press Book someone into this gap | The drawer says the stylist is free; the new-booking form opens for that gap |
+| TC-156 | Customer wording | Choose a colour service and book it | The list, review and confirmation explain the setting time and the time they are back |
+| TC-157 | Colour questions | Book a colour service that needs a consultation | Questions shown and required; the booking is held ("Request received") even though the service confirms automatically; answers stored, not in slotBlocks |
+| TC-158 | No consultation | Book a service without the setting | No questions; booked as usual |
+| TC-159 | Owner view | Open the held colour booking | "Call needed", the number and best time, the answers with alerts, copy allergy notes to the client record (once), the Approvals switch locked |

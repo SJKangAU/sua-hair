@@ -44,6 +44,17 @@ const PrivacyPolicyPage = () => {
           request or preference)
         </li>
         <li>
+          If you book a colour service, your answers to our colour questions
+          (whether your hair has been coloured or treated before, your current
+          and wanted colour, other treatments, any past reaction to hair dye,
+          a recent patch test, and anything you tell us such as a sensitive
+          scalp). This relates to your health, so we treat it as sensitive
+          information. We use it only for a phone consultation with you before
+          your appointment and to colour your hair safely. Only the salon
+          owner and the stylist booked to look after you can see it, and it is
+          deleted if you ask us to remove your information.
+        </li>
+        <li>
           Whether you agreed to hear from us about coming back (see
           "Offers and reminders to come back" below)
         </li>

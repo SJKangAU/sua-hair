@@ -119,7 +119,7 @@ test("TC-130 moving (the default): the original stays until the owner approves, 
   const { page: owner } = await newAdminPage(browser);
   await owner.goto("/admin/approvals");
   await expect(owner.getByTestId("move-request")).toContainText(`now ${DAY} 10:00 AM`);
-  await owner.getByRole("button", { name: /Confirm/i }).first().click();
+  await owner.getByRole("button", { name: "Confirm", exact: true }).first().click();
   await expect.poll(async () => (await byId(ID))?.status).toBe("cancelled");
   expect(await byId(ID)).toMatchObject({ cancelReason: "rescheduled" });
   expect(await byId(String(request.id))).toMatchObject({ status: "confirmed", date: NEXT, time: "2:00 PM" });

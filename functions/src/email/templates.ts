@@ -46,6 +46,8 @@ export interface OwnerNotificationData extends BookingEmailData {
   customerPhone?: string | null;
   customerEmail?: string | null;
   notes?: string | null;
+  /** A colour booking: the owner has to ring the client before confirming */
+  needsConsultation?: boolean;
 }
 
 export const SALON_FOR_EMAIL: EmailSalon = {
@@ -90,6 +92,9 @@ export const buildOwnerNotification = (b: OwnerNotificationData): { subject: str
   const price = formatPrice(b);
   const lines = [
     "A new booking REQUEST has arrived online. It holds the time until you approve or decline it (Approvals tab).",
+    ...(b.needsConsultation
+      ? ["This is a COLOUR booking: ring the client before you confirm it. Their answers to the colour questions are on the booking (they are not in this email)."]
+      : []),
     "",
     `Customer: ${oneLine(b.customerName)}`,
     b.customerPhone ? `Phone: ${b.customerPhone}` : "",

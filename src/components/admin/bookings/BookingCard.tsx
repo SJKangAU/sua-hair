@@ -7,7 +7,7 @@
 // follow-up — visually distinct border/tint plus a small flag chip.
 
 import { useState } from "react";
-import { Flag, StickyNote } from "lucide-react";
+import { Flag, Phone, StickyNote } from "lucide-react";
 import Badge from "../../ui/Badge";
 import { FreeWindowChip } from "../../ui/ProcessingNote";
 import { bookingFreeWindows } from "../../../lib/processingWindow";
@@ -177,6 +177,24 @@ const BookingCard = ({
             <p data-testid="move-request" style={{ fontSize: "0.78rem", fontWeight: 600, margin: "0.2rem 0 0" }}>
               Request to move a booking (now {booking.replacesSummary})
             </p>
+          )}
+          {booking.needsConsultation && booking.status === "pending" && (
+            <span
+              data-testid="call-needed"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                marginTop: 4,
+                padding: "1px 8px",
+                border: "1px solid var(--ink)",
+                borderRadius: 999,
+                fontSize: "var(--text-xs)",
+                fontWeight: 600,
+              }}
+            >
+              <Phone size={11} aria-hidden="true" /> Call needed
+            </span>
           )}
           {/* Processing time: the stylist is free then and can take another client */}
           {booking.restTime > 0 && booking.status !== "cancelled" && booking.status !== "no_show" && (

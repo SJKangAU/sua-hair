@@ -456,6 +456,8 @@ export const anonymiseClientCore = async (
       customerPhone: null,
       customerEmail: null,
       notes: null,
+      // the colour consultation answers are health information about the person
+      consultation: FieldValue.delete(),
       anonymisedAt: iso(nowMs),
     });
   });

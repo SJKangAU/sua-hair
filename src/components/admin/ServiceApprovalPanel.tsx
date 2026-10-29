@@ -24,7 +24,7 @@ const ServiceApprovalPanel = () => {
   const [chosen, setChosen] = useState<Record<string, boolean>>({});
   const isHeld = (id: string, saved: boolean | undefined) => chosen[id] ?? saved === true;
 
-  const held = services.filter((s) => isHeld(s.id, s.requiresApproval)).length;
+  const held = services.filter((s) => s.requiresConsultation === true || isHeld(s.id, s.requiresApproval)).length;
 
   const setHeld = async (id: string, name: string, hold: boolean) => {
     setSaving(id);
@@ -106,7 +106,8 @@ const ServiceApprovalPanel = () => {
           )}
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {services.map((s) => {
-              const hold = isHeld(s.id, s.requiresApproval);
+              const consult = s.requiresConsultation === true; // always held until the client has been rung
+              const hold = consult || isHeld(s.id, s.requiresApproval);
               return (
                 <li
                   key={s.id}
@@ -126,13 +127,14 @@ const ServiceApprovalPanel = () => {
                   </span>
                   <label style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}>
                     <span style={{ fontSize: "var(--text-sm)", color: hold ? "var(--ink)" : "var(--ink-muted)", fontWeight: hold ? 600 : 400 }}>
-                      {hold ? "Hold for my approval" : "Confirm automatically"}
+                      {consult ? "Held: call the client first" : hold ? "Hold for my approval" : "Confirm automatically"}
                     </span>
                     <input
                       type="checkbox"
                       role="switch"
                       checked={hold}
-                      disabled={saving === s.id}
+                      disabled={saving === s.id || consult}
+                      title={consult ? "This service needs a phone consultation, so its bookings are always held. Change it in Manage, Stylists & services." : undefined}
                       aria-label={`${s.name}: hold online bookings for my approval`}
                       data-testid={`service-approval-${s.id}`}
                       onChange={(e) => void setHeld(s.id, s.name, e.target.checked)}

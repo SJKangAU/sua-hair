@@ -746,3 +746,53 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Confirmed on the spot, no hold, history entry, slot claimed, a second request refused; absent flag = no approval; any one service holds the booking; not counted in the pending limit (`tests/functions/createBookingRequest.test.ts`, `npm run test:functions`)
 - [ ] Browser spec for the form and the "Booked" screen: **not written**. The e2e seed marks every service as held so the existing specs keep their meaning
 - [ ] In production: **not verified**; deploy the functions BEFORE the site
+
+## FR-034 — Client profile details, a richer client list and client page
+
+**Description:** A client can hold a **birthday**, **pronouns**, a **preferred way to be contacted** (text, call, email) and **allergies / sensitivities**, set by the owner in Edit details. Location: Clients (owner), Clients (stylist, for allergies and pronouns only).
+
+- Allergies and pronouns are also on the card a stylist reads (`clientCards`), so a stylist sees an **Allergy** badge in the list and a red banner on the client page. Birthday and preferred contact stay on the owner-only record.
+- The list opens with a summary strip (everyone, lapsed, new, blocked; one-shot count queries that match the filters); rows have an avatar, "last seen ..." text and badges (New, Lapsed, no-shows, Allergy, Blocked); loading shows placeholder rows.
+- The client page has the header, the allergy banner, pinned and recent notes first, a Contact and consent card (preferred contact, birthday, source, texts, invitation consent, last invited) and the figures in four groups (Value, Rhythm, Preferences, Reliability, with a no-show rate).
+- Profile details are kept when a client is recomputed from their bookings, joined on a merge (allergies are never lost), and removed on anonymise.
+
+**Acceptance criteria:**
+
+- [x] Profile fields survive a recompute and reach only the allergy and pronouns fields of the card; merge keeps the kept client's own and fills gaps (`tests/functions/clients.test.ts`)
+- [x] Birthday and label helpers (`tests/unit/clients.test.ts`); list, page, edit and stylist view (`e2e/12-clients.spec.ts` TC-150 to TC-152, TC-107)
+- [ ] In production: **not verified**; deploy the functions BEFORE the site
+
+## FR-035 — Approvals: choose per service whether online bookings confirm automatically
+
+**Description:** The Approvals page (owner) has a "How each service is booked" panel with a switch per service: **Confirm automatically** or **Hold for my approval**. It writes the same `requiresApproval` field as the service editor (FR-033), so a change applies to the next online booking and never to one already waiting. A service that needs a consultation (FR-037) is always held and its switch is locked.
+
+**Acceptance criteria:**
+
+- [x] The switch writes the service and the label follows (`e2e/21-approval-settings.spec.ts` TC-153)
+
+## FR-036 — While a client is processing, the stylist is free: say so
+
+**Description:** During a booking's processing (rest) time the stylist can take another client. The admin and the customer are told in the same plain words (`src/lib/processingWindow.ts`).
+
+- **Admin:** each booking in the Bookings list with processing time shows "Stylist free 11:00 AM – 11:30 AM (30 min)" and a legend explains the hatching; the booking drawer says it too and has **Book someone into this gap**, which opens the new-booking form for that stylist and window.
+- **Customer:** the service list says what the setting time means; the review sheet and the confirmation show the clock times ("back with you at ...").
+
+**Acceptance criteria:**
+
+- [x] Window and wording helpers (`tests/unit/processingWindow.test.ts`)
+- [x] List chip and legend, drawer callout and gap form, customer notes (`e2e/22-processing-visibility.spec.ts` TC-154 to TC-156)
+
+## FR-037 — Colour services need a phone consultation first
+
+**Description:** A service can be marked **Needs a phone consultation first** (Manage → Stylists & services). Booking it online asks the client to answer the colour questions (coloured or treated before, last coloured, current colour, what they want, other treatments in the past year, any reaction to hair dye, a recent patch test, anything we should know, best time to call). The booking is **held as a request until the salon has rung**, whatever the service's confirm-automatically setting, and is confirmed on the Approvals page.
+
+- The server requires the answers for such a service and validates them (a fixed set of choices, short free text, unknown keys dropped); they are stored on the booking (`consultation`, `needsConsultation`) and never in the public slot projection. A move of an existing booking does not ask again.
+- The owner sees **Call needed** on the booking, the number to ring and when, the answers with the ones worth a look marked, and can copy allergy notes onto the client's record with one button (nothing is copied automatically). The booked stylist reads the answers on their schedule and cannot edit them.
+- The request-received email and text say the salon will call. The owner's notification says a call is needed (no health details in the email). The privacy notice describes these answers as sensitive information. Anonymise removes them from the bookings.
+
+**Acceptance criteria:**
+
+- [x] Questionnaire checks and read-back (`tests/unit/consultation.test.ts`); email wording (`tests/unit/emailRender.test.ts`)
+- [x] Missing / invalid answers refused, forced pending, stored, not in the slot projection, notification wording, cleaned, limit (`tests/functions/createBookingRequest.test.ts`); anonymise removes them (`tests/functions/clients.test.ts`); a stylist cannot edit them (`tests/firestore/roles.test.ts`)
+- [x] Browser: questions required, held, owner view, copy to record, locked switch (`e2e/23-colour-consultation.spec.ts` TC-157 to TC-159)
+- [ ] In production: **not verified**; deploy the functions BEFORE the site; tick the setting on the colour services in Manage

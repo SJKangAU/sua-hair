@@ -118,6 +118,34 @@ export const saveClientDetails = async (
   await batch.commit();
 };
 
+// Adds allergy / sensitivity text to a client (and the card a stylist reads), keeping what is
+// there. "already" when the text is already on the record. Used by "copy to client record" on a
+// colour consultation; nothing writes this automatically.
+export const addClientAllergies = async (
+  db: Firestore,
+  clientId: string,
+  text: string,
+  actor: Actor,
+): Promise<"added" | "already"> => {
+  const clean = cleanProfileText(text, MAX_ALLERGIES);
+  if (!clean) return "already";
+  return runTransaction(db, async (tx) => {
+    const ref = doc(db, "clients", clientId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error("This client's record could not be found.");
+    const current = (snap.get("allergies") as string | undefined) ?? "";
+    if (current.toLowerCase().includes(clean.toLowerCase())) return "already" as const;
+    const next = (current ? `${current}; ${clean}` : clean).slice(0, MAX_ALLERGIES);
+    tx.update(ref, { allergies: next, updatedAt: new Date().toISOString() });
+    tx.update(doc(db, "clientCards", clientId), { allergies: next });
+    tx.set(
+      doc(collection(db, "clients", clientId, "audit")),
+      auditEntry("edit", actor, "added allergy notes from a colour consultation"),
+    );
+    return "added" as const;
+  });
+};
+
 export const setClientBlocked = async (
   db: Firestore,
   clientId: string,

@@ -92,6 +92,107 @@ describe("services that need no approval (DEC-059)", () => {
   });
 });
 
+describe("services that need a colour consultation", () => {
+  const consultation = {
+    treatedBefore: "yes",
+    lastColoured: "3to6months",
+    currentColour: "Dark brown",
+    desiredColour: "Soft caramel balayage",
+    treatments: ["boxDye"],
+    dyeReaction: "no",
+    patchTest: "yes",
+    healthNotes: "",
+    callTime: "afternoon",
+  };
+  // mens-cut stands in for a colour service; the flag is what matters
+  const needsCall = (id = "mens-cut") => db.doc(`services/${id}`).update({ requiresConsultation: true, requiresApproval: false });
+
+  it("refuses a booking for it with no questionnaire, and writes nothing", async () => {
+    await needsCall();
+    const err = await refusal(request({ stylistId: "steve" }));
+    expect(err.code).toBe("invalid");
+    expect(err.message).toMatch(/consultation/i);
+    expect(await count("bookings")).toBe(0);
+  });
+
+  it("holds it as a request even when the service is set to confirm automatically, and stores the answers", async () => {
+    await needsCall();
+    const res = await book(request({ stylistId: "steve", consultation }));
+    expect(res.status).toBe("pending");
+    expect(new Date(res.holdExpiresAt).getTime()).toBe(NOW + 24 * 3_600_000);
+    const booking = (await db.doc(`bookings/${res.bookingId}`).get()).data()!;
+    expect(booking.status).toBe("pending");
+    expect(booking.needsConsultation).toBe(true);
+    expect(booking.consultation).toEqual(consultation);
+    expect(booking.history).toBeUndefined(); // not "confirmed automatically"
+  });
+
+  it("keeps the answers out of the public slot projection", async () => {
+    await needsCall();
+    const res = await book(request({ stylistId: "steve", consultation }));
+    const slot = JSON.stringify((await db.doc(`slotBlocks/${res.bookingId}`).get()).data());
+    expect(slot).not.toMatch(/consultation|caramel|balayage|Dark brown/);
+  });
+
+  it("tells the owner and the stylist that the client has to be rung first", async () => {
+    await needsCall();
+    await book(request({ stylistId: "steve", consultation }));
+    const messages = (await db.collection("notifications").get()).docs.map((d) => String(d.get("message")));
+    expect(messages.some((m) => /call needed first/.test(m) && /Soft caramel balayage/.test(m))).toBe(true);
+    expect(messages.some((m) => /will ring the client first/.test(m))).toBe(true);
+  });
+
+  it("cleans the answers and drops anything not on the form", async () => {
+    await needsCall();
+    const res = await book(
+      request({
+        stylistId: "steve",
+        consultation: { ...consultation, desiredColour: "  Soft   caramel" + String.fromCharCode(10) + " balayage ", isAdmin: true, price: 0 },
+      }),
+    );
+    const stored = (await db.doc(`bookings/${res.bookingId}`).get()).data()!.consultation;
+    expect(stored.desiredColour).toBe("Soft caramel balayage");
+    expect(stored).not.toHaveProperty("isAdmin");
+    expect(stored).not.toHaveProperty("price");
+  });
+
+  it("refuses an incomplete or oversized questionnaire", async () => {
+    await needsCall();
+    const noWish = await refusal(request({ stylistId: "steve", consultation: { ...consultation, desiredColour: "" } }));
+    expect(noWish.code).toBe("invalid");
+    const longWish = await refusal(request({ stylistId: "steve", consultation: { ...consultation, desiredColour: "x".repeat(301) } }));
+    expect(longWish.message).toMatch(/at most 300/);
+    const badChoice = await refusal(request({ stylistId: "steve", consultation: { ...consultation, callTime: "midnight" } }));
+    expect(badChoice.code).toBe("invalid");
+    expect(await count("bookings")).toBe(0);
+  });
+
+  it("is required when ANY chosen service asks for it", async () => {
+    await needsCall("beard-trim");
+    const err = await refusal(request({ stylistId: "steve", serviceIds: ["mens-cut", "beard-trim"] }));
+    expect(err.message).toMatch(/consultation/i);
+    const res = await book(request({ stylistId: "yuto", serviceIds: ["mens-cut", "beard-trim"], consultation }));
+    expect(res.status).toBe("pending");
+  });
+
+  it("does not store answers sent with a service that does not ask for them", async () => {
+    const res = await book(request({ stylistId: "steve", consultation }));
+    const booking = (await db.doc(`bookings/${res.bookingId}`).get()).data()!;
+    expect(booking.consultation).toBeUndefined();
+    expect(booking.needsConsultation).toBeUndefined();
+  });
+
+  it("counts towards the limit of requests waiting for the salon, like any held booking", async () => {
+    await needsCall();
+    const phone = "0411222444";
+    for (const stylistId of ["steve", "yuto"]) {
+      expect((await book(request({ customerPhone: phone, stylistId, consultation }))).status).toBe("pending");
+    }
+    const third = await refusal(request({ customerPhone: phone, stylistId: "elly", consultation }));
+    expect(third.code).toBe("limit");
+  });
+});
+
 describe("a valid request", () => {
   it("writes the booking and its slotBlocks projection together, pending, and returns the exact price", async () => {
     const res = await book(request({ stylistId: "steve", serviceIds: ["mens-cut", "beard-trim"], notes: "Quiet chair please" }));

@@ -110,6 +110,9 @@ describe("bookings", () => {
     await assertFails(db.doc("bookings/own").update({ servicePrice: 1 }));
     await assertFails(db.doc("bookings/own").update({ stylistId: "stylist-2" }));
     await assertFails(db.doc("bookings/own").update({ phases: [{ type: "active", minutes: 15 }] }));
+    // the colour consultation answers are the client's: a stylist reads them, never edits them
+    await assertFails(db.doc("bookings/own").update({ consultation: { desiredColour: "Blonde" } }));
+    await assertFails(db.doc("bookings/own").update({ needsConsultation: false }));
   });
 
   it("stylist: cannot touch another stylist's booking, create or delete any", async () => {

@@ -18,6 +18,7 @@
 
 import type { Firestore } from "firebase-admin/firestore";
 import {
+  CONSULTATION_SMS_NOTE,
   SMS_KINDS,
   effectiveSettings,
   renderSms,
@@ -75,7 +76,9 @@ export const sendBookingSmsCore = async (
     if (client.get("smsOptOut") === true) return "opted-out";
 
     const log = db.doc(`smsLog/${bookingId}_${kind}`);
-    const body = renderSms(settings.templates[kind], smsValuesFor(booking, SALON));
+    const body =
+      renderSms(settings.templates[kind], smsValuesFor(booking, SALON)) +
+      (kind === "received" && booking.consultationCall ? CONSULTATION_SMS_NOTE : "");
     const length = smsLength(body);
     try {
       await log.create({

@@ -10,6 +10,7 @@
 
 import type { ClientAccess } from "../lib/clientAccess";
 import type { Capability } from "../lib/permissions";
+import type { Consultation } from "../lib/consultation";
 
 export interface TieredPrice {
   director: number;
@@ -90,6 +91,9 @@ export interface Service {
   // true = an online booking for this service is held until the owner confirms it.
   // Absent / false = confirmed on the spot (DEC-059).
   requiresApproval?: boolean;
+  // true = booking it online needs a phone consultation first (colour): the client answers a
+  // questionnaire, the booking is held, and the salon rings before confirming. Absent = no.
+  requiresConsultation?: boolean;
   // Weeks until the client is due back for a retouch (e.g. colour regrowth). Optional.
   retouchWeeks?: number;
 }
@@ -249,6 +253,10 @@ export interface Booking {
   // Set on a booking brought in from another system (the Fresha import). The salon already
   // told the client about it, so the "booking confirmed" email / text is not sent when it is
   // created (the day-before reminder still goes out).
+  // Colour consultation (a service with requiresConsultation): the client's answers at booking and a
+  // flag that the salon still has to ring them. Owner and the booked stylist read it.
+  needsConsultation?: boolean;
+  consultation?: Consultation;
   importedFrom?: string;
 }
 

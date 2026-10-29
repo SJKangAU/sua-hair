@@ -23,6 +23,7 @@ import {
   validateEmail,
 } from "../../lib/validation";
 import { combinePhases, phaseTotals } from "../../lib/bookingPhases";
+import { EMPTY_DRAFT, checkConsultation, needsConsultation, type ConsultationDraft } from "../../lib/consultation";
 import {
   BookingCommandError,
   createBookingRequest,
@@ -114,6 +115,8 @@ const BookingForm = () => {
   const [consent, setConsent] = useState(false);
   // Optional, separate, never pre-ticked: offers and reminders to come back (FR-030)
   const [marketing, setMarketing] = useState(false);
+  // Colour: the consultation questionnaire (only used when a chosen service asks for it)
+  const [consultation, setConsultation] = useState<ConsultationDraft>(EMPTY_DRAFT);
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -139,6 +142,8 @@ const BookingForm = () => {
 
   // The booking's phases: services with only hands-on + processing combine
   // exactly as they always did; a service with a return phase runs end to end
+  const consultationNeeded = needsConsultation(selectedServices);
+  const consultationChecked = checkConsultation(consultation);
   const phases = combinePhases(selectedServices);
   const { totalTime, activeTime: totalActiveTime } = phaseTotals(phases);
 
@@ -222,6 +227,10 @@ const BookingForm = () => {
     // Belt-and-braces: the Confirm button is already disabled until consent
     // is given, but guard here too so consentGivenAt is never omitted.
     if (!consent) return;
+    if (consultationNeeded && !consultationChecked.ok) {
+      setSubmitError(consultationChecked.problem);
+      return;
+    }
 
     setSubmitting(true);
     setSubmitError(null);
@@ -239,6 +248,7 @@ const BookingForm = () => {
         ...(notes.trim() ? { notes: notes.trim() } : {}),
         consent: true,
         ...(marketing ? { marketingConsent: true as const } : {}),
+        ...(consultationNeeded && consultationChecked.ok ? { consultation: consultationChecked.value } : {}),
         requestId: requestIdRef.current,
       });
       setReceived({ result, customerName: customerName.trim() });
@@ -301,6 +311,7 @@ const BookingForm = () => {
     validatePhone(customerPhone) &&
     validateName(customerName) &&
     validateEmail(customerEmail) &&
+    (!consultationNeeded || consultationChecked.ok) &&
     consent &&
     !submitting;
 
@@ -365,6 +376,9 @@ const BookingForm = () => {
               consent={consent}
               marketing={marketing}
               errors={errors}
+              needsConsultation={consultationNeeded}
+              consultation={consultation}
+              onConsultationChange={setConsultation}
               onPhoneChange={handlePhoneChange}
               onNameChange={(v) => {
                 setCustomerName(v);

@@ -14,7 +14,7 @@ import {
   type EmailSalon,
   type EmailTemplate,
 } from "../../src/lib/emailRender";
-import { SMS_KINDS } from "../../src/lib/sms";
+import { CONSULTATION_EMAIL_NOTE, SMS_KINDS } from "../../src/lib/sms";
 
 const SALON: EmailSalon = {
   name: "Sua Hair Studio",
@@ -307,5 +307,23 @@ describe("the invitation to come back (FR-030)", () => {
   it("{lastVisit} and {bookingLink} work in the owner's wording", () => {
     const e = renderEmail({ ...DEFAULT_EMAIL_TEMPLATES.winback, intro: "Last time was {lastVisit}. Book: {bookingLink}" }, invite, SALON);
     expect(e.text).toContain("Last time was Friday 12 June. Book: https://suahair.com.au");
+  });
+});
+
+describe("a colour booking that needs a call first", () => {
+  it("the request-received email says the salon will call, in both the HTML and the plain text", () => {
+    const e = renderEmail(DEFAULT_EMAIL_TEMPLATES.received, { ...booking, consultationCall: true }, SALON);
+    expect(e.text).toContain(CONSULTATION_EMAIL_NOTE);
+    expect(e.html).toContain("We will call you to talk through your colour");
+  });
+
+  it("says nothing about a call on an ordinary booking", () => {
+    const e = renderEmail(DEFAULT_EMAIL_TEMPLATES.received, booking, SALON);
+    expect(e.text).not.toContain("phone consultation");
+  });
+
+  it("keeps the owner's own wording and adds the sentence after it", () => {
+    const e = renderEmail({ ...DEFAULT_EMAIL_TEMPLATES.received, intro: "We got it, {name}!" }, { ...booking, consultationCall: true }, SALON);
+    expect(e.text.indexOf("We got it, Jane!")).toBeLessThan(e.text.indexOf("phone consultation"));
   });
 });

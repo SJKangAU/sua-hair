@@ -62,6 +62,8 @@ const EMPTY_FORM = {
   priceJunior: 0,
   // true = an online booking for this service is held until the owner confirms it
   requiresApproval: false,
+  // true = the client answers the colour questionnaire and the salon rings before confirming
+  requiresConsultation: false,
   // weeks until the client is due back for a retouch; "" = none
   retouchWeeks: "" as number | "",
 };
@@ -100,6 +102,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
       priceSenior: service.price.senior,
       priceJunior: service.price.junior,
       requiresApproval: service.requiresApproval === true,
+      requiresConsultation: service.requiresConsultation === true,
       retouchWeeks: service.retouchWeeks ?? "",
     });
     setShowForm(true);
@@ -161,6 +164,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           totalTime,
           price: newPrice,
           requiresApproval: form.requiresApproval,
+          requiresConsultation: form.requiresConsultation,
           // deleteField so clearing the box removes the old value
           retouchWeeks: retouchWeeks === null ? deleteField() : retouchWeeks,
         };
@@ -195,6 +199,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           totalTime,
           price: newPrice,
           requiresApproval: form.requiresApproval,
+          requiresConsultation: form.requiresConsultation,
           ...(retouchWeeks !== null ? { retouchWeeks } : {}),
           status: "active",
           sortOrder: nextSortOrder,
@@ -549,6 +554,33 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               </span>
             </span>
           </label>
+          <label
+            style={{
+              ...labelStyle,
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "flex-start",
+              fontWeight: 400,
+            }}
+          >
+            <input
+              type="checkbox"
+              data-testid="service-requires-consultation"
+              checked={form.requiresConsultation}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, requiresConsultation: e.target.checked }))
+              }
+              style={{ marginTop: "0.2rem" }}
+            />
+            <span>
+              Needs a phone consultation first (colour)
+              <span style={{ display: "block", color: "var(--admin-muted)", fontSize: "0.78rem" }}>
+                The client answers a short colour questionnaire when booking (hair history, current and wanted
+                colour, treatments, allergies). The booking is held until you have rung them, whatever the box
+                above is set to, then you confirm it under Approvals.
+              </span>
+            </span>
+          </label>
           <label style={{ ...labelStyle, maxWidth: "16rem" }}>
             Retouch period (weeks, optional)
             <input
@@ -717,7 +749,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           return detail ? ` (${detail})` : "";
                         })()}
                         {service.retouchWeeks ? ` · retouch every ${service.retouchWeeks} wk` : ""}
-                        {service.requiresApproval ? " · held for approval" : ""}
+                        {service.requiresConsultation ? " · phone consultation first" : service.requiresApproval ? " · held for approval" : ""}
                       </p>
                     </div>
 

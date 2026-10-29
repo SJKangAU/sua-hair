@@ -201,7 +201,15 @@ export const renderSms = (template: string, values: SmsValues): string =>
   fillTemplate(template, values).replace(/[ \t]{2,}/g, " ").trim();
 
 /** The values for a booking. */
+// A colour booking is held until the salon has rung the client; the "request received" email and
+// text say so. (The owner can edit the rest of the wording; this sentence is added to it.)
+export const CONSULTATION_SMS_NOTE = " We'll call you first to talk through your colour.";
+export const CONSULTATION_EMAIL_NOTE =
+  "Colour needs a quick phone consultation first. We will call you to talk through your colour before we confirm your booking.";
+
 export interface SmsBookingFields {
+  /** Set only on the "request received" message of a booking that needs a consultation call */
+  consultationCall?: boolean;
   customerName?: string;
   serviceName?: string;
   services?: { name: string }[];

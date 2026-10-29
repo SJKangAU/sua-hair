@@ -13,6 +13,7 @@ import { businessInstant } from "./businessTime";
 import { buildIcs, type IcsEvent } from "./icsEvent";
 import { timeStringToMinutes } from "./scheduling";
 import {
+  CONSULTATION_EMAIL_NOTE,
   PLACEHOLDERS,
   fillTemplate,
   smsDate,
@@ -395,7 +396,9 @@ export const renderEmail = (template: EmailTemplate, booking: EmailBookingData, 
     subject: oneLine(fillTemplate(template.subject, values)),
     preheader: oneLine(fillTemplate(template.preheader, values)),
     headline: oneLine(fillTemplate(template.headline, values)),
-    intro: fillTemplate(template.intro, values).trim(),
+    intro: [fillTemplate(template.intro, values).trim(), booking.consultationCall ? CONSULTATION_EMAIL_NOTE : ""]
+      .filter(Boolean)
+      .join("\n\n"),
     closing: fillTemplate(template.closing, values).trim(),
     rows: template.showDetails ? detailRows(booking) : [],
     callButton: template.callButton,

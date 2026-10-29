@@ -105,7 +105,9 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
         >
           {confirmed
             ? "Your booking is confirmed. We will email you if you gave us an address."
-            : `This is not confirmed yet. We are holding this time for you and the salon will confirm your booking within ${holdsFor} hours — we will email you if you gave us an address.`}
+            : result.needsConsultation
+              ? `This is not confirmed yet. We will call you to talk through your colour, then confirm your booking. We are holding this time for you for ${holdsFor} hours. If you do not hear from us, please call ${SALON_CONFIG.salonPhone}.`
+              : `This is not confirmed yet. We are holding this time for you and the salon will confirm your booking within ${holdsFor} hours — we will email you if you gave us an address.`}
         </p>
 
         {/* Booking details */}

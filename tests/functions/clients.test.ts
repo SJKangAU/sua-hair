@@ -373,6 +373,31 @@ describe("merge, anonymise and export", () => {
     expect((await recomputeClient(db, "0400000001", NOW)).changed).toBe(false);
   });
 
+  it("profile details set by hand survive a recompute and reach the stylist's card (allergies and pronouns only)", async () => {
+    await twoClients();
+    await db.doc("clients/0400000001").update({ allergies: "PPD allergy", pronouns: "she/her", birthday: "03-12", preferredContact: "text" });
+    // a new booking changes the figures, so the client and its card are rebuilt (an unchanged client is left as it is)
+    await seedBooking(db, "k2", { bookingType: "customer", customerPhone: "0400000001", customerName: "Jade Lee", status: "completed", date: "2026-08-15" });
+    await recomputeClient(db, "0400000001", NOW);
+    expect(await client("0400000001")).toMatchObject({ allergies: "PPD allergy", pronouns: "she/her", birthday: "03-12", preferredContact: "text" });
+    const c = await card("0400000001");
+    expect(c).toMatchObject({ allergies: "PPD allergy", pronouns: "she/her" });
+    expect(JSON.stringify(c)).not.toMatch(/03-12|preferredContact/);
+  });
+
+  it("merge keeps the kept client's own details, fills gaps from the merged one and joins allergies", async () => {
+    await twoClients();
+    await db.doc("clients/0400000001").update({ allergies: "PPD allergy", pronouns: "she/her" });
+    await db.doc("clients/0400000002").update({ allergies: "Latex", pronouns: "they/them", birthday: "05-06", preferredContact: "call" });
+    await mergeClientsCore(db, { keepId: "0400000001", mergeId: "0400000002" }, actor, NOW);
+    const kept = (await client("0400000001"))!;
+    expect(kept.pronouns).toBe("she/her"); // the kept client's own wins
+    expect(kept.birthday).toBe("05-06"); // a gap is filled from the merged client
+    expect(kept.preferredContact).toBe("call");
+    expect(kept.allergies).toBe("PPD allergy; Latex"); // never lost
+    expect(await card("0400000001")).toMatchObject({ allergies: "PPD allergy; Latex" });
+  });
+
   it("a trigger that runs AFTER a merge does not bring the merged-away client back", async () => {
     await twoClients();
     const moved = { ...(await bookingOf("m1")) };
@@ -399,6 +424,18 @@ describe("merge, anonymise and export", () => {
       expect((await db.doc(`clients/${id}`).get()).exists, `client ${id}`).toBe(false);
       expect((await db.doc(`clientCards/${id}`).get()).exists, `card ${id}`).toBe(false);
     }
+  });
+
+  it("anonymise also removes the colour consultation answers from their bookings", async () => {
+    await twoClients();
+    await db.doc("bookings/k1").update({
+      needsConsultation: true,
+      consultation: { treatedBefore: "yes", lastColoured: "1to3months", currentColour: "", desiredColour: "Blonde", treatments: ["none"], dyeReaction: "yes", patchTest: "no", healthNotes: "Sensitive scalp", callTime: "any" },
+    });
+    await anonymiseClientCore(db, { clientId: "0400000001" }, actor, NOW);
+    const b = await bookingOf("k1");
+    expect(b).not.toHaveProperty("consultation");
+    expect(JSON.stringify(b)).not.toMatch(/Blonde|Sensitive scalp/);
   });
 
   it("merge refuses the same client twice, an unknown client and a tombstone", async () => {

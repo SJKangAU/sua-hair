@@ -30,6 +30,7 @@ import Drawer from "../../ui/Drawer";
 import Badge from "../../ui/Badge";
 import StatusIcon from "../../ui/StatusIcon";
 import PhaseBar from "./PhaseBar";
+import ConsultationSection from "./ConsultationSection";
 import PhasesEditor from "../PhasesEditor";
 import BookingHistory from "./BookingHistory";
 import RescheduleForm from "./RescheduleForm";
@@ -580,6 +581,13 @@ const DrawerContent = ({
           />
         )}
       </Section>
+
+      {/* ── Colour consultation: ring them first, and what they answered ── */}
+      {booking.consultation && (
+        <Section title="Colour consultation">
+          <ConsultationSection booking={booking} />
+        </Section>
+      )}
 
       {/* ── Service ── */}
       {isService ? (
