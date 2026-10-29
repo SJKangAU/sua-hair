@@ -4,7 +4,7 @@
 // Saves directly to the stylist's Firestore document as workingHours.
 
 import { useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useSalonData } from "../../../context/SalonDataContext";
 import type {
@@ -113,6 +113,21 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
     setSaving(false);
   };
 
+  // Same hours for every active stylist, so closing time is not set one person at a time
+  const handleApplyToAll = async () => {
+    setSaving(true);
+    try {
+      const batch = writeBatch(db);
+      activeStylists.forEach((s) => batch.update(doc(db, "stylists", s.id), { workingHours: hours }));
+      await batch.commit();
+      onSuccess(`These hours are now set for all ${activeStylists.length} stylists.`);
+    } catch (err) {
+      console.error("StylistHoursEditor apply to all:", err);
+      onError("Failed to apply hours to all stylists. Please try again.");
+    }
+    setSaving(false);
+  };
+
   const salonSchedule = salonSettings.weeklySchedule;
 
   return (
@@ -135,6 +150,7 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
             Per-stylist working hours within salon bounds.
           </p>
         </div>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <button
           onClick={handleSave}
           disabled={saving || !selectedId}
@@ -151,6 +167,25 @@ const StylistHoursEditor = ({ onSuccess, onError }: Props) => {
         >
           {saving ? "Saving…" : "Save Hours"}
         </button>
+        <button
+          onClick={() => {
+            if (window.confirm(`Replace every stylist's hours with these?`)) void handleApplyToAll();
+          }}
+          disabled={saving || activeStylists.length < 2}
+          style={{
+            padding: "0.55rem 1.25rem",
+            background: "var(--surface)",
+            color: "var(--ink)",
+            border: "1px solid var(--border-strong)",
+            borderRadius: "6px",
+            cursor: saving ? "not-allowed" : "pointer",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+          }}
+        >
+          Apply to all stylists
+        </button>
+        </div>
       </div>
 
       {/* Stylist selector */}

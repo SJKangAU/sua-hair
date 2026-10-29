@@ -8,7 +8,7 @@
 // bookmarked or linked to; the open booking drawer is ?booking=<id>, owned by
 // the admin layout. Revenue in the glance strip is owner-only.
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useBookingContext } from "../../context/BookingContext";
@@ -75,6 +75,7 @@ const TodayPage = ({ isOwner }: Props) => {
   const navigate = useNavigate();
   const drawer = useBookingDrawerParam();
   const [params, setParams] = useSearchParams();
+  const dateInput = useRef<HTMLInputElement>(null);
   const nowMinutes = useNowMinutes();
   // Under 900px the timeline grid becomes a day list (MobileAgenda)
   const isNarrow = useMediaQuery(`(max-width: ${ADMIN_NAV_BREAKPOINT - 1}px)`);
@@ -199,23 +200,6 @@ const TodayPage = ({ isOwner }: Props) => {
               gap: "0.75rem 1rem",
             }}
           >
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(1.9rem, 4vw, 2.5rem)",
-                fontWeight: 400,
-                letterSpacing: "-0.01em",
-                lineHeight: 1.1,
-                color: "var(--ink)",
-              }}
-            >
-              {formatDisplayDate(selectedDate, {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </h1>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <button
                 className="bk-ghost"
@@ -235,10 +219,12 @@ const TodayPage = ({ isOwner }: Props) => {
               >
                 <ChevronRight size={18} strokeWidth={2} />
               </button>
-              {!isToday && (
+              {(
                 <button
                   className="bk-ghost"
                   onClick={() => setDate(today)}
+                  tabIndex={isToday ? -1 : 0}
+                  aria-hidden={isToday}
                   title="Back to today (T)"
                   style={{
                     padding: "0.45rem 0.9rem",
@@ -250,12 +236,21 @@ const TodayPage = ({ isOwner }: Props) => {
                     fontSize: "var(--text-sm)",
                     fontWeight: 500,
                     fontFamily: "var(--font-body)",
+                    visibility: isToday ? "hidden" : "visible",
                   }}
                 >
                   Today
                 </button>
               )}
               <label
+                onClick={(e) => {
+                  if (e.target === dateInput.current) return;
+                  try {
+                    dateInput.current?.showPicker();
+                  } catch {
+                    dateInput.current?.focus();
+                  }
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -274,6 +269,7 @@ const TodayPage = ({ isOwner }: Props) => {
                   aria-hidden="true"
                 />
                 <input
+                  ref={dateInput}
                   type="date"
                   aria-label="Jump to date"
                   value={selectedDate}
@@ -290,6 +286,23 @@ const TodayPage = ({ isOwner }: Props) => {
                 />
               </label>
             </div>
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(1.9rem, 4vw, 2.5rem)",
+                fontWeight: 400,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.1,
+                color: "var(--ink)",
+              }}
+            >
+              {formatDisplayDate(selectedDate, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </h1>
           </div>
         </div>
 
