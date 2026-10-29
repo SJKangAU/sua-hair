@@ -29,7 +29,7 @@ test.beforeEach(async () => {
 });
 
 async function openImport(page: Page) {
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=import");
   await expect(page.getByTestId("client-import")).toBeVisible();
 }
 

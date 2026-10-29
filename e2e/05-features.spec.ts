@@ -66,7 +66,7 @@ test("TC-035 the owner is notified of a new online booking, and the notification
 test("TC-036 closing a date in Manage -> Opening hours makes it unbookable for customers", async ({ page, browser }) => {
   const day = upcoming(5, 10);
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=hours");
   await owner.locator('input[type="date"]').fill(day);
   // the new-override type defaults to Closed
   await owner.getByRole("button", { name: "+ Add", exact: true }).click();

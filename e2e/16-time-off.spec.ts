@@ -159,7 +159,7 @@ test("TC-135 declining releases the held time and tells the stylist; a stylist c
 
 test("TC-136 the owner's policy: don't block while waiting, and short blocks apply at once", async ({ browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=policies");
   await expect(owner.getByTestId("timeoff-policy")).toBeVisible();
   await expect(owner.getByTestId("timeoff-policy-hold")).toBeChecked();
   await expect(owner.getByTestId("timeoff-policy-save")).toBeDisabled();

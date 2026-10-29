@@ -85,7 +85,7 @@ async function seedTeam(): Promise<void> {
 const steveRecord = async () => (await readCollection("users")).find((u) => u.email === STEVE_EMAIL);
 
 async function ownerAddsSteve(page: Page, scope: "own" | "some" | "all", colleagues: string[] = []): Promise<string> {
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=access");
   await expect(page.getByTestId("team-access")).toBeVisible();
   await page.getByTestId("team-add-email").fill(STEVE_EMAIL);
   await page.getByTestId("team-add-stylist").selectOption("steve");
@@ -118,7 +118,7 @@ test.beforeEach(async () => {
 
 test("TC-120 the owner gives a stylist a role in Manage; the team list shows them", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=access");
   await expect(page.getByTestId("team-access")).toBeVisible();
   await expect(page.getByTestId("team-no-stylists")).toBeVisible();
   // nothing to save until something is chosen
@@ -197,7 +197,7 @@ test("TC-123 changing the access takes effect on the stylist's open screen, with
   await expect(page.getByTestId("client-scope")).toHaveCount(0);
 
   // the owner widens it to every client
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=access");
   await owner.getByTestId(`team-${uid}-scope`).selectOption("all");
   await owner.getByTestId(`team-save-${uid}`).click();
   await expect(owner.getByText("Saved. Their screens update in a moment.")).toBeVisible();

@@ -128,7 +128,7 @@ test("TC-130 moving (the default): the original stays until the owner approves, 
 
 test("TC-131 the owner's policy: cutoff and message, switches, and what the page then offers", async ({ page, browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=policies");
   await expect(owner.getByTestId("policy-settings")).toBeVisible();
   await expect(owner.getByTestId("policy-cutoff")).toHaveValue("24");
   await expect(owner.getByTestId("policy-mode-request")).toBeChecked();
@@ -169,7 +169,7 @@ test("TC-131 the owner's policy: cutoff and message, switches, and what the page
 
 test("TC-132 'moves straight away': the booking moves at once and the old time is freed", async ({ page, browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=policies");
   await owner.getByTestId("policy-mode-instant").check();
   await owner.getByTestId("policy-save").click();
   await expect(owner.getByText("Cancellation policy saved.")).toBeVisible();

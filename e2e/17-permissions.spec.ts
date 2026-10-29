@@ -55,7 +55,7 @@ test.beforeEach(async () => {
 
 test("TC-139 every stylist can edit message wording once the owner allows it", async ({ browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=access");
   await expect(owner.getByTestId("team-defaults")).toBeVisible();
   await expect(owner.getByTestId("team-defaults-cap-editMessages")).not.toBeChecked();
   await expect(owner.getByTestId("team-defaults-save")).toBeDisabled();
@@ -96,7 +96,7 @@ test("TC-139 every stylist can edit message wording once the owner allows it", a
 
 test("TC-140 one stylist can be allowed, or stopped, on their own", async ({ browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=access");
   const steveUid = await ownerAdds(owner, STEVE, "steve");
   const yutoUid = await ownerAdds(owner, YUTO, "yuto");
 
@@ -139,7 +139,7 @@ test("TC-140 one stylist can be allowed, or stopped, on their own", async ({ bro
 
 test("TC-141 taking a permission away reaches an open screen without signing out", async ({ browser }) => {
   const { page: owner } = await newAdminPage(browser);
-  await owner.goto("/admin/manage");
+  await owner.goto("/admin/manage?section=access");
   await ownerAdds(owner, STEVE, "steve");
   await owner.getByTestId("team-defaults-cap-editMessages").check();
   await owner.getByTestId("team-defaults-save").click();

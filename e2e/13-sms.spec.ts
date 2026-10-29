@@ -24,7 +24,7 @@ const outbox = async () => await readCollection("smsOutbox");
 const settingsDoc = async () => (await readCollection("privateSettings")).find((d) => d.id === "sms");
 
 async function openSms(page: Page) {
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=messages");
   await expect(page.getByTestId("sms-settings")).toBeVisible();
   // the saved settings have loaded once the checkbox is usable
   await expect(page.locator("#sms-enabled")).toBeEnabled();
@@ -167,7 +167,7 @@ test("TC-114 a booking becomes a text in the owner's wording; off means nothing;
   expect(log[0]).toMatchObject({ kind: "confirmed", status: "sent", toEnding: "444" });
   expect(JSON.stringify(log)).not.toContain("0455333444");
   expect(JSON.stringify(log)).not.toContain("Nina");
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=messages");
   await expect(page.getByTestId("sms-log")).toContainText("Booking confirmed to …444");
 
   // 6. allowing texts again clears the flag

@@ -428,7 +428,7 @@ test("TC-107 a stylist sees only their own clients, no spend, no blocked reason;
 
 test("TC-108 import then directory: imported clients appear with no history; rollback removes them; an existing client is untouched", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=import");
   await page.getByTestId("client-import-file").setInputFiles("tests/fixtures/clients-synthetic.csv");
   await expect(page.getByTestId("client-import-dryrun")).toBeVisible();
   await page.getByRole("button", { name: /^Import \d+ clients/ }).click();
@@ -446,7 +446,7 @@ test("TC-108 import then directory: imported clients appear with no history; rol
   await search(page, "jade lee");
   await expect(row(page, "Jade Lee")).toBeVisible();
 
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=import");
   await page.getByRole("button", { name: "Roll back" }).first().click();
   await page.getByRole("button", { name: "Yes, roll back" }).click();
   await expect(page.getByTestId("client-import-batch")).toContainText("rolled back");
@@ -468,7 +468,7 @@ test("TC-109 Build the client list: dry run, apply, and the clients appear; roll
   await env.cleanup();
 
   const { page } = await newAdminPage(browser);
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=import");
   await page.getByTestId("backfill-dry").click();
   await expect(page.getByTestId("backfill-result")).toBeVisible();
   await expect(page.getByTestId("backfill-clientsToCreate")).toHaveText("2");
@@ -482,7 +482,7 @@ test("TC-109 Build the client list: dry run, apply, and the clients appear; roll
   await expect(page.getByTestId("client-row")).toHaveCount(2);
   await expect(row(page, "Visit Record Two")).toContainText("Blocked");
 
-  await page.goto("/admin/manage");
+  await page.goto("/admin/manage?section=import");
   await page.getByTestId("backfill-batch").first().getByRole("button", { name: "Roll back" }).click();
   await page.getByRole("button", { name: "Yes, roll back" }).click();
   await expect(page.getByTestId("backfill-batch").first()).toContainText("rolled back");
