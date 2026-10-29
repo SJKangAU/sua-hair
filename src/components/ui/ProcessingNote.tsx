@@ -1,13 +1,14 @@
 // ProcessingNote.tsx
-// Shows, in the same plain words everywhere, that during a booking's processing time the
+// Admin: shows, in the same plain words everywhere, that during a booking's processing time the
 // stylist is free to take another client (see src/lib/processingWindow.ts for the wording).
+// Customer: only how long the visit takes (DurationNote), never what the salon does with the time.
 //   FreeWindowChip       admin lists: a hatched swatch and "Stylist free 10:30 AM – 11:00 AM (30 min)"
 //   FreeWindowLegend     admin lists: one line explaining the hatched swatch
-//   ProcessingExplainer  customer: a hatched swatch and a sentence (a hint before a time is
-//                        chosen, the clock times after)
+//   DurationNote         customer: "Allow 1 hr 30 min in all, including 30 min of setting time..."
 // The hatching matches the timeline's processing band and PhaseBar.
 
-import { customerHint, customerWindowSentence, freeWindowLabel, type FreeWindow } from "../../lib/processingWindow";
+import type { Phase } from "../../lib/bookingPhases";
+import { durationSentence, freeWindowLabel, type FreeWindow } from "../../lib/processingWindow";
 
 const HATCH =
   "repeating-linear-gradient(45deg, var(--surface-raised), var(--surface-raised) 3px, var(--border-strong) 3px, var(--border-strong) 6px)";
@@ -68,32 +69,21 @@ export const FreeWindowLegend = () => (
   </p>
 );
 
-interface ExplainerProps {
-  // with a window: the clock times; with only minutes: the hint shown before a time is chosen
-  window?: FreeWindow;
-  minutes?: number;
+interface DurationProps {
+  startTime: string; // "10:30 AM"
+  phases: readonly Phase[];
 }
 
-export const ProcessingExplainer = ({ window: w, minutes }: ExplainerProps) => {
-  const text = w ? customerWindowSentence(w) : minutes && minutes > 0 ? customerHint(minutes) : "";
+// Customer: how long the visit takes, nothing more
+export const DurationNote = ({ startTime, phases }: DurationProps) => {
+  const text = durationSentence(startTime, phases);
   if (!text) return null;
   return (
     <p
-      data-testid="processing-explainer"
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 8,
-        margin: "0.5rem 0 0",
-        fontSize: "var(--text-sm)",
-        lineHeight: 1.45,
-        color: "var(--ink-soft)",
-      }}
+      data-testid="duration-note"
+      style={{ margin: "0.5rem 0 0", fontSize: "var(--text-sm)", lineHeight: 1.45, color: "var(--ink-soft)" }}
     >
-      <span style={{ marginTop: 5, display: "inline-flex" }}>
-        <Swatch />
-      </span>
-      <span>{text}</span>
+      {text}
     </p>
   );
 };

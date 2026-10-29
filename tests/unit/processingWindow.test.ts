@@ -5,8 +5,8 @@
 import { describe, expect, it } from "vitest";
 import {
   bookingFreeWindows,
-  customerHint,
-  customerWindowSentence,
+  durationSentence,
+  formatDuration,
   freeWindowLabel,
   freeWindowSentence,
   freeWindows,
@@ -60,10 +60,25 @@ describe("the wording", () => {
     expect(freeWindowSentence(w)).toContain("10:30 AM – 11:00 AM");
   });
 
-  it("tells the customer what the setting time means, with and without a time", () => {
-    expect(customerHint(30)).toContain("30 min of setting time");
-    expect(customerHint(30)).toContain("another client");
-    expect(customerWindowSentence(w)).toContain("10:30 AM – 11:00 AM");
-    expect(customerWindowSentence(w)).toContain("back with you at 11:00 AM");
+  it("tells the customer only how long it takes, never what the stylist does meanwhile", () => {
+    expect(durationSentence("10:00 AM", [A(30), R(30)])).toBe(
+      "Allow 1 hr in all, including 30 min of setting time. You'll be finished around 11:00 AM.",
+    );
+    expect(durationSentence("10:00 AM", [A(60), R(30), A(30)])).toBe(
+      "Allow 2 hr in all, including 30 min of setting time. You'll be finished around 12:00 PM.",
+    );
+    expect(durationSentence("2:15 PM", [A(45)])).toBe("Allow 45 min in all. You'll be finished around 3:00 PM.");
+    for (const text of [durationSentence("10:00 AM", [A(30), R(30)]), durationSentence("9:00 AM", [A(30), R(45), A(15)])]) {
+      expect(text).not.toMatch(/stylist|another|client|free|back with you/i);
+    }
+    expect(durationSentence("whenever", [A(30), R(30)])).toBe("");
+    expect(durationSentence("10:00 AM", [])).toBe("");
+  });
+
+  it("formatDuration reads in hours and minutes", () => {
+    expect(formatDuration(45)).toBe("45 min");
+    expect(formatDuration(60)).toBe("1 hr");
+    expect(formatDuration(90)).toBe("1 hr 30 min");
+    expect(formatDuration(0)).toBe("0 min");
   });
 });

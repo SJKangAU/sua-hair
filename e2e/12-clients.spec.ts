@@ -517,6 +517,34 @@ test("TC-152 the owner edits allergies, pronouns, birthday and preferred contact
   await page.context().close();
 });
 
+test("TC-160 a client due back for a retouch is flagged in the list and on their page", async ({ browser }) => {
+  // a one-week retouch period on the service they all had (Men's Cut)
+  const env = await connectEnv();
+  try {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("services/mens-cut").update({ retouchWeeks: 1 });
+    });
+  } finally {
+    await env.cleanup();
+  }
+  const { page } = await newAdminPage(browser);
+  await openClients(page);
+  // Rae Lee was in 5 days ago: due in 2 days. Sam Walker last visited 200 days ago: long overdue.
+  // Jade Lee already has a booking coming up, so she is not prompted.
+  await expect(row(page, "Rae Lee").getByTestId("retouch-badge")).toHaveText("Retouch due soon");
+  await expect(row(page, "Sam Walker").getByTestId("retouch-badge")).toHaveText("Retouch overdue");
+  await expect(row(page, "Jade Lee").getByTestId("retouch-badge")).toHaveCount(0);
+  await expect(row(page, "Nia Newcomer").getByTestId("retouch-badge")).toHaveCount(0); // never visited
+
+  await page.goto("/admin/clients/0400000003"); // Rae Lee
+  await expect(page.getByTestId("stat-retouch")).toContainText("(in 2 days)");
+  await page.goto("/admin/clients/0400000002"); // Sam Walker
+  await expect(page.getByTestId("stat-retouch")).toContainText("overdue by");
+  await page.goto("/admin/clients/0400000001"); // Jade Lee
+  await expect(page.getByTestId("stat-retouch")).toHaveText("Booked");
+  await page.context().close();
+});
+
 test("TC-108 import then directory: imported clients appear with no history; rollback removes them; an existing client is untouched", async ({ browser }) => {
   const { page } = await newAdminPage(browser);
   await page.goto("/admin/manage?section=import");

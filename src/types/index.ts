@@ -358,6 +358,8 @@ export interface ClientSummary {
   hasNoShows: boolean; // noShowCount > 0, for indexed filtering
   favouriteStylistId: string; // "" when none
   favouriteServiceIds: string[];
+  // the services at their most recent visit (for the retouch reminder); absent on a record not yet recomputed
+  lastServiceIds?: string[];
   stylistIds: string[]; // every stylist who has a booking with them
   avgDaysBetweenVisits: number | null;
   bookingCount: number; // service bookings, any status

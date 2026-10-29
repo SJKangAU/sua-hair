@@ -17,6 +17,7 @@ import { useSalonData } from "../../../context/SalonDataContext";
 import Avatar from "../../ui/Avatar";
 import { businessToday } from "../../../lib/businessTime";
 import { SOURCE_LABELS, birthdayLabel, fmtDate } from "../../../lib/clientFormat";
+import { retouchDue } from "../../../lib/retouch";
 import { hasMarketingConsent } from "../../../lib/marketing";
 import type { Actor } from "../../../lib/clientActions";
 import type { ClientAccess } from "../../../lib/clientAccess";
@@ -217,7 +218,7 @@ const ClientView = ({ clientId, role, stylistId, access, canEditRecords = false,
       </div>
 
       {/* Key numbers (owner) */}
-      {full && <ClientFigures client={full} stylistName={stylistName} serviceName={serviceName} />}
+      {full && <ClientFigures client={full} stylistName={stylistName} serviceName={serviceName} retouch={retouchDue(full, services, today)} />}
 
       <ClientHistory
         clientId={clientId}

@@ -334,7 +334,7 @@ Spec: `e2e/19-client-records.spec.ts`; logic in `tests/unit/clientRecords.test.t
 | TC-153 | Approvals panel | Switch a service to confirm automatically and back | Written to the service; the label follows |
 | TC-154 | Bookings list | A perm with a processing gap and a plain cut | Only the perm shows "Stylist free 11:00 AM – 11:30 AM (30 min)", with a legend |
 | TC-155 | Booking drawer | Open the perm, press Book someone into this gap | The drawer says the stylist is free; the new-booking form opens for that gap |
-| TC-156 | Customer wording | Choose a colour service and book it | The list, review and confirmation explain the setting time and the time they are back |
+| TC-156 | Customer wording | Choose a colour service and book it | The list, review and confirmation say how long to allow and the setting time inside it; nothing says the stylist is free or with someone else |
 | TC-157 | Colour questions | Book a colour service that needs a consultation | Questions shown and required; the booking is held ("Request received") even though the service confirms automatically; answers stored, not in slotBlocks |
 | TC-158 | No consultation | Book a service without the setting | No questions; booked as usual |
 | TC-159 | Owner view | Open the held colour booking | "Call needed", the number and best time, the answers with alerts, copy allergy notes to the client record (once), the Approvals switch locked |

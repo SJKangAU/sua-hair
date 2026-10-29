@@ -13,6 +13,8 @@ import useClientDirectory from "../../../hooks/useClientDirectory";
 import Avatar from "../../ui/Avatar";
 import ClientSummaryStrip from "./ClientSummaryStrip";
 import { businessToday } from "../../../lib/businessTime";
+import { useSalonData } from "../../../context/SalonDataContext";
+import { retouchDue } from "../../../lib/retouch";
 import { fmtDate, fmtMoney, sinceLabel } from "../../../lib/clientFormat";
 import { scopeOptions, type ClientAccess } from "../../../lib/clientAccess";
 import {
@@ -140,6 +142,7 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
   }, [initialSearch, setSearch]);
   const owner = role === "owner";
   const today = businessToday();
+  const { services } = useSalonData();
   const sortable = owner && d.filter === "all" && !d.searching;
 
   return (
@@ -349,6 +352,14 @@ const ClientDirectory = ({ role, stylistId, access, stylistNames, onOpen, initia
                         )}
                         {owner && isFull(c) && matchesFilter(c, "new", today) && <span style={softBadge}>New</span>}
                         {owner && isFull(c) && matchesFilter(c, "lapsed", today) && <span style={softBadge}>Lapsed</span>}
+                        {owner && isFull(c) && (() => {
+                          const due = retouchDue(c, services, today);
+                          return due && due.state !== "later" ? (
+                            <span style={softBadge} data-testid="retouch-badge" title={`Due for a retouch ${due.dueDate}`}>
+                              {due.state === "overdue" ? "Retouch overdue" : "Retouch due soon"}
+                            </span>
+                          ) : null;
+                        })()}
                         {owner && isFull(c) && c.noShowCount > 0 && (
                           <span style={softBadge}>
                             {c.noShowCount} no-show{c.noShowCount === 1 ? "" : "s"}

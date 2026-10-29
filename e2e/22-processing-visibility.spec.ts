@@ -3,7 +3,7 @@
 // admin screens say so: a "Stylist free" chip on each booking in the Bookings list with
 // a legend, a callout in the booking drawer, and a button that opens the new-booking form
 // for that gap (DEC-026 phases). The customer is told the same: in the service list, on the
-// review sheet with the clock times, and on the confirmation. TC-154 .. TC-156.
+// review sheet and on the confirmation, as DURATION only (never what the stylist does meanwhile). TC-154 .. TC-156.
 import { expect, test } from "@playwright/test";
 import { insertPhasedBooking, seedEmulator } from "./seed";
 import { submitDetails, toDetailsStep, upcoming } from "./helpers";
@@ -69,12 +69,12 @@ test("TC-155 the booking drawer says the stylist is free and 'Book someone into 
   await page.context().close();
 });
 
-test("TC-156 the customer is told that the stylist looks after someone else while their colour sets", async ({ page }) => {
+test("TC-156 the customer is told how long it takes, and never that the stylist is free meanwhile", async ({ page }) => {
   await page.goto("/");
   // a service with setting time says so right in the list; one without does not
   const colour = page.getByRole("button", { name: /Colour \(Regrowth\)/ }).first();
-  await expect(colour).toContainText("another client while it sets");
-  await expect(page.getByRole("button", { name: /Ladies Cut/ }).first()).not.toContainText("another client");
+  await expect(colour).toContainText("60 min"); // how long it takes in all
+  await expect(colour).toContainText("30 active + 30 setting");
 
   await toDetailsStep(page, {
     services: ["Colour (Regrowth)"],
@@ -86,9 +86,24 @@ test("TC-156 the customer is told that the stylist looks after someone else whil
     email: "tina@example.com",
   });
   await submitDetails(page, { phone: "0412 345 678", name: "Tina Newcustomer", email: "tina@example.com" });
-  // the confirmation explains it again, with the times: hands-on 11:00, setting 11:30 - 12:00
+  // the confirmation says how long to allow, with the setting time inside it
   await expect(page.getByRole("heading", { name: /Request received|Booked/ })).toBeVisible();
-  const note = page.getByTestId("processing-explainer");
-  await expect(note).toContainText("11:30 AM – 12:00 PM");
-  await expect(note).toContainText("back with you at 12:00 PM");
+  const note = page.getByTestId("duration-note");
+  await expect(note).toContainText("Allow 1 hr in all, including 30 min of setting time");
+  await expect(note).toContainText("finished around 12:00 PM");
+  // nothing anywhere in the customer flow says the stylist is free or with someone else
+  await expect(page.locator("body")).not.toContainText(/another client|stylist is free|looks after/i);
+});
+
+test("TC-161 the manage-booking page tells the customer how long to allow, and nothing about the stylist's time", async ({ page }) => {
+  await insertPhasedBooking(
+    "tina",
+    { ...perm, customerName: "Tina Customer", manageToken: "e2e-manage-token-0123456789", time: "2:00 PM" },
+    h(14),
+    [A(60), R(30), A(30)],
+  );
+  await page.goto("/manage?b=tina&t=e2e-manage-token-0123456789");
+  await expect(page.getByTestId("manage-details")).toBeVisible();
+  await expect(page.getByTestId("manage-duration")).toHaveText("2 hr");
+  await expect(page.locator("body")).not.toContainText(/another client|stylist is free|looks after/i);
 });

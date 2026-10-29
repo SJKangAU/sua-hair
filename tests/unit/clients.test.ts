@@ -462,3 +462,20 @@ describe("client page helpers", () => {
     expect(previewNotes([])).toEqual([]);
   });
 });
+
+describe("the services at the last visit", () => {
+  it("lists the services of the most recent visit day only, and nothing for a client with no visit", () => {
+    const summary = computeClientSummary(
+      [
+        b({ id: "o1", date: "2026-06-01", serviceId: "mens-cut" }),
+        b({ id: "n1", date: "2026-09-01", serviceId: "colour", services: [{ id: "colour" }, { id: "toner" }] }),
+        b({ id: "n2", date: "2026-09-01", serviceId: "mens-cut" }),
+        b({ id: "f1", date: "2026-12-01", status: "confirmed", serviceId: "balayage" }), // upcoming: not a visit
+      ],
+      TODAY,
+    );
+    expect(summary.lastServiceIds).toEqual(["colour", "toner", "mens-cut"]);
+    expect(computeClientSummary([], TODAY).lastServiceIds).toEqual([]);
+    expect(computeClientSummary([b({ id: "u1", date: "2026-12-01", status: "confirmed" })], TODAY).lastServiceIds).toEqual([]);
+  });
+});

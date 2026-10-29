@@ -14,7 +14,6 @@
 // computed slots potentially invalid.
 
 import { describePhases, resolvePhases } from "../../lib/bookingPhases";
-import { ProcessingExplainer } from "../ui/ProcessingNote";
 import { useState } from "react";
 import type { FirestoreService } from "../../hooks/useServices";
 
@@ -233,12 +232,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                             return detail ? ` · ${detail}` : "";
                           })()}
                         </p>
-                        {/* Setting time: the stylist is with someone else then */}
-                        <ProcessingExplainer
-                          minutes={resolvePhases(service)
-                            .filter((p) => p.type === "rest")
-                            .reduce((sum, p) => sum + p.minutes, 0)}
-                        />
+
                       </div>
 
                       {/* Price */}

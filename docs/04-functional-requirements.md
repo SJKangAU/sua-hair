@@ -775,12 +775,12 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 **Description:** During a booking's processing (rest) time the stylist can take another client. The admin and the customer are told in the same plain words (`src/lib/processingWindow.ts`).
 
 - **Admin:** each booking in the Bookings list with processing time shows "Stylist free 11:00 AM – 11:30 AM (30 min)" and a legend explains the hatching; the booking drawer says it too and has **Book someone into this gap**, which opens the new-booking form for that stylist and window.
-- **Customer:** the service list says what the setting time means; the review sheet and the confirmation show the clock times ("back with you at ...").
+- **Customer:** only how long it takes. The service list shows the hands-on and setting minutes; the review sheet and the confirmation say "Allow 1 hr in all, including 30 min of setting time. You'll be finished around 12:00 PM."; the manage-booking page shows how long to allow. The customer is never told that the stylist is free or with someone else meanwhile (owner's instruction).
 
 **Acceptance criteria:**
 
 - [x] Window and wording helpers (`tests/unit/processingWindow.test.ts`)
-- [x] List chip and legend, drawer callout and gap form, customer notes (`e2e/22-processing-visibility.spec.ts` TC-154 to TC-156)
+- [x] List chip and legend, drawer callout and gap form (`e2e/22-processing-visibility.spec.ts` TC-154, TC-155); the customer sees duration only (TC-156)
 
 ## FR-037 — Colour services need a phone consultation first
 

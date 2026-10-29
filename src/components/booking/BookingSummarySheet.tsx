@@ -13,8 +13,7 @@
 
 import { parseLocalDate } from "../../lib/dates";
 import type { Phase } from "../../lib/bookingPhases";
-import { freeWindows } from "../../lib/processingWindow";
-import { ProcessingExplainer } from "../ui/ProcessingNote";
+import { DurationNote } from "../ui/ProcessingNote";
 
 const SHEET_CSS = `
   @keyframes bkSheetUp {
@@ -224,12 +223,11 @@ const BookingSummarySheet = ({
             ))}
           </div>
 
-          {phases &&
-            freeWindows(time, phases).map((w) => (
-              <div key={w.start} style={{ marginBottom: "1.25rem" }}>
-                <ProcessingExplainer window={w} />
-              </div>
-            ))}
+          {phases && phases.some((p) => p.type === "rest") && (
+            <div style={{ marginBottom: "1.25rem" }}>
+              <DurationNote startTime={time} phases={phases} />
+            </div>
+          )}
 
           {/* Total */}
           <div

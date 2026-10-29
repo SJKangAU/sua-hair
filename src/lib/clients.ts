@@ -164,9 +164,22 @@ export const EMPTY_SUMMARY: ClientSummary = {
   hasNoShows: false,
   favouriteStylistId: "",
   favouriteServiceIds: [],
+  lastServiceIds: [],
   stylistIds: [],
   avgDaysBetweenVisits: null,
   bookingCount: 0,
+};
+
+// The services at the most recent visit day (up to 5), in the order booked
+const lastServiceIds = (visits: SummaryBooking[]): string[] => {
+  const lastDate = visits.length ? visits[visits.length - 1].date : "";
+  const ids: string[] = [];
+  for (const v of visits.filter((x) => x.date === lastDate)) {
+    for (const id of v.services?.length ? v.services.map((s) => s.id) : [v.serviceId]) {
+      if (id && id !== "break" && !ids.includes(id)) ids.push(id);
+    }
+  }
+  return ids.slice(0, 5);
 };
 
 export const computeClientSummary = (
@@ -221,6 +234,7 @@ export const computeClientSummary = (
     hasNoShows: noShows > 0,
     favouriteStylistId: topIds(stylistCounts, stylistLatest, 1)[0] ?? "",
     favouriteServiceIds: topIds(serviceCounts, serviceLatest, 3),
+    lastServiceIds: lastServiceIds(visits),
     stylistIds: [
       ...new Set(
         mine

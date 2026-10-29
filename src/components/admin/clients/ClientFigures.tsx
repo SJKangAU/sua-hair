@@ -4,12 +4,15 @@
 // old flat grid used.
 
 import { fmtDate, fmtMoney, noShowRate } from "../../../lib/clientFormat";
+import { retouchRelative, type RetouchDue } from "../../../lib/retouch";
 import type { Client } from "../../../types";
 
 interface Props {
   client: Client;
   stylistName: (id: string) => string;
   serviceName: (id: string) => string;
+  // when they are due back for a retouch, if the services of their last visit have a retouch period
+  retouch?: RetouchDue | null;
 }
 
 const Row = ({ label, value, testId }: { label: string; value: string; testId: string }) => (
@@ -50,7 +53,7 @@ const Group = ({
   </div>
 );
 
-const ClientFigures = ({ client: c, stylistName, serviceName }: Props) => (
+const ClientFigures = ({ client: c, stylistName, serviceName, retouch }: Props) => (
   <section
     aria-label="Key numbers"
     data-testid="client-stats"
@@ -74,6 +77,11 @@ const ClientFigures = ({ client: c, stylistName, serviceName }: Props) => (
         testId="stat-next"
       />
       <Row label="Days between visits" value={c.avgDaysBetweenVisits === null ? "-" : String(c.avgDaysBetweenVisits)} testId="stat-gap" />
+      <Row
+        label="Retouch due"
+        value={retouch ? `${fmtDate(retouch.dueDate)} (${retouchRelative(retouch)})` : c.hasUpcoming ? "Booked" : "-"}
+        testId="stat-retouch"
+      />
     </Group>
 
     <Group title="Preferences">

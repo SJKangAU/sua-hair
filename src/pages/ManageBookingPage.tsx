@@ -17,6 +17,7 @@ import {
 import { addDays, todayString } from "../lib/dates";
 import { smsDate } from "../lib/sms";
 import SiteFooter from "../components/legal/SiteFooter";
+import { formatDuration } from "../lib/processingWindow";
 
 type Stage = "loading" | "view" | "confirm-cancel" | "pick" | "done" | "gone";
 
@@ -201,6 +202,14 @@ const ManageBookingPage = () => {
               <dd style={{ margin: 0 }}>{view.serviceName}</dd>
               <dt style={{ color: "var(--ink-muted)" }}>Stylist</dt>
               <dd style={{ margin: 0 }}>{view.stylistName}</dd>
+              {view.totalTime > 0 && (
+                <>
+                  <dt style={{ color: "var(--ink-muted)" }}>Allow</dt>
+                  <dd style={{ margin: 0 }} data-testid="manage-duration">
+                    {formatDuration(view.totalTime)}
+                  </dd>
+                </>
+              )}
             </dl>
 
             {view.pendingChange && view.status === "confirmed" && (

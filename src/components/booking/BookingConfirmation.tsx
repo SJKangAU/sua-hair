@@ -10,8 +10,7 @@
 
 import { getGoogleCalendarLink, downloadICSFile } from "../../lib/calendar";
 import { phasesFromLegacy } from "../../lib/bookingPhases";
-import { freeWindows } from "../../lib/processingWindow";
-import { ProcessingExplainer } from "../ui/ProcessingNote";
+import { DurationNote } from "../ui/ProcessingNote";
 import { parseLocalDate } from "../../lib/dates";
 import { SALON_CONFIG } from "../../lib/config";
 import type { BookingRequestResult } from "../../lib/bookingApi";
@@ -213,12 +212,14 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
             </span>
           </div>
 
-          {result.restTime > 0 &&
-            freeWindows(result.time, phasesFromLegacy(result.activeTime, result.restTime, result.totalTime)).map((w) => (
-              <div key={w.start} style={{ marginTop: "0.75rem" }}>
-                <ProcessingExplainer window={w} />
-              </div>
-            ))}
+          {result.restTime > 0 && (
+            <div style={{ marginTop: "0.75rem" }}>
+              <DurationNote
+                startTime={result.time}
+                phases={phasesFromLegacy(result.activeTime, result.restTime, result.totalTime)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Calendar buttons */}
