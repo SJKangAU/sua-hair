@@ -96,6 +96,10 @@ const BookingSummarySheet = ({
         <div
           style={{
             position: "relative",
+            width: "100%",
+            maxWidth: 520, // a centred card on wide screens; full width on phones
+            alignSelf: "center",
+            boxSizing: "border-box",
             background: "var(--surface)",
             borderRadius: "20px 20px 0 0",
             padding: "1.75rem 1.5rem 2.5rem",
