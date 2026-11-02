@@ -237,6 +237,17 @@ These ship together on `main`. **Nothing changes for clients or stylists until t
 
 *Rollback:* grant nothing and leave the new sections alone and the old behaviour is unchanged. The customer link can be turned off by switching both options off in Cancellation & change policy. Redeploying the previous rules removes the new access (stylists lose the permissions at once).
 
+## Confirm on the spot, Fresha import, client details, colour consultation (FR-032 to FR-038): what to add
+
+Since the section above, **no rule or index changed** (checked with `git diff 355bbe9~1 HEAD -- firestore.rules firestore.indexes.json`, empty); the server changes are in `functions/src` (`bookingCommands.ts`, `clients.ts`, `email/templates.ts`, `sms/send.ts`, `index.ts`). `package.json` also needs `firebase-functions ^7.4.0`; commit the lock file with it. Deploy functions, then the app. Run the rules deploy only if the live rules are older than this repo's.
+
+1. **Functions before the app.** The booking form now sends the colour answers, and the old functions would not know about them.
+2. **Behaviour change you will notice:** an online booking is now **confirmed on the spot** unless a service is set to be held (FR-033). To keep the old "everything waits for me" behaviour, set the switch to **Hold for my approval** on every service (Approvals → How each service is booked) before the app goes live.
+3. **Colour services:** tick **Needs a phone consultation first** on each (Manage → Stylists & services). Until you do, they book without the questions.
+4. **Retouch periods** are per service (Manage); reminders appear on the Clients page once set.
+5. **Check as the owner:** book a colour service from your own phone: the questions appear, it shows "Request received", Approvals shows **Call needed**; book a plain cut: it is confirmed at once and the email says so.
+6. *Rollback:* redeploy the previous functions and app. Bookings saved with answers keep them; nothing needs migrating.
+
 ## Everything else to know
 
 - The 24-hour hold is `SALON_CONFIG.pendingHoldHours` in `src/lib/config.ts` (and `maxPendingPerPhone: 2`). The release job runs every 15 minutes, so a request is released between 24:00 and 24:15 after it was made.

@@ -56,11 +56,15 @@ Chooses a time → only free times are selectable; unavailable ones are shown gr
 ↓
 Enters mobile number and name (email optional), ticks the privacy consent → confirms
 ↓
-Booking is saved as **pending**; a confirmation screen with Add-to-Calendar links is shown; a confirmation email is sent if an email address was given
+Colour service that needs a consultation → answers the colour questions (allergies, past colour, reactions, best time to call)
+↓
+Booking is **confirmed on the spot**, unless a service in it is set to be held for approval or needs a consultation, in which case it is saved as **pending** ("Request received") and holds its slot. A confirmation screen with Add-to-Calendar links is shown; a confirmation email is sent if an email address was given (FR-033, FR-037)
 ↓
 Owner is notified (bell in the app; optional email) and the booking appears on the Today timeline and in Approvals
 ↓
-Owner **approves** (→ confirmed), declines (→ cancelled, with Undo) or sends a suggested time from their own messaging app
+For a held booking the owner **approves** (→ confirmed), declines (→ cancelled, with Undo) or sends a suggested time; a consultation booking is approved after the salon has rung the client. A request not answered in 24 hours is released and the customer is told
+↓
+The customer can move or cancel from a private link in the email, within the owner's cutoff (FR-028)
 ↓
 24 hours before the appointment a reminder email is sent (if an email address was given)
 

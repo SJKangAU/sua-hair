@@ -796,3 +796,19 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Missing / invalid answers refused, forced pending, stored, not in the slot projection, notification wording, cleaned, limit (`tests/functions/createBookingRequest.test.ts`); anonymise removes them (`tests/functions/clients.test.ts`); a stylist cannot edit them (`tests/firestore/roles.test.ts`)
 - [x] Browser: questions required, held, owner view, copy to record, locked switch (`e2e/23-colour-consultation.spec.ts` TC-157 to TC-159)
 - [ ] In production: **not verified**; deploy the functions BEFORE the site; tick the setting on the colour services in Manage
+
+## FR-038 — Admin navigation: Manage tabs, day view, hours, dark mode
+
+**Description:** Four changes to make the admin area quicker to use. None changes what is stored, except "Apply to all stylists", which writes each stylist's `workingHours`.
+
+- **Manage is split into tabs** (`ManagePage.tsx`): Stylists & services, Hours, Team access, Policies, Messages, Import. Only the open tab is drawn.
+- **Day view** (`TodayPage.tsx`, `Timeline.tsx`): the previous/next-day arrows keep their place (the "Today" shortcut hides rather than moves them); the date itself is a button that opens the calendar from anywhere on it. A row of chips above the columns filters by stylist: **All**, one chip per stylist, and **Seniors** / **Juniors** groups (shown only when both levels exist). Picking chips shows just those columns; picking All, or clearing the last chip, shows everyone. The filter is not saved between visits.
+- **Hours:** an **Apply to all stylists** button on the stylist hours editor copies the hours on screen to every active stylist after a confirm. It is disabled with fewer than two active stylists.
+- **Dark mode:** a Light / Dark toggle in the sidebar (More sheet on phones). Saved in that browser only, light by default, admin pages only; the booking site is never affected.
+
+**Acceptance criteria:**
+
+- [x] Stylist chips and the Seniors / Juniors groups (`e2e/02-admin-today.spec.ts` TC-160)
+- [x] Dark mode toggles, survives a reload, stays off the booking site; phone toggle (`e2e/20-dark-mode.spec.ts` TC-161)
+- [x] The Manage tests open each tab before acting (`e2e/03-admin-pages.spec.ts`, TC-028 to TC-032)
+- [ ] Apply to all stylists, and the fixed day arrows / date button: **no automated test**; checked by hand only

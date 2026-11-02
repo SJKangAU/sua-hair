@@ -11,6 +11,36 @@ The two kinds of evidence are kept apart on purpose:
 
 ---
 
+## Update 2026-11-02: full re-run on `main` at `e8e8045`
+
+The numbers in section 1 are from October 21 and are **out of date**: `main` has since gained FR-026 to FR-038 (permissions, editable emails, customer change link, time off, win-back, colour records, Fresha import, confirm-on-the-spot, richer client pages, processing visibility, colour consultation, admin navigation). The whole suite was re-run on 2026-11-01/02 with `node scripts/run-suite.mjs full-2026-11 <tag> <TZ>`; output is in `docs/test-runs/full-2026-11-utc.txt` and `full-2026-11-melbourne.txt`.
+
+| Step              | TZ=UTC              | TZ=Australia/Melbourne |
+| ----------------- | ------------------- | ---------------------- |
+| build             | pass                | pass                   |
+| lint              | pass                | pass                   |
+| unit              | 595 tests           | 595 tests              |
+| rules             | 171 tests           | 171 tests              |
+| security          | 11 tests            | 11 tests               |
+| lockdown          | pass                | pass                   |
+| admin             | 88 tests            | **1 failed**, 87 passed (see below) |
+| functions         | 297 tests           | 297 tests              |
+| smoke             | 5 tests             | 5 tests                |
+| e2e               | **1 failed**, 152 passed (see below) | 154 passed |
+
+**The two failures are timing flakes, not product faults, but they are not proven away.**
+
+- *UTC, e2e `07-stylist-order` "a stylist added later (no order) goes after the ordered ones":* the new stylist was missing from the roster when it was read. The same spec passed in the Melbourne run, and re-run alone under UTC it passed (8 of 8).
+- *Melbourne, admin `adminSlotClaims` "five admins saving five different non-overlapping times all succeed":* timed out at 20 s after the emulator logged `RESOURCE_EXHAUSTED ... message larger than max`. `npm run test:admin` re-run under Melbourne passed (88 of 88).
+
+Neither re-run was a full suite. Treat the suite as green with two intermittent tests to watch; if either recurs, investigate it before the pilot.
+
+Not re-run: `test:unit:tz` (Los Angeles zone), `test:scale`.
+
+**Still not verified, and now larger than in October:** nothing from FR-026 to FR-038 has been deployed or used by real people; Resend and ClickSend delivery have never been tried against the real services; the owner's real per-day opening hours have not been supplied; no retention period is decided (NFR-PRIV-05). Open-risk sections 2 to 5 below are otherwise as written on October 21.
+
+---
+
 ## 1. Test evidence (emulators only)
 
 Run on one Windows machine with `node scripts/run-suite.mjs`, which writes the full output to `docs/test-runs/trust-boundary-utc.txt` and `docs/test-runs/trust-boundary-melbourne.txt`. Browser tests ran in Edge.

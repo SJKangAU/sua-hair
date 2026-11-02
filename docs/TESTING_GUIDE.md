@@ -156,6 +156,15 @@ Tick each line. Anything that fails: stop, note exactly what you saw, and use th
 - [ ] Tick the marketing box on a test booking, then Clients -> **Invite lapsed clients back** (make that client lapsed by editing their last visit in the console): send to yourself by email; the **unsubscribe** link works from your inbox and the client leaves the list.
 - [ ] A client page -> **Colour formulas & patch tests**: save a formula and a clear patch test; the status says covered for six months; **Repeat** fills the form.
 
+### E5. Confirm on the spot, client details, processing, colour consultation and admin navigation (after functions and app are live)
+
+- [ ] Book a plain service from your own phone: it is **confirmed at once** (no "Request received"). Set that service to **Hold for my approval** in Approvals: the next booking says "Request received" and waits.
+- [ ] Book a colour service that needs a consultation: the colour questions are required; the booking is held; Approvals shows **Call needed**, the number and the answers; **copy allergy notes** puts them on the client once.
+- [ ] The customer screens say how long to allow and never say the stylist is free; the Bookings list and drawer say "Stylist free ..." and **Book someone into this gap** opens the form for that gap.
+- [ ] A client page: edit allergies, pronouns, birthday, preferred contact. Sign in as a stylist: allergies and pronouns show, birthday and contact do not.
+- [ ] Day view: the stylist chips, Seniors and Juniors; the date button opens the calendar; the arrows do not move when you step through days (these last two and **Apply to all stylists** in Manage → Hours have no automated test, so check them here).
+- [ ] Dark mode toggle in the sidebar and in the phone More sheet; the booking site stays light.
+
 ### F. Client import (Manage -> Import clients, owner only)
 
 - [ ] Choose the real Fresha client list. Read the **dry run**: rows, new, already in the app, skipped, merged, and the **blocked

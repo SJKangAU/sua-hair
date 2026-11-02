@@ -59,6 +59,9 @@ Scale assumption: one salon, 5 stylists, tens of bookings a day. Nothing has bee
 | NFR-PRIV-05 | Retention is defined                                                                         | None: bookings are kept indefinitely unless erased on request                    | **Gap** — decide a retention period |
 | NFR-PRIV-06 | Legal review of the privacy policy and terms against the Australian Privacy Principles       | —                                                                                | **Not done** |
 | NFR-PRIV-07 | An imported client export is never committed, uploaded or logged                              | Git-ignored; parsed in the browser; only name + number written to Firestore; synthetic fixtures only in tests | Verified (`git ls-files exports` empty; FR-017) |
+| NFR-PRIV-08 | Health-related answers (allergies, reactions, medication, pregnancy) are seen only by those who need them | Colour answers on the booking: owner and booked stylist only, never in `slotBlocks` or the owner's email, copied to the client only by the owner's button, removed on anonymise (DEC-061) | Verified (`createBookingRequest`, `roles`, `clients` tests; TC-157, TC-159) |
+| NFR-PRIV-09 | Win-back messages go only to people who agreed | Optional unticked box or owner-recorded consent; imported clients excluded; unsubscribe link without sign-in; once per 60 days; re-checked at sending (DEC-056) | Verified (FR-030 tests); delivery not verified |
+| NFR-PRIV-10 | Allergies and pronouns reach a stylist; birthday and preferred contact do not | Client card by role (DEC-062) | Verified (`roles` test; TC-152) |
 
 ## Usability and accessibility
 

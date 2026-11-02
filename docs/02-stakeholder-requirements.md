@@ -32,6 +32,12 @@ What each group of people needs from the platform, written from the point of vie
 | OWN-12 | Do all of the above from a phone                                                                                     | NFR-USE-02                  |
 | OWN-13 | Erase a customer's personal data on request while keeping the salon's financial history                              | FR-014; NFR-PRIV-04         |
 | OWN-14 | Offer a waitlisted client a freed slot                                                                               | FR-010; TC-034              |
+| OWN-15 | Choose, per service, whether online bookings confirm on the spot or wait for approval | FR-033, FR-035; TC-153 |
+| OWN-16 | Colour services are held until the salon has rung the client, with the colour answers and allergies in front of me and the stylist | FR-037; TC-157 to TC-159 |
+| OWN-17 | Control what each stylist may do (edit client records, send win-back messages, approve time off, edit email wording) and whose clients they may open | FR-026; DEC-051, DEC-052 |
+| OWN-18 | Edit the booking emails' wording; let customers change or cancel from a link within my policy | FR-027, FR-028 |
+| OWN-19 | Handle stylist days off, invite lapsed clients back (with consent), keep colour formulas and patch tests, and bring in history from Fresha | FR-029, FR-030, FR-031, FR-032 |
+| OWN-20 | See at a glance when a stylist is free during processing, filter the day by stylist, and use the admin comfortably in dark mode | FR-036, FR-038; TC-154, TC-155, TC-160, TC-161 |
 
 ## Stylist requirements
 
@@ -56,7 +62,9 @@ What each group of people needs from the platform, written from the point of vie
 | CUS-07 | Get a confirmation I can add to my calendar, and a reminder before the appointment                    | FR-001, FR-012         |
 | CUS-08 | Join a waitlist when my day is full                                                                  | FR-010; TC-034         |
 | CUS-09 | Know my details are protected: consent is asked for, my data is not visible to other visitors        | FR-014; NFR-PRIV-01..03 |
-| CUS-10 | Know whether my booking is actually confirmed or still waiting for the salon **(confirm — see open question below)** | FR-001, FR-009         |
+| CUS-10 | Know whether my booking is actually confirmed or still waiting for the salon | FR-001, FR-009, FR-033 ("Request received" until confirmed) |
+| CUS-11 | Change or cancel my booking myself from a link, within the salon's cutoff | FR-028 |
+| CUS-12 | Be told how long a visit takes (not what the stylist does meanwhile), and that colour needs a phone call first | FR-036, FR-037; TC-156, TC-157 |
 
 ## Phone / front-of-desk staff requirements
 
@@ -77,7 +85,10 @@ What each group of people needs from the platform, written from the point of vie
 
 ## Open questions for the owner (to settle before or during the pilot)
 
-1. **Confirmation wording.** After booking online, the customer is told "Your booking is confirmed", but the booking is stored as *pending* until the owner approves it, and the confirmation email says the same. Should the wording change to "request received — we'll confirm shortly", or should online bookings be auto-confirmed?
+1. **Confirmation wording.** *Settled:* online bookings are confirmed on the spot unless a service is held for approval; a held booking says "Request received" until approved (DEC-038, DEC-059).
 2. **Booking by phone.** During the pilot, should phone/SMS bookings be entered by staff in the dashboard, or left to the old process and compared afterwards?
-3. **Cancellation and change policy** for customers (the platform has no customer-side cancel).
+3. **Cancellation and change policy.** *Settled:* the owner sets the cutoff and whether a move waits for approval; customers use a private link (FR-028, DEC-054).
 4. **Languages.** Is a Korean-language booking page needed?
+5. **Real opening hours.** The owner still has to supply the true per-day hours of the salon.
+6. **Retention period.** How long are client records and consultation answers kept? (NFR-PRIV-05)
+7. **Message delivery.** Email (Resend) and text (ClickSend) have not been verified against the real services.

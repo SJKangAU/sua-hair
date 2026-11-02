@@ -338,3 +338,5 @@ Spec: `e2e/19-client-records.spec.ts`; logic in `tests/unit/clientRecords.test.t
 | TC-157 | Colour questions | Book a colour service that needs a consultation | Questions shown and required; the booking is held ("Request received") even though the service confirms automatically; answers stored, not in slotBlocks |
 | TC-158 | No consultation | Book a service without the setting | No questions; booked as usual |
 | TC-159 | Owner view | Open the held colour booking | "Call needed", the number and best time, the answers with alerts, copy allergy notes to the client record (once), the Approvals switch locked |
+| TC-160 | Day view stylist filter | Press one stylist, then a second, then All; then Juniors, Seniors, Juniors | One column, two, everyone; the level groups add and remove their stylists' columns |
+| TC-161 | Dark mode | Turn it on in the sidebar, reload, open the booking site; repeat from the phone More sheet | Stays dark in the admin after a reload; the booking site stays light; the phone toggle works |
