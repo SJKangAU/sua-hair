@@ -54,6 +54,14 @@
   --success-bg: #f0fdf4;
   --warning-bg: #fefce8;
 
+  /* Notifications: the one warm colour in an otherwise black-and-white admin, so a
+     notification cannot be mistaken for anything else on screen. Pairs checked in
+     tests/unit/notificationColours.test.ts (all above 4.5:1, most above 7:1). */
+  --notice-bg: #fff1b8;
+  --notice-ink: #2b1d00;
+  --notice-accent: #9a3412;
+  --notice-accent-ink: #ffffff;
+
   /* Admin chrome — ink header bar, consistent with client palette */
   --admin-bg: #161615;
   --admin-bg-darker: #0d0d0c;
@@ -163,6 +171,11 @@ body {
   --success: #4ade80;
   --success-bg: #12261a;
   --warning-bg: #2a2410;
+
+  --notice-bg: #3a2a00;
+  --notice-ink: #fff1c2;
+  --notice-accent: #fbbf24;
+  --notice-accent-ink: #1f1500;
 
   /* "admin-bg" doubles as dark ink on the content side (chart titles, roster
      labels, in-service blocks), so it flips with the rest */

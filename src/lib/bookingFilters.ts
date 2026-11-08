@@ -8,7 +8,8 @@ import type { Booking } from "../types";
 import { phoneMatches } from "./phoneSearch";
 
 export interface Filters {
-  stylistId: string;
+  // Stylists to show; empty = all of them
+  stylistIds: string[];
   dateFrom: string;
   dateTo: string;
   status: string;
@@ -16,7 +17,7 @@ export interface Filters {
 }
 
 export const DEFAULT_FILTERS: Filters = {
-  stylistId: "",
+  stylistIds: [],
   dateFrom: "",
   dateTo: "",
   status: "",
@@ -25,7 +26,7 @@ export const DEFAULT_FILTERS: Filters = {
 
 export const hasActiveFilters = (filters: Filters): boolean =>
   !!(
-    filters.stylistId ||
+    filters.stylistIds.length > 0 ||
     filters.dateFrom ||
     filters.dateTo ||
     filters.status ||
@@ -40,7 +41,7 @@ export const filterBookings = (
   searchQuery = "",
 ): Booking[] => {
   const filtered = bookings.filter((b) => {
-    if (filters.stylistId && b.stylistId !== filters.stylistId) return false;
+    if (filters.stylistIds.length > 0 && !filters.stylistIds.includes(b.stylistId)) return false;
     if (filters.dateFrom && b.date < filters.dateFrom) return false;
     if (filters.dateTo && b.date > filters.dateTo) return false;
     if (filters.status && b.status !== filters.status) return false;

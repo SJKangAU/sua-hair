@@ -13,6 +13,7 @@ import { useSalonData } from "../context/SalonDataContext";
 import { SalonDataProvider } from "../context/SalonDataProvider";
 import { NotificationProvider } from "../context/NotificationProvider";
 import NotificationBell from "../components/ui/NotificationBell";
+import NotificationPopups from "../components/ui/NotificationPopups";
 import { todayString, addDays, formatDisplayDate } from "../lib/dates";
 import { blocksSlot, STATUS_LABELS } from "../lib/bookingStatus";
 import type { Booking, BookingStatus } from "../types";
@@ -333,6 +334,7 @@ const ScheduleInner = () => {
           </div>
         )}
       </main>
+      <NotificationPopups />
     </div>
   );
 };

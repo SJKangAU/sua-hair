@@ -12,6 +12,7 @@ import { useSalonData } from "../../context/SalonDataContext";
 import { useToastContext } from "../../context/ToastContext";
 import { BookingCommandError, assignStylist } from "../../lib/bookingApi";
 import type { Booking } from "../../types";
+import { fromPrice } from "../../lib/priceLabel";
 
 interface Props {
   booking: Pick<Booking, "id" | "customerName" | "servicePrice">;
@@ -31,7 +32,7 @@ const NeedsStylist = ({ booking, compact = false }: Props) => {
     try {
       const out = await assignStylist(booking.id, choice);
       addToast(
-        `${out.stylistName} assigned to ${booking.customerName || "this booking"} - price is now $${out.price}.`,
+        `${out.stylistName} assigned to ${booking.customerName || "this booking"} - price is now ${fromPrice(out.price)}.`,
         "success",
       );
     } catch (err) {

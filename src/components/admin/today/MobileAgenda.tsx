@@ -8,12 +8,15 @@
 // Every status change goes through useBookingActions, so toasts, Undo and the
 // restore checks match the rest of the admin.
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Check, Plus, Scissors, X, CircleCheck } from "lucide-react";
 import Badge from "../../ui/Badge";
 import { useBookingContext } from "../../../context/BookingContext";
 import { useSalonData } from "../../../context/SalonDataContext";
 import useBookingActions from "../../../hooks/useBookingActions";
+import useStylistFilter from "../../../hooks/useStylistFilter";
+import useStylistColors from "../../../hooks/useStylistColors";
+import StylistFilterChips, { type FilterChip } from "../StylistFilterChips";
 import useNowMinutes from "../../../hooks/useNowMinutes";
 import {
   buildAgenda,
@@ -75,7 +78,8 @@ const MobileAgenda = ({ selectedDate, onOpenBooking, onBook }: Props) => {
   const { stylists, salonSettings } = useSalonData();
   const { changeStatus } = useBookingActions();
   const nowMinutes = useNowMinutes();
-  const [filter, setFilter] = useState("all");
+  const { picked, toggle, clear } = useStylistFilter();
+  const colorOf = useStylistColors();
 
   const today = todayString();
   const dayBookings = useMemo(
@@ -97,14 +101,22 @@ const MobileAgenda = ({ selectedDate, onOpenBooking, onBook }: Props) => {
   const hasUnassigned = dayBookings.some(
     (b) => !stylists.some((s) => s.id === b.stylistId),
   );
-  const chips = [
-    { id: "all", label: "All" },
+  const chips: FilterChip[] = [
+    { key: "all", label: "All", ids: [] },
     ...agendaStylists
       .filter((s) => s.hours !== null || dayBookings.some((b) => b.stylistId === s.id))
-      .map((s) => ({ id: s.id, label: s.name.split(" ")[0] })),
-    ...(hasUnassigned ? [{ id: UNASSIGNED_ID, label: "Unassigned" }] : []),
+      .map((s) => ({ key: s.id, label: s.name.split(" ")[0], ids: [s.id], stylistId: s.id })),
+    ...(hasUnassigned
+      ? [{ key: UNASSIGNED_ID, label: "Unassigned", ids: [UNASSIGNED_ID] }]
+      : []),
   ];
-  const activeFilter = chips.some((c) => c.id === filter) ? filter : "all";
+  const availableIds = chips.filter((c) => c.key !== "all").map((c) => c.key);
+  // Picks that are not in this day's list (off today, removed) do not hide anyone
+  const availableKey = availableIds.join(",");
+  const activeFilter = useMemo(
+    () => picked.filter((id) => availableKey.split(",").includes(id)),
+    [picked, availableKey],
+  );
 
   const items = useMemo(
     () =>
@@ -126,9 +138,11 @@ const MobileAgenda = ({ selectedDate, onOpenBooking, onBook }: Props) => {
     return (
       <article
         key={b.id}
+        data-stylist-color={colorOf(b.stylistId)?.id}
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
+          borderLeft: `6px solid ${colorOf(b.stylistId)?.solid ?? "var(--border)"}`,
           borderRadius: "12px",
           overflow: "hidden",
         }}
@@ -231,45 +245,16 @@ const MobileAgenda = ({ selectedDate, onOpenBooking, onBook }: Props) => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-      {/* Stylist filter chips */}
-      <div
-        role="group"
-        aria-label="Filter by stylist"
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          overflowX: "auto",
-          paddingBottom: "0.25rem",
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {chips.map((chip) => {
-          const active = chip.id === activeFilter;
-          return (
-            <button
-              key={chip.id}
-              className={active ? undefined : "bk-ghost"}
-              aria-pressed={active}
-              onClick={() => setFilter(chip.id)}
-              style={{
-                flexShrink: 0,
-                minHeight: "38px",
-                padding: "0.4rem 1rem",
-                borderRadius: "999px",
-                fontSize: "var(--text-base)",
-                fontWeight: active ? 700 : 500,
-                fontFamily: "var(--font-body)",
-                cursor: "pointer",
-                background: active ? "var(--accent)" : "var(--surface)",
-                color: active ? "var(--surface)" : "var(--ink)",
-                border: `1px solid ${active ? "var(--accent)" : "var(--border-strong)"}`,
-              }}
-            >
-              {chip.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Stylist filter chips (several can be on; none = everyone) */}
+      <StylistFilterChips
+        chips={chips}
+        picked={picked}
+        availableIds={availableIds}
+        onToggle={toggle}
+        onClear={clear}
+        large
+        scrollable
+      />
 
       {items.length === 0 && (
         <p
@@ -313,7 +298,7 @@ const MobileAgenda = ({ selectedDate, onOpenBooking, onBook }: Props) => {
             }}
           >
             <span style={{ fontSize: "var(--text-base)" }}>
-              {activeFilter === "all" && (
+              {activeFilter.length !== 1 && (
                 <strong style={{ color: "var(--ink)" }}>
                   {item.stylistName.split(" ")[0]} ·{" "}
                 </strong>

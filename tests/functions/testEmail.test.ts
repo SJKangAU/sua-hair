@@ -36,7 +36,7 @@ describe("the test email", () => {
     expect(sent[0].subject).toBe("TEST: Your booking at Sua Hair Studio — Friday 3 July");
     expect(r.subject).toBe(sent[0].subject);
     expect(sent[0].html).toContain("We look forward to seeing you, Jane");
-    expect(sent[0].text).toContain("Price: $95");
+    expect(sent[0].text).toContain("Price: from $95");
   });
 
   it("uses the saved wording, even while that email is switched off", async () => {

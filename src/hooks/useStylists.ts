@@ -1,11 +1,12 @@
 // useStylists.ts
-// Fetches stylists from Firestore
-// Caches results in sessionStorage for instant repeat loads within the same session
-// Uses getDocs (not onSnapshot) — stylist changes are infrequent
-// refetch() clears cache and re-fetches from Firestore
+// Live subscription (onSnapshot) to the stylists collection, so a stylist edited
+// in Manage reaches every open booking page straight away.
+// sessionStorage holds the last list only to paint instantly on a repeat visit:
+// it is never trusted as current, the subscription always overwrites it.
+// refetch() is kept for callers; the subscription already keeps data fresh.
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { sortByOrder } from "../lib/stylistOrder";
 
@@ -22,6 +23,8 @@ export interface FirestoreStylist {
   // Owner-chosen display order (Manage -> Stylists). Missing on older records:
   // those follow the ordered ones in their original (start date) order.
   order?: number;
+  // Palette id from lib/stylistColors.ts; missing = a default no other stylist shares
+  color?: string;
   createdAt: string;
   workingHours?: import("../types").StylistWeeklyHours;
 }
@@ -71,63 +74,51 @@ const useStylists = (activeOnly = true): UseStylists => {
   const [stylists, setStylists] = useState<FirestoreStylist[]>(initialData);
   const [loading, setLoading] = useState(initialData.length === 0);
   const [error, setError] = useState<string | null>(null);
-  const [trigger, setTrigger] = useState(0);
 
-  // refetch clears cache and forces a fresh Firestore fetch
+  // The subscription keeps the list current; refetch only drops the cached copy
   const refetch = () => {
     try {
       sessionStorage.removeItem(CACHE_KEY);
     } catch {
-      /* cache clear is best-effort — a refetch still runs */
+      /* cache clear is best-effort */
     }
-    setTrigger((t) => t + 1);
   };
 
   useEffect(() => {
-    // Skip fetch if we have cached data and haven't been asked to refetch.
-    // loading already initialised to false in this case (see useState above).
-    // (read now: the render-time copy would make this effect depend on every render)
-    if (trigger === 0 && getCached().length > 0) {
-      return;
-    }
+    const q = activeOnly
+      ? query(
+          collection(db, "stylists"),
+          where("status", "==", "active"),
+          orderBy("startDate", "asc"),
+        )
+      : query(collection(db, "stylists"), orderBy("startDate", "asc"));
 
-    const fetch = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const q = activeOnly
-          ? query(
-              collection(db, "stylists"),
-              where("status", "==", "active"),
-              orderBy("startDate", "asc"),
-            )
-          : query(collection(db, "stylists"), orderBy("startDate", "asc"));
-
-        const snapshot = await getDocs(q);
+    return onSnapshot(
+      q,
+      (snapshot) => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as FirestoreStylist[];
 
         setStylists(data);
+        setError(null);
+        setLoading(false);
 
-        // Cache for this browser session
+        // Instant first paint next visit only — never read back as current data
         try {
           sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
         } catch {
           /* cache write is best-effort — state already holds the data */
         }
-      } catch (err) {
+      },
+      (err) => {
         console.error("Error fetching stylists:", err);
         setError("Failed to load stylists. Please refresh and try again.");
-      }
-
-      setLoading(false);
-    };
-
-    fetch();
-  }, [activeOnly, trigger, CACHE_KEY, getCached]);
+        setLoading(false);
+      },
+    );
+  }, [activeOnly, CACHE_KEY]);
 
   // Everything that lists stylists (booking page, timeline, Manage) gets them
   // in the owner's saved order

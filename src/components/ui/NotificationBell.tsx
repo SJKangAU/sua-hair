@@ -77,19 +77,23 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
         onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)")}
         onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "none")}
       >
-        <Bell size={18} strokeWidth={1.75} color="var(--admin-faint)" />
+        <Bell
+          size={unreadCount > 0 ? 22 : 18}
+          strokeWidth={unreadCount > 0 ? 2.25 : 1.75}
+          color={unreadCount > 0 ? "var(--notice-bg)" : "var(--admin-faint)"}
+        />
         {unreadCount > 0 && (
           <span
             style={{
               position: "absolute",
               top: 2,
               right: 2,
-              background: "var(--surface)",
-              color: "var(--ink)",
+              background: "var(--notice-accent)",
+              color: "var(--notice-accent-ink)",
               borderRadius: "50%",
-              width: 16,
-              height: 16,
-              fontSize: "0.65rem",
+              width: 20,
+              height: 20,
+              fontSize: "0.75rem",
               fontWeight: 700,
               display: "flex",
               alignItems: "center",
@@ -111,11 +115,11 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
             ...(align === "left" ? { left: 0 } : { right: 0 }),
             top: "calc(100% + 6px)",
             maxWidth: "calc(100vw - 2rem)",
-            width: 340,
+            width: 520,
             background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "10px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+            border: "2px solid var(--notice-accent)",
+            borderRadius: "12px",
+            boxShadow: "0 12px 32px rgba(0,0,0,0.28)",
             zIndex: 1000,
             overflow: "hidden",
           }}
@@ -126,11 +130,13 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              padding: "0.75rem 1rem",
-              borderBottom: "1px solid var(--border)",
+              padding: "0.9rem 1.1rem",
+              background: "var(--notice-bg)",
+              color: "var(--notice-ink)",
+              borderBottom: "2px solid var(--notice-accent)",
             }}
           >
-            <span style={{ fontWeight: 600, fontSize: "var(--text-base)" }}>
+            <span style={{ fontWeight: 700, fontSize: "1.15rem" }}>
               Notifications
             </span>
             {unreadCount > 0 && (
@@ -139,11 +145,12 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "var(--ink-soft)",
+                  color: "var(--notice-ink)",
                   cursor: "pointer",
-                  fontSize: "0.78rem",
-                  fontWeight: 500,
-                  padding: 0,
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                  textDecoration: "underline",
+                  padding: "0.25rem",
                 }}
               >
                 Mark all read
@@ -152,7 +159,7 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
           </div>
 
           {/* List */}
-          <div style={{ maxHeight: 360, overflowY: "auto" }}>
+          <div style={{ maxHeight: "min(70vh, 640px)", overflowY: "auto" }}>
             {notifications.length === 0 ? (
               <div
                 style={{
@@ -170,10 +177,11 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
                   style={{
-                    padding: "0.75rem 1rem",
+                    padding: "1rem 1.1rem",
                     borderBottom: "1px solid var(--border)",
                     cursor: n.read && !onSelect ? "default" : "pointer",
-                    background: n.read ? "var(--surface)" : "var(--paper)",
+                    background: n.read ? "var(--surface)" : "var(--notice-bg)",
+                    color: n.read ? "var(--ink)" : "var(--notice-ink)",
                     display: "flex",
                     gap: "0.6rem",
                     alignItems: "flex-start",
@@ -182,19 +190,20 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
                   {/* Unread dot */}
                   <span
                     style={{
-                      width: 7,
-                      height: 7,
+                      width: 12,
+                      height: 12,
                       borderRadius: "50%",
-                      background: n.read ? "transparent" : "var(--ink)",
+                      background: n.read ? "transparent" : "var(--notice-accent)",
                       flexShrink: 0,
-                      marginTop: 5,
+                      marginTop: 6,
                     }}
                   />
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
-                        fontSize: "var(--text-sm)",
-                        color: "var(--ink)",
+                        fontSize: "1.05rem",
+                        fontWeight: n.read ? 400 : 600,
+                        color: "inherit",
                         lineHeight: 1.4,
                       }}
                     >
@@ -202,8 +211,9 @@ const NotificationBell = ({ onSelect, align = "right" }: Props) => {
                     </div>
                     <div
                       style={{
-                        fontSize: "var(--text-xs)",
-                        color: "var(--grey-muted)",
+                        fontSize: "0.85rem",
+                        color: n.read ? "var(--ink-muted)" : "var(--notice-ink)",
+                        opacity: n.read ? 1 : 0.8,
                         marginTop: "0.25rem",
                       }}
                     >

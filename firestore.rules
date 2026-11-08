@@ -269,7 +269,9 @@ service cloud.firestore {
     match /stylists/{stylistId} {
       allow read: if true;
       allow create, update: if isOwner()
-        && (!('order' in request.resource.data) || request.resource.data.order is number);
+        && (!('order' in request.resource.data) || request.resource.data.order is number)
+        && (!('color' in request.resource.data)
+            || (request.resource.data.color is string && request.resource.data.color.size() <= 20));
       allow delete: if isOwner();
     }
 

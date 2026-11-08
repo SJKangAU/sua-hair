@@ -15,6 +15,8 @@ import StatusActionButtons from "./StatusActionButtons";
 import type { Booking, BookingStatus } from "../../../types";
 import { MOBILE_BREAKPOINT } from "../../../lib/breakpoints";
 import { formatMobile } from "../../../lib/phoneSearch";
+import { fromPrice } from "../../../lib/priceLabel";
+import useStylistColors from "../../../hooks/useStylistColors";
 
 // Inline styles can't express media queries, so the grid layout lives in a
 // class (base = desktop grid, override = mobile stack) while dynamic,
@@ -85,6 +87,7 @@ const BookingCard = ({
   onUpdate,
   onSetFlag,
 }: Props) => {
+  const stylistColor = useStylistColors()(booking.stylistId);
   const [flaggingOpen, setFlaggingOpen] = useState(false);
   const [flagReasonInput, setFlagReasonInput] = useState("");
 
@@ -114,6 +117,8 @@ const BookingCard = ({
         className={`admin-booking-card${selected ? " is-selected" : ""}${
           booking.flagged ? " is-flagged" : ""
         }`}
+        data-stylist-color={stylistColor?.id}
+        style={stylistColor ? { borderLeft: `6px solid ${stylistColor.solid}` } : undefined}
       >
         {/* Selection checkbox */}
         <input
@@ -211,7 +216,7 @@ const BookingCard = ({
             {booking.time}
           </p>
           <p style={{ color: "var(--ink-muted)", fontSize: "0.72rem", margin: 0 }}>
-            ${booking.servicePrice}
+            {fromPrice(booking.servicePrice)}
           </p>
         </div>
 

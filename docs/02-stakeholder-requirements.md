@@ -38,6 +38,7 @@ What each group of people needs from the platform, written from the point of vie
 | OWN-18 | Edit the booking emails' wording; let customers change or cancel from a link within my policy | FR-027, FR-028 |
 | OWN-19 | Handle stylist days off, invite lapsed clients back (with consent), keep colour formulas and patch tests, and bring in history from Fresha | FR-029, FR-030, FR-031, FR-032 |
 | OWN-20 | See at a glance when a stylist is free during processing, filter the day by stylist, and use the admin comfortably in dark mode | FR-036, FR-038; TC-154, TC-155, TC-160, TC-161 |
+| OWN-21 | Prices that always read "from"; each stylist in their own colour; Today using the whole screen; notifications I cannot miss from across the salon; a stylist filter that remembers my choice | FR-039; DEC-064 to DEC-068; TC-162 to TC-168 |
 
 ## Stylist requirements
 

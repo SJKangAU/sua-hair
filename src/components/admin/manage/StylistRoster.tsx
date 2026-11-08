@@ -14,6 +14,7 @@ import { ArrowDown, ArrowUp, GripVertical, Users } from "lucide-react";
 import {
   collection,
   addDoc,
+  deleteField,
   doc,
   updateDoc,
   writeBatch,
@@ -40,6 +41,8 @@ import { useSalonData } from "../../../context/SalonDataContext";
 import useStylists, { clearStylistCaches } from "../../../hooks/useStylists";
 import type { FirestoreStylist } from "../../../hooks/useStylists";
 import { moveItem, orderUpdates } from "../../../lib/stylistOrder";
+import { STYLIST_COLORS, colorById } from "../../../lib/stylistColors";
+import useStylistColors from "../../../hooks/useStylistColors";
 
 interface Props {
   onSuccess: (message: string) => void;
@@ -194,6 +197,8 @@ const EMPTY_FORM = {
   level: "junior" as "director" | "senior" | "junior",
   instagram: "",
   isTrainer: false,
+  // Palette id; "" = automatic (a colour no other stylist uses)
+  color: "",
 };
 
 const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
@@ -207,6 +212,7 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const { refetchStylists: refetchSalonStylists } = useSalonData();
+  const colorOf = useStylistColors();
 
   // The order shown while a reorder is being saved. `base` is the stylist list
   // it was made from: once the list is refetched it is a different array, the
@@ -275,6 +281,7 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
       level: stylist.level,
       instagram: stylist.instagram ?? "",
       isTrainer: stylist.isTrainer,
+      color: colorById(stylist.color) ? stylist.color! : "",
     });
     setShowForm(true);
   };
@@ -301,6 +308,8 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
           level: form.level,
           instagram: form.instagram.trim() || null,
           isTrainer: form.isTrainer,
+          // deleteField so choosing "Automatic" removes an earlier choice
+          color: form.color ? form.color : deleteField(),
         });
         onSuccess(`${form.name} updated successfully`);
       } else {
@@ -311,6 +320,7 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
           level: form.level,
           instagram: form.instagram.trim() || null,
           isTrainer: form.isTrainer,
+          ...(form.color ? { color: form.color } : {}),
           status: "active",
           startDate: todayString(),
           createdAt: new Date().toISOString(),
@@ -492,6 +502,63 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
             </label>
           </div>
 
+          {/* Colour: shown on the Today columns, booking cards and filter chips */}
+          <fieldset
+            style={{ border: "none", padding: 0, margin: "0 0 1rem" }}
+            data-testid="stylist-colour-picker"
+          >
+            <legend style={{ fontSize: "0.82rem", fontWeight: 500, padding: 0, marginBottom: "0.4rem" }}>
+              Colour
+            </legend>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", alignItems: "center" }}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={form.color === ""}
+                onClick={() => setForm((prev) => ({ ...prev, color: "" }))}
+                style={{
+                  padding: "0.3rem 0.7rem",
+                  borderRadius: "999px",
+                  border: `2px solid ${form.color === "" ? "var(--ink)" : "var(--border-strong)"}`,
+                  background: "var(--surface)",
+                  color: "var(--ink)",
+                  fontSize: "0.78rem",
+                  cursor: "pointer",
+                }}
+              >
+                Automatic
+              </button>
+              {STYLIST_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.color === c.id}
+                  aria-label={c.name}
+                  title={c.name}
+                  data-testid={`colour-${c.id}`}
+                  onClick={() => setForm((prev) => ({ ...prev, color: c.id }))}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: "50%",
+                    background: c.solid,
+                    color: c.solidInk,
+                    border: `3px solid ${form.color === c.id ? "var(--ink)" : "transparent"}`,
+                    outline: form.color === c.id ? "2px solid var(--surface)" : "none",
+                    outlineOffset: -5,
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
+                >
+                  {form.color === c.id ? "✓" : ""}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
           {/* Trainer toggle */}
           <label
             style={{
@@ -588,6 +655,19 @@ const StylistRoster = ({ onSuccess, onError, isOwner = false }: Props) => {
             >
               <div>
                 <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
+                  <span
+                    aria-hidden="true"
+                    data-testid={`stylist-dot-${stylist.id}`}
+                    data-stylist-color={colorOf(stylist.id)?.id}
+                    style={{
+                      display: "inline-block",
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      marginRight: "0.5rem",
+                      background: colorOf(stylist.id)?.solid ?? "var(--border-strong)",
+                    }}
+                  />
                   {stylist.name}
                   {stylist.isTrainer && (
                     <span

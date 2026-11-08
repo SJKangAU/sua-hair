@@ -29,6 +29,10 @@ export const SHELL_CSS = `
     --accent: #161615;
     --admin-bg: #161615;
     --admin-bg-darker: #0d0d0c;
+    --notice-bg: #fff1b8;
+    --notice-ink: #2b1d00;
+    --notice-accent: #9a3412;
+    --notice-accent-ink: #ffffff;
   }
   .adm-sidebar :focus-visible,
   .adm-topbar :focus-visible,
@@ -48,6 +52,11 @@ export const SHELL_CSS = `
     width: 100%;
     box-sizing: border-box;
     margin: 0 auto;
+  }
+  /* Today: no width cap - the stylist columns grow with the window */
+  .adm-main.adm-main-wide {
+    max-width: none;
+    margin: 0;
   }
 
   .adm-nav-link {

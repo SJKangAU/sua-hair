@@ -3,6 +3,8 @@
 // Consumes stylists from SalonDataContext (Firestore) instead of hardcoded data.ts
 
 import { useSalonData } from "../../context/SalonDataContext";
+import useStylistFilter from "../../hooks/useStylistFilter";
+import StylistFilterChips from "./StylistFilterChips";
 import { Flag } from "lucide-react";
 import {
   hasActiveFilters as computeHasActiveFilters,
@@ -31,6 +33,7 @@ const selectStyle = {
 const FilterBar = ({ filters, onChange, onClear }: Props) => {
   // Consume stylists from Firestore via context
   const { stylists } = useSalonData();
+  const { picked, toggle, clear } = useStylistFilter();
   const hasActiveFilters = computeHasActiveFilters(filters);
 
   return (
@@ -57,19 +60,22 @@ const FilterBar = ({ filters, onChange, onClear }: Props) => {
         Filter by:
       </span>
 
-      {/* Stylist filter — driven by Firestore */}
-      <select
-        style={selectStyle}
-        value={filters.stylistId}
-        onChange={(e) => onChange({ ...filters, stylistId: e.target.value })}
-      >
-        <option value="">All stylists</option>
-        {stylists.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
+      {/* Stylist filter: several can be picked, remembered per user, none = All */}
+      <StylistFilterChips
+        chips={[
+          { key: "all", label: "All", ids: [] },
+          ...stylists.map((s) => ({
+            key: s.id,
+            label: s.name.split(" ")[0],
+            ids: [s.id],
+            stylistId: s.id,
+          })),
+        ]}
+        picked={picked}
+        availableIds={stylists.map((s) => s.id)}
+        onToggle={toggle}
+        onClear={clear}
+      />
 
       {/* Date range filter */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>

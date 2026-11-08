@@ -64,7 +64,7 @@ test("TC-087 a request shows 'request received', the assigned stylist and the ex
   await expect(page.getByText(/This is not confirmed yet/)).toBeVisible();
   await expect(page.getByText(/Your booking is confirmed/)).toHaveCount(0);
   await expect(page.getByTestId("confirmation-stylist")).toHaveText("Yuto Hirakawa");
-  await expect(page.getByTestId("confirmation-total")).toHaveText("$90"); // senior: 65 + 25
+  await expect(page.getByTestId("confirmation-total")).toHaveText("from $90"); // senior: 65 + 25
 
   const [b] = await readCollection("bookings");
   expect(b).toMatchObject({
@@ -105,7 +105,7 @@ test("TC-088 'Any Available Stylist' shows 'from $X' before sending, then the as
   // the screen shows the real stylist and the exact price for that stylist's tier
   await expect(page.getByTestId("confirmation-stylist")).toHaveText(String(b.stylistName));
   const price = { director: 75, senior: 65, junior: 55 }[String(b.stylistLevel) as "director" | "senior" | "junior"];
-  await expect(page.getByTestId("confirmation-total")).toHaveText(`$${price}`);
+  await expect(page.getByTestId("confirmation-total")).toHaveText(`from $${price}`);
   expect(b.servicePrice).toBe(price);
   // with nothing else booked everyone ties on bookings that day; the e2e stylists have no
   // `order`, so the last tie-break is the id, alphabetically: Elly (the lowest `order` is covered
@@ -124,7 +124,7 @@ test("TC-089 the owner approves a request and the booking is confirmed (with its
   });
   const { page: owner } = await newAdminPage(browser);
   await owner.goto("/admin/approvals");
-  await expect(owner.getByText("Alice Approve")).toBeVisible();
+  await expect(owner.getByText("Alice Approve", { exact: true })).toBeVisible();
   await owner.getByRole("button", { name: /^(Approve|Confirm)/ }).first().click();
   await expect(owner.getByText(/Booking confirmed/)).toBeVisible();
   await expect.poll(async () => (await readCollection("bookings"))[0].status).toBe("confirmed");

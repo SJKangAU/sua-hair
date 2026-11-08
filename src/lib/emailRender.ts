@@ -12,6 +12,7 @@
 import { businessInstant } from "./businessTime";
 import { buildIcs, type IcsEvent } from "./icsEvent";
 import { timeStringToMinutes } from "./scheduling";
+import { fromPrice } from "./priceLabel";
 import {
   CONSULTATION_EMAIL_NOTE,
   PLACEHOLDERS,
@@ -270,9 +271,7 @@ interface Row {
 
 const formatPrice = (b: EmailBookingData): string | null => {
   if (typeof b.servicePrice !== "number") return null;
-  // "Any available stylist" bookings store the lowest tier price as an estimate:
-  // the final price depends on who takes the booking.
-  return `${b.stylistId === "any" ? "from " : ""}$${b.servicePrice}`;
+  return fromPrice(b.servicePrice);
 };
 
 const serviceLines = (b: EmailBookingData): string[] =>

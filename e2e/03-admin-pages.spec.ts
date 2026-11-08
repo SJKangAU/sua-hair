@@ -80,10 +80,13 @@ test("TC-017 search by phone number", async () => {
 
 test("TC-018 filter by stylist", async () => {
   await page.goto("/admin/bookings");
-  await page.locator("select").nth(0).selectOption("yuto");
+  await page.getByTestId("stylist-filter-yuto").click();
   await expect(page.getByText("Bob Brown")).toBeVisible();
   await expect(page.getByText("Alice Anderson")).toHaveCount(0);
   await expect(page.getByText("Carla Cooper")).toHaveCount(0);
+  // the choice is remembered (DEC-068): clear it so the next tests see everyone
+  await page.getByTestId("stylist-filter-all").click();
+  await expect(page.getByText("Alice Anderson")).toBeVisible();
 });
 
 test("D4 the list is ordered upcoming-first (soonest day first)", async () => {

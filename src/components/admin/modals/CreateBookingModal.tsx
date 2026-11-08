@@ -43,6 +43,7 @@ import ConflictNotice from "../ConflictNotice";
 import { formatRangeShort } from "../../../lib/timelineLayout";
 import { formatLength } from "../../../lib/timelineCreate";
 import type { Booking, Phase } from "../../../types";
+import { fromPrice } from "../../../lib/priceLabel";
 
 interface Props {
   prefillStylistId?: string;
@@ -681,7 +682,7 @@ const CreateBookingModal = ({
                         >
                           {s.totalTime} min
                         </span>
-                        <span style={{ fontWeight: 600 }}>${price}</span>
+                        <span style={{ fontWeight: 600 }}>{fromPrice(price)}</span>
                       </label>
                     );
                   })}
@@ -703,7 +704,7 @@ const CreateBookingModal = ({
                   return t
                     ? `${selectedServices.length} service${
                         selectedServices.length === 1 ? "" : "s"
-                      } · ${t.totalTime} min · $${t.servicePrice}`
+                      } · ${t.totalTime} min · ${fromPrice(t.servicePrice)}`
                     : null;
                 })()}
               </p>

@@ -532,6 +532,25 @@ describe("stylists.order — only the owner can write the display order", () => 
     await assertFails(staff.doc("stylists/s1").set(stylist));
   });
 
+  // The stylist's colour (a palette id, batch 1): public like the rest of the stylist,
+  // written only by the owner, and only as short text
+  it("anyone can read a stylist's colour; only the owner can write it, and only as short text", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("stylists/s1").update({ color: "violet" });
+    });
+    const anon = testEnv.unauthenticatedContext().firestore();
+    expect((await assertSucceeds(anon.doc("stylists/s1").get())).data()?.color).toBe("violet");
+
+    const owner = ownerCtx(testEnv, "owner-uid").firestore();
+    await assertSucceeds(owner.doc("stylists/s1").update({ color: "teal" }));
+    await assertFails(owner.doc("stylists/s1").update({ color: 7 }));
+    await assertFails(owner.doc("stylists/s1").update({ color: "x".repeat(21) }));
+
+    const staff = stylistCtx(testEnv).firestore();
+    await assertFails(staff.doc("stylists/s1").update({ color: "rose" }));
+    await assertFails(anon.doc("stylists/s1").update({ color: "rose" }));
+  });
+
   it("anonymous visitors cannot write order", async () => {
     const anon = testEnv.unauthenticatedContext().firestore();
     await assertFails(anon.doc("stylists/s1").update({ order: 9 }));

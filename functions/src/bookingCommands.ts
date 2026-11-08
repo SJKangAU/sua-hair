@@ -29,6 +29,7 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 import { SALON_CONFIG } from "../../src/lib/config";
+import { fromPriceChange } from "../../src/lib/priceLabel";
 import {
   businessDateOf,
   businessInstant,
@@ -1027,7 +1028,7 @@ export const assignStylistCore = async (
       const price = priced.reduce((sum, s) => sum + s.price, 0);
       const entry = historyEntry(
         ctx.now,
-        `Stylist assigned: ${stylist.name} (price $${b.servicePrice} to $${price})`,
+        `Stylist assigned: ${stylist.name} (price ${fromPriceChange(b.servicePrice, price)})`,
         undefined,
         "moved",
       );

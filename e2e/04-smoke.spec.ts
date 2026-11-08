@@ -26,7 +26,7 @@ test("SMOKE client books online -> owner approves -> overlapping admin walk-in i
   // 2. the owner sees it waiting and approves it
   const { page: owner } = await newAdminPage(browser);
   await owner.goto("/admin/approvals");
-  await expect(owner.getByText("Smoke Client")).toBeVisible();
+  await expect(owner.getByText("Smoke Client", { exact: true })).toBeVisible();
   await owner.getByRole("button", { name: /^(Approve|Confirm)/ }).first().click();
   await expect.poll(async () => (await readCollection("bookings"))[0].status).toBe("confirmed");
 

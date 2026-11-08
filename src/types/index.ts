@@ -77,6 +77,7 @@ export interface Stylist {
   startDate: string;
   isTrainer: boolean;
   order?: number; // owner-chosen display order; missing = after the ordered ones
+  color?: string; // palette id (lib/stylistColors.ts); missing = a default no other stylist shares
   workingHours?: StylistWeeklyHours; // undefined = uses full salon hours
   createdAt: string;
 }

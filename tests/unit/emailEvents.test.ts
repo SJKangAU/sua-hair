@@ -81,7 +81,7 @@ describe("the wording", () => {
     expect(received.subject).toMatch(/have your booking request/i);
     expect(received.text).toMatch(/not a confirmation yet/i);
     expect(received.text).toContain("Steve Hwang");
-    expect(received.text).toContain("Price: $75");
+    expect(received.text).toContain("Price: from $75");
   });
 
   it("'confirmed' is the only one that says confirmed", () => {

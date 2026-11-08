@@ -59,7 +59,7 @@ describe("the default wording is what the emails always said", () => {
     expect(e.html).toContain("Your booking is confirmed. Here are the details.");
     expect(e.html).toContain("Need to change your booking? Call us on (03) 9569 0840.");
     expect(e.html).toContain("Friday 3 July at 10:30 AM with Alex Kim.");
-    expect(e.text).toContain("Price: $180");
+    expect(e.text).toContain("Price: from $180"); // a price is always a starting price (batch 1, item 15)
     expect(e.text).toContain("Reference BK-1");
   });
 
@@ -139,7 +139,7 @@ describe("the switches", () => {
     expect(e.html).toContain("Call us on (03) 9569 0840");
   });
 
-  it("an any-available-stylist booking says 'from' before the price and 'our team' in the wording", () => {
+  it("an any-available-stylist booking says 'our team' in the wording (and 'from' before the price, as every booking does)", () => {
     const any = render({ preheader: "With {stylist}" }, { ...booking, stylistId: "any", stylistName: "Any available stylist" });
     expect(any.text).toContain("Price: from $180");
     expect(any.html).toContain("With our team");

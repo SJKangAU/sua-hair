@@ -114,7 +114,7 @@ describe("buildReschedule", () => {
     expect(r.priceChange).toEqual({ from: 60, to: 90 });
     expect(r.entry.label).toContain("with Ethan to");
     expect(r.entry.label).toContain("with Elly");
-    expect(r.entry.label).toContain("(price $60 to $90)");
+    expect(r.entry.label).toContain("(price from $60 to $90)");
   });
 
   it("reprices every service of a multi-service booking", () => {

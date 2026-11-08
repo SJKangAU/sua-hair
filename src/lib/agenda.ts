@@ -34,8 +34,8 @@ export type AgendaItem =
 interface Args {
   dayBookings: Booking[];
   stylists: AgendaStylist[];
-  // "all", or one stylist's id
-  filter: string;
+  // "all" (or an empty list) for everyone, one stylist's id, or a list of ids
+  filter: string | string[];
   isToday: boolean;
   isPast: boolean;
   nowMinutes: number;
@@ -50,11 +50,13 @@ export const buildAgenda = ({
   nowMinutes,
 }: Args): AgendaItem[] => {
   const items: AgendaItem[] = [];
+  const wanted = Array.isArray(filter) ? filter : filter === "all" ? [] : [filter];
+  const shows = (stylistId: string) => wanted.length === 0 || wanted.includes(stylistId);
 
   // Bookings still holding a chair (cancelled / no-show drop off the list)
   for (const booking of dayBookings) {
     if (!blocksSlot(booking.status)) continue;
-    if (filter !== "all" && booking.stylistId !== filter) continue;
+    if (!shows(booking.stylistId)) continue;
     items.push({
       kind: "booking",
       key: booking.id,
@@ -66,7 +68,7 @@ export const buildAgenda = ({
   // Free stretches inside working hours — never in the past
   if (!isPast) {
     for (const stylist of stylists) {
-      if (filter !== "all" && stylist.id !== filter) continue;
+      if (!shows(stylist.id)) continue;
       if (!stylist.hours) continue;
       let start = stylist.hours.open * 60;
       const end = stylist.hours.close * 60;

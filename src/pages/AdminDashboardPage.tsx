@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { signOut } from "firebase/auth";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import useAuth from "../hooks/useAuth";
 import useAppUser from "../hooks/useAppUser";
@@ -28,6 +28,7 @@ import MobileTabBar from "../components/admin/shell/MobileTabBar";
 import { visibleNavItems } from "../components/admin/shell/navItems";
 import { SHELL_CSS } from "../components/admin/shell/shellStyles";
 import BookingDrawer from "../components/admin/drawer/BookingDrawer";
+import NotificationPopups from "../components/ui/NotificationPopups";
 import CreateBookingModal from "../components/admin/modals/CreateBookingModal";
 import type { AdminOutletContext } from "./admin/adminContext";
 import type { BookingStatus, Notification } from "../types";
@@ -35,6 +36,8 @@ import type { BookingStatus, Notification } from "../types";
 // ── Inner component — consumes context ────────────────────────────────────────
 const DashboardInner = () => {
   const { user } = useAuth();
+  // Today uses the whole width of the window; the other pages stay a readable width
+  const onToday = useLocation().pathname.startsWith("/admin/today");
   const navigate = useNavigate();
   const { appUser, loading: roleLoading } = useAppUser();
   const { bookings, loading, setFlag } = useBookingContext();
@@ -136,10 +139,12 @@ const DashboardInner = () => {
           <NotificationBell onSelect={handleSelectNotification} />
         </header>
 
-        <main className="adm-main">
+        <main className={onToday ? "adm-main adm-main-wide" : "adm-main"}>
           <Outlet context={outletContext} />
         </main>
       </div>
+
+      <NotificationPopups onOpen={handleSelectNotification} />
 
       <MobileTabBar
         items={navItems}

@@ -11,6 +11,7 @@ import { formatClockTime, isSlotFreeing, STATUS_LABELS } from "./bookingStatus";
 import { parseLocalDate } from "./dates";
 import { clockParts } from "./businessTime";
 import { phaseLabels } from "./bookingPhases";
+import { fromPriceChange } from "./priceLabel";
 import type {
   Booking,
   Phase,
@@ -90,7 +91,7 @@ export const movedHistoryEntry = (
         from.stylistName
       } to ${formatWhen(to.date, to.time)} with ${to.stylistName}`;
   const price = priceChange
-    ? ` (price $${priceChange.from} to $${priceChange.to})`
+    ? ` (price ${fromPriceChange(priceChange.from, priceChange.to)})`
     : "";
   return { at, type: "moved", label: `${base}${price}` };
 };

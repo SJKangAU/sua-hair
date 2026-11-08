@@ -6,6 +6,7 @@ import { SALON_CONFIG } from "./config";
 import { formatGoogleCalendarDate, formatICSDate } from "./dates";
 import { BUSINESS_TIME_ZONE, bookingStartInstant } from "./businessTime";
 import type { Booking } from "../types";
+import { fromPrice } from "./priceLabel";
 
 // What the calendar links need - a stored booking or a fresh request's result
 export type CalendarBooking = Pick<
@@ -30,7 +31,7 @@ export const getGoogleCalendarLink = (booking: CalendarBooking): string => {
     dates: `${formatGoogleCalendarDate(start)}/${formatGoogleCalendarDate(
       end,
     )}`,
-    details: `Stylist: ${booking.stylistName}\nService: ${booking.serviceName}\nPrice: $${booking.servicePrice}\nPhone: ${salonPhone}`,
+    details: `Stylist: ${booking.stylistName}\nService: ${booking.serviceName}\nPrice: ${fromPrice(booking.servicePrice)}\nPhone: ${salonPhone}`,
     location: salonAddress,
     ctz: BUSINESS_TIME_ZONE,
   });
@@ -52,7 +53,7 @@ export const downloadICSFile = (booking: CalendarBooking): void => {
     `DTSTART:${formatICSDate(start)}`,
     `DTEND:${formatICSDate(end)}`,
     `SUMMARY:${booking.serviceName} at ${salonName} (requested)`,
-    `DESCRIPTION:Stylist: ${booking.stylistName}\\nService: ${booking.serviceName}\\nPrice: $${booking.servicePrice}\\nPhone: ${salonPhone}`,
+    `DESCRIPTION:Stylist: ${booking.stylistName}\\nService: ${booking.serviceName}\\nPrice: ${fromPrice(booking.servicePrice)}\\nPhone: ${salonPhone}`,
     `LOCATION:${salonAddress}`,
     "STATUS:TENTATIVE", // a request until the salon confirms it
     "END:VEVENT",

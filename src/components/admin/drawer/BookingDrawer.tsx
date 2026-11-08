@@ -59,6 +59,7 @@ import { BookingConflictError } from "../../../lib/bookingConflicts";
 import { useSalonData } from "../../../context/SalonDataContext";
 import { formatDisplayDate } from "../../../lib/dates";
 import type { Booking, BookingStatus, Phase } from "../../../types";
+import { fromPrice } from "../../../lib/priceLabel";
 
 interface Props {
   bookingId: string;
@@ -605,7 +606,7 @@ const DrawerContent = ({
                 }}
               >
                 <span>{s.name}</span>
-                <span style={{ fontWeight: 600 }}>${s.price}</span>
+                <span style={{ fontWeight: 600 }}>{fromPrice(s.price)}</span>
               </div>
             ))}
             {services.length > 1 && (
@@ -621,7 +622,7 @@ const DrawerContent = ({
                 }}
               >
                 <span>Total</span>
-                <span>${booking.servicePrice}</span>
+                <span>{fromPrice(booking.servicePrice)}</span>
               </div>
             )}
             {booking.stylistId === "any" && (

@@ -14,6 +14,7 @@ import { DurationNote } from "../ui/ProcessingNote";
 import { parseLocalDate } from "../../lib/dates";
 import { SALON_CONFIG } from "../../lib/config";
 import type { BookingRequestResult } from "../../lib/bookingApi";
+import { fromPrice } from "../../lib/priceLabel";
 
 interface Props {
   result: BookingRequestResult;
@@ -157,7 +158,7 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
                   {i === 0 ? "Service" : ""}
                 </span>
                 <span style={{ fontWeight: 500, color: "var(--ink)" }}>
-                  {s.name} · ${s.price}
+                  {s.name} · {fromPrice(s.price)}
                 </span>
               </div>
             ))}
@@ -208,7 +209,7 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
               style={{ fontWeight: 700, color: "var(--ink)" }}
               data-testid="confirmation-total"
             >
-              ${result.total}
+              {fromPrice(result.total)}
             </span>
           </div>
 

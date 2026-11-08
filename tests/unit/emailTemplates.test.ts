@@ -73,13 +73,14 @@ describe("buildConfirmationEmail", () => {
     expect(email.html).not.toMatch(/background(-color)?:\s*#111/i);
   });
 
-  it("prefixes the price with 'from' for any-available-stylist bookings", () => {
+  it("prefixes the price with 'from' for every booking, any-available-stylist or not", () => {
     const anyStylist = buildConfirmationEmail({
       ...booking,
       stylistId: "any",
       stylistName: "Any available stylist",
     });
     expect(anyStylist.text).toContain("Price: from $180");
+    expect(buildConfirmationEmail(booking).text).toContain("Price: from $180");
   });
 
   it("escapes customer-supplied HTML", () => {

@@ -3,6 +3,8 @@
 // Contains stats, filter bar, search, booking list, and waitlist panel
 
 import { useState } from "react";
+import { useSalonData } from "../../context/SalonDataContext";
+import useStylistFilter from "../../hooks/useStylistFilter";
 import type { BookingStatus } from "../../types";
 import { useBookingContext } from "../../context/BookingContext";
 import { useToastContext } from "../../context/ToastContext";
@@ -30,7 +32,19 @@ interface Props {
 const BookingsPage = ({ onUpdateStatus, onSetFlag, isOwner }: Props) => {
   const { bookings, loading, error } = useBookingContext();
   const { addToast } = useToastContext();
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const { stylists } = useSalonData();
+  const stylistFilter = useStylistFilter();
+  const [rest, setRest] = useState<Filters>(DEFAULT_FILTERS);
+  // The stylist part is the user's saved pick, minus anyone no longer listed
+  const stylistIds = stylistFilter.picked.filter((id) =>
+    stylists.some((s) => s.id === id),
+  );
+  const filters: Filters = { ...rest, stylistIds };
+  const setFilters = (next: Filters) => setRest({ ...next, stylistIds: [] });
+  const clearFilters = () => {
+    setRest(DEFAULT_FILTERS);
+    stylistFilter.clear();
+  };
 
   const hasActiveFilters = computeHasActiveFilters(filters);
   const filteredCount = hasActiveFilters
@@ -75,7 +89,7 @@ const BookingsPage = ({ onUpdateStatus, onSetFlag, isOwner }: Props) => {
       <FilterBar
         filters={filters}
         onChange={setFilters}
-        onClear={() => setFilters(DEFAULT_FILTERS)}
+        onClear={clearFilters}
       />
 
       {/* Bookings list */}

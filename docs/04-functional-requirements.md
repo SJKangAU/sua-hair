@@ -802,7 +802,7 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 **Description:** Four changes to make the admin area quicker to use. None changes what is stored, except "Apply to all stylists", which writes each stylist's `workingHours`.
 
 - **Manage is split into tabs** (`ManagePage.tsx`): Stylists & services, Hours, Team access, Policies, Messages, Import. Only the open tab is drawn.
-- **Day view** (`TodayPage.tsx`, `Timeline.tsx`): the previous/next-day arrows keep their place (the "Today" shortcut hides rather than moves them); the date itself is a button that opens the calendar from anywhere on it. A row of chips above the columns filters by stylist: **All**, one chip per stylist, and **Seniors** / **Juniors** groups (shown only when both levels exist). Picking chips shows just those columns; picking All, or clearing the last chip, shows everyone. The filter is not saved between visits.
+- **Day view** (`TodayPage.tsx`, `Timeline.tsx`): the previous/next-day arrows keep their place (the "Today" shortcut hides rather than moves them); the date itself is a button that opens the calendar from anywhere on it. A row of chips above the columns filters by stylist: **All**, one chip per stylist, and **Seniors** / **Juniors** groups (shown only when both levels exist). Picking chips shows just those columns; picking All, or clearing the last chip, shows everyone. From FR-039 the choice is remembered per user.
 - **Hours:** an **Apply to all stylists** button on the stylist hours editor copies the hours on screen to every active stylist after a confirm. It is disabled with fewer than two active stylists.
 - **Dark mode:** a Light / Dark toggle in the sidebar (More sheet on phones). Saved in that browser only, light by default, admin pages only; the booking site is never affected.
 
@@ -812,3 +812,22 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Dark mode toggles, survives a reload, stays off the booking site; phone toggle (`e2e/20-dark-mode.spec.ts` TC-161)
 - [x] The Manage tests open each tab before acting (`e2e/03-admin-pages.spec.ts`, TC-028 to TC-032)
 - [ ] Apply to all stylists, and the fixed day arrows / date button: **no automated test**; checked by hand only
+
+## FR-039 — Quick UI wins: "from" prices, stylist colours, full-width Today, notifications, stylist filter
+
+**Description:** Five changes from the 6 Nov 2026 meeting. None changes how a price is calculated or who may read what.
+
+- **"from $X" (DEC-064).** Every service price reads "from $X": the booking flow and review sheet, the confirmation screen, emails and the calendar entry, the admin booking list, card, drawer and walk-in form, the Manage service list ("from $75 / $65 / $55" for the three levels) and history notes. The stored value is unchanged. The CSV export keeps numbers.
+- **Stylist colours (DEC-065).** Each stylist has a colour: Manage, Stylists, Edit has ten swatches plus **Automatic**. It shows as a bar and avatar on the Today column head, a stripe on each Today block, the phone list and bookings-list cards, a dot on the filter chips and in the roster. By default no two stylists share a colour. All label text on a colour is 4.5:1 or better.
+- **Full-width Today (DEC-066).** No maximum width. Columns grow with the window and the grid scrolls sideways only below 140px per column. Phones (under 900px) get the day list.
+- **Notifications (DEC-067).** A distinct warm colour; a bigger bell panel; and a large corner popup. A booking request stays until acknowledged; other notifications pop up and can be dismissed.
+- **Stylist filter (DEC-068).** Multi-select chips on Today (grid and phone list) and the bookings list; All by default; the last choice remembered per signed-in account in that browser. Staff only see what the rules already let them read.
+
+**Acceptance criteria:**
+
+- [x] Prices read "from" in every place listed (`tests/unit/priceLabel.test.ts`, the email unit tests, `e2e/25-batch1-ui.spec.ts` TC-162, `e2e/11-booking-commands.spec.ts`)
+- [x] Palette contrast, unique defaults, owner's choice wins, stable defaults (`tests/unit/stylistColors.test.ts`); colours render on columns, blocks, chips, cards and roster, and the Manage picker saves and clears (`e2e/25` TC-163, TC-164); the rule accepts only owner-written short text (`tests/firestore/rules.test.ts`)
+- [x] Today fills 1280, 1920, 2560 and 390 px with no sideways page scroll; screenshots in `docs/test-runs/batch1-screenshots/` (`e2e/25` TC-166)
+- [x] Request popup persists until acknowledged, survives reload and navigation; other popups dismiss; wording pinned to the functions; colour contrast 7:1 for text (`tests/unit/notificationPopups.test.ts`, `e2e/25` TC-167, TC-168)
+- [x] Multi-select, remembered, shared between Today and the bookings list, per-account key, phone list (`tests/unit/stylistFilter.test.ts`, `e2e/25` TC-165)
+- [ ] **Not verified:** the new rule is not deployed; Safari / iOS and a real phone; how readable the popup is on a real wall screen; a second real account for "per user" (checked through the key and unit tests only).

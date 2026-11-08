@@ -24,6 +24,7 @@ import {
 } from "../../lib/validation";
 import { combinePhases, phaseTotals } from "../../lib/bookingPhases";
 import { EMPTY_DRAFT, checkConsultation, needsConsultation, type ConsultationDraft } from "../../lib/consultation";
+import { fromPrice } from "../../lib/priceLabel";
 import {
   BookingCommandError,
   createBookingRequest,
@@ -159,19 +160,17 @@ const BookingForm = () => {
     return stylist ? service.price[stylist.level] : service.price.junior;
   };
 
-  // Display string per service: the exact price for a chosen stylist; "from $X"
-  // (the lowest tier) for "Any Available Stylist", because the server picks the
-  // stylist when the request is received and the exact price is shown THEN.
+  // Display string per service: always a starting price ("from $X"). For a chosen
+  // stylist it is their level's price; for "Any Available Stylist" the lowest tier.
   const getPriceDisplay = (service: FirestoreService): string =>
-    stylistId === "any" ? `from $${getPrice(service)}` : `$${getPrice(service)}`;
+    fromPrice(getPrice(service));
 
   const estimatedTotal = selectedServices.reduce(
     (sum, s) => sum + getPrice(s),
     0,
   );
 
-  const estimatedTotalDisplay =
-    stylistId === "any" ? `from $${estimatedTotal}` : `$${estimatedTotal}`;
+  const estimatedTotalDisplay = fromPrice(estimatedTotal);
 
   const stylist = stylists.find((s) => s.id === stylistId);
   const stylistName =

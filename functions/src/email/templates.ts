@@ -9,6 +9,7 @@
 // Every customer-supplied string is HTML-escaped before interpolation.
 
 import { SALON } from "../salon";
+import { fromPrice } from "../../../src/lib/priceLabel";
 import {
   DEFAULT_EMAIL_TEMPLATES,
   escapeHtml,
@@ -81,7 +82,7 @@ const oneLine = (value: string): string => value.replace(/[\r\n]+/g, " ").trim()
 
 const formatPrice = (b: BookingEmailData): string | null => {
   if (typeof b.servicePrice !== "number") return null;
-  return `${b.stylistId === "any" ? "from " : ""}$${b.servicePrice}`;
+  return fromPrice(b.servicePrice);
 };
 
 const serviceLines = (b: BookingEmailData): string[] =>

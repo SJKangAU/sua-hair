@@ -30,6 +30,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import StatusIcon from "../../ui/StatusIcon";
+import useStylistColors from "../../../hooks/useStylistColors";
 import {
   formatClockTime,
   isSlotFreeing,
@@ -140,6 +141,7 @@ const TimelineBlock = ({
 
   // Live countdown for the processing window the clock is inside - today only
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
+  const stylistColor = useStylistColors()(booking.stylistId);
   const restKey = rests.map((r) => `${r.startMinutes}-${r.endMinutes}`).join(",");
   const restsRef = useRef(rests);
   useEffect(() => {
@@ -353,6 +355,25 @@ const TimelineBlock = ({
         background: isPending ? "var(--surface)" : "transparent",
       }}
     >
+      {/* The stylist's colour, down the whole block */}
+      {stylistColor && (
+        <div
+          aria-hidden="true"
+          data-testid="block-stripe"
+          data-stylist-color={stylistColor.id}
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width: "5px",
+            background: stylistColor.solid,
+            zIndex: 3,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
       {/* Active period */}
       <div
         style={{
@@ -383,7 +404,7 @@ const TimelineBlock = ({
               position: "absolute",
               top: 0,
               bottom: 0,
-              left: 0,
+              left: 5,
               width: "4px",
               background: "var(--surface)",
             }}

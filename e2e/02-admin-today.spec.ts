@@ -114,6 +114,11 @@ test("the stylist filter shows only the stylists picked, and All brings everyone
   await expect(columns).toHaveCount(4); // plus Elly and Yuto
   await page.getByTestId("stylist-filter-juniors").click();
   await expect(columns).toHaveCount(2);
+  // the choice is remembered (DEC-068); put it back to All so later tests see everyone
+  await page.reload();
+  await expect(columns).toHaveCount(2);
+  await page.getByTestId("stylist-filter-all").click();
+  await expect(columns).toHaveCount(everyone);
 });
 
 test("TC-011 clicking a booking block opens its quick actions, and View details opens the full booking", async () => {
@@ -138,10 +143,16 @@ test("TC-012 clicking empty time opens the create form pre-filled with that styl
   // No "Open slot" buttons any more: empty time is just the grid
   await expect(page.getByRole("button", { name: /Open slot/ })).toHaveCount(0);
   // Ethan has nothing booked: click in his column at 11:10 (the 11:00 row)
-  const column = (await page.getByTestId("timeline-column-ethan").boundingBox())!;
-  await page.mouse.move(column.x + column.width / 2, column.y + (11 * 60 + 10 - 10 * 60) * 2);
-  await expect(page.getByTestId("create-preview-label")).toHaveText("11:00 – 11:30 am");
-  await page.mouse.click(column.x + column.width / 2, column.y + (11 * 60 + 10 - 10 * 60) * 2);
+  // Measure and hover together, and retry: the page can still be scrolling or
+  // settling its layout after load (CI), which moves the column after a one-off measure
+  let at = { x: 0, y: 0 };
+  await expect(async () => {
+    const column = (await page.getByTestId("timeline-column-ethan").boundingBox())!;
+    at = { x: column.x + column.width / 2, y: column.y + (11 * 60 + 10 - 10 * 60) * 2 };
+    await page.mouse.move(at.x, at.y);
+    await expect(page.getByTestId("create-preview-label")).toHaveText("11:00 – 11:30 am", { timeout: 1000 });
+  }).toPass({ timeout: 10000 });
+  await page.mouse.click(at.x, at.y);
   const d = dialog(page);
   await expect(d).toBeVisible();
   await expect(d.getByRole("heading", { name: "New Booking" })).toBeVisible();
@@ -319,7 +330,7 @@ test("D2 cancel shows an Undo toast; Undo restores; a taken slot refuses a resto
   // The cancelled block now sits underneath the new booking, so restore it
   // from the Bookings list, filtered to cancelled bookings
   await page.goto("/admin/bookings");
-  await page.locator("select").nth(1).selectOption("cancelled");
+  await page.locator("select").nth(0).selectOption("cancelled");
   await expect(page.getByText("Cancel Me")).toBeVisible();
   await page.getByRole("button", { name: "Restore" }).click();
   await expect(page.getByText(/Not restored/)).toBeVisible();

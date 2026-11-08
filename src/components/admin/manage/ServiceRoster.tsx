@@ -27,6 +27,7 @@ import { db } from "../../../lib/firebase";
 import { todayString } from "../../../lib/dates";
 import useServices from "../../../hooks/useServices";
 import type { FirestoreService } from "../../../hooks/useServices";
+import { fromPrices } from "../../../lib/priceLabel";
 
 interface Props {
   onSuccess: (message: string) => void;
@@ -756,8 +757,11 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                     {/* Tiered prices */}
                     <div style={{ textAlign: "right", fontSize: "0.78rem" }}>
                       <p style={{ margin: 0, color: "var(--admin-muted)" }}>
-                        ${service.price.director} / ${service.price.senior} / $
-                        {service.price.junior}
+                        {fromPrices([
+                          service.price.director,
+                          service.price.senior,
+                          service.price.junior,
+                        ])}
                       </p>
                       <p
                         style={{

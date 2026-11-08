@@ -221,7 +221,7 @@ describe("assigning a stylist to a legacy 'any' booking (DEC-040)", () => {
     expect(b).toMatchObject({ stylistId: "steve", stylistName: "Steve Hwang", stylistLevel: "director", servicePrice: 105 });
     expect(b.services.map((s: { price: number }) => s.price)).toEqual([75, 30]);
     expect(b.history.at(-1)).toMatchObject({ type: "moved" });
-    expect(b.history.at(-1).label).toMatch(/Stylist assigned: Steve Hwang \(price \$75 to \$105\)/);
+    expect(b.history.at(-1).label).toMatch(/Stylist assigned: Steve Hwang \(price from \$75 to \$105\)/);
     expect((await slotOf("legacy")).stylistId).toBe("steve");
     // and now it can be approved
     expect((await approveBookingCore(db, { bookingId: "legacy" }, owner)).status).toBe("confirmed");
