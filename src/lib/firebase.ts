@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // When the project hasn't been wired up with real Firebase credentials yet
@@ -117,4 +118,12 @@ export const functions = getFunctions(app, "australia-southeast1");
 
 if (import.meta.env.VITE_USE_EMULATORS === "true") {
   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}
+
+// Firebase Storage: the owner's pictures for services and "Your hair" options
+// (site-images/, see storage.rules). Customers only ever read them.
+export const storage = getStorage(app);
+
+if (import.meta.env.VITE_USE_EMULATORS === "true") {
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
 }

@@ -248,6 +248,18 @@ Since the section above, **no rule or index changed** (checked with `git diff 35
 5. **Check as the owner:** book a colour service from your own phone: the questions appear, it shows "Request received", Approvals shows **Call needed**; book a plain cut: it is confirmed at once and the email says so.
 6. *Rollback:* redeploy the previous functions and app. Bookings saved with answers keep them; nothing needs migrating.
 
+## "Your hair", hair options and service pictures (FR-040): what to add
+
+**This is the first change that needs Firebase Storage**, so there is a one-time console step and a new deploy target.
+
+1. **Enable Storage first.** Firebase console, Build, Storage, **Get started**; pick the same region as Firestore. Confirm the bucket name matches `VITE_FIREBASE_STORAGE_BUCKET` (`sua-hair-ae353.firebasestorage.app`). Storage may need the pay-as-you-go (Blaze) plan; check the current Storage pricing and free quota for your project before relying on it.
+2. **Deploy the Storage rules:** `npx firebase deploy --only storage --project sua-hair-ae353` (`storage.rules`: public read of `site-images/`, owner-only write, JPEG/PNG/WebP under 2 MB; `client-photos/` and everything else closed). Until this is done, picture uploads fail and pictures do not load.
+3. **Functions before the app:** the booking form now sends the hair answers, and the old functions would ignore them (a service that asks would then book without them being stored). `npx firebase deploy --only functions --project sua-hair-ae353`.
+4. **App**, then **Firestore rules last** (`firestore.rules` is unchanged by this feature: `salonSettings/hairOptions` is covered by the existing owner-write, public-read rule).
+5. **Turn it on per service:** Manage, Stylists & services, tick **Ask about the client's hair** on the colour and perm services (the seed script sets it, existing data is not changed). Until you do, nobody sees the step. Optionally edit the choices under Manage, **Hair options**, and add a picture to services.
+6. **Check as the owner:** book a service that asks about hair from your phone: the Your Hair step appears; the booking's drawer shows "Their hair"; a picture you upload in Manage shows on the booking page.
+7. *Rollback:* redeploy the previous functions and app; bookings keep the `hair` field. Remove the pictures by deleting the `site-images/` files in the console.
+
 ## Everything else to know
 
 - The 24-hour hold is `SALON_CONFIG.pendingHoldHours` in `src/lib/config.ts` (and `maxPendingPerPhone: 2`). The release job runs every 15 minutes, so a request is released between 24:00 and 24:15 after it was made.

@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Firebase Storage rules.
+//
+//   site-images/**     Pictures the OWNER chooses for the booking page: a picture per service
+//                      and per "Your hair" option. Anyone may read them (they are shown to
+//                      anonymous customers); only the owner may write, and only a small
+//                      JPEG, PNG or WebP. The type and size limits are enforced HERE, not just
+//                      in the browser.
+//   client-photos/**   Reserved for customers' own hair photos (a later phase): staff-only
+//                      read, never listed publicly. Closed until that phase is built, so
+//                      nothing can be written or read there by accident.
+//   everything else    denied.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.get('role', '') == 'owner';
+    }
+
+    function smallImage() {
+      return request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    match /site-images/{fileName} {
+      allow read: if true;
+      allow create, update: if isOwner() && smallImage();
+      allow delete: if isOwner();
+    }
+
+    match /client-photos/{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

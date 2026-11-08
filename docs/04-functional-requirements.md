@@ -831,3 +831,19 @@ A stylist signs in (separate login page) and sees a **read-only** schedule of th
 - [x] Request popup persists until acknowledged, survives reload and navigation; other popups dismiss; wording pinned to the functions; colour contrast 7:1 for text (`tests/unit/notificationPopups.test.ts`, `e2e/25` TC-167, TC-168)
 - [x] Multi-select, remembered, shared between Today and the bookings list, per-account key, phone list (`tests/unit/stylistFilter.test.ts`, `e2e/25` TC-165)
 - [ ] **Not verified:** the new rule is not deployed; Safari / iOS and a real phone; how readable the popup is on a real wall screen; a second real account for "per user" (checked through the key and unit tests only).
+
+## FR-040 — "Your hair": current and desired hair, owner-editable options, service pictures
+
+**Requirement.** A service the owner marks "Ask about the client's hair" adds a **Your hair** step to the booking page (between Services and Date & Stylist). The client says what their hair is like now (**Current hair**) and what they want (**Desired hair**) by choosing picture tiles: colour swatches, built-in icons, or pictures the owner uploaded. Each section has an optional note. A phone call can be flagged per answer (stored now; the call request itself is a later phase). The questions and options are the owner's, edited in **Manage, Hair options** (add, rename, reorder, hide, delete; swatch, icon, own picture or word; "needs a call"). Each service also shows a picture on the booking page: a built-in illustration for its category, or the owner's own upload. "Final price is confirmed at your appointment." sits under every total a customer sees (DEC-064).
+
+**Where it lives.** Options: `salonSettings/hairOptions` (public read, owner write). Answers: sent as option ids, re-checked by `createBookingRequest` against the CURRENT options, stored on the booking as `hair` with the labels frozen (`src/lib/hairProfile.ts`, shared with the functions). Pictures: Firebase Storage `site-images/` (public read, owner-only write, JPEG/PNG/WebP under 2 MB; `storage.rules`). Staff see the answers in the booking drawer and on a stylist's schedule; the public availability data never carries them.
+
+**Acceptance criteria:**
+
+- [x] Answers validated and stored as a label snapshot; unknown or hidden options refused; a deleted question never fails a booking (`tests/unit/hairProfile.test.ts`, `tests/functions/createBookingRequest.test.ts`)
+- [x] Owner edits are pure and always leave a valid config (`tests/unit/hairEdit.test.ts`)
+- [x] Public can read the options and not change them; stylists and the public cannot edit a booking's hair answers or read it (`tests/firestore/roles.test.ts`, `tests/firestore/security.test.ts`)
+- [x] Storage: public read of `site-images/`, owner-only write, type and size limits, `client-photos/` and everything else closed (`tests/storage/storageRules.test.ts`, `npm run test:storage`)
+- [x] Prices written through `priceLabel`, with a scan that fails on a hand-written "$" amount (`tests/unit/fromPriceEverywhere.test.ts`); note under the totals (`e2e/26`)
+- [x] The whole flow in a browser, including an owner picture upload to the Storage emulator (`e2e/26-your-hair.spec.ts` TC-170 to TC-175)
+- [ ] **Not built (later phases):** customers' own hair photos and Storage rules for them, the call request (day and window), the "Calls to make" list, the approval block until the call is done, the disclosure popup. **Not verified:** a real Storage bucket (needs enabling in the Firebase console), Safari / phones, the booking summary sheet showing service pictures.

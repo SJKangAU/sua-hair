@@ -10,6 +10,9 @@ const amount = (n: number): string => `$${Number.isInteger(n) ? n : n.toFixed(2)
 /** "from $85" for one price. */
 export const fromPrice = (n: number): string => `from ${amount(n)}`;
 
+/** The line shown under every total a customer sees. */
+export const FINAL_PRICE_NOTE = "Final price is confirmed at your appointment.";
+
 /** "from $60 to $90": a starting price that moved (one "from", not two). */
 export const fromPriceChange = (before: number, after: number): string =>
   `from ${amount(before)} to ${amount(after)}`;

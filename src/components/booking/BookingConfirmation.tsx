@@ -14,7 +14,7 @@ import { DurationNote } from "../ui/ProcessingNote";
 import { parseLocalDate } from "../../lib/dates";
 import { SALON_CONFIG } from "../../lib/config";
 import type { BookingRequestResult } from "../../lib/bookingApi";
-import { fromPrice } from "../../lib/priceLabel";
+import { fromPrice, FINAL_PRICE_NOTE } from "../../lib/priceLabel";
 
 interface Props {
   result: BookingRequestResult;
@@ -212,6 +212,9 @@ const BookingConfirmation = ({ result, customerName, onReset }: Props) => {
               {fromPrice(result.total)}
             </span>
           </div>
+          <p data-testid="final-price-note" style={{ margin: "0.25rem 0 0", fontSize: "var(--text-xs)", color: "var(--grey-muted)", textAlign: "right" }}>
+            {FINAL_PRICE_NOTE}
+          </p>
 
           {result.restTime > 0 && (
             <div style={{ marginTop: "0.75rem" }}>

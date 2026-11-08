@@ -31,6 +31,7 @@ import Badge from "../../ui/Badge";
 import StatusIcon from "../../ui/StatusIcon";
 import PhaseBar from "./PhaseBar";
 import ConsultationSection from "./ConsultationSection";
+import HairAnswers from "../HairAnswers";
 import PhasesEditor from "../PhasesEditor";
 import BookingHistory from "./BookingHistory";
 import RescheduleForm from "./RescheduleForm";
@@ -587,6 +588,13 @@ const DrawerContent = ({
       {booking.consultation && (
         <Section title="Colour consultation">
           <ConsultationSection booking={booking} />
+        </Section>
+      )}
+
+      {/* ── Your hair: current and desired hair, with the client's pictures ── */}
+      {booking.hair && (
+        <Section title="Their hair">
+          <HairAnswers hair={booking.hair} />
         </Section>
       )}
 

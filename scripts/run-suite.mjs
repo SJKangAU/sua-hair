@@ -27,6 +27,7 @@ const steps = [
   ["lockdown", "npm run test:lockdown"],
   ["admin", "npm run test:admin"],
   ["functions", "npm run test:functions"],
+  ["storage", "npm run test:storage"],
   ["smoke", "npm run test:smoke"],
   ["e2e", "npm run test:e2e"],
 ];

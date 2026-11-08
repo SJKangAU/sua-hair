@@ -3,7 +3,7 @@
   "description": "Cloud Functions for Sua Hair Studio",
   "private": true,
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/functions/src/index.js",
   "scripts": {

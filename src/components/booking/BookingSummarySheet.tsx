@@ -14,6 +14,7 @@
 import { parseLocalDate } from "../../lib/dates";
 import type { Phase } from "../../lib/bookingPhases";
 import { DurationNote } from "../ui/ProcessingNote";
+import { FINAL_PRICE_NOTE } from "../../lib/priceLabel";
 
 const SHEET_CSS = `
   @keyframes bkSheetUp {
@@ -259,6 +260,9 @@ const BookingSummarySheet = ({
               {estimatedTotalDisplay}
             </span>
           </div>
+          <p data-testid="final-price-note" style={{ margin: "-1rem 0 1.5rem", fontSize: "var(--text-xs)", color: "var(--grey-muted)" }}>
+            {FINAL_PRICE_NOTE}
+          </p>
 
           {/* Actions */}
           <button

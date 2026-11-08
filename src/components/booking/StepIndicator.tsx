@@ -4,10 +4,14 @@
 // Connecting lines fill as steps complete.
 
 interface Props {
+  /** 1 Services, 1.5 Your hair (only when withHair), 2 Date & Stylist, 3 Your Details */
   currentStep: number;
+  /** a chosen service asks about the hair, so a "Your Hair" step sits after Services */
+  withHair?: boolean;
 }
 
-const STEPS = ["Services", "Date & Stylist", "Your Details"];
+const BASE_STEPS = ["Services", "Date & Stylist", "Your Details"];
+const HAIR_STEPS = ["Services", "Your Hair", "Date & Stylist", "Your Details"];
 
 // Labels are nowrap so they set the minimum width of the whole indicator —
 // shrink them on very narrow phones via a class (inline styles can't do this).
@@ -18,7 +22,10 @@ const LABEL_CSS = `
   }
 `;
 
-const StepIndicator = ({ currentStep }: Props) => {
+const StepIndicator = ({ currentStep, withHair = false }: Props) => {
+  const STEPS = withHair ? HAIR_STEPS : BASE_STEPS;
+  // position in the list (1-based): with the hair step, 1.5 is second and later steps shift by one
+  const position = withHair ? (currentStep === 1 ? 1 : currentStep === 1.5 ? 2 : currentStep + 1) : currentStep;
   return (
     <div
       style={{
@@ -31,8 +38,8 @@ const StepIndicator = ({ currentStep }: Props) => {
       <style>{LABEL_CSS}</style>
       {STEPS.map((label, i) => {
         const stepNum = i + 1;
-        const completed = currentStep > stepNum;
-        const active = currentStep === stepNum;
+        const completed = position > stepNum;
+        const active = position === stepNum;
         const isLast = i === STEPS.length - 1;
 
         return (

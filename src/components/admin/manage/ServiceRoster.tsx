@@ -28,6 +28,7 @@ import { todayString } from "../../../lib/dates";
 import useServices from "../../../hooks/useServices";
 import type { FirestoreService } from "../../../hooks/useServices";
 import { fromPrices } from "../../../lib/priceLabel";
+import ImageField from "./ImageField";
 
 interface Props {
   onSuccess: (message: string) => void;
@@ -65,6 +66,10 @@ const EMPTY_FORM = {
   requiresApproval: false,
   // true = the client answers the colour questionnaire and the salon rings before confirming
   requiresConsultation: false,
+  // true = the client describes their current and desired hair (the "Your hair" step) when booking
+  askHairDetails: false,
+  // picture shown on the booking page; "" = the built-in illustration for the category
+  imageUrl: "",
   // weeks until the client is due back for a retouch; "" = none
   retouchWeeks: "" as number | "",
 };
@@ -104,6 +109,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
       priceJunior: service.price.junior,
       requiresApproval: service.requiresApproval === true,
       requiresConsultation: service.requiresConsultation === true,
+      askHairDetails: service.askHairDetails === true,
+      imageUrl: service.imageUrl ?? "",
       retouchWeeks: service.retouchWeeks ?? "",
     });
     setShowForm(true);
@@ -166,6 +173,9 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           price: newPrice,
           requiresApproval: form.requiresApproval,
           requiresConsultation: form.requiresConsultation,
+          askHairDetails: form.askHairDetails,
+          // deleteField so clearing the picture removes the old address
+          imageUrl: form.imageUrl ? form.imageUrl : deleteField(),
           // deleteField so clearing the box removes the old value
           retouchWeeks: retouchWeeks === null ? deleteField() : retouchWeeks,
         };
@@ -201,6 +211,8 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
           price: newPrice,
           requiresApproval: form.requiresApproval,
           requiresConsultation: form.requiresConsultation,
+          askHairDetails: form.askHairDetails,
+          ...(form.imageUrl ? { imageUrl: form.imageUrl } : {}),
           ...(retouchWeeks !== null ? { retouchWeeks } : {}),
           status: "active",
           sortOrder: nextSortOrder,
@@ -582,6 +594,31 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
               </span>
             </span>
           </label>
+          <label
+            style={{ ...labelStyle, display: "flex", gap: "0.5rem", alignItems: "flex-start", fontWeight: 400 }}
+          >
+            <input
+              type="checkbox"
+              data-testid="service-ask-hair"
+              checked={form.askHairDetails}
+              onChange={(e) => setForm((prev) => ({ ...prev, askHairDetails: e.target.checked }))}
+              style={{ marginTop: "0.2rem" }}
+            />
+            <span>
+              Ask about the client's hair (current and desired)
+              <span style={{ display: "block", color: "var(--admin-muted)", fontSize: "0.78rem" }}>
+                Adds a "Your hair" step to the booking page with picture choices for what their hair is like now
+                and what they want. You edit those choices under Manage, Hair options.
+              </span>
+            </span>
+          </label>
+          <ImageField
+            label="Picture on the booking page (optional)"
+            kind="service"
+            testId="service-image"
+            value={form.imageUrl || undefined}
+            onChange={(url) => setForm((prev) => ({ ...prev, imageUrl: url ?? "" }))}
+          />
           <label style={{ ...labelStyle, maxWidth: "16rem" }}>
             Retouch period (weeks, optional)
             <input
@@ -750,6 +787,7 @@ const ServiceRoster = ({ onSuccess, onError }: Props) => {
                           return detail ? ` (${detail})` : "";
                         })()}
                         {service.retouchWeeks ? ` · retouch every ${service.retouchWeeks} wk` : ""}
+                        {service.askHairDetails ? " · asks about hair" : ""}
                         {service.requiresConsultation ? " · phone consultation first" : service.requiresApproval ? " · held for approval" : ""}
                       </p>
                     </div>

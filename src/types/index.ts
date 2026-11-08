@@ -11,6 +11,7 @@
 import type { ClientAccess } from "../lib/clientAccess";
 import type { Capability } from "../lib/permissions";
 import type { Consultation } from "../lib/consultation";
+import type { HairSnapshot } from "../lib/hairProfile";
 
 export interface TieredPrice {
   director: number;
@@ -95,6 +96,11 @@ export interface Service {
   // true = booking it online needs a phone consultation first (colour): the client answers a
   // questionnaire, the booking is held, and the salon rings before confirming. Absent = no.
   requiresConsultation?: boolean;
+  // true = booking it online asks the client about their hair now and what they want (the
+  // "Your hair" step, options edited in Manage). Absent = no.
+  askHairDetails?: boolean;
+  // A picture shown for the service on the booking page (Firebase Storage, site-images/).
+  imageUrl?: string;
   // Weeks until the client is due back for a retouch (e.g. colour regrowth). Optional.
   retouchWeeks?: number;
 }
@@ -258,6 +264,9 @@ export interface Booking {
   // flag that the salon still has to ring them. Owner and the booked stylist read it.
   needsConsultation?: boolean;
   consultation?: Consultation;
+  // "Your hair" answers (a service with askHairDetails): labels as they were at booking, so a
+  // later rename of an option never changes this booking. Owner and the booked stylist read it.
+  hair?: HairSnapshot;
   importedFrom?: string;
 }
 

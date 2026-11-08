@@ -193,6 +193,77 @@ describe("services that need a colour consultation", () => {
   });
 });
 
+describe("services that ask about the client's hair (Your hair)", () => {
+  const asksHair = (id = "mens-cut") => db.doc(`services/${id}`).update({ askHairDetails: true });
+  const hair = {
+    current: { picks: { history: ["never"], length: ["short"] } },
+    desired: { picks: { "colour-want": ["blonde"] }, notes: "  Soft   and bright " },
+  };
+  const stored = async (id: string) => (await db.doc(`bookings/${id}`).get()).data()!;
+
+  it("refuses a booking made without the answers", async () => {
+    await asksHair();
+    const err = await refusal(request({ stylistId: "steve" }));
+    expect(err.message).toMatch(/hair/i);
+  });
+
+  it("stores a snapshot of the labels, not the ids, and the call flag", async () => {
+    await asksHair();
+    const res = await book(request({ stylistId: "steve", hair }));
+    const b = await stored(res.bookingId);
+    expect(b.hair.callFlagged).toBe(false);
+    expect(b.hair.sections[0].items[0]).toMatchObject({ question: "Hair history", answers: [{ label: "Never coloured or treated" }] });
+    expect(b.hair.sections[1].notes).toBe("Soft and bright");
+  });
+
+  it("raises the call flag for a flagged answer such as bleached", async () => {
+    await asksHair();
+    const res = await book(request({ stylistId: "steve", hair: { ...hair, current: { picks: { history: ["bleached"] } } } }));
+    expect((await stored(res.bookingId)).hair.callFlagged).toBe(true);
+  });
+
+  it("checks the answers against the owner's CURRENT options: a hidden or unknown one is refused", async () => {
+    await asksHair();
+    const unknown = await refusal(request({ stylistId: "steve", hair: { current: { picks: { history: ["nope"] } } } }));
+    expect(unknown.code).toBe("invalid");
+
+    const { DEFAULT_HAIR_CONFIG } = await import("../../src/lib/hairProfile");
+    const config = structuredClone(DEFAULT_HAIR_CONFIG);
+    config.sections[0].questions[0].options.find((o) => o.id === "bleached")!.hidden = true;
+    await db.doc("salonSettings/hairOptions").set({ config });
+    const hidden = await refusal(request({ stylistId: "steve", hair: { current: { picks: { history: ["bleached"] } } } }));
+    expect(hidden.code).toBe("invalid");
+  });
+
+  it("uses the owner's own labels once they have saved options", async () => {
+    await asksHair();
+    const { DEFAULT_HAIR_CONFIG } = await import("../../src/lib/hairProfile");
+    const config = structuredClone(DEFAULT_HAIR_CONFIG);
+    config.sections[0].questions[0].options[0].label = "Virgin hair";
+    await db.doc("salonSettings/hairOptions").set({ config });
+    const res = await book(request({ stylistId: "steve", hair }));
+    expect((await stored(res.bookingId)).hair.sections[0].items[0].answers[0].label).toBe("Virgin hair");
+  });
+
+  it("falls back to the seed if what the owner saved is not a valid config", async () => {
+    await asksHair();
+    await db.doc("salonSettings/hairOptions").set({ config: { sections: [] } });
+    expect((await book(request({ stylistId: "steve", hair }))).status).toBe("pending");
+  });
+
+  it("does not store answers sent with a service that does not ask for them", async () => {
+    const res = await book(request({ stylistId: "steve", hair }));
+    expect((await stored(res.bookingId)).hair).toBeUndefined();
+  });
+
+  it("is required when ANY chosen service asks for it", async () => {
+    await asksHair("beard-trim");
+    const err = await refusal(request({ stylistId: "steve", serviceIds: ["mens-cut", "beard-trim"] }));
+    expect(err.message).toMatch(/hair/i);
+    expect((await book(request({ stylistId: "yuto", serviceIds: ["mens-cut", "beard-trim"], hair }))).status).toBe("pending");
+  });
+});
+
 describe("a valid request", () => {
   it("writes the booking and its slotBlocks projection together, pending, and returns the exact price", async () => {
     const res = await book(request({ stylistId: "steve", serviceIds: ["mens-cut", "beard-trim"], notes: "Quiet chair please" }));

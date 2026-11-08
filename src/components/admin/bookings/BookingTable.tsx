@@ -14,6 +14,7 @@ import { isOpenStatus } from "../../../lib/bookingStatus";
 import { groupBookingsByDate } from "../../../lib/bookingGroups";
 import { timeStringToMinutes } from "../../../lib/scheduling";
 import { todayString } from "../../../lib/dates";
+import { fromPrice } from "../../../lib/priceLabel";
 import SearchBar from "./SearchBar";
 import BulkActions from "./BulkActions";
 import { FreeWindowLegend } from "../../ui/ProcessingNote";
@@ -50,7 +51,7 @@ const exportToCSV = (bookings: Booking[]) => {
     b.customerPhone || "",
     b.stylistName,
     b.serviceName,
-    `$${b.servicePrice}`,
+    fromPrice(b.servicePrice),
     `${b.totalTime}min`,
     b.status,
     b.bookingType,

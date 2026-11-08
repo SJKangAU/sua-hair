@@ -74,6 +74,8 @@ export const bookingConverter: FirestoreDataConverter<Booking> = {
       clientId: d.clientId,
       needsConsultation: d.needsConsultation === true ? true : undefined,
       consultation: d.consultation && typeof d.consultation === "object" ? d.consultation : undefined,
+      // "Your hair": current and desired hair as the client chose them (labels frozen at booking)
+      hair: d.hair && typeof d.hair === "object" && Array.isArray(d.hair.sections) ? d.hair : undefined,
       createdAt: d.createdAt ?? "",
     };
   },

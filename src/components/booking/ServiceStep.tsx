@@ -15,6 +15,8 @@
 
 import { describePhases, resolvePhases } from "../../lib/bookingPhases";
 import { useState } from "react";
+import { fromPrice } from "../../lib/priceLabel";
+import ServiceArt from "./ServiceArt";
 import type { FirestoreService } from "../../hooks/useServices";
 
 interface Props {
@@ -92,7 +94,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
   const selectedServices = services.filter((s) => selectedIds.includes(s.id));
   const totalTime = selectedServices.reduce((sum, s) => sum + s.totalTime, 0);
   // Lowest tier per service: the stylist (and so the exact price) is chosen next
-  const fromPrice = selectedServices.reduce(
+  const startingTotal = selectedServices.reduce(
     (sum, s) => sum + Math.min(s.price.director, s.price.senior, s.price.junior),
     0,
   );
@@ -207,6 +209,8 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                         textAlign: "left",
                       }}
                     >
+                      <ServiceArt category={service.category} imageUrl={service.imageUrl} />
+
                       {/* Service info */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p
@@ -246,7 +250,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
                           textAlign: "right",
                         }}
                       >
-                        from ${getMinPrice(service)}
+                        {fromPrice(getMinPrice(service))}
                       </span>
 
                       {/* Check circle */}
@@ -288,7 +292,7 @@ const ServiceStep = ({ selectedIds, onToggle, services }: Props) => {
               color: "var(--surface)",
             }}
           >
-            from ${fromPrice} · {totalTime} min total
+            {fromPrice(startingTotal)} · {totalTime} min total
           </span>
         </div>
       )}

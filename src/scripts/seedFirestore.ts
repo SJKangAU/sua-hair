@@ -201,6 +201,7 @@ const SERVICES = [
     name: "Colour (Regrowth)",
     category: "colour",
     requiresConsultation: true,
+    askHairDetails: true,
     activeTime: 30,
     restTime: 30,
     totalTime: 60,
@@ -219,6 +220,7 @@ const SERVICES = [
     name: "Balayage / Highlights",
     category: "colour",
     requiresConsultation: true,
+    askHairDetails: true,
     activeTime: 60,
     restTime: 45,
     totalTime: 105,
@@ -236,6 +238,7 @@ const SERVICES = [
   {
     name: "Digital Perm",
     category: "perm",
+    askHairDetails: true,
     activeTime: 60,
     restTime: 60,
     totalTime: 120,

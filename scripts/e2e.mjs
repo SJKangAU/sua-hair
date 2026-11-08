@@ -15,5 +15,5 @@ const run = (cmd) => {
 
 run("npx tsc -p functions"); // the root TypeScript; functions/ has its own copy for deploys
 run(
-  `npx firebase emulators:exec --project demo-sua-e2e --only firestore,auth,functions "npx playwright test -c e2e/playwright.config.ts ${extra}"`,
+  `npx firebase emulators:exec --project demo-sua-e2e --only firestore,auth,functions,storage "npx playwright test -c e2e/playwright.config.ts ${extra}"`,
 );

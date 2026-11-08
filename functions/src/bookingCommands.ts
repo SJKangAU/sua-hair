@@ -42,6 +42,7 @@ import {
   combinePhases,
   phaseTotals,
 } from "../../src/lib/bookingPhases";
+import { checkHairAnswers, hairConfigProblem, DEFAULT_HAIR_CONFIG, type HairConfig, type HairSnapshot } from "../../src/lib/hairProfile";
 import { checkConsultation, consultationSummary, needsConsultation, type Consultation } from "../../src/lib/consultation";
 import { phaseWriteFields } from "../../src/lib/phaseFields";
 import { toSlotBlock } from "../../src/lib/slotBlockData";
@@ -106,6 +107,13 @@ const loadSettings = async (db: Firestore): Promise<SalonSettings | undefined> =
   return { weeklySchedule: data.weeklySchedule, dateOverrides: data.dateOverrides ?? {} };
 };
 
+// The owner-edited "Your hair" options (salonSettings/hairOptions); the seed until the owner saves
+// their own, and the seed again if what is stored is not a valid config.
+const loadHairConfig = async (db: Firestore): Promise<HairConfig> => {
+  const data = (await db.doc("salonSettings/hairOptions").get()).data();
+  return data && hairConfigProblem(data.config) === null ? (data.config as HairConfig) : DEFAULT_HAIR_CONFIG;
+};
+
 const loadStylists = async (db: Firestore): Promise<StoredStylist[]> => {
   const snap = await db.collection("stylists").get();
   return snap.docs.map((d) => ({ ...(d.data() as Stylist), id: d.id }));
@@ -137,6 +145,8 @@ export interface ParsedBookingRequest {
   marketingConsent?: boolean;
   /** The colour consultation answers, cleaned. Whether they are REQUIRED depends on the services. */
   consultation?: Consultation;
+  /** The "Your hair" picks as sent. Checked against the owner's current options in the command. */
+  hair?: unknown;
 }
 
 const text = (value: unknown): string | null =>
@@ -246,6 +256,7 @@ export const parseBookingRequest = (raw: unknown): ParsedBookingRequest => {
     ...(requestId ? { requestId } : {}),
     ...(r.marketingConsent === true ? { marketingConsent: true } : {}),
     ...(consultation ? { consultation } : {}),
+    ...(r.hair !== undefined && r.hair !== null ? { hair: r.hair } : {}),
   };
 };
 
@@ -443,6 +454,14 @@ export const createBookingRequestCore = async (
   if (consultationNeeded && !input.consultation) {
     throw new CommandError("invalid", "Colour needs a quick consultation first. Please answer the colour questions to book.");
   }
+  // A service that asks about the client's hair is booked only with those answers. They are
+  // re-checked against the owner's CURRENT options and stored as a snapshot of the labels.
+  let hair: HairSnapshot | undefined;
+  if (!options.replaces && services.some((s) => s.askHairDetails === true)) {
+    const checked = checkHairAnswers(input.hair, await loadHairConfig(db));
+    if (!checked.ok) throw new CommandError("invalid", checked.problem);
+    hair = checked.value;
+  }
   const phases: Phase[] = combinePhases(services);
   const totals = phaseTotals(phases);
   if (totals.activeTime <= 0 || totals.totalTime <= 0 || totals.totalTime > MAX_TOTAL_MINUTES) {
@@ -622,6 +641,7 @@ export const createBookingRequestCore = async (
         ...(consultationNeeded && input.consultation
           ? { needsConsultation: true, consultation: input.consultation }
           : {}),
+        ...(hair ? { hair } : {}),
         consentGivenAt: iso(ctx.now),
         createdAt: iso(ctx.now),
         ...(autoConfirm

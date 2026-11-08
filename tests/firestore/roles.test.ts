@@ -59,6 +59,7 @@ beforeEach(async () => {
     await db.doc("stylists/stylist-1").set({ name: "Alex", level: "senior", status: "active", order: 0 });
     await db.doc("services/svc-1").set({ name: "Cut", price: { director: 3, senior: 2, junior: 1 } });
     await db.doc("salonSettings/main").set({ weeklySchedule: {}, dateOverrides: {} });
+    await db.doc("salonSettings/hairOptions").set({ config: { sections: [] } });
     await db.doc("privateSettings/notifications").set({ notifyOwnerByEmail: false, ownerEmail: "o@example.com" });
     await db.doc("customerLookups/0412345678").set(validCustomerLookup());
     await db.doc("waitlist/w1").set({ customerName: "Jane", customerPhone: "0412345678", requestedDate: "2026-12-01", status: "pending" });
@@ -113,6 +114,8 @@ describe("bookings", () => {
     // the colour consultation answers are the client's: a stylist reads them, never edits them
     await assertFails(db.doc("bookings/own").update({ consultation: { desiredColour: "Blonde" } }));
     await assertFails(db.doc("bookings/own").update({ needsConsultation: false }));
+    // the "Your hair" answers likewise
+    await assertFails(db.doc("bookings/own").update({ hair: { sections: [], callFlagged: false } }));
   });
 
   it("stylist: cannot touch another stylist's booking, create or delete any", async () => {
@@ -177,6 +180,8 @@ describe("stylists, services, salonSettings (public read, owner-only write)", ()
     ["stylists/stylist-1", { name: "Hacked" }],
     ["services/svc-1", { name: "Hacked", price: { director: 1, senior: 1, junior: 1 } }],
     ["salonSettings/main", { weeklySchedule: {}, dateOverrides: { "2026-12-25": { closed: true } } }],
+    // the owner's "Your hair" options and a service's picture: shown to customers, changed by the owner only
+    ["salonSettings/hairOptions", { config: { sections: [{ id: "current", title: "Hacked", questions: [] }] } }],
   ] as const;
 
   it("everyone can read them", async () => {
@@ -184,6 +189,12 @@ describe("stylists, services, salonSettings (public read, owner-only write)", ()
       for (const [path] of targets) await assertSucceeds(db.doc(path).get());
       await assertSucceeds(db.collection("services").get());
     }
+  });
+
+  it("a service's picture and 'ask about hair' setting are owner-only to change", async () => {
+    const change = { imageUrl: "https://example.com/a.png", askHairDetails: true };
+    await assertSucceeds(owner().doc("services/svc-1").update(change));
+    for (const [, db] of nonOwners()) await assertFails(db.doc("services/svc-1").update(change));
   });
 
   it("owner can write them", async () => {

@@ -14,6 +14,7 @@ import OwnerNotificationsEditor from "../../components/admin/manage/OwnerNotific
 import TeamAccess from "../../components/admin/manage/TeamAccess";
 import TimeOffPolicySettings from "../../components/admin/manage/TimeOffPolicySettings";
 import PolicySettings from "../../components/admin/manage/PolicySettings";
+import HairOptionsEditor from "../../components/admin/manage/HairOptionsEditor";
 import EmailSettings from "../../components/admin/manage/EmailSettings";
 import SmsSettings from "../../components/admin/manage/SmsSettings";
 import ClientImport from "../../components/admin/manage/ClientImport";
@@ -51,6 +52,13 @@ const SECTIONS: Section[] = [
         <StylistHoursEditor {...cb} />
       </>
     ),
+  },
+  {
+    // The "Your hair" choices shown at booking (salonSettings/hairOptions is owner-write)
+    id: "hair",
+    label: "Hair options",
+    ownerOnly: true,
+    render: (cb) => <HairOptionsEditor {...cb} />,
   },
   {
     // Who can sign in, and whose clients each stylist may open (FR-025)

@@ -34,6 +34,9 @@ import {
 import { useSalonData } from "../../context/SalonDataContext";
 import StepIndicator from "./StepIndicator";
 import ServiceStep from "./ServiceStep";
+import HairStep from "./HairStep";
+import useHairOptions from "../../hooks/useHairOptions";
+import { checkHairAnswers, type HairAnswersInput } from "../../lib/hairProfile";
 import StylistDateStep from "./StylistDateStep";
 import DetailsStep from "./DetailsStep";
 import BookingSummarySheet from "./BookingSummarySheet";
@@ -97,6 +100,7 @@ const BookingForm = () => {
   const { stylists, services } = useSalonData();
 
   // ── Step navigation ────────────────────────────────────────────────────────
+  // Step 1.5 is the "Your hair" step, present only when a chosen service asks about the hair
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [showSummarySheet, setShowSummarySheet] = useState(false);
@@ -118,6 +122,9 @@ const BookingForm = () => {
   const [marketing, setMarketing] = useState(false);
   // Colour: the consultation questionnaire (only used when a chosen service asks for it)
   const [consultation, setConsultation] = useState<ConsultationDraft>(EMPTY_DRAFT);
+  // "Your hair": current and desired hair picks (only used when a chosen service asks for them)
+  const [hair, setHair] = useState<HairAnswersInput>({});
+  const { config: hairConfig } = useHairOptions();
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -145,6 +152,11 @@ const BookingForm = () => {
   // exactly as they always did; a service with a return phase runs end to end
   const consultationNeeded = needsConsultation(selectedServices);
   const consultationChecked = checkConsultation(consultation);
+  const hairNeeded = selectedServices.some((s) => s.askHairDetails === true);
+  const hairChecked = checkHairAnswers(hair, hairConfig);
+  // the step before and after the one being shown ("Your hair" sits between Services and Date)
+  const stepAfterServices = hairNeeded ? 1.5 : 2;
+  const stepBefore = (n: number) => (n === 2 ? (hairNeeded ? 1.5 : 1) : n === 1.5 ? 1 : n - 1);
   const phases = combinePhases(selectedServices);
   const { totalTime, activeTime: totalActiveTime } = phaseTotals(phases);
 
@@ -230,6 +242,10 @@ const BookingForm = () => {
       setSubmitError(consultationChecked.problem);
       return;
     }
+    if (hairNeeded && !hairChecked.ok) {
+      setSubmitError(hairChecked.problem);
+      return;
+    }
 
     setSubmitting(true);
     setSubmitError(null);
@@ -248,6 +264,7 @@ const BookingForm = () => {
         consent: true,
         ...(marketing ? { marketingConsent: true as const } : {}),
         ...(consultationNeeded && consultationChecked.ok ? { consultation: consultationChecked.value } : {}),
+        ...(hairNeeded ? { hair } : {}),
         requestId: requestIdRef.current,
       });
       setReceived({ result, customerName: customerName.trim() });
@@ -291,6 +308,7 @@ const BookingForm = () => {
     setNotes("");
     setConsent(false);
     setMarketing(false);
+    setHair({});
     setErrors({});
   };
 
@@ -319,7 +337,7 @@ const BookingForm = () => {
     <div style={{ fontFamily: "var(--font-body)" }}>
       <style>{ANIM_CSS}</style>
 
-      <StepIndicator currentStep={step} />
+      <StepIndicator currentStep={step} withHair={hairNeeded} />
 
       {/* Step content with slide animation */}
       <div style={{ overflow: "hidden" }}>
@@ -339,6 +357,8 @@ const BookingForm = () => {
               services={services}
             />
           )}
+
+          {step === 1.5 && <HairStep config={hairConfig} value={hair} onChange={setHair} />}
 
           {step === 2 && (
             <StylistDateStep
@@ -409,7 +429,7 @@ const BookingForm = () => {
         {/* Back button */}
         {step > 1 ? (
           <button
-            onClick={() => goTo(step - 1)}
+            onClick={() => goTo(stepBefore(step))}
             style={BACK_BTN}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--ink)";
@@ -430,9 +450,21 @@ const BookingForm = () => {
         {step === 1 && (
           <button
             className="bk-cta"
-            onClick={() => selectedServiceIds.length > 0 && goTo(2)}
+            onClick={() => selectedServiceIds.length > 0 && goTo(stepAfterServices)}
             disabled={selectedServiceIds.length === 0}
             style={selectedServiceIds.length > 0 ? PRIMARY_BTN : DISABLED_BTN}
+          >
+            Continue
+          </button>
+        )}
+
+        {step === 1.5 && (
+          <button
+            className="bk-cta"
+            data-testid="hair-continue"
+            onClick={() => hairChecked.ok && goTo(2)}
+            disabled={!hairChecked.ok}
+            style={hairChecked.ok ? PRIMARY_BTN : DISABLED_BTN}
           >
             Continue
           </button>
@@ -462,7 +494,7 @@ const BookingForm = () => {
       </div>
 
       {/* Submit failure — inline error (the client flow has no toast provider) */}
-      {submitError && (step === 3 || step === 2) && (
+      {submitError && (step === 3 || step === 2 || step === 1.5) && (
         <div
           style={{
             margin: "0 1.5rem 1.25rem",

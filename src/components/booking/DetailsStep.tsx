@@ -17,6 +17,7 @@
 import { parseLocalDate } from "../../lib/dates";
 import type { ConsultationDraft } from "../../lib/consultation";
 import ConsultationQuestionnaire from "./ConsultationQuestionnaire";
+import { FINAL_PRICE_NOTE } from "../../lib/priceLabel";
 
 interface SelectedServiceDisplay {
   id: string;
@@ -242,6 +243,9 @@ const DetailsStep = ({
             {estimatedTotalDisplay}
           </span>
         </div>
+        <p data-testid="final-price-note" style={{ margin: "0.375rem 0 0", fontSize: "var(--text-xs)", color: "var(--grey-muted)" }}>
+          {FINAL_PRICE_NOTE}
+        </p>
       </div>
 
       {/* Form fields */}

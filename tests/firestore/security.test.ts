@@ -186,3 +186,19 @@ describe("owner/staff access remains fully functional under the tightened rules"
     expect(snap.data()?.customerPhone).toBe(KNOWN_PHONE);
   });
 });
+
+describe("the Your hair answers are not public", () => {
+  it("an anonymous visitor cannot read a booking's hair answers, by id or by query", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("bookings/withHair").set(
+        validPublicBooking({ status: "pending", hair: { sections: [{ id: "current", title: "Current hair", items: [], notes: "private" }], callFlagged: true } }),
+      );
+    });
+    const anon = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anon.doc("bookings/withHair").get());
+    await assertFails(anon.collection("bookings").where("status", "==", "pending").get());
+    // and the public projection of it carries no hair answers
+    const slot = (await anon.collection("slotBlocks").get()).docs.map((d) => d.data());
+    expect(JSON.stringify(slot)).not.toMatch(/private|callFlagged|hair/);
+  });
+});

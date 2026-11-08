@@ -36,6 +36,8 @@ export interface FirestoreService {
   price: TieredPrice;
   requiresApproval?: boolean;
   requiresConsultation?: boolean;
+  askHairDetails?: boolean;
+  imageUrl?: string;
   retouchWeeks?: number;
   status: "active" | "inactive";
   sortOrder: number;

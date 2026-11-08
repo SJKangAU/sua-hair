@@ -75,6 +75,7 @@ const call = async <In, Out>(name: string, data: In): Promise<Out> => {
 
 /** What the customer sends: choices and contact details - never a price or phases. */
 import type { Consultation } from "./consultation";
+import type { HairAnswersInput } from "./hairProfile";
 
 export interface BookingRequestInput {
   serviceIds: string[];
@@ -91,6 +92,8 @@ export interface BookingRequestInput {
   marketingConsent?: true;
   /** the colour consultation answers, required when a chosen service asks for them */
   consultation?: Consultation;
+  /** the "Your hair" picks, required when a chosen service asks for them */
+  hair?: HairAnswersInput;
   /** makes a retry of the same request return the same booking */
   requestId: string;
 }
